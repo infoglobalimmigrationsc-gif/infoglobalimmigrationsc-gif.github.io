@@ -1,0 +1,2771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Immigration SC - Trusted Visa & Study Abroad Consultants</title>
+    <meta name="description" content="Global Immigration SC provides expert visa consultation, study abroad programs, and immigration services. Get assistance with student visas, work permits, and relocation.">
+    <meta name="keywords" content="immigration consultants, study abroad, visa assistance, work permits, student visa, relocation services, travel consultation">
+    <meta name="author" content="Global Immigration SC">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-TJCKSJNLPT"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-TJCKSJNLPT');
+    </script>
+    <!-- End Google Analytics -->
+    
+    <style>
+        /* Base Styles */
+        :root {
+            --primary-red: #E30613;
+            --primary-white: #FFFFFF;
+            --light-gray: #F5F5F5;
+            --medium-gray: #777777;
+            --dark-gray: #333333;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            line-height: 1.6;
+            color: var(--dark-gray);
+            background-color: var(--primary-white);
+            overflow-x: hidden;
+        }
+        
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        ul {
+            list-style: none;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 28px;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-red);
+            color: var(--primary-white);
+            border: 2px solid var(--primary-red);
+        }
+        
+        .btn-primary:hover {
+            background-color: transparent;
+            color: var(--primary-red);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary-red);
+            border: 2px solid var(--primary-red);
+        }
+        
+        .btn-outline:hover {
+            background-color: var(--primary-red);
+            color: var(--primary-white);
+        }
+        
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+        
+        .btn-live {
+            background-color: #ff0000;
+            color: white;
+            border: none;
+        }
+        
+        .btn-live:hover {
+            background-color: #cc0000;
+        }
+        
+        .section {
+            padding: 80px 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .section-title h2 {
+            font-size: 2.5rem;
+            color: var(--dark-gray);
+            margin-bottom: 15px;
+        }
+        
+        .section-title p {
+            color: var(--medium-gray);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        /* Loading Screen */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--primary-white);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+        
+        .loading-logo {
+            max-width: 150px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .loading-logo img {
+            max-width: 100%;
+            animation: rotateLogo 2s ease-in-out 2;
+        }
+        
+        @keyframes rotateLogo {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-size: 1.5rem;
+            color: var(--primary-red);
+            font-weight: 600;
+        }
+        
+        /* Header Styles */
+        header {
+            background-color: var(--primary-white);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo img {
+            height: 50px;
+            width: auto;
+            object-fit: contain;
+        }
+        
+        .nav-menu {
+            display: flex;
+        }
+        
+        .nav-menu li {
+            margin: 0 15px;
+            position: relative;
+        }
+        
+        .nav-menu li a {
+            color: var(--dark-gray);
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-menu li a:hover {
+            color: var(--primary-red);
+        }
+        
+        .dropdown {
+            position: relative;
+        }
+        
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: var(--primary-white);
+            min-width: 250px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+            border-top: 3px solid var(--primary-red);
+        }
+        
+        .dropdown-content a {
+            color: var(--dark-gray);
+            padding: 12px 16px;
+            display: block;
+        }
+        
+        .dropdown-content a:hover {
+            background-color: var(--light-gray);
+            color: var(--primary-red);
+        }
+        
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        
+        .mobile-toggle {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1800&q=80');
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            color: var(--primary-white);
+            text-align: center;
+            margin-top: 70px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .plane-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .plane {
+            position: absolute;
+            width: 120px;
+            height: 60px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path fill="%23E30613" d="M482.3 192c34.2 0 93.7 29 93.7 64c0 36-59.5 64-93.7 64H365.7L265.2 495.9c-5.7 10-16.3 16.1-27.8 16.1h-56.2c-10.6 0-18.3-10.2-15.4-20.4l49-171.6H112l-43.2 57.6c-3 4-7.8 6.4-12.8 6.4H14c-7.8 0-14-6.3-14-14c0-1.3 .2-2.6 .5-3.9L32 256 .5 145.9c-.4-1.3-.5-2.6-.5-3.9c0-7.8 6.3-14 14-14h42c5 0 9.8 2.4 12.8 6.4L112 192h102.9l-49-171.6C162.9 10.2 170.6 0 181.2 0h56.2c11.5 0 22.1 6.2 27.8 16.1L365.7 192h116.5z"/></svg>') no-repeat center/contain;
+            animation: fly 25s linear infinite;
+            opacity: 0.9;
+        }
+        
+        @keyframes fly {
+            0% {
+                left: -10%;
+                top: 30%;
+                transform: rotate(5deg);
+            }
+            100% {
+                left: 110%;
+                top: 30%;
+                transform: rotate(5deg);
+            }
+        }
+        
+        .plane:nth-child(2) {
+            width: 90px;
+            height: 45px;
+            animation: fly2 30s linear infinite;
+            animation-delay: 7s;
+            top: 60%;
+        }
+        
+        @keyframes fly2 {
+            0% {
+                left: -10%;
+                top: 60%;
+                transform: rotate(-3deg);
+            }
+            100% {
+                left: 110%;
+                top: 60%;
+                transform: rotate(-3deg);
+            }
+        }
+        
+        .plane:nth-child(3) {
+            width: 100px;
+            height: 50px;
+            animation: fly3 35s linear infinite;
+            animation-delay: 15s;
+            top: 45%;
+        }
+        
+        @keyframes fly3 {
+            0% {
+                left: -10%;
+                top: 45%;
+                transform: rotate(2deg);
+            }
+            100% {
+                left: 110%;
+                top: 45%;
+                transform: rotate(2deg);
+            }
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
+            z-index: 3;
+        }
+        
+        .hero-content h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            line-height: 1.2;
+            color: var(--primary-white);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .hero-content p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: var(--primary-white);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .hero-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        /* About Section */
+        .about {
+            background-color: var(--primary-white);
+        }
+        
+        .about-content {
+            display: flex;
+            align-items: center;
+            gap: 50px;
+        }
+        
+        .about-text {
+            flex: 1;
+        }
+        
+        .about-text h2 {
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            color: var(--dark-gray);
+        }
+        
+        .about-text p {
+            margin-bottom: 15px;
+            color: var(--medium-gray);
+        }
+        
+        .about-image {
+            flex: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            background-color: var(--light-gray);
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .about-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover;
+        }
+        
+        /* Services Section */
+        .services {
+            background-color: var(--light-gray);
+        }
+        
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .service-card {
+            background-color: var(--primary-white);
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .service-icon {
+            font-size: 2.5rem;
+            color: var(--primary-red);
+            margin-bottom: 20px;
+        }
+        
+        .service-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: var(--dark-gray);
+        }
+        
+        .service-card p {
+            color: var(--medium-gray);
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+        
+        /* Destinations Section */
+        .destinations {
+            background-color: var(--primary-white);
+        }
+        
+        .flags-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .country-flag {
+            text-align: center;
+            width: 100px;
+        }
+        
+        .flag-icon {
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .country-name {
+            font-weight: 500;
+            color: var(--dark-gray);
+        }
+        
+        /* Process Section */
+        .process {
+            background-color: var(--light-gray);
+        }
+        
+        .process-steps {
+            display: flex;
+            justify-content: space-between;
+            gap: 30px;
+            margin-top: 50px;
+        }
+        
+        .step {
+            flex: 1;
+            text-align: center;
+            padding: 30px;
+            background-color: var(--primary-white);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .step-number {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            line-height: 50px;
+            background-color: var(--primary-red);
+            color: var(--primary-white);
+            border-radius: 50%;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        
+        .step h3 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: var(--dark-gray);
+        }
+        
+        .step p {
+            color: var(--medium-gray);
+        }
+        
+        /* Testimonials Section */
+        .testimonials {
+            background-color: var(--primary-white);
+        }
+        
+        .testimonials-container {
+            display: flex;
+            gap: 30px;
+            margin-top: 50px;
+            flex-wrap: wrap;
+        }
+        
+        .testimonial {
+            flex: 1;
+            min-width: 300px;
+            background-color: var(--light-gray);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .testimonial-text {
+            font-style: italic;
+            margin-bottom: 20px;
+            color: var(--dark-gray);
+        }
+        
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+        }
+        
+        .author-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-right: 15px;
+            background-color: var(--medium-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        
+        .author-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .author-details h4 {
+            color: var(--dark-gray);
+            margin-bottom: 5px;
+        }
+        
+        .author-details p {
+            color: var(--medium-gray);
+            font-size: 0.9rem;
+        }
+        
+        /* Stats Section */
+        .stats {
+            background: linear-gradient(135deg, var(--primary-red) 0%, #b30000 100%);
+            color: white;
+            text-align: center;
+            padding: 60px 0;
+        }
+        
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+        
+        .stat-item {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        /* Founder Section */
+        .founder {
+            background-color: var(--primary-white);
+            padding: 80px 0;
+        }
+        
+        .founder-container {
+            display: flex;
+            align-items: center;
+            gap: 50px;
+        }
+        
+        .founder-image {
+            flex: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            background-color: var(--light-gray);
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--medium-gray);
+        }
+        
+        .founder-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover;
+        }
+        
+        .founder-content {
+            flex: 1;
+        }
+        
+        .founder-content h2 {
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            color: var(--dark-gray);
+        }
+        
+        .founder-content h3 {
+            font-size: 1.5rem;
+            color: var(--primary-red);
+            margin-bottom: 15px;
+        }
+        
+        .founder-content p {
+            margin-bottom: 15px;
+            color: var(--medium-gray);
+            font-style: italic;
+            line-height: 1.8;
+        }
+        
+        .founder-signature {
+            margin-top: 30px;
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+        
+        /* Team Section */
+        .team {
+            background-color: var(--light-gray);
+            padding: 80px 0;
+        }
+        
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .team-member {
+            background-color: var(--primary-white);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .team-member:hover {
+            transform: translateY(-5px);
+        }
+        
+        .team-image {
+            height: 250px;
+            overflow: hidden;
+            background-color: var(--medium-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .team-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .team-details {
+            padding: 20px;
+        }
+        
+        .team-name {
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+            color: var(--dark-gray);
+        }
+        
+        .team-position {
+            color: var(--primary-red);
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        
+        .team-description {
+            color: var(--medium-gray);
+            font-size: 0.9rem;
+        }
+        
+        /* Contact Section */
+        .contact {
+            background-color: var(--light-gray);
+        }
+        
+        .contact-container {
+            display: flex;
+            gap: 50px;
+        }
+        
+        .contact-info {
+            flex: 1;
+        }
+        
+        .contact-info h3 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--dark-gray);
+        }
+        
+        .contact-details {
+            margin-bottom: 30px;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .contact-icon {
+            color: var(--primary-red);
+            font-size: 1.2rem;
+            margin-right: 15px;
+            margin-top: 3px;
+        }
+        
+        .contact-text {
+            color: var(--medium-gray);
+        }
+        
+        .office-hours {
+            margin-top: 30px;
+        }
+        
+        .office-hours h4 {
+            margin-bottom: 15px;
+            color: var(--dark-gray);
+        }
+        
+        .hours-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .hours-table tr {
+            border-bottom: 1px solid #eee;
+        }
+        
+        .hours-table td {
+            padding: 8px 0;
+        }
+        
+        .hours-table td:last-child {
+            text-align: right;
+        }
+        
+        .contact-form {
+            flex: 1;
+            background-color: var(--primary-white);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--dark-gray);
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-red);
+            outline: none;
+        }
+        
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .form-error {
+            color: var(--primary-red);
+            font-size: 0.9rem;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .form-success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+        
+        /* Live Session Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: var(--primary-white);
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--medium-gray);
+        }
+        
+        .live-session-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .session-option {
+            padding: 15px;
+            border: 2px solid var(--primary-red);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .session-option:hover {
+            background-color: var(--primary-red);
+            color: var(--primary-white);
+        }
+        
+        /* Footer */
+        footer {
+            background-color: var(--primary-red);
+            color: var(--primary-white);
+            padding: 60px 0 30px;
+        }
+        
+        .footer-container {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .footer-col {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .footer-col h3 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+            color: white;
+        }
+        
+        .footer-col h3::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 40px;
+            height: 2px;
+            background-color: var(--primary-white);
+        }
+        
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-links a {
+            transition: color 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .social-links a {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transition: background-color 0.3s ease;
+        }
+        
+        .social-links a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .qr-code {
+            max-width: 150px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            background-color: white;
+            padding: 10px;
+        }
+        
+        .qr-code img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .footer-tagline {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+        
+        /* WhatsApp Float */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background-color: #25D366;
+            color: var(--primary-white);
+            border-radius: 50%;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            transition: all 0.3s ease;
+        }
+        
+        .whatsapp-float:hover {
+            transform: scale(1.1);
+            background-color: #128C7E;
+        }
+        
+        /* Blog Preview Section */
+        .blog-preview {
+            background-color: var(--primary-white);
+            padding: 80px 0;
+        }
+        
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .blog-card {
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+        
+        .blog-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .blog-image {
+            height: 200px;
+            overflow: hidden;
+            background-color: var(--medium-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .blog-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .blog-card:hover .blog-image img {
+            transform: scale(1.05);
+        }
+        
+        .blog-content {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 220px;
+        }
+        
+        .blog-date {
+            font-size: 0.9rem;
+            color: var(--medium-gray);
+            margin-bottom: 10px;
+        }
+        
+        .blog-title {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: var(--dark-gray);
+        }
+        
+        .blog-excerpt {
+            color: var(--medium-gray);
+            margin-bottom: 15px;
+            flex-grow: 1;
+        }
+        
+        /* Facebook Feed Styles */
+        .facebook-feed {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .fb-post {
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+        
+        .fb-post:hover {
+            transform: translateY(-5px);
+        }
+        
+        .fb-image {
+            height: 200px;
+            overflow: hidden;
+            background-color: var(--medium-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .fb-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .fb-post:hover .fb-image img {
+            transform: scale(1.05);
+        }
+        
+        .fb-content {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 220px;
+        }
+        
+        .fb-date {
+            font-size: 0.9rem;
+            color: var(--medium-gray);
+            margin-bottom: 10px;
+        }
+        
+        .fb-message {
+            color: var(--medium-gray);
+            margin-bottom: 15px;
+            flex-grow: 1;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+        }
+        
+        /* Newsletter Section */
+        .newsletter {
+            background-color: #f8f9fa;
+            padding: 60px 0;
+            text-align: center;
+            display: none; /* Hidden for now */
+        }
+        
+        .newsletter-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .newsletter-form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .newsletter-input {
+            flex: 1;
+            min-width: 250px;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            .about-content,
+            .contact-container,
+            .founder-container {
+                flex-direction: column;
+            }
+            
+            .process-steps {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+            
+            .founder-image {
+                order: -1;
+            }
+            
+            .stats-container {
+                flex-direction: column;
+                gap: 40px;
+            }
+            
+            .team-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+            
+            .blog-grid,
+            .facebook-feed {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-toggle {
+                display: block;
+            }
+            
+            .nav-menu {
+                position: fixed;
+                top: 70px;
+                left: -100%;
+                width: 80%;
+                height: calc(100vh - 70px);
+                background-color: var(--primary-white);
+                flex-direction: column;
+                padding: 40px 20px;
+                box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+                transition: left 0.3s ease;
+            }
+            
+            .nav-menu active {
+                left: 0;
+            }
+            
+            .nav-menu li {
+                margin: 15px 0;
+            }
+            
+            .dropdown-content {
+                position: static;
+                box-shadow: none;
+                margin-left: 20px;
+                margin-top: 10px;
+                display: none;
+            }
+            
+            .dropdown.active .dropdown-content {
+                display: block;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .section {
+                padding: 60px 0;
+            }
+            
+            .section-title h2 {
+                font-size: 2rem;
+            }
+            
+            .blog-grid,
+            .facebook-feed {
+                grid-template-columns: 1fr;
+            }
+            
+            .newsletter-form {
+                flex-direction: column;
+            }
+            
+            .newsletter-input {
+                min-width: 100%;
+            }
+            
+            .testimonials-container {
+                flex-direction: column;
+            }
+            
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Accessibility Improvements */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--primary-red);
+            color: white;
+            padding: 8px;
+            z-index: 100;
+            transition: top 0.3s;
+        }
+        
+        .skip-link:focus {
+            top: 0;
+        }
+        
+        /* Focus styles for accessibility */
+        a:focus, button:focus, input:focus, textarea:focus, select:focus {
+            outline: 2px solid var(--primary-red);
+            outline-offset: 2px;
+        }
+        
+        /* Loading spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Reduced motion for accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            
+            .plane {
+                display: none;
+            }
+            
+            .loading-logo img {
+                animation: none;
+            }
+        }
+
+        /* Image fallback styles */
+        .image-fallback {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .image-fallback i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--primary-red);
+        }
+        
+        .image-fallback p {
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loading-logo">
+            <img src="GISC-LOGO.webp" alt="Global Immigration SC Logo" onerror="this.onerror=null; this.style.display='none'; document.getElementById('logo-fallback').style.display='flex';">
+            <div id="logo-fallback" class="image-fallback" style="display: none;">
+                <i class="fas fa-globe-americas"></i>
+                <p>Global Immigration SC Logo</p>
+            </div>
+        </div>
+        <div class="loading-text">Direction to Your Destination</div>
+    </div>
+
+    <!-- Live Session Modal -->
+    <div id="liveSessionModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Join Our Live Session</h2>
+            <div class="live-session-options">
+                <div class="session-option" id="joinLive">
+                    <h3>Join Our Live Stream</h3>
+                    <p>Watch our current live session on YouTube</p>
+                </div>
+                <div class="session-option" id="registerSession">
+                    <h3>Register for Upcoming Session</h3>
+                    <p>Get notified about our next live session</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Session Modal -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Register for Upcoming Session</h2>
+            <form id="sessionForm" action="https://formspree.io/f/mrbaejkr" method="POST">
+                <div class="form-group">
+                    <label for="sessionName">Full Name *</label>
+                    <input type="text" id="sessionName" name="name" class="form-control" required>
+                    <div class="form-error" id="sessionNameError">Please enter your full name</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="sessionEmail">Email Address *</label>
+                    <input type="email" id="sessionEmail" name="email" class="form-control" required>
+                    <div class="form-error" id="sessionEmailError">Please enter a valid email address</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notifyMe" style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="notifyMe" name="notify" value="yes" checked>
+                        Notify me when the session starts
+                    </label>
+                </div>
+                
+                <input type="hidden" name="form_type" value="session_registration">
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <span class="btn-text">Send Registration</span>
+                    <span class="loading-spinner" style="display: none;"></span>
+                </button>
+                
+                <div id="sessionSuccess" class="form-success">
+                    Thank you for registering! We will notify you when our next session starts.
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Skip link for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- Header -->
+    <header>
+        <div class="header-container container">
+            <div class="logo">
+                <img src="GISC-LOGO.webp" alt="Global Immigration SC Logo" onerror="this.onerror=null; this.style.display='none'; document.getElementById('header-logo-fallback').style.display='flex';">
+                <div id="header-logo-fallback" class="image-fallback" style="display: none;">
+                    <i class="fas fa-globe-americas"></i>
+                    <p>Global Immigration SC</p>
+                </div>
+            </div>
+            
+            <div class="mobile-toggle" aria-label="Toggle navigation menu">
+                <i class="fas fa-bars" aria-hidden="true"></i>
+            </div>
+            
+            <nav aria-label="Main navigation">
+                <ul class="nav-menu">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#about">About Us</a></li>
+                    <li class="dropdown">
+                        <a href="#services">Services <i class="fas fa-chevron-down" aria-hidden="true"></i></a>
+                        <div class="dropdown-content">
+                            <a href="#">Business Trip Visa Application & Planning</a>
+                            <a href="#">Study Abroad Admissions & Scholarship Support</a>
+                            <a href="#">Visa Application & Embassy Interview Coaching</a>
+                            <a href="#">Work & Immigration Assistance</a>
+                            <a href="#">Student Loan & Sponsorship</a>
+                            <a href="#">Flight, Hotel & Accommodation Booking</a>
+                            <a href="#">Relocation Support & Document Translation</a>
+                            <a href="#">Travel Insurance & Medical Clearance</a>
+                            <a href="#">Educational & Cultural Exchange Programs</a>
+                            <a href="#">Pre-Departure Orientation & Airport Pickup</a>
+                        </div>
+                    </li>
+                    <li><a href="#destinations">Destinations</a></li>
+                    <li><a href="#blog">Blog</a></li>
+                    <li><a href="#contact">Contact Us</a></li>
+                    <li><a href="#" class="btn btn-live" id="liveSessionBtn"><i class="fas fa-video" aria-hidden="true"></i> Watch Our Live Session</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="plane-container" aria-hidden="true">
+            <div class="plane"></div>
+            <div class="plane"></div>
+            <div class="plane"></div>
+        </div>
+        
+        <div class="hero-content">
+            <h1>Global Immigration SC – Your Trusted Travel & Study Partner</h1>
+            <p>We help students, professionals, and travelers achieve their global dreams with end-to-end immigration and study abroad solutions.</p>
+            <div class="hero-buttons">
+                <a href="https://docs.google.com/forms/d/1HUsRbKHsZlZKL7T2DgT7crgAhkAnuslmWjopUD2Cutg/edit" class="btn btn-primary">Book Appointment</a>
+                <a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-outline">Start Application</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main id="main-content">
+        <!-- About Section -->
+        <section id="about" class="section about">
+            <div class="container">
+                <div class="about-content">
+                    <div class="about-text">
+                        <h2>About Global Immigration SC</h2>
+                        <p>At Global Immigration SC, we guide you step by step – from admission and visa applications to travel, relocation and settlement.</p>
+                        <p>With years of expertise in immigration consulting, we've helped hundreds of clients achieve their dreams of studying, working, and traveling abroad. Our team of experienced consultants provides personalized support throughout your journey.</p>
+                        <p>We pride ourselves on our transparent processes, ethical practices, and commitment to your success. Your global journey is our priority.</p>
+                    </div>
+                    <div class="about-image">
+                        <img src="IMAGES.webp" alt="Diverse group of immigrants and professionals working together at a table" onerror="this.onerror=null; this.style.display='none'; document.getElementById('about-fallback').style.display='flex';">
+                        <div id="about-fallback" class="image-fallback" style="display: none;">
+                            <i class="fas fa-users"></i>
+                            <p>Our diverse team of professionals</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="stats">
+            <div class="container">
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <div class="stat-number" id="clients">500+</div>
+                        <div class="stat-label">Happy Clients</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="success">98%</div>
+                        <div class="stat-label">Success Rate</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="countries">80+</div>
+                        <div class="stat-label">Countries</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="experience">10+</div>
+                        <div class="stat-label">Years Experience</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Services Section -->
+        <section id="services" class="section services">
+            <div class="container">
+                <div class="section-title">
+                    <h2>Our Full-Service Offers</h2>
+                    <p>Comprehensive immigration and study abroad services to meet all your needs</p>
+                </div>
+                
+                <div class="services-grid">
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-briefcase" aria-hidden="true"></i>
+                        </div>
+                        <h3>Business Trip Visa Application & Planning</h3>
+                        <p>Professional visa services for business travelers and corporate clients with expedited processing options.</p>
+                        <a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a>
+                    </div>
+                    
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-graduation-cap" aria-hidden="true"></i>
+                        </div>
+                        <h3>Study Abroad Admissions & Scholarship Support</h3>
+                        <p>Guidance through university applications and scholarship opportunities with 95% acceptance rate.</p>
+                        <a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a>
+                    </div>
+                    
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-passport" aria-hidden="true"></i>
+                        </div>
+                        <h3>Visa Application & Embassy Interview Coaching</h3>
+                        <p>Complete visa processing and interview preparation services with mock interview sessions.</p>
+                        <a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a>
+                    </div>
+                    
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-building" aria-hidden="true"></i>
+                        </div>
+                        <h3>Work & Immigration Assistance</h3>
+                        <p>Support with work permits and permanent residency applications for skilled professionals.</p>
+                        <a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a>
+                    </div>
+                    
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-hand-holding-usd" aria-hidden="true"></i>
+                        </div>
+                        <h3>Student Loan & Sponsorship</h3>
+                        <p>Assistance with MPOWER, SOFI, and other financing options with high approval rates.</p>
+                        <a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a>
+                    </div>
+                    
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-hotel" aria-hidden="true"></i>
+                        </div>
+                        <h3>Flight, Hotel & Accommodation Booking</h3>
+                        <p>Travel and accommodation arrangements for your relocation with exclusive partner discounts.</p>
+                        <a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a>
+                    </div>
+                    
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-people-carry" aria-hidden="true"></i>
+                        </div>
+                        <h3>Relocation Support & Document Translation</h3>
+                        <p>Comprehensive relocation services and certified document translation in 24+ languages.</p>
+                        <a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a>
+                    </div>
+                    
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-heartbeat" aria-hidden="true"></i>
+                        </div>
+                        <h3>Travel Insurance & Medical Clearance</h3>
+                        <p>Health insurance and medical examination coordination with recognized healthcare providers.</p>
+                        <a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a>
+                    </div>
+                    
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-exchange-alt" aria-hidden="true"></i>
+                        </div>
+                        <h3>Educational & Cultural Exchange Programs</h3>
+                        <p>Opportunities for cultural exchange and international education with 50+ partner institutions.</p>
+                        <a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a>
+                    </div>
+                    
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-plane-departure" aria-hidden="true"></i>
+                        </div>
+                        <h3>Pre-Departure Orientation & Airport Pickup</h3>
+                        <p>Preparation sessions and arrival assistance at your destination with local support teams.</p>
+                        <a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Destinations Section -->
+        <section id="destinations" class="section destinations">
+            <div class="container">
+                <div class="section-title">
+                    <h2>Destinations We Serve</h2>
+                    <p>We provide immigration and study services for these popular destinations</p>
+                </div>
+                
+                <div class="flags-container">
+                    <div class="country-flag">
+                        <div class="flag-icon" aria-label="United States flag">🇺🇸</div>
+                        <div class="country-name">USA</div>
+                    </div>
+                    
+                    <div class="country-flag">
+                        <div class="flag-icon" aria-label="Canada flag">🇨🇦</div>
+                        <div class="country-name">Canada</div>
+                    </div>
+                    
+                    <div class="country-flag">
+                        <div class="flag-icon" aria-label="Switzerland flag">🇨🇭</div>
+                        <div class="country-name">Switzerland</div>
+                    </div>
+                    
+                    <div class="country-flag">
+                        <div class="flag-icon" aria-label="Sweden flag">🇸🇪</div>
+                        <div class="country-name">Sweden</div>
+                    </div>
+                    
+                    <div class="country-flag">
+                        <div class="flag-icon" aria-label="Australia flag">🇦🇺</div>
+                        <div class="country-name">Australia</div>
+                    </div>
+                    
+                    <div class="country-flag">
+                        <div class="flag-icon" aria-label="Ireland flag">🇮🇪</div>
+                        <div class="country-name">Ireland</div>
+                    </div>
+                    
+                    <div class="country-flag">
+                        <div class="flag-icon" aria-label="Austria flag">🇦🇹</div>
+                        <div class="country-name">Austria</div>
+                    </div>
+                    
+                    <div class="country-flag">
+                        <div class="flag-icon" aria-label="Finland flag">🇫🇮</div>
+                        <div class="country-name">Finland</div>
+                    </div>
+                    
+                    <div class="country-flag">
+                        <div class="flag-icon" aria-label="Germany flag">🇩🇪</div>
+                        <div class="country-name">Germany</div>
+                    </div>
+                    
+                    <div class="country-flag">
+                        <div class="flag-icon" aria-label="United Arab Emirates flag">🇦🇪</div>
+                        <div class="country-name">UAE</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Process Section -->
+        <section class="section process">
+            <div class="container">
+                <div class="section-title">
+                    <h2>How It Works</h2>
+                    <p>Our simple 3-step process to make your global dreams a reality</p>
+                </div>
+                
+                <div class="process-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <h3>Consultation & Application</h3>
+                        <p>We begin with a detailed consultation to understand your goals, then guide you through the application process.</p>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <h3>Document Preparation & Embassy Coaching</h3>
+                        <p>We help prepare all necessary documents and provide coaching for embassy interviews.</p>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <h3>Visa Approval & Relocation Support</h3>
+                        <p>After visa approval, we assist with travel arrangements, accommodation, and settling into your new country.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials Section -->
+        <section class="section testimonials">
+            <div class="container">
+                <div class="section-title">
+                    <h2>Success Stories</h2>
+                    <p>Hear from our satisfied clients who have achieved their global dreams</p>
+            </div>
+            
+            <div class="testimonials-container">
+                <div class="testimonial">
+                    <p class="testimonial-text">"Global Immigration SC made my study abroad dream come true. Their guidance through the university application and visa process was invaluable. I'm now studying at the University of Toronto with a 40% scholarship thanks to their expertise!"</p>
+                    <div class="testimonial-author">
+                        <div class="author-image">
+                            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Fatima Adebayo - Student at University of Toronto" onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='FA';">
+                        </div>
+                        <div class="author-details">
+                            <h4>Fatima Adebayo</h4>
+                            <p>Student at University of Toronto, Canada</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial">
+                    <p class="testimonial-text">"The team at Global Immigration SC provided exceptional support with my work visa application. Their attention to detail and knowledge of the process made everything smooth and stress-free. I received my Australian work visa in just 6 weeks!"</p>
+                    <div class="testimonial-author">
+                        <div class="author-image">
+                            <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Kwame Osei - Software Engineer in Australia" onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='KO';">
+                        </div>
+                        <div class="author-details">
+                            <h4>Kwame Osei</h4>
+                            <p>Software Engineer in Sydney, Australia</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial">
+                    <p class="testimonial-text">"As a Nigerian student, I was worried about the visa process. Global Immigration SC guided me through every step and helped me secure my UK student visa on the first attempt. I'm now pursuing my Master's at London School of Economics!"</p>
+                    <div class="testimonial-author">
+                        <div class="author-image">
+                            <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Chinedu Okoro - Graduate Student at LSE" onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='CO';">
+                        </div>
+                        <div class="author-details">
+                            <h4>Chinedu Okoro</h4>
+                            <p>Graduate Student at LSE, UK</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+                <!-- Blog Preview Section -->
+        <section id="blog" class="section blog-preview">
+            <div class="container">
+                <div class="section-title">
+                    <h2>Latest From Our Blog</h2>
+                    <p>Helpful resources and updates on immigration policies and study abroad opportunities</p>
+                </div>
+                
+                <div class="blog-grid" id="dynamic-blog-container">
+                    <!-- Blog posts will be dynamically loaded here from localStorage -->
+                </div>
+                
+                <div style="text-align: center; margin-top: 40px;">
+                    <a href="https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr" class="btn btn-primary" target="_blank">View All Posts on Facebook</a>
+                </div>
+            </div>
+        </section>
+
+        <script>
+        // Function to load blog posts from localStorage
+        function loadBlogPostsToWebsite() {
+            const blogContainer = document.getElementById('dynamic-blog-container');
+            const postsJSON = localStorage.getItem('blogPosts');
+            const posts = postsJSON ? JSON.parse(postsJSON) : [];
+            
+            // Clear existing content
+            blogContainer.innerHTML = '';
+            
+            if (posts.length === 0) {
+                // Show default content if no posts exist
+                blogContainer.innerHTML = `
+                    <div class="blog-card">
+                        <div class="blog-image">
+                            <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Why Study Abroad" loading="lazy">
+                        </div>
+                        <div class="blog-content">
+                            <div class="blog-date">July 20, 2023</div>
+                            <h3 class="blog-title">Why Study Abroad: Benefits & Opportunities</h3>
+                            <p class="blog-excerpt">Discover the life-changing benefits of studying in a foreign country and how it can transform your career prospects.</p>
+                            <a href="https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr" class="btn btn-outline btn-small" target="_blank">Read More</a>
+                        </div>
+                    </div>
+                    
+                    <div class="blog-card">
+                        <div class="blog-image">
+                            <img src="https://images.unsplash.com/photo-1578575437130-527eed3abbec?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Importance of Travel Agency" loading="lazy">
+                        </div>
+                        <div class="blog-content">
+                            <div class="blog-date">July 15, 2023</div>
+                            <h3 class="blog-title">Why You Need a Professional Travel Agency</h3>
+                            <p class="blog-excerpt">Learn how working with experienced travel consultants can save you time, money, and stress in your immigration journey.</p>
+                            <a href="https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr" class="btn btn-outline btn-small" target="_blank">Read More</a>
+                        </div>
+                    </div>
+                    
+                    <div class="blog-card">
+                        <div class="blog-image">
+                            <img src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Visa Interview Tips" loading="lazy">
+                        </div>
+                        <div class="blog-content">
+                            <div class="blog-date">July 10, 2023</div>
+                            <h3 class="blog-title">Top 10 Visa Interview Tips for Success</h3>
+                            <p class="blog-excerpt">Expert advice on how to prepare for your visa interview and increase your chances of approval.</p>
+                            <a href="https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr" class="btn btn-outline btn-small" target="_blank">Read More</a>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Display posts from localStorage
+            posts.forEach(post => {
+                const formattedDate = new Date(post.date).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+                const blogCard = document.createElement('div');
+                blogCard.className = 'blog-card';
+                blogCard.innerHTML = `
+                    <div class="blog-image">
+                        <img src="${post.image}" alt="${post.title}" loading="lazy" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'">
+                    </div>
+                    <div class="blog-content">
+                        <div class="blog-date">${formattedDate}</div>
+                        <h3 class="blog-title">${post.title}</h3>
+                        <p class="blog-excerpt">${post.excerpt}</p>
+                        <a href="${post.link}" class="btn btn-outline btn-small" target="_blank">Read More</a>
+                    </div>
+                `;
+                
+                blogContainer.appendChild(blogCard);
+            });
+        }
+
+        // Load blog posts when the page is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBlogPostsToWebsite();
+            
+            // Optional: Add an event listener to refresh blog posts if they're updated
+            // This would be useful if you had multiple tabs open
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'blogPosts') {
+                    loadBlogPostsToWebsite();
+                }
+            });
+        });
+        </script>
+
+        <!-- Founder Section -->
+        <section class="section founder">
+            <div class="container">
+                <div class="founder-container">
+                    <div class="founder-image">
+                        <img src="Founder.jpg" alt="Darlington F Tamba - Founder of Global Immigration SC" onerror="this.onerror=null; this.style.display='none'; document.getElementById('founder-fallback').style.display='flex';">
+                        <div id="founder-fallback" class="image-fallback" style="display: none;">
+                            <i class="fas fa-user-tie"></i>
+                            <p>Our Founder</p>
+                        </div>
+                    </div>
+                    <div class="founder-content">
+                        <h2>Message From Our Founder</h2>
+                        <h3>Darlington F Tamba</h3>
+                        <p>"At Global Immigration SC, we believe that everyone deserves the opportunity to pursue their dreams on a global stage. Our mission is to break down barriers and make international education and immigration accessible to all."</p>
+                        <p>"Having navigated the complex immigration process myself, I understand the challenges our clients face. That's why we've built a team of dedicated professionals who are committed to providing personalized guidance and support every step of the way."</p>
+                        <p>"Your success is our success. When you achieve your dreams of studying or working abroad, we celebrate with you. We're not just an immigration service – we're your partners in building a brighter future."</p>
+                        <div class="founder-signature">- Darlington F Tamba, Founder & CEO</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Team Section -->
+        <section class="section team">
+            <div class="container">
+                <div class="section-title">
+                    <h2>Meet Our Team</h2>
+                    <p>Our dedicated professionals are committed to your success</p>
+                </div>
+                
+                <div class="team-grid">
+                    <div class="team-member">
+                        <div class="team-image">
+                            <div class="image-fallback">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                        </div>
+                        <div class="team-details">
+                            <h3 class="team-name">Stephen V. Shilue</h3>
+                            <p class="team-position">Co-founder and Chief Operating Officer</p>
+                            <p class="team-description">Experienced operations leader with expertise in international education and immigration processes.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="team-member">
+                        <div class="team-image">
+                            <div class="image-fallback">
+                                <i class="fas fa-user-graduate"></i>
+                            </div>
+                        </div>
+                        <div class="team-details">
+                            <h3 class="team-name">Jennifer Williams</h3>
+                            <p class="team-position">International Applicants Observer</p>
+                            <p class="team-description">Specializes in reviewing applications and ensuring compliance with international standards.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="team-member">
+                        <div class="team-image">
+                            <div class="image-fallback">
+                                <i class="fas fa-passport"></i>
+                            </div>
+                        </div>
+                        <div class="team-details">
+                            <h3 class="team-name">Sarah Johnson</h3>
+                            <p class="team-position">Visa Review Consultant</p>
+                            <p class="team-description">Expert in visa documentation and interview preparation with a 98% success rate.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="team-member">
+                        <div class="team-image">
+                            <div class="image-fallback">
+                                <i class="fas fa-globe-americas"></i>
+                            </div>
+                        </div>
+                        <div class="team-details">
+                            <h3 class="team-name">Emily Clark</h3>
+                            <p class="team-position">International Consultant</p>
+                            <p class="team-description">Provides guidance on study abroad programs and cultural adaptation for international students.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="team-member">
+                        <div class="team-image">
+                            <div class="image-fallback">
+                                <i class="fas fa-plane"></i>
+                            </div>
+                        </div>
+                        <div class="team-details">
+                            <h3 class="team-name">Michael Ojo</h3>
+                            <p class="team-position">International Agent</p>
+                            <p class="team-description">Specializes in African markets with extensive knowledge of visa processes for African students.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="team-member">
+                        <div class="team-image">
+                            <div class="image-fallback">
+                                <i class="fas fa-hands-helping"></i>
+                            </div>
+                        </div>
+                        <div class="team-details">
+                            <h3 class="team-name">David Chukwu</h3>
+                            <p class="team-position">International Agent</p>
+                            <p class="team-description">Focuses on student recruitment and scholarship opportunities for African applicants.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="team-member">
+                        <div class="team-image">
+                            <div class="image-fallback">
+                                <i class="fas fa-briefcase"></i>
+                            </div>
+                        </div>
+                        <div class="team-details">
+                            <h3 class="team-name">Robert Smith</h3>
+                            <p class="team-position">International Agent</p>
+                            <p class="team-description">Expert in work visas and immigration processes for professionals seeking opportunities abroad.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="section contact">
+            <div class="container">
+                <div class="section-title">
+                    <h2>Contact Us</h2>
+                    <p>Get in touch with our team for personalized immigration consultation</p>
+                </div>
+                
+                <div class="contact-container">
+                    <div class="contact-info">
+                        <h3>Our Head Office</h3>
+                        
+                        <div class="contact-details">
+                            <div class="contact-item">
+                                <div class="contact-icon">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div class="contact-text">
+                                    Monrovia Liberia. P.O.BOX 1000 
+                                </div>
+                            </div>
+                            
+                            <div class="contact-item">
+                                <div class="contact-icon">
+                                    <i class="fas fa-phone-alt"></i>
+                                </div>
+                                <div class="contact-text">
+                                    +231886590302<br>
+                                    +231770562292<br>
+                                    +231772876644
+                                </div>
+                            </div>
+                            
+                            <div class="contact-item">
+                                <div class="contact-icon">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div class="contact-text">
+                                    infoglobalimmigrationsc@gmail.com<br>
+                                    info@globalimmigrationsc.com
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="office-hours">
+                            <h4>Office Hours</h4>
+                            <table class="hours-table">
+                                <tr>
+                                    <td>Monday</td>
+                                    <td>9:00 AM - 5:00 PM</td>
+                                </tr>
+                                <tr>
+                                    <td>Tuesday</td>
+                                    <td>9:00 AM - 5:00 PM</td>
+                                </tr>
+                                <tr>
+                                    <td>Wednesday</td>
+                                    <td>9:00 AM - 3:00 PM</td>
+                                </tr>
+                                <tr>
+                                    <td>Thursday</td>
+                                    <td>9:00 AM - 5:00 PM</td>
+                                </tr>
+                                <tr>
+                                    <td>Friday</td>
+                                    <td>9:00 AM - 5:00 PM</td>
+                                </tr>
+                                <tr>
+                                    <td>Saturday</td>
+                                    <td>Emergency Only</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <div class="hero-buttons" style="justify-content: flex-start; margin-top: 30px;">
+                            <a href="https://goo.gl/maps/example" class="btn btn-primary" style="margin-right: 15px;">Visit Our Office</a>
+                            <a href="https://wa.me/231886590302" class="btn btn-outline">Chat on WhatsApp</a>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-form">
+                        <h3>Send us a Message</h3>
+                        <form id="inquiryForm" action="https://formspree.io/f/mrbaejkr" method="POST">
+                            <div class="form-group">
+                                <label for="name">Full Name *</label>
+                                <input type="text" id="name" name="name" class="form-control" required>
+                                <div class="form-error" id="nameError">Please enter your full name</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="email">Email Address *</label>
+                                <input type="email" id="email" name="email" class="form-control" required>
+                                <div class="form-error" id="emailError">Please enter a valid email address</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="phone">Phone Number *</label>
+                                <input type="tel" id="phone" name="phone" class="form-control" required>
+                                <div class="form-error" id="phoneError">Please enter a valid phone number</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="country">Country of Interest *</label>
+                                <select id="country" name="country" class="form-control" required>
+                                    <option value="">Select a country</option>
+                                    <option value="usa">United States</option>
+                                    <option value="canada">Canada</option>
+                                    <option value="australia">Australia</option>
+                                    <option value="germany">Germany</option>
+                                    <option value="sweden">Sweden</option>
+                                    <option value="switzerland">Switzerland</option>
+                                    <option value="uae">UAE</option>
+                                    <option value="other">Other</option>
+                                </select>
+                                <div class="form-error" id="countryError">Please select a country</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>I'm interested in: *</label>
+                                <div style="display: flex; gap: 15px; margin-top: 8px;">
+                                    <div style="display: flex; align-items: center; gap: 5px;">
+                                        <input type="radio" id="study" name="interest" value="study" required>
+                                        <label for="study" style="display: inline;">Study</label>
+                                    </div>
+                                    
+                                    <div style="display: flex; align-items: center; gap: 5px;">
+                                        <input type="radio" id="work" name="interest" value="work">
+                                        <label for="work" style="display: inline;">Work</label>
+                                    </div>
+                                    
+                                    <div style="display: flex; align-items; center; gap: 5px;">
+                                        <input type="radio" id="travel" name="interest" value="travel">
+                                        <label for="travel" style="display: inline;">Travel</label>
+                                    </div>
+                                </div>
+                                <div class="form-error" id="interestError">Please select an option</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="message">Message *</label>
+                                <textarea id="message" name="message" class="form-control" required></textarea>
+                                <div class="form-error" id="messageError">Please enter your message</div>
+                            </div>
+                            
+                            <input type="hidden" name="form_type" value="contact_form">
+                            
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                                <span class="btn-text">Submit Inquiry</span>
+                                <span class="loading-spinner" style="display: none;"></span>
+                            </button>
+                            
+                            <div id="formSuccess" class="form-success">
+                                Thank you for your inquiry! We will contact you shortly.
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-col">
+                    <h3>Global Immigration SC</h3>
+                    <p>Your trusted partner for immigration and study abroad solutions. We're committed to making your global dreams a reality.</p>
+                    <p>Sponsored by <strong>Motiva Corporation Group of Companies</strong></p>
+                </div>
+                
+                <div class="footer-col">
+                    <h3>Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#services">Services</a></li>
+                        <li><a href="#destinations">Destinations</a></li>
+                        <li><a href="#blog">Blog</a></li>
+                        <li><a href="#contact">Contact Us</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-col">
+                    <h3>Services</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Study Abroad</a></li>
+                        <li><a href="#">Visa Application</a></li>
+                        <li><a href="#">Work Immigration</a></li>
+                        <li><a href="#">Travel Arrangements</a></li>
+                        <li><a href="#">Relocation Support</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-col">
+                    <h3>Connect With Us</h3>
+                    <div class="social-links">
+                        <a href="https://www.facebook.com/share/1CT6ZQ1p5S/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.instagram.com/globalimmigrationsc/" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="https://wa.me/231886590302" target="_blank" rel="noopener noreferrer" aria-label="Chat with us on WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                        <a href="https://www.linkedin.com/company/global-immigration-sc" target="_blank" rel="noopener noreferrer" aria-label="Follow us on LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                    <div class="qr-code">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr" alt="QR Code for Global Immigration SC Facebook Page">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <div class="footer-tagline">
+                    <p>Your Global Journey Starts Here 🌍✈️</p>
+                </div>
+                <p>&copy; 2023 Global Immigration SC. All rights reserved. Sponsored by Motiva Corporation Group of Companies.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- WhatsApp Float -->
+    <a href="https://wa.me/231886590302" class="whatsapp-float" target="_blank" rel="noopener noreferrer" aria-label="Chat with us on WhatsApp">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <script>
+        // Loading Screen
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.getElementById('loading-screen').style.opacity = '0';
+                setTimeout(function() {
+                    document.getElementById('loading-screen').style.display = 'none';
+                }, 500);
+            }, 2000);
+            
+            // Animate stats
+            animateValue('clients', 0, 500, 2000);
+            animateValue('success', 0, 98, 2000);
+            animateValue('countries', 0, 80, 2000);
+            animateValue('experience', 0, 10, 2000);
+        });
+        
+        // Mobile Menu Toggle
+        document.querySelector('.mobile-toggle').addEventListener('click', function() {
+            document.querySelector('.nav-menu').classList.toggle('active');
+        });
+        
+        // Dropdown menu for mobile
+        if (window.innerWidth <= 768) {
+            const dropdowns = document.querySelectorAll('.dropdown');
+            dropdowns.forEach(dropdown => {
+                dropdown.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('dropdown') || e.target.tagName === 'A') {
+                        this.classList.toggle('active');
+                    }
+                });
+            });
+        }
+        
+        // Live Session Modal
+        const liveSessionBtn = document.getElementById('liveSessionBtn');
+        const liveSessionModal = document.getElementById('liveSessionModal');
+        const registerModal = document.getElementById('registerModal');
+        const closeModalButtons = document.querySelectorAll('.close-modal');
+        
+        liveSessionBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            liveSessionModal.style.display = 'flex';
+        });
+        
+        document.getElementById('joinLive').addEventListener('click', function() {
+            window.open('https://youtube.com/@info.globalimmigrationsc?si=O-DxqL1jAMTFTE-V', '_blank');
+        });
+        
+        document.getElementById('registerSession').addEventListener('click', function() {
+            liveSessionModal.style.display = 'none';
+            registerModal.style.display = 'flex';
+        });
+        
+        closeModalButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                liveSessionModal.style.display = 'none';
+                registerModal.style.display = 'none';
+            });
+        });
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', function(e) {
+            if (e.target === liveSessionModal) {
+                liveSessionModal.style.display = 'none';
+            }
+            if (e.target === registerModal) {
+                registerModal.style.display = 'none';
+            }
+        });
+        
+        // Session Registration Form
+        document.getElementById('sessionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            let isValid = true;
+            
+            // Validate name
+            const name = document.getElementById('sessionName');
+            const nameError = document.getElementById('sessionNameError');
+            if (!name.value.trim()) {
+                nameError.style.display = 'block';
+                isValid = false;
+            } else {
+                nameError.style.display = 'none';
+            }
+            
+            // Validate email
+            const email = document.getElementById('sessionEmail');
+            const emailError = document.getElementById('sessionEmailError');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!email.value.trim() || !emailRegex.test(email.value)) {
+                emailError.style.display = 'block';
+                isValid = false;
+            } else {
+                emailError.style.display = 'none';
+            }
+            
+            if (isValid) {
+                // Show loading state
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const btnText = submitBtn.querySelector('.btn-text');
+                const spinner = submitBtn.querySelector('.loading-spinner');
+                
+                btnText.textContent = 'Sending...';
+                spinner.style.display = 'inline-block';
+                submitBtn.disabled = true;
+                
+                // Create FormData object
+                const formData = new FormData(this);
+                
+                // Send form data using Fetch API
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Show success message
+                        document.getElementById('sessionSuccess').style.display = 'block';
+                        
+                        // Form submission tracking for Google Analytics
+                        gtag('event', 'form_submission', {
+                            'event_category': 'session',
+                            'event_label': 'session_registration'
+                        });
+                        
+                        // Reset form
+                        this.reset();
+                    } else {
+                        throw new Error('Form submission failed');
+                    }
+                })
+                .catch(error => {
+                    alert('There was a problem with your registration. Please try again or contact us directly.');
+                })
+                .finally(() => {
+                    // Reset button
+                    btnText.textContent = 'Send Registration';
+                    spinner.style.display = 'none';
+                    submitBtn.disabled = false;
+                    
+                    // Hide success message after 5 seconds
+                    setTimeout(() => {
+                        document.getElementById('sessionSuccess').style.display = 'none';
+                        registerModal.style.display = 'none';
+                    }, 5000);
+                });
+            }
+        });
+        
+        // Contact Form Validation and Submission
+        document.getElementById('inquiryForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            let isValid = true;
+            
+            // Validate name
+            const name = document.getElementById('name');
+            const nameError = document.getElementById('nameError');
+            if (!name.value.trim()) {
+                nameError.style.display = 'block';
+                isValid = false;
+            } else {
+                nameError.style.display = 'none';
+            }
+            
+            // Validate email
+            const email = document.getElementById('email');
+            const emailError = document.getElementById('emailError');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!email.value.trim() || !emailRegex.test(email.value)) {
+                emailError.style.display = 'block';
+                isValid = false;
+            } else {
+                emailError.style.display = 'none';
+            }
+            
+            // Validate phone
+            const phone = document.getElementById('phone');
+            const phoneError = document.getElementById('phoneError');
+            if (!phone.value.trim()) {
+                phoneError.style.display = 'block';
+                isValid = false;
+            } else {
+                phoneError.style.display = 'none';
+            }
+            
+            // Validate country
+            const country = document.getElementById('country');
+            const countryError = document.getElementById('countryError');
+            if (!country.value) {
+                countryError.style.display = 'block';
+                isValid = false;
+            } else {
+                countryError.style.display = 'none';
+            }
+            
+            // Validate interest
+            const interest = document.querySelector('input[name="interest"]:checked');
+            const interestError = document.getElementById('interestError');
+            if (!interest) {
+                interestError.style.display = 'block';
+                isValid = false;
+            } else {
+                interestError.style.display = 'none';
+            }
+            
+            // Validate message
+            const message = document.getElementById('message');
+            const messageError = document.getElementById('messageError');
+            if (!message.value.trim()) {
+                messageError.style.display = 'block';
+                isValid = false;
+            } else {
+                messageError.style.display = 'none';
+            }
+            
+            if (isValid) {
+                // Show loading state
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const btnText = submitBtn.querySelector('.btn-text');
+                const spinner = submitBtn.querySelector('.loading-spinner');
+                
+                btnText.textContent = 'Submitting...';
+                spinner.style.display = 'inline-block';
+                submitBtn.disabled = true;
+                
+                // Create FormData object
+                const formData = new FormData(this);
+                
+                // Send form data using Fetch API
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Show success message
+                        document.getElementById('formSuccess').style.display = 'block';
+                        
+                        // Form submission tracking for Google Analytics
+                        gtag('event', 'form_submission', {
+                            'event_category': 'contact',
+                            'event_label': 'inquiry_form'
+                        });
+                        
+                        // Reset form
+                        this.reset();
+                    } else {
+                        throw new Error('Form submission failed');
+                    }
+                })
+                .catch(error => {
+                    alert('There was a problem with your submission. Please try again or contact us directly.');
+                })
+                .finally(() => {
+                    // Reset button
+                    btnText.textContent = 'Submit Inquiry';
+                    spinner.style.display = 'none';
+                    submitBtn.disabled = false;
+                    
+                    // Hide success message after 5 seconds
+                    setTimeout(() => {
+                        document.getElementById('formSuccess').style.display = 'none';
+                    }, 5000);
+                });
+            }
+        });
+        
+        // Smooth Scrolling for Anchor Links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                if (this.getAttribute('href') !== '#') {
+                    e.preventDefault();
+                    
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 70,
+                            behavior: 'smooth'
+                        });
+                        
+                        // Close mobile menu if open
+                        if (window.innerWidth <= 768) {
+                            document.querySelector('.nav-menu').classList.remove('active');
+                        }
+                    }
+                }
+            });
+        });
+        
+        // Animate value function for stats
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start) + (id === 'success' ? '%' : '+');
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+        
+        // Lazy loading for images
+        if ('IntersectionObserver' in window) {
+            const lazyImages = document.querySelectorAll('img[loading="lazy"]');
+            
+            const imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.dataset.src;
+                        img.classList.remove('lazy');
+                        imageObserver.unobserve(img);
+                    }
+                });
+            });
+            
+            lazyImages.forEach(img => {
+                imageObserver.observe(img);
+            });
+        }
+
+        // Check if images are loading properly
+        function checkImage(url, callback) {
+            const img = new Image();
+            img.onload = function() { callback(true); };
+            img.onerror = function() { callback(false); };
+            img.src = url;
+        }
+
+        // Check logo
+        checkImage('GISC-LOGO.webp', function(success) {
+            if (!success) {
+                document.querySelector('.logo img').style.display = 'none';
+                document.getElementById('header-logo-fallback').style.display = 'flex';
+            }
+        });
+
+        // Check about image
+        checkImage('IMAGES.webp', function(success) {
+            if (!success) {
+                document.querySelector('.about-image img').style.display = 'none';
+                document.getElementById('about-fallback').style.display = 'flex';
+            }
+        });
+
+        // Check founder image
+        checkImage('Founder.jpg', function(success) {
+            if (!success) {
+                document.querySelector('.founder-image img').style.display = 'none';
+                document.getElementById('founder-fallback').style.display = 'flex';
+            }
+        });
+
+        // Function to load blog posts from localStorage
+    function loadBlogPostsToWebsite() {
+        const blogContainer = document.getElementById('dynamic-blog-container');
+        const postsJSON = localStorage.getItem('blogPosts');
+        const posts = postsJSON ? JSON.parse(postsJSON) : [];
+        
+        // Clear existing content
+        blogContainer.innerHTML = '';
+        
+        if (posts.length === 0) {
+            // Show default content if no posts exist
+            blogContainer.innerHTML = `
+                <div class="blog-card">
+                    <div class="blog-image">
+                        <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Why Study Abroad" loading="lazy">
+                    </div>
+                    <div class="blog-content">
+                        <div class="blog-date">July 20, 2023</div>
+                        <h3 class="blog-title">Why Study Abroad: Benefits & Opportunities</h3>
+                        <p class="blog-excerpt">Discover the life-changing benefits of studying in a foreign country and how it can transform your career prospects.</p>
+                        <a href="https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr" class="btn btn-outline btn-small" target="_blank">Read More</a>
+                    </div>
+                </div>
+                
+                <div class="blog-card">
+                    <div class="blog-image">
+                        <img src="https://images.unsplash.com/photo-1578575437130-527eed3abbec?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Importance of Travel Agency" loading="lazy">
+                    </div>
+                    <div class="blog-content">
+                        <div class="blog-date">July 15, 2023</div>
+                        <h3 class="blog-title">Why You Need a Professional Travel Agency</h3>
+                        <p class="blog-excerpt">Learn how working with experienced travel consultants can save you time, money, and stress in your immigration journey.</p>
+                        <a href="https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr" class="btn btn-outline btn-small" target="_blank">Read More</a>
+                    </div>
+                </div>
+                
+                <div class="blog-card">
+                    <div class="blog-image">
+                        <img src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Visa Interview Tips" loading="lazy">
+                    </div>
+                    <div class="blog-content">
+                        <div class="blog-date">July 10, 2023</div>
+                        <h3 class="blog-title">Top 10 Visa Interview Tips for Success</h3>
+                        <p class="blog-excerpt">Expert advice on how to prepare for your visa interview and increase your chances of approval.</p>
+                        <a href="https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr" class="btn btn-outline btn-small" target="_blank">Read More</a>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
+        // Display posts from localStorage
+        posts.forEach(post => {
+            const formattedDate = new Date(post.date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            const blogCard = document.createElement('div');
+            blogCard.className = 'blog-card';
+            blogCard.innerHTML = `
+                <div class="blog-image">
+                    <img src="${post.image}" alt="${post.title}" loading="lazy" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'">
+                </div>
+                <div class="blog-content">
+                    <div class="blog-date">${formattedDate}</div>
+                    <h3 class="blog-title">${post.title}</h3>
+                    <p class="blog-excerpt">${post.excerpt}</p>
+                    <a href="${post.link}" class="btn btn-outline btn-small" target="_blank">Read More</a>
+                </div>
+            `;
+            
+            blogContainer.appendChild(blogCard);
+        });
+    }
+
+    // Load blog posts when the page is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        loadBlogPostsToWebsite();
+        
+        // Optional: Add an event listener to refresh blog posts if they're updated
+        // This would be useful if you had multiple tabs open
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'blogPosts') {
+                loadBlogPostsToWebsite();
+            }
+        });
+    });
+</script>
+
+    <!-- Schema.org markup for SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "EducationalOrganization",
+      "name": "Global Immigration SC",
+      "description": "Global Immigration SC provides expert visa consultation, study abroad programs, and immigration services.",
+      "url": "https://www.globalimmigrationsc.com",
+      "telephone": "+231886590302",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "ELWA Road – adjacent Rico, after ELWA Hospital, opposite Tecno Shop",
+        "addressLocality": "Monrovia",
+        "addressCountry": "Liberia"
+      },
+      "openingHours": [
+        "Mo 09:00-17:00",
+        "Tu 09:00-17:00",
+        "We 09:00-15:00",
+        "Th 09:00-17:00",
+        "Fr 09:00-17:00"
+      ],
+      "sameAs": [
+        "https://www.facebook.com/share/1CT6ZQ1p5S/",
+        "https://www.instagram.com/globalimmigrationsc/",
+        "https://www.linkedin.com/company/global-immigration-sc"
+      ]
+    }
+    </script>
+</body>
+</html>
