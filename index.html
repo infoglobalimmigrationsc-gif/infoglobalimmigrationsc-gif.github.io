@@ -1374,7 +1374,110 @@
                 animation: none;
             }
         }
+/* Mobile Navigation Fixes */
+@media (max-width: 768px) {
+    .header-container {
+        padding: 10px 15px;
+    }
+    
+    .logo img {
+        height: 40px;
+    }
+    
+    .nav-menu {
+        position: fixed;
+        top: 60px;
+        left: -100%;
+        width: 80%;
+        height: calc(100vh - 60px);
+        background-color: var(--primary-white);
+        flex-direction: column;
+        padding: 20px;
+        box-shadow: 5px 0 10px rgba(0, 0, 0, 0.1);
+        transition: left 0.3s ease;
+        z-index: 1000;
+        overflow-y: auto;
+    }
+    
+    .nav-menu.active {
+        left: 0;
+    }
+    
+    .nav-menu li {
+        margin: 15px 0;
+        width: 100%;
+    }
+    
+    .nav-menu li a {
+        display: block;
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .dropdown-content {
+        position: static;
+        box-shadow: none;
+        margin-left: 15px;
+        margin-top: 10px;
+        display: none;
+        width: 100%;
+    }
+    
+    .dropdown.active .dropdown-content {
+        display: block;
+    }
+    
+    .dropdown > a::after {
+        content: ' ▼';
+        font-size: 0.8em;
+    }
+    
+    /* Fix for the live session button on mobile */
+    .nav-menu li:last-child a {
+        background-color: var(--primary-red);
+        color: white;
+        text-align: center;
+        padding: 12px;
+        border-radius: 4px;
+        margin-top: 20px;
+        border: none;
+    }
+    
+    /* Hero section adjustments for mobile */
+    .hero-content h1 {
+        font-size: 1.8rem;
+        line-height: 1.3;
+    }
+    
+    .hero-content p {
+        font-size: 1rem;
+    }
+    
+    .hero-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .hero-buttons .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
 
+/* Additional mobile fixes for very small screens */
+@media (max-width: 480px) {
+    .hero-content h1 {
+        font-size: 1.5rem;
+    }
+    
+    .logo img {
+        height: 35px;
+    }
+    
+    .mobile-toggle {
+        font-size: 1.2rem;
+    }
+}
         /* Image fallback styles */
         .image-fallback {
             display: flex;
@@ -2418,23 +2521,47 @@
             animateValue('experience', 0, 10, 2000);
         });
         
-        // Mobile Menu Toggle
-        document.querySelector('.mobile-toggle').addEventListener('click', function() {
-            document.querySelector('.nav-menu').classList.toggle('active');
+        // Mobile Menu Toggle - Fixed version
+document.querySelector('.mobile-toggle').addEventListener('click', function() {
+    const navMenu = document.querySelector('.nav-menu');
+    navMenu.classList.toggle('active');
+    
+    // Toggle icon between bars and times
+    const icon = this.querySelector('i');
+    if (navMenu.classList.contains('active')) {
+        icon.classList.remove('fa-bars');
+        icon.classList.add('fa-times');
+    } else {
+        icon.classList.remove('fa-times');
+        icon.classList.add('fa-bars');
+    }
+});
+
+// Close mobile menu when clicking outside
+document.addEventListener('click', function(e) {
+    const navMenu = document.querySelector('.nav-menu');
+    const mobileToggle = document.querySelector('.mobile-toggle');
+    
+    if (navMenu.classList.contains('active') && 
+        !navMenu.contains(e.target) && 
+        !mobileToggle.contains(e.target)) {
+        navMenu.classList.remove('active');
+        mobileToggle.querySelector('i').classList.remove('fa-times');
+        mobileToggle.querySelector('i').classList.add('fa-bars');
+    }
+});
+
+// Dropdown menu for mobile - Fixed version
+if (window.innerWidth <= 768) {
+    const dropdowns = document.querySelectorAll('.dropdown > a');
+    dropdowns.forEach(dropdownLink => {
+        dropdownLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            const dropdown = this.parentElement;
+            dropdown.classList.toggle('active');
         });
-        
-        // Dropdown menu for mobile
-        if (window.innerWidth <= 768) {
-            const dropdowns = document.querySelectorAll('.dropdown');
-            dropdowns.forEach(dropdown => {
-                dropdown.addEventListener('click', function(e) {
-                    if (e.target.classList.contains('dropdown') || e.target.tagName === 'A') {
-                        this.classList.toggle('active');
-                    }
-                });
-            });
-        }
-        
+    });
+}
         // Live Session Modal
         const liveSessionBtn = document.getElementById('liveSessionBtn');
         const liveSessionModal = document.getElementById('liveSessionModal');
