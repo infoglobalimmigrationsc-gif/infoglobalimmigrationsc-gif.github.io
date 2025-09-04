@@ -2102,29 +2102,131 @@
         </section>
 
         <!-- Newsletter Section -->
-        <section class="section newsletter">
-            <div class="container">
-                <div class="section-title">
-                    <h2>Stay Informed With Our Updates</h2>
-                    <p>Subscribe to our newsletter for the latest immigration news, visa updates, and exclusive tips</p>
-                </div>
+<section class="section newsletter">
+    <div class="container">
+        <div class="section-title">
+            <h2>Stay Informed With Our Updates</h2>
+            <p>Subscribe to our newsletter for the latest immigration news, visa updates, and exclusive tips</p>
+        </div>
+        
+        <div class="newsletter-content">
+            <form id="newsletterForm" class="newsletter-form" action="https://formspree.io/f/mrbaejkr" method="POST">
+                <input type="email" name="email" class="newsletter-input" placeholder="Enter your email address" required>
+                <input type="hidden" name="form_type" value="newsletter_subscription">
+                <button type="submit" class="btn btn-primary">Subscribe Now</button>
+            </form>
+            <p style="margin-top: 15px; color: var(--medium-gray); font-size: 0.9rem; text-align: center;">
+                We respect your privacy. You can unsubscribe at any time.
+            </p>
+        </div>
+        
+        <div id="newsletterSuccess" class="form-success" style="display: none; margin-top: 20px;">
+            Thank you for subscribing! Please check your email to confirm your subscription.
+        </div>
+    </div>
+</section>
+
+<style>
+    .newsletter {
+        background-color: var(--light-gray);
+        padding: 60px 0;
+        text-align: center;
+        display: block !important;
+    }
+    
+    .newsletter-form {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 20px;
+    }
+    
+    .newsletter-input {
+        flex: 1;
+        min-width: 250px;
+        padding: 12px 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1rem;
+    }
+    
+    @media (max-width: 768px) {
+        .newsletter-form {
+            flex-direction: column;
+        }
+        
+        .newsletter-input {
+            min-width: 100%;
+        }
+    }
+</style>
+
+<script>
+    // Newsletter form submission
+    document.getElementById('newsletterForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const emailInput = this.querySelector('input[type="email"]');
+        const email = emailInput.value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
+        if (!email || !emailRegex.test(email)) {
+            alert('Please enter a valid email address');
+            return;
+        }
+        
+        // Show loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Subscribing...';
+        submitBtn.disabled = true;
+        
+        // Create FormData object
+        const formData = new FormData(this);
+        
+        // Send form data using Fetch API
+        fetch(this.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                // Show success message
+                document.getElementById('newsletterSuccess').style.display = 'block';
                 
-                <div class="newsletter-content">
-                    <form id="newsletterForm" class="newsletter-form" action="https://formspree.io/f/mrbaejkr" method="POST">
-                        <input type="email" name="email" class="newsletter-input" placeholder="Enter your email address" required>
-                        <input type="hidden" name="form_type" value="newsletter_subscription">
-                        <button type="submit" class="btn btn-primary">Subscribe Now</button>
-                    </form>
-                    <p style="margin-top: 15px; color: var(--medium-gray); font-size: 0.9rem; text-align: center;">
-                        We respect your privacy. You can unsubscribe at any time.
-                    </p>
-                </div>
+                // Form submission tracking for Google Analytics
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'form_submission', {
+                        'event_category': 'newsletter',
+                        'event_label': 'newsletter_subscription'
+                    });
+                }
                 
-                <div id="newsletterSuccess" class="form-success" style="display: none; margin-top: 20px;">
-                    Thank you for subscribing! Please check your email to confirm your subscription.
-                </div>
-            </div>
-        </section>
+                // Reset form
+                this.reset();
+            } else {
+                throw new Error('Form submission failed');
+            }
+        })
+        .catch(error => {
+            alert('There was a problem with your subscription. Please try again later.');
+        })
+        .finally(() => {
+            // Reset button
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+            
+            // Hide success message after 5 seconds
+            setTimeout(() => {
+                document.getElementById('newsletterSuccess').style.display = 'none';
+            }, 5000);
+        });
+    });
+</script>
 
         <!-- Contact Section -->
         <section id="contact" class="section contact">
