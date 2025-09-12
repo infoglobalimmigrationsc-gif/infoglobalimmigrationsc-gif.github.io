@@ -2970,3 +2970,37 @@
     </script>
 </body>
 </html>
+<!-- Firebase App & Analytics -->
+<script type="module">
+  // Import the functions you need from the Firebase SDKs
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics.js";
+  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyAJ3p91t83EQeQ6XopPfvisc1fIdsWIMm8",
+    authDomain: "global-immigration-sc.firebaseapp.com",
+    projectId: "global-immigration-sc",
+    storageBucket: "global-immigration-sc.firebasestorage.app",
+    messagingSenderId: "791181145117",
+    appId: "1:791181145117:web:527b7df63c9a32adf9c2f4",
+    measurementId: "G-1FJHEV0NLW"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  
+  // Initialize Cloud Firestore and get a reference to the service
+  const db = getFirestore(app);
+  
+  // Make db available globally for your form handlers
+  window.db = db;
+  window.serverTimestamp = serverTimestamp;
+  window.addDoc = addDoc;
+  window.collection = collection;
+</script>
+
+</body>
+</html>
