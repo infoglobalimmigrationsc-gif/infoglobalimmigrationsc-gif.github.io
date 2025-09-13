@@ -680,66 +680,28 @@
             opacity: 0.9;
         }
         
-        /* Founder Section */
-        .founder {
-            background-color: var(--primary-white);
-            padding: 80px 0;
-        }
-        
-        .founder-container {
-            display: flex;
-            align-items: center;
-            gap: 50px;
-        }
-        
-        .founder-image {
-            flex: 1;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-            background-color: var(--light-gray);
-            min-height: 400px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--medium-gray);
-        }
-        
-        .founder-image img {
-            width: 100%;
-            height: auto;
-            display: block;
-            object-fit: cover;
-        }
-        
-        .founder-content {
-            flex: 1;
-        }
-        
-        .founder-content h2 {
-            font-size: 2.2rem;
-            margin-bottom: 20px;
-            color: var(--dark-gray);
-        }
-        
-        .founder-content h3 {
-            font-size: 1.5rem;
-            color: var(--primary-red);
-            margin-bottom: 15px;
-        }
-        
-        .founder-content p {
-            margin-bottom: 15px;
-            color: var(--medium-gray);
-            font-style: italic;
-            line-height: 1.8;
-        }
-        
-        .founder-signature {
-            margin-top: 30px;
-            font-weight: 600;
-            color: var(--dark-gray);
-        }
+         <!-- Founder Section -->
+        <section class="section founder">
+            <div class="container">
+                <div class="founder-container">
+                    <div class="founder-image">
+                        <img src="Founder.jpg" alt="Darlington F Tamba - Founder of Global Immigration SC" onerror="this.onerror=null; this.style.display='none'; document.getElementById('founder-fallback').style.display='flex';">
+                        <div id="founder-fallback" class="image-fallback" style="display: none;">
+                            <i class="fas fa-user-tie"></i>
+                            <p>Our Founder</p>
+                        </div>
+                    </div>
+                    <div class="founder-content">
+                        <h2>Message From Our Founder</h2>
+                        <h3>Darlington F Tamba</h3>
+                        <p>"At Global Immigration SC, we believe that everyone deserves the opportunity to pursue their dreams on a global stage. Our mission is to break down barriers and make international education and immigration accessible to all."</p>
+                        <p>"Having navigated the complex immigration process myself, I understand the challenges our clients face. That's why we've built a team of dedicated professionals who are committed to providing personalized guidance and support every step of the way."</p>
+                        <p>"Your success is our success. When you achieve your dreams of studying or working abroad, we celebrate with you. We're not just an immigration service – we're your partners in building a brighter future."</p>
+                        <div class="founder-signature">- Darlington F Tamba, Founder & CEO</div>
+                    </div>
+                </div>
+            </div>
+        </section>
         
         /* Team Section */
         .team {
