@@ -18,7 +18,10 @@
       gtag('config', 'G-TJCKSJNLPT');
     </script>
     <!-- End Google Analytics -->
-    
+    <!-- Preload critical resources -->
+<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <style>
         /* Base Styles */
         :root {
@@ -1580,7 +1583,11 @@
     <!-- Loading Screen -->
     <div id="loading-screen">
         <div class="loading-logo">
-            <img src="GISC-LOGO.webp" alt="Global Immigration SC Logo" onerror="this.onerror=null; this.style.display='none'; document.getElementById('logo-fallback').style.display='flex';">
+            <picture>
+    <source srcset="GISC-LOGO.webp" type="image/webp">
+    <source srcset="GISC-LOGO.png" type="image/png"> 
+    <img src="GISC-LOGO.png" alt="Global Immigration SC Logo" onerror="this.onerror=null; this.style.display='none'; document.getElementById('logo-fallback').style.display='flex';">
+</picture>
             <div id="logo-fallback" class="image-fallback" style="display: none;">
                 <i class="fas fa-globe-americas"></i>
                 <p>Global Immigration SC Logo</p>
@@ -1653,7 +1660,11 @@
     <header>
         <div class="header-container container">
             <div class="logo">
-                <img src="GISC-LOGO.webp" alt="Global Immigration SC Logo" onerror="this.onerror=null; this.style.display='none'; document.getElementById('header-logo-fallback').style.display='flex';">
+                <picture>
+    <source srcset="GISC-LOGO.webp" type="image/webp">
+    <source srcset="GISC-LOGO.png" type="image/png"> 
+    <img src="GISC-LOGO.png" alt="Global Immigration SC Logo" onerror="this.onerror=null; this.style.display='none'; document.getElementById('header-logo-fallback').style.display='flex';">
+</picture>
                 <div id="header-logo-fallback" class="image-fallback" style="display: none;">
                     <i class="fas fa-globe-americas"></i>
                     <p>Global Immigration SC</p>
@@ -1723,7 +1734,11 @@
                         <p>We pride ourselves on our transparent processes, ethical practices, and commitment to your success. Your global journey is our priority.</p>
                     </div>
                     <div class="about-image">
-                        <img src="IMAGES.webp" alt="Diverse group of immigrants and professionals working together at a table" onerror="this.onerror=null; this.style.display='none'; document.getElementById('about-fallback').style.display='flex';">
+                        <picture>
+    <source srcset="IMAGES.webp" type="image/webp">
+    <source srcset="IMAGES.jpg" type="image/jpeg"> 
+    <img src="IMAGES.jpg" alt="Diverse group of immigrants and professionals working together at a table" onerror="this.onerror=null; this.style.display='none'; document.getElementById('about-fallback').style.display='flex';">
+</picture>
                         <div id="about-fallback" class="image-fallback" style="display: none;">
                             <i class="fas fa-users"></i>
                             <p>Our diverse team of professionals</p>
@@ -1951,55 +1966,57 @@
             </div>
         </section>
 
-        <!-- Testimonials Section -->
-        <section class="section testimonials">
-            <div class="container">
-                <div class="section-title">
-                    <h2>Success Stories</h2>
-                    <p>Hear from our satisfied clients who have achieved their global dreams</p>
+         <!-- Testimonials Section -->
+<section class="section testimonials">
+    <div class="container">
+        <div class="section-title">
+            <h2>Success Stories</h2>
+            <p>Hear from our satisfied clients who have achieved their global dreams</p>
+        </div>
+        
+        <div class="testimonials-container">
+            <div class="testimonial">
+                <p class="testimonial-text">"Global Immigration SC made my study abroad dream come true. Their guidance through the university application and visa process was invaluable. I'm now studying at the University of Toronto with a 100% scholarship thanks to their expertise!"</p>
+                <div class="testimonial-author">
+                    <div class="author-image">
+                        <img src="https://i.ibb.co/SXXJzhnT/Gemini-Generated-Image-l3odzyl3odzyl3od-1.png" alt="Fatima Adebayo - Student at University of Toronto" onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='FA';">
+                    </div>
+                    <div class="author-details">
+                        <h4>Fatima Adebayo</h4>
+                        <p>Student at University of Toronto, Canada</p>
+                    </div>
+                </div>
             </div>
             
-            <div class="testimonials-container">
-                <div class="testimonial">
-                    <p class="testimonial-text">"Global Immigration SC made my study abroad dream come true. Their guidance through the university application and visa process was invaluable. I'm now studying at the University of Toronto with a 40% scholarship thanks to their expertise!"</p>
-                    <div class="testimonial-author">
-                        <div class="author-image">
-                            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Fatima Adebayo - Student at University of Toronto" onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='FA';">
-                        </div>
-                        <div class="author-details">
-                            <h4>Fatima Adebayo</h4>
-                            <p>Student at University of Toronto, Canada</p>
-                        </div>
+            <div class="testimonial">
+                <p class="testimonial-text">"The team at Global Immigration SC provided exceptional support with my work visa application. Their attention to detail and knowledge of the process made everything smooth and stress-free. I received my Australian work visa in just 6 weeks!"</p>
+                <div class="testimonial-author">
+                    <div class="author-image">
+                        <img src="https://i.ibb.co/GvkTSGNw/Gemini-Generated-Image-3zry3q3zry3q3zry.png" alt="Kwame Osei - Software Engineer in Australia" onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='KO';">
                     </div>
-                </div>
-                
-                <div class="testimonial">
-                    <p class="testimonial-text">"The team at Global Immigration SC provided exceptional support with my work visa application. Their attention to detail and knowledge of the process made everything smooth and stress-free. I received my Australian work visa in just 6 weeks!"</p>
-                    <div class="testimonial-author">
-                        <div class="author-image">
-                            <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Kwame Osei - Software Engineer in Australia" onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='KO';">
-                        </div>
-                        <div class="author-details">
-                            <h4>Kwame Osei</h4>
-                            <p>Software Engineer in Sydney, Australia</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="testimonial">
-                    <p class="testimonial-text">"As a Nigerian student, I was worried about the visa process. Global Immigration SC guided me through every step and helped me secure my UK student visa on the first attempt. I'm now pursuing my Master's at London School of Economics!"</p>
-                    <div class="testimonial-author">
-                        <div class="author-image">
-                            <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Chinedu Okoro - Graduate Student at LSE" onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='CO';">
-                        </div>
-                        <div class="author-details">
-                            <h4>Chinedu Okoro</h4>
-                            <p>Graduate Student at LSE, UK</p>
-                        </div>
+                    <div class="author-details">
+                        <h4>Sarah Okoro</h4>
+                        <p>Software Engineer in Sydney, Australia</p>
                     </div>
                 </div>
             </div>
-        </section>
+
+            <div class="testimonial">
+                <p class="testimonial-text">"As a Liberian student, I was worried about the visa process. Global Immigration SC guided me through every step and helped me secure my UK student visa on the first attempt. I'm now pursuing my Master's at London School of Economics!"</p>
+                <div class="testimonial-author">
+                    <div class="author-image">
+                        <img src="https://i.ibb.co/WWLWR3HC/Gemini-Generated-Image-usumlgusumlgusum.png" alt="Sarah Okoro - Graduate Student at LSE" onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='SO';">
+                    </div>
+                    <div class="author-details">
+                        <h4>Richard Kollie</h4>
+                        <p>Graduate Student at LSE, UK</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 
         <!-- Blog Preview Section -->
         <section id="blog" class="section blog-preview">
@@ -2014,7 +2031,7 @@
                 </div>
                 
                 <div style="text-align: center; margin-top: 40px;">
-                    <a href="https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr" class="btn btn-primary" target="_blank">View All Posts on Facebook</a>
+                    <a href="https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr" class="btn btn-primary" target="_blank" rel="noopener noreferrer">View All Posts on Facebook</a>
                 </div>
             </div>
         </section>
@@ -2024,7 +2041,11 @@
             <div class="container">
                 <div class="founder-container">
                     <div class="founder-image">
-                        <img src="Founder.jpg" alt="Darlington F Tamba - Founder of Global Immigration SC" onerror="this.onerror=null; this.style.display='none'; document.getElementById('founder-fallback').style.display='flex';">
+                        <picture>
+    <source srcset="Founder.webp" type="image/webp">
+    <source srcset="Founder.jpg" type="image/jpeg"> 
+    <img src="Founder.jpg" alt="Darlington F Tamba - Founder of Global Immigration SC" onerror="this.onerror=null; this.style.display='none'; document.getElementById('founder-fallback').style.display='flex';">
+</picture>
                         <div id="founder-fallback" class="image-fallback" style="display: none;">
                             <i class="fas fa-user-tie"></i>
                             <p>Our Founder</p>
@@ -2393,21 +2414,26 @@
     </a>
 
     <script>
-        // Loading Screen
-        window.addEventListener('load', function() {
-            setTimeout(function() {
-                document.getElementById('loading-screen').style.opacity = '0';
-                setTimeout(function() {
-                    document.getElementById('loading-screen').style.display = 'none';
-                }, 500);
-            }, 2000);
-            
-            // Animate stats
-            animateValue('clients', 0, 500, 2000);
-            animateValue('success', 0, 98, 2000);
-            animateValue('countries', 0, 80, 2000);
-            animateValue('experience', 0, 10, 2000);
-        });
+        // Loading Screen - UPDATED CODE
+window.addEventListener('load', function() {
+    setTimeout(function() {
+        document.getElementById('loading-screen').style.opacity = '0';
+        setTimeout(function() {
+            document.getElementById('loading-screen').style.display = 'none';
+        }, 500);
+    }, 2000);
+    
+    // Add a timeout to ensure loading screen disappears even if images fail
+    setTimeout(() => {
+        document.getElementById('loading-screen').style.display = 'none';
+    }, 4000); // 4 second maximum loading time
+    
+    // Animate stats
+    animateValue('clients', 0, 500, 2000);
+    animateValue('success', 0, 98, 2000);
+    animateValue('countries', 0, 80, 2000);
+    animateValue('experience', 0, 10, 2000);
+});
         
         // Mobile Menu Toggle - Fixed version
         document.querySelector('.mobile-toggle').addEventListener('click', function() {
@@ -2487,7 +2513,12 @@
                 registerModal.style.display = 'none';
             }
         });
-        
+
+        // Email validation function for form validation
+function validateEmail(email) {
+    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+}
         // Session Registration Form
         document.getElementById('sessionForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -2506,14 +2537,13 @@
             
             // Validate email
             const email = document.getElementById('sessionEmail');
-            const emailError = document.getElementById('sessionEmailError');
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!email.value.trim() || !emailRegex.test(email.value)) {
-                emailError.style.display = 'block';
-                isValid = false;
-            } else {
-                emailError.style.display = 'none';
-            }
+const emailError = document.getElementById('sessionEmailError');
+if (!email.value.trim() || !validateEmail(email.value)) {
+    emailError.style.display = 'block';
+    isValid = false;
+} else {
+    emailError.style.display = 'none';
+}
             
             if (isValid) {
                 // Show loading state
@@ -2848,82 +2878,92 @@
             });
         });
 
-        // Function to load blog posts from localStorage
-        function loadBlogPostsToWebsite() {
-            const blogContainer = document.getElementById('dynamic-blog-container');
-            const postsJSON = localStorage.getItem('blogPosts');
-            const posts = postsJSON ? JSON.parse(postsJSON) : [];
+       // Function to load blog posts from localStorage - UPDATED CODE
+function loadBlogPostsToWebsite() {
+    const blogContainer = document.getElementById('dynamic-blog-container');
+    const postsJSON = localStorage.getItem('blogPosts');
+    const posts = postsJSON ? JSON.parse(postsJSON) : [];
+    
+    // Clear existing content
+    blogContainer.innerHTML = '';
+    
+    if (posts.length === 0) {
+        // Show default content if no posts exist
+        blogContainer.innerHTML = `
+            <div class="blog-card">
+                <div class="blog-image">
+                    <div class="image-fallback">
+                        <i class="fas fa-book"></i>
+                    </div>
+                </div>
+                <div class="blog-content">
+                    <div class="blog-date">July 20, 2023</div>
+                    <h3 class="blog-title">Why Study Abroad: Benefits & Opportunities</h3>
+                    <p class="blog-excerpt">Discover the life-changing benefits of studying in a foreign country and how it can transform your career prospects.</p>
+                    <a href="https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr" class="btn btn-outline btn-small" target="_blank" rel="noopener noreferrer">Read More</a>
+                </div>
+            </div>
             
-            // Clear existing content
-            blogContainer.innerHTML = '';
+            <div class="blog-card">
+                <div class="blog-image">
+                    <div class="image-fallback">
+                        <i class="fas fa-plane"></i>
+                    </div>
+                </div>
+                <div class="blog-content">
+                    <div class="blog-date">July 15, 2023</div>
+                    <h3 class="blog-title">Why You Need a Professional Travel Agency</h3>
+                    <p class="blog-excerpt">Learn how working with experienced travel consultants can save you time, money, and stress in your immigration journey.</p>
+                    <a href="https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr" class="btn btn-outline btn-small" target="_blank" rel="noopener noreferrer">Read More</a>
+                </div>
+            </div>
             
-            if (posts.length === 0) {
-                // Show default content if no posts exist
-                blogContainer.innerHTML = `
-                    <div class="blog-card">
-                        <div class="blog-image">
-                            <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Why Study Abroad" loading="lazy">
-                        </div>
-                        <div class="blog-content">
-                            <div class="blog-date">July 20, 2023</div>
-                            <h3 class="blog-title">Why Study Abroad: Benefits & Opportunities</h3>
-                            <p class="blog-excerpt">Discover the life-changing benefits of studying in a foreign country and how it can transform your career prospects.</p>
-                            <a href="https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr" class="btn btn-outline btn-small" target="_blank">Read More</a>
-                        </div>
+            <div class="blog-card">
+                <div class="blog-image">
+                    <div class="image-fallback">
+                        <i class="fas fa-passport"></i>
                     </div>
-                    
-                    <div class="blog-card">
-                        <div class="blog-image">
-                            <img src="https://images.unsplash.com/photo-1578575437130-527eed3abbec?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Importance of Travel Agency" loading="lazy">
-                        </div>
-                        <div class="blog-content">
-                            <div class="blog-date">July 15, 2023</div>
-                            <h3 class="blog-title">Why You Need a Professional Travel Agency</h3>
-                            <p class="blog-excerpt">Learn how working with experienced travel consultants can save you time, money, and stress in your immigration journey.</p>
-                            <a href="https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr" class="btn btn-outline btn-small" target="_blank">Read More</a>
-                        </div>
-                    </div>
-                    
-                    <div class="blog-card">
-                        <div class="blog-image">
-                            <img src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Visa Interview Tips" loading="lazy">
-                        </div>
-                        <div class="blog-content">
-                            <div class="blog-date">July 10, 2023</div>
-                            <h3 class="blog-title">Top 10 Visa Interview Tips for Success</h3>
-                            <p class="blog-excerpt">Expert advice on how to prepare for your visa interview and increase your chances of approval.</p>
-                            <a href="https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr" class="btn btn-outline btn-small" target="_blank">Read More</a>
-                        </div>
-                    </div>
-                `;
-                return;
-            }
-            
-            // Display posts from localStorage
-            posts.forEach(post => {
-                const formattedDate = new Date(post.date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                });
-                
-                const blogCard = document.createElement('div');
-                blogCard.className = 'blog-card';
-                blogCard.innerHTML = `
-                    <div class="blog-image">
-                        <img src="${post.image}" alt="${post.title}" loading="lazy" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'">
-                    </div>
-                    <div class="blog-content">
-                        <div class="blog-date">${formattedDate}</div>
-                        <h3 class="blog-title">${post.title}</h3>
-                        <p class="blog-excerpt">${post.excerpt}</p>
-                        <a href="${post.link}" class="btn btn-outline btn-small" target="_blank">Read More</a>
-                    </div>
-                `;
-                
-                blogContainer.appendChild(blogCard);
-            });
-        }
+                </div>
+                <div class="blog-content">
+                    <div class="blog-date">July 10, 2023</div>
+                    <h3 class="blog-title">Top 10 Visa Interview Tips for Success</h3>
+                    <p class="blog-excerpt">Expert advice on how to prepare for your visa interview and increase your chances of approval.</p>
+                    <a href="https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr" class="btn btn-outline btn-small" target="_blank" rel="noopener noreferrer">Read More</a>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    // Display posts from localStorage
+    posts.forEach(post => {
+        const formattedDate = new Date(post.date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        
+        const blogCard = document.createElement('div');
+        blogCard.className = 'blog-card';
+        blogCard.innerHTML = `
+            <div class="blog-image">
+                <picture>
+                    <source srcset="${post.image}" type="image/webp">
+                    <source srcset="${post.image.replace('.webp', '.jpg')}" type="image/jpeg"> 
+                    <img src="${post.image.replace('.webp', '.jpg')}" alt="${post.title}" loading="lazy" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'">
+                </picture>
+            </div>
+            <div class="blog-content">
+                <div class="blog-date">${formattedDate}</div>
+                <h3 class="blog-title">${post.title}</h3>
+                <p class="blog-excerpt">${post.excerpt}</p>
+                <a href="${post.link}" class="btn btn-outline btn-small" target="_blank" rel="noopener noreferrer">Read More</a>
+            </div>
+        `;
+        
+        blogContainer.appendChild(blogCard);
+    });
+}
 
         // Load blog posts when the page is ready
         document.addEventListener('DOMContentLoaded', function() {
