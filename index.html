@@ -3696,6 +3696,20 @@
             });
         }
 
+        function updateApplicationTimeline() {
+    // This function updates the application timeline in the dashboard
+    if (!userApplication) return;
+    
+    const stages = userApplication.applicationStages || {};
+    const timelineContainer = document.querySelector('#status .dashboard-section');
+    
+    if (timelineContainer) {
+        // This will update the timeline based on application progress
+        // For now, we'll just make sure it doesn't throw errors
+        console.log('Updating application timeline...');
+    }
+}
+
         // Admin Dashboard Functions
         function showAdminDashboard() {
             document.getElementById('dashboard').style.display = 'none';
