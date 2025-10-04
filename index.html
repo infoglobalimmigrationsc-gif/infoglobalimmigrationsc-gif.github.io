@@ -3725,6 +3725,416 @@ function setupAdminRealTimeWithDelete() {
         let realTimeListener = null;
         let isAdmin = false;
 
+        // Profile Management Functions
+function handleProfileUpdate(event) {
+    event.preventDefault();
+    
+    const name = document.getElementById('dashboardName').value;
+    const email = document.getElementById('dashboardEmail').value;
+    const phone = document.getElementById('dashboardPhone').value;
+    const address = document.getElementById('dashboardAddress').value;
+    const country = document.getElementById('dashboardCountry').value;
+    
+    if (!currentUser) {
+        alert('Please log in to update your profile.');
+        return;
+    }
+    
+    // Show loading state
+    const button = event.target;
+    const originalText = button.textContent;
+    button.textContent = 'Updating...';
+    button.disabled = true;
+    
+    // Update user profile in Firestore
+    db.collection('users').doc(currentUser.uid).update({
+        name: name,
+        email: email,
+        phone: phone,
+        address: address,
+        country: country,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    })
+    .then(() => {
+        // Update application personal info
+        return db.collection('applications').doc(currentUser.uid).update({
+            'personalInfo.name': name,
+            'personalInfo.phone': phone,
+            'personalInfo.address': address,
+            'personalInfo.country': country,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    })
+    .then(() => {
+        alert('Profile updated successfully!');
+        // Update application stages
+        updateApplicationStage('personal_info', true);
+    })
+    .catch((error) => {
+        console.error('Error updating profile:', error);
+        alert('Error updating profile: ' + error.message);
+    })
+    .finally(() => {
+        // Reset button
+        button.textContent = originalText;
+        button.disabled = false;
+    });
+}
+
+function handlePasswordChange(event) {
+    event.preventDefault();
+    
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmNewPassword').value;
+    
+    if (!currentPassword || !newPassword || !confirmPassword) {
+        alert('Please fill in all password fields.');
+        return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+        alert('New passwords do not match.');
+        return;
+    }
+    
+    if (newPassword.length < 6) {
+        alert('New password must be at least 6 characters long.');
+        return;
+    }
+    
+    // Show loading state
+    const button = event.target;
+    const originalText = button.textContent;
+    button.textContent = 'Changing Password...';
+    button.disabled = true;
+    
+    // Reauthenticate user first
+    const user = auth.currentUser;
+    const credential = firebase.auth.EmailAuthProvider.credential(
+        user.email, 
+        currentPassword
+    );
+    
+    user.reauthenticateWithCredential(credential)
+        .then(() => {
+            // Change password
+            return user.updatePassword(newPassword);
+        })
+        .then(() => {
+            alert('Password changed successfully!');
+            // Clear form
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmNewPassword').value = '';
+        })
+        .catch((error) => {
+            console.error('Error changing password:', error);
+            if (error.code === 'auth/wrong-password') {
+                alert('Current password is incorrect.');
+            } else {
+                alert('Error changing password: ' + error.message);
+            }
+        })
+        .finally(() => {
+            // Reset button
+            button.textContent = originalText;
+            button.disabled = false;
+        });
+}
+
+// Payment Confirmation System
+function initializePaymentConfirmation() {
+    const makePaymentBtn = document.querySelector('#payments .btn-primary');
+    if (makePaymentBtn) {
+        makePaymentBtn.addEventListener('click', showPaymentInformation);
+    }
+    
+    // Add payment confirmation upload area to payments section
+    const paymentsSection = document.getElementById('payments');
+    const confirmationSection = document.createElement('div');
+    confirmationSection.innerHTML = `
+        <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+            <h4>Payment Confirmation</h4>
+            <p>Upload screenshot or proof of payment for verification</p>
+            
+            <div class="upload-area" id="paymentConfirmationUpload" style="margin: 15px 0;">
+                <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                <p>Click or drag payment confirmation screenshot</p>
+                <input type="file" id="paymentUploadInput" accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
+                <div class="upload-progress">
+                    <div class="upload-progress-bar" id="paymentProgress"></div>
+                </div>
+            </div>
+            
+            <div id="paymentConfirmationStatus" style="margin-top: 10px;"></div>
+        </div>
+    `;
+    
+    paymentsSection.appendChild(confirmationSection);
+    
+    // Initialize payment confirmation upload
+    const paymentUploadArea = document.getElementById('paymentConfirmationUpload');
+    const paymentFileInput = document.getElementById('paymentUploadInput');
+    
+    paymentUploadArea.addEventListener('click', () => paymentFileInput.click());
+    paymentFileInput.addEventListener('change', (e) => {
+        if (e.target.files[0]) {
+            handlePaymentConfirmationUpload(e.target.files[0]);
+        }
+    });
+}
+
+function showPaymentInformation() {
+    const paymentInfoHTML = `
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: var(--primary-red); margin-bottom: 15px;">💳 Payment Information – Global Immigration SC</h3>
+            
+            <p><strong>Dear Applicant,</strong></p>
+            <p>To proceed with your application, please make your payment using any of the following options below 👇</p>
+            
+            <div style="margin: 20px 0;">
+                <h4>1️⃣ Mobile Money Payments</h4>
+                <p>📱 Orange Money: +231 770562292</p>
+                <p>📱 Lonestar Money: +231 886590302</p>
+                <p><strong>Account Name: Darling Tamba</strong></p>
+            </div>
+            
+            <div style="margin: 20px 0;">
+                <h4>2️⃣ Bank Payment (UBA Liberia)</h4>
+                <p>🏦 Account Name: Darlington Tamba</p>
+                <p>💳 Account Number: 53080500327155</p>
+                <p>Bank: United Bank for Africa (UBA)</p>
+            </div>
+            
+            <div style="background: #e8f5e8; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                <p><strong>✅ After payment, kindly upload a screenshot or confirmation message to the upload confirmation section for verification:</strong></p>
+                <p>📞 +231 770562292 | +231 886590302</p>
+                <p>📧 Email: infoglobalimmigrationsc@gmail.com</p>
+            </div>
+            
+            <p style="text-align: center; font-style: italic;">Thank you for choosing Global Immigration SC — your trusted partner for study, work, and travel abroad. 🌍✈️</p>
+        </div>
+    `;
+    
+    // Create modal for payment information
+    const modal = document.createElement('div');
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.backgroundColor = 'rgba(0,0,0,0.7)';
+    modal.style.display = 'flex';
+    modal.style.justifyContent = 'center';
+    modal.style.alignItems = 'center';
+    modal.style.zIndex = '10000';
+    
+    modal.innerHTML = `
+        <div style="background: white; padding: 30px; border-radius: 8px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; color: var(--primary-red);">Payment Instructions</h3>
+                <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--primary-red);">&times;</button>
+            </div>
+            ${paymentInfoHTML}
+            <button onclick="this.parentElement.parentElement.parentElement.remove()" class="btn btn-primary" style="width: 100%; margin-top: 20px;">I Understand</button>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+async function handlePaymentConfirmationUpload(file) {
+    if (!file || !currentUser) {
+        alert('Please log in to upload payment confirmation.');
+        return;
+    }
+    
+    try {
+        const uploadArea = document.getElementById('paymentConfirmationUpload');
+        const progressBar = document.getElementById('paymentProgress');
+        const statusElement = document.getElementById('paymentConfirmationStatus');
+        
+        // Show uploading state
+        uploadArea.innerHTML = `
+            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 10px;"></i>
+            <p>Uploading Payment Confirmation...</p>
+            <div class="upload-progress">
+                <div class="upload-progress-bar" style="width: 0%"></div>
+            </div>
+        `;
+        
+        progressBar = uploadArea.querySelector('.upload-progress-bar');
+        
+        // Create unique filename
+        const fileName = `${currentUser.uid}/payment_confirmation_${Date.now()}_${file.name}`;
+        const storageRef = storage.ref().child(fileName);
+        
+        // Upload file
+        const uploadTask = storageRef.put(file);
+        
+        uploadTask.on('state_changed',
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                progressBar.style.width = progress + '%';
+            },
+            (error) => {
+                console.error('Payment confirmation upload failed:', error);
+                statusElement.innerHTML = '<p style="color: red;">Upload failed. Please try again.</p>';
+                resetPaymentUploadArea();
+            },
+            async () => {
+                try {
+                    const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                    
+                    // Update application with payment confirmation
+                    await db.collection('applications').doc(currentUser.uid).update({
+                        paymentConfirmation: {
+                            url: downloadURL,
+                            fileName: file.name,
+                            uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            status: 'pending_verification'
+                        },
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    // Show success
+                    statusElement.innerHTML = '<p style="color: green;">✅ Payment confirmation uploaded successfully! We will verify your payment shortly.</p>';
+                    uploadArea.innerHTML = `
+                        <i class="fas fa-check-circle" style="font-size: 2rem; margin-bottom: 10px; color: #4CAF50;"></i>
+                        <p>Confirmation Uploaded!</p>
+                        <p style="font-size: 0.8em; color: #666;">${file.name}</p>
+                    `;
+                    
+                } catch (error) {
+                    console.error('Error updating payment confirmation:', error);
+                    statusElement.innerHTML = '<p style="color: red;">Error saving confirmation. Please contact support.</p>';
+                    resetPaymentUploadArea();
+                }
+            }
+        );
+        
+    } catch (error) {
+        console.error('Payment confirmation upload error:', error);
+        alert('Upload failed: ' + error.message);
+    }
+}
+
+function resetPaymentUploadArea() {
+    const uploadArea = document.getElementById('paymentConfirmationUpload');
+    uploadArea.innerHTML = `
+        <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; margin-bottom: 10px;"></i>
+        <p>Click or drag payment confirmation screenshot</p>
+        <input type="file" id="paymentUploadInput" accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
+        <div class="upload-progress">
+            <div class="upload-progress-bar" id="paymentProgress"></div>
+        </div>
+    `;
+    
+    // Re-attach event listeners
+    const paymentFileInput = document.getElementById('paymentUploadInput');
+    uploadArea.addEventListener('click', () => paymentFileInput.click());
+    paymentFileInput.addEventListener('change', (e) => {
+        if (e.target.files[0]) {
+            handlePaymentConfirmationUpload(e.target.files[0]);
+        }
+    });
+}
+
+// Enhanced Payment History with Real-time Updates
+function initializePaymentHistory() {
+    // This will be called when the payments section is loaded
+    loadPaymentHistory();
+}
+
+async function loadPaymentHistory() {
+    if (!currentUser) return;
+    
+    try {
+        const appDoc = await db.collection('applications').doc(currentUser.uid).get();
+        const appData = appDoc.data();
+        
+        const payments = appData.payments || [
+            { date: '2023-10-15', description: 'Application Fee', amount: 150.00, status: 'completed' },
+            { date: '2023-10-20', description: 'Document Processing', amount: 75.00, status: 'pending' },
+            { date: '2023-10-25', description: 'Visa Processing Fee', amount: 200.00, status: 'pending' }
+        ];
+        
+        updatePaymentTable(payments);
+        updateOutstandingPayments(payments);
+        
+    } catch (error) {
+        console.error('Error loading payment history:', error);
+    }
+}
+
+function updatePaymentTable(payments) {
+    const tableBody = document.querySelector('.payment-table tbody');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = payments.map(payment => `
+        <tr>
+            <td>${payment.date}</td>
+            <td>${payment.description}</td>
+            <td>$${payment.amount.toFixed(2)}</td>
+            <td><span class="payment-status status-${payment.status}">${payment.status.toUpperCase()}</span></td>
+        </tr>
+    `).join('');
+}
+
+function updateOutstandingPayments(payments) {
+    const outstandingSection = document.querySelector('#payments .dashboard-section').querySelector('div:last-child');
+    if (!outstandingSection) return;
+    
+    const outstandingAmount = payments
+        .filter(p => p.status === 'pending')
+        .reduce((sum, payment) => sum + payment.amount, 0);
+    
+    outstandingSection.innerHTML = `
+        <h4>Outstanding Payments</h4>
+        <p>You have <strong>$${outstandingAmount.toFixed(2)}</strong> in outstanding payments.</p>
+        <button class="btn btn-primary" style="margin-top: 15px;" onclick="showPaymentInformation()">Make Payment</button>
+    `;
+}
+
+// Initialize all systems when dashboard is shown
+function initializeDashboardSystems() {
+    initializeDocumentUpload();
+    initializeProfileManagement();
+    initializePaymentConfirmation();
+    initializePaymentHistory();
+    updateDashboardUI();
+}
+
+// Profile Management Initialization
+function initializeProfileManagement() {
+    // This will be called to set up profile management
+    loadUserProfile();
+}
+
+async function loadUserProfile() {
+    if (!currentUser) return;
+    
+    try {
+        const userDoc = await db.collection('users').doc(currentUser.uid).get();
+        const appDoc = await db.collection('applications').doc(currentUser.uid).get();
+        
+        if (userDoc.exists) {
+            const userData = userDoc.data();
+            const appData = appDoc.data();
+            
+            // Update profile form fields
+            document.getElementById('dashboardName').value = userData.name || '';
+            document.getElementById('dashboardEmail').value = userData.email || '';
+            document.getElementById('dashboardPhone').value = userData.phone || '';
+            document.getElementById('dashboardAddress').value = userData.address || '';
+            document.getElementById('dashboardCountry').value = userData.country || appData?.personalInfo?.country || '';
+        }
+    } catch (error) {
+        console.error('Error loading user profile:', error);
+    }
+}
+
         // Enhanced Authentication System
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -4555,10 +4965,8 @@ function getStepDateText(status) {
     document.querySelector('footer').style.display = 'none';
     document.getElementById('userName').textContent = `Welcome, ${currentUser.email.split('@')[0]}`;
     
-    // Initialize all systems
-    initializeDocumentUpload();
-    initializeProfileManagement();
-    updateDashboardUI(); // This will update progress, timeline, etc.
+    // Initialize all dashboard systems
+    initializeDashboardSystems();
 }
 
         // Initialize when DOM is loaded
