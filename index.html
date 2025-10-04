@@ -4003,7 +4003,7 @@ async function handlePaymentConfirmationUpload(file) {
     
     try {
         const uploadArea = document.getElementById('paymentConfirmationUpload');
-        const progressBar = document.getElementById('paymentProgress');
+        let progressBar = document.getElementById('paymentProgress'); // CHANGED: const -> let
         const statusElement = document.getElementById('paymentConfirmationStatus');
         
         // Show uploading state
@@ -4015,7 +4015,26 @@ async function handlePaymentConfirmationUpload(file) {
             </div>
         `;
         
-        progressBar = uploadArea.querySelector('.upload-progress-bar');
+        // Get the new progress bar element after updating innerHTML
+        progressBar = uploadArea.querySelector('.upload-progress-bar'); // NOW THIS WORKS
+        
+        // Validate file type
+        const validTypes = ['.pdf', '.jpg', '.jpeg', '.png'];
+        const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+        
+        if (!validTypes.includes(fileExtension)) {
+            alert('Please upload PDF, JPG, JPEG, or PNG files only.');
+            resetPaymentUploadArea();
+            return;
+        }
+        
+        // Validate file size (10MB max)
+        const maxSize = 10 * 1024 * 1024;
+        if (file.size > maxSize) {
+            alert('File size must be less than 10MB.');
+            resetPaymentUploadArea();
+            return;
+        }
         
         // Create unique filename
         const fileName = `${currentUser.uid}/payment_confirmation_${Date.now()}_${file.name}`;
@@ -4027,11 +4046,15 @@ async function handlePaymentConfirmationUpload(file) {
         uploadTask.on('state_changed',
             (snapshot) => {
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                progressBar.style.width = progress + '%';
+                if (progressBar) {
+                    progressBar.style.width = progress + '%';
+                }
             },
             (error) => {
                 console.error('Payment confirmation upload failed:', error);
-                statusElement.innerHTML = '<p style="color: red;">Upload failed. Please try again.</p>';
+                if (statusElement) {
+                    statusElement.innerHTML = '<p style="color: red;">Upload failed. Please try again.</p>';
+                }
                 resetPaymentUploadArea();
             },
             async () => {
@@ -4044,13 +4067,17 @@ async function handlePaymentConfirmationUpload(file) {
                             url: downloadURL,
                             fileName: file.name,
                             uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            status: 'pending_verification'
+                            status: 'pending_verification',
+                            fileSize: file.size,
+                            fileType: file.type
                         },
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     
                     // Show success
-                    statusElement.innerHTML = '<p style="color: green;">✅ Payment confirmation uploaded successfully! We will verify your payment shortly.</p>';
+                    if (statusElement) {
+                        statusElement.innerHTML = '<p style="color: green;">✅ Payment confirmation uploaded successfully! We will verify your payment shortly.</p>';
+                    }
                     uploadArea.innerHTML = `
                         <i class="fas fa-check-circle" style="font-size: 2rem; margin-bottom: 10px; color: #4CAF50;"></i>
                         <p>Confirmation Uploaded!</p>
@@ -4059,7 +4086,9 @@ async function handlePaymentConfirmationUpload(file) {
                     
                 } catch (error) {
                     console.error('Error updating payment confirmation:', error);
-                    statusElement.innerHTML = '<p style="color: red;">Error saving confirmation. Please contact support.</p>';
+                    if (statusElement) {
+                        statusElement.innerHTML = '<p style="color: red;">Error saving confirmation. Please contact support.</p>';
+                    }
                     resetPaymentUploadArea();
                 }
             }
@@ -4068,11 +4097,14 @@ async function handlePaymentConfirmationUpload(file) {
     } catch (error) {
         console.error('Payment confirmation upload error:', error);
         alert('Upload failed: ' + error.message);
+        resetPaymentUploadArea();
     }
 }
 
 function resetPaymentUploadArea() {
     const uploadArea = document.getElementById('paymentConfirmationUpload');
+    if (!uploadArea) return;
+    
     uploadArea.innerHTML = `
         <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; margin-bottom: 10px;"></i>
         <p>Click or drag payment confirmation screenshot</p>
@@ -4084,12 +4116,14 @@ function resetPaymentUploadArea() {
     
     // Re-attach event listeners
     const paymentFileInput = document.getElementById('paymentUploadInput');
-    uploadArea.addEventListener('click', () => paymentFileInput.click());
-    paymentFileInput.addEventListener('change', (e) => {
-        if (e.target.files[0]) {
-            handlePaymentConfirmationUpload(e.target.files[0]);
-        }
-    });
+    if (paymentFileInput) {
+        uploadArea.addEventListener('click', () => paymentFileInput.click());
+        paymentFileInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) {
+                handlePaymentConfirmationUpload(e.target.files[0]);
+            }
+        });
+    }
 }
 
 // Enhanced Payment History with Real-time Updates
