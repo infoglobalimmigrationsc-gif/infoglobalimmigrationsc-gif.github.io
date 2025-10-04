@@ -3426,6 +3426,279 @@
         const db = firebase.firestore();
         const storage = firebase.storage();
 
+// Enhanced admin dashboard with delete functionality
+function enhanceAdminDashboard() {
+    console.log('🚀 Enhancing admin dashboard with delete functionality...');
+    
+    // Add delete functionality to applicants list
+    addDeleteFunctionality();
+    
+    // Add bulk delete options
+    addBulkDeleteOptions();
+    
+    // Setup real-time updates that include delete buttons
+    setupAdminRealTimeWithDelete();
+}
+
+// Delete applicant function
+async function deleteApplicant(userId, userName) {
+    if (!confirm(`🚨 ARE YOU SURE?\n\nYou are about to delete applicant:\n${userName}\n\nThis will permanently remove:\n• User account\n• Application data\n• Uploaded documents\n\nThis action cannot be undone!`)) {
+        return;
+    }
+    
+    try {
+        console.log(`🗑️ Deleting applicant: ${userName} (${userId})`);
+        
+        // 1. Delete application data
+        await firebase.firestore().collection('applications').doc(userId).delete();
+        console.log('✅ Application data deleted');
+        
+        // 2. Delete user profile
+        await firebase.firestore().collection('users').doc(userId).delete();
+        console.log('✅ User profile deleted');
+        
+        // 3. Delete uploaded documents from storage
+        try {
+            const storageRef = firebase.storage().ref();
+            const userFilesRef = storageRef.child(userId);
+            const files = await userFilesRef.listAll();
+            
+            const deletePromises = files.items.map(fileRef => fileRef.delete());
+            await Promise.all(deletePromises);
+            console.log(`✅ Deleted ${files.items.length} uploaded files`);
+        } catch (storageError) {
+            console.log('⚠️ Could not delete storage files:', storageError.message);
+        }
+        
+        alert(`✅ Successfully deleted applicant: ${userName}`);
+        console.log(`🎉 Applicant ${userName} completely removed from system`);
+        
+        // Refresh the applicants list
+        addDeleteFunctionality();
+        
+    } catch (error) {
+        console.log('❌ Error deleting applicant:', error);
+        alert('Error deleting applicant: ' + error.message);
+    }
+}
+
+// View applicant details
+async function viewApplicantDetails(userId) {
+    const appDoc = await firebase.firestore().collection('applications').doc(userId).get();
+    const userDoc = await firebase.firestore().collection('users').doc(userId).get();
+    
+    const appData = appDoc.data();
+    const userData = userDoc.data();
+    
+    const detailHTML = `
+        <h3>Applicant Details</h3>
+        <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 15px;">
+            <p><strong>Name:</strong> ${userData?.name || 'Unknown'}</p>
+            <p><strong>Email:</strong> ${userData?.email || 'No email'}</p>
+            <p><strong>User ID:</strong> ${userId}</p>
+            <p><strong>Status:</strong> ${appData?.status || 'unknown'}</p>
+            <p><strong>Progress:</strong> ${appData?.progress || 0}%</p>
+            <p><strong>Country:</strong> ${appData?.personalInfo?.country || 'Not specified'}</p>
+            <p><strong>Documents Uploaded:</strong> ${Object.keys(appData?.documents || {}).length}</p>
+            <p><strong>Application Date:</strong> ${appData?.createdAt?.toDate?.().toLocaleDateString() || 'Unknown'}</p>
+        </div>
+        <button onclick="deleteApplicant('${userId}', '${userData?.name || 'Unknown'}')" class="btn" style="background: #e74c3c; color: white; width: 100%;">Delete This Applicant</button>
+    `;
+    
+    // Create a modal to show details
+    const modal = document.createElement('div');
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.backgroundColor = 'rgba(0,0,0,0.7)';
+    modal.style.display = 'flex';
+    modal.style.justifyContent = 'center';
+    modal.style.alignItems = 'center';
+    modal.style.zIndex = '10000';
+    
+    modal.innerHTML = `
+        <div style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0;">Applicant Details</h3>
+                <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            ${detailHTML}
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+// Add delete functionality to admin dashboard
+function addDeleteFunctionality() {
+    console.log('🛠️ Adding delete functionality to admin dashboard...');
+    
+    const setupEnhancedApplicantsList = async () => {
+        const applicationsSnapshot = await firebase.firestore().collection('applications').get();
+        const container = document.getElementById('applicantsList');
+        
+        if (!container) {
+            console.log('❌ Could not find applicants list container');
+            return;
+        }
+        
+        container.innerHTML = '';
+        
+        for (const doc of applicationsSnapshot.docs) {
+            const appData = doc.data();
+            const userDoc = await firebase.firestore().collection('users').doc(appData.userId).get();
+            const userData = userDoc.data();
+            
+            const card = document.createElement('div');
+            card.className = 'applicant-card';
+            card.style.position = 'relative';
+            
+            card.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="flex: 2;">
+                        <h4 style="margin: 0 0 5px 0;">${userData?.name || 'Unknown User'}</h4>
+                        <p style="margin: 0 0 3px 0; color: #666;">${userData?.email || 'No email'}</p>
+                        <p style="margin: 0 0 3px 0; font-size: 0.9em;">User ID: ${appData.userId.substring(0, 8)}...</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="status-badge status-${appData.status}" style="display: inline-block; margin-bottom: 5px;">
+                            ${appData.status.toUpperCase()}
+                        </span>
+                        <div style="font-size: 0.9em;">${appData.createdAt?.toDate?.().toLocaleDateString() || 'Unknown date'}</div>
+                    </div>
+                </div>
+                <div style="margin-top: 10px; display: flex; gap: 10px; justify-content: flex-end;">
+                    <button onclick="viewApplicantDetails('${appData.userId}')" class="btn btn-primary btn-small">View</button>
+                    <button onclick="deleteApplicant('${appData.userId}', '${userData?.name || 'Unknown'}')" class="btn btn-outline btn-small" style="background: #e74c3c; color: white; border-color: #e74c3c;">Delete</button>
+                </div>
+            `;
+            
+            container.appendChild(card);
+        }
+        
+        console.log('✅ Delete buttons added to all applicants');
+    };
+    
+    setupEnhancedApplicantsList();
+}
+
+// Bulk delete options
+function addBulkDeleteOptions() {
+    console.log('🛠️ Adding bulk delete options...');
+    
+    const overviewSection = document.getElementById('adminOverview');
+    if (overviewSection) {
+        const bulkSection = document.createElement('div');
+        bulkSection.style.marginTop = '30px';
+        bulkSection.style.padding = '20px';
+        bulkSection.style.background = '#fff3f3';
+        bulkSection.style.borderRadius = '8px';
+        bulkSection.style.border = '2px solid #e74c3c';
+        
+        bulkSection.innerHTML = `
+            <h4 style="color: #e74c3c; margin-top: 0;">🚨 Bulk Delete Operations</h4>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button onclick="deleteRejectedApplicants()" class="btn" style="background: #e74c3c; color: white;">
+                    🗑️ Delete All Rejected
+                </button>
+                <button onclick="deleteByStatus('draft')" class="btn" style="background: #f39c12; color: white;">
+                    🗑️ Delete Drafts
+                </button>
+            </div>
+            <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                ⚠️ These actions are permanent and cannot be undone!
+            </p>
+        `;
+        
+        overviewSection.appendChild(bulkSection);
+    }
+}
+
+// Bulk delete functions
+async function deleteRejectedApplicants() {
+    if (!confirm('🚨 DELETE ALL REJECTED APPLICANTS?\n\nThis will permanently remove ALL applicants with REJECTED status.\n\nThis action cannot be undone!')) {
+        return;
+    }
+    
+    try {
+        const rejectedSnapshot = await firebase.firestore().collection('applications')
+            .where('status', '==', 'rejected')
+            .get();
+        
+        if (rejectedSnapshot.empty) {
+            alert('No rejected applicants found!');
+            return;
+        }
+        
+        let deletedCount = 0;
+        
+        for (const doc of rejectedSnapshot.docs) {
+            const appData = doc.data();
+            const userDoc = await firebase.firestore().collection('users').doc(appData.userId).get();
+            const userData = userDoc.data();
+            
+            await firebase.firestore().collection('applications').doc(appData.userId).delete();
+            await firebase.firestore().collection('users').doc(appData.userId).delete();
+            
+            deletedCount++;
+            console.log(`✅ Deleted rejected applicant: ${userData?.name}`);
+        }
+        
+        alert(`✅ Successfully deleted ${deletedCount} rejected applicants`);
+        addDeleteFunctionality();
+        
+    } catch (error) {
+        console.log('Error:', error);
+        alert('Error deleting rejected applicants: ' + error.message);
+    }
+}
+
+async function deleteByStatus(status) {
+    if (!confirm(`🚨 DELETE ALL APPLICANTS WITH STATUS: ${status.toUpperCase()}?\n\nThis action cannot be undone!`)) {
+        return;
+    }
+    
+    try {
+        const snapshot = await firebase.firestore().collection('applications')
+            .where('status', '==', status)
+            .get();
+        
+        if (snapshot.empty) {
+            alert(`No applicants found with status: ${status}`);
+            return;
+        }
+        
+        let deletedCount = 0;
+        
+        for (const doc of snapshot.docs) {
+            const appData = doc.data();
+            await firebase.firestore().collection('applications').doc(appData.userId).delete();
+            await firebase.firestore().collection('users').doc(appData.userId).delete();
+            deletedCount++;
+        }
+        
+        alert(`✅ Successfully deleted ${deletedCount} applicants with status: ${status}`);
+        addDeleteFunctionality();
+        
+    } catch (error) {
+        console.log('Error:', error);
+        alert('Error deleting applicants: ' + error.message);
+    }
+}
+
+// Real-time updates with delete functionality
+function setupAdminRealTimeWithDelete() {
+    console.log('🔄 Setting up real-time admin updates with delete...');
+    
+    firebase.firestore().collection('applications')
+        .onSnapshot((snapshot) => {
+            console.log('📈 Application data changed, refreshing with delete buttons...');
+            addDeleteFunctionality(); // This will refresh the list with delete buttons
+        });
+}
+
         // Application State Management
         let currentUser = null;
         let userApplication = null;
@@ -3712,26 +3985,32 @@
 
         // Admin Dashboard Functions
         function showAdminDashboard() {
-            document.getElementById('dashboard').style.display = 'none';
-            document.getElementById('adminDashboard').style.display = 'block';
-            loadAdminData();
-        }
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('adminDashboard').style.display = 'block';
+    loadAdminData();
+    
+    // ADD THIS: Enable delete functionality
+    enhanceAdminDashboard();
+}
 
         async function loadAdminData() {
-            // Load all applications for admin review
-            const applicationsSnapshot = await db.collection('applications').get();
-            const applicants = [];
-            
-            applicationsSnapshot.forEach(doc => {
-                applicants.push({
-                    id: doc.id,
-                    ...doc.data()
-                });
-            });
-            
-            updateAdminUI(applicants);
-            setupAdminRealTimeUpdates();
-        }
+    // Load all applications for admin review
+    const applicationsSnapshot = await db.collection('applications').get();
+    const applicants = [];
+    
+    applicationsSnapshot.forEach(doc => {
+        applicants.push({
+            id: doc.id,
+            ...doc.data()
+        });
+    });
+    
+    updateAdminUI(applicants);
+    setupAdminRealTimeUpdates();
+    
+    // ADD THIS LINE - This will enable delete functionality
+    enhanceAdminDashboard();
+}
 
         function setupAdminRealTimeUpdates() {
             // Real-time listener for all applications
