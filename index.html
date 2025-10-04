@@ -3213,63 +3213,83 @@
                 </div>
                 
                 <div id="profile" class="dashboard-section">
-                    <h3>Profile Management</h3>
-                    <p>Update your personal details and account information.</p>
-                    
-                    <form class="profile-form">
-                        <div class="form-group">
-                            <label for="dashboardName">Full Name</label>
-                            <input type="text" id="dashboardName" class="form-control" value="John Doe">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="dashboardEmail">Email Address</label>
-                            <input type="email" id="dashboardEmail" class="form-control" value="john.doe@example.com">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="dashboardPhone">Phone Number</label>
-                            <input type="tel" id="dashboardPhone" class="form-control" value="+1234567890">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="dashboardAddress">Address</label>
-                            <textarea id="dashboardAddress" class="form-control">123 Main Street, Monrovia, Liberia</textarea>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="dashboardCountry">Country of Interest</label>
-                            <select id="dashboardCountry" class="form-control">
-                                <option value="usa">United States</option>
-                                <option value="canada" selected>Canada</option>
-                                <option value="australia">Australia</option>
-                                <option value="germany">Germany</option>
-                            </select>
-                        </div>
-                        
-                        <button type="button" class="btn btn-primary">Update Profile</button>
-                    </form>
-                    
-                    <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
-                        <h4>Change Password</h4>
-                        <div class="form-group">
-                            <label for="currentPassword">Current Password</label>
-                            <input type="password" id="currentPassword" class="form-control">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="newPassword">New Password</label>
-                            <input type="password" id="newPassword" class="form-control">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="confirmNewPassword">Confirm New Password</label>
-                            <input type="password" id="confirmNewPassword" class="form-control">
-                        </div>
-                        
-                        <button type="button" class="btn btn-outline">Change Password</button>
-                    </div>
-                </div>
+    <h3>Profile Management</h3>
+    <p>Update your personal details and account information.</p>
+    
+    <form class="profile-form">
+        <div class="form-group">
+            <label for="dashboardName">Full Name</label>
+            <input type="text" id="dashboardName" class="form-control" value="John Doe">
+        </div>
+        
+        <div class="form-group">
+            <label for="dashboardEmail">Email Address</label>
+            <input type="email" id="dashboardEmail" class="form-control" value="john.doe@example.com">
+        </div>
+        
+        <div class="form-group">
+            <label for="dashboardPhone">Phone Number</label>
+            <input type="tel" id="dashboardPhone" class="form-control" value="+1234567890">
+        </div>
+        
+        <div class="form-group">
+            <label for="dashboardAddress">Address</label>
+            <textarea id="dashboardAddress" class="form-control">123 Main Street, Monrovia, Liberia</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="dashboardCountry">Country of Interest</label>
+            <select id="dashboardCountry" class="form-control">
+                <option value="">Select your desired country</option>
+                <option value="usa">United States</option>
+                <option value="canada" selected>Canada</option>
+                <option value="australia">Australia</option>
+                <option value="uk">United Kingdom</option>
+                <option value="germany">Germany</option>
+                <option value="france">France</option>
+                <option value="netherlands">Netherlands</option>
+                <option value="sweden">Sweden</option>
+                <option value="norway">Norway</option>
+                <option value="denmark">Denmark</option>
+                <option value="switzerland">Switzerland</option>
+                <option value="austria">Austria</option>
+                <option value="ireland">Ireland</option>
+                <option value="newzealand">New Zealand</option>
+                <option value="singapore">Singapore</option>
+                <option value="japan">Japan</option>
+                <option value="southkorea">South Korea</option>
+                <option value="uae">United Arab Emirates</option>
+                <option value="qatar">Qatar</option>
+                <option value="saudiarabia">Saudi Arabia</option>
+                <option value="other">Other Country</option>
+            </select>
+        </div>
+        
+        <button type="button" class="btn btn-primary" onclick="handleProfileUpdate(event)">Update Profile</button>
+    </form>
+    
+    <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+        <h4>Change Password</h4>
+        <form class="password-form">
+            <div class="form-group">
+                <label for="currentPassword">Current Password</label>
+                <input type="password" id="currentPassword" class="form-control">
+            </div>
+            
+            <div class="form-group">
+                <label for="newPassword">New Password</label>
+                <input type="password" id="newPassword" class="form-control">
+            </div>
+            
+            <div class="form-group">
+                <label for="confirmNewPassword">Confirm New Password</label>
+                <input type="password" id="confirmNewPassword" class="form-control">
+            </div>
+            
+            <button type="button" class="btn btn-outline" onclick="handlePasswordChange(event)">Change Password</button>
+        </form>
+    </div>
+</div>
                 
                 <div id="status" class="dashboard-section">
                     <h3>Application Status Tracking</h3>
@@ -3817,143 +3837,377 @@ function setupAdminRealTimeWithDelete() {
         }
 
         // Enhanced Document Upload System
-        function initializeDocumentUpload() {
-            const uploadAreas = document.querySelectorAll('.upload-area');
-            
-            uploadAreas.forEach(area => {
-                const fileInput = area.parentElement.querySelector('input[type="file"]');
-                const progressBar = area.querySelector('.upload-progress-bar');
-                const docType = area.dataset.docType;
-                
-                area.addEventListener('click', () => fileInput.click());
-                
-                area.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    area.classList.add('dragover');
-                });
-                
-                area.addEventListener('dragleave', () => {
-                    area.classList.remove('dragover');
-                });
-                
-                area.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    area.classList.remove('dragover');
-                    if (e.dataTransfer.files[0]) {
-                        handleFileUpload(e.dataTransfer.files[0], docType, progressBar);
-                    }
-                });
-                
-                fileInput.addEventListener('change', (e) => {
-                    if (e.target.files[0]) {
-                        handleFileUpload(e.target.files[0], docType, progressBar);
-                    e.target.value = ''; // Reset file input
-                    }
-                });
-            });
-        }
+function initializeDocumentUpload() {
+    const uploadAreas = document.querySelectorAll('.upload-area');
+    
+    uploadAreas.forEach(area => {
+        const fileInput = area.parentElement.querySelector('input[type="file"]');
+        const progressBar = area.querySelector('.upload-progress-bar');
+        const docType = area.dataset.docType;
+        
+        // Click to upload
+        area.addEventListener('click', () => fileInput.click());
+        
+        // Drag and drop functionality
+        area.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            area.classList.add('dragover');
+        });
+        
+        area.addEventListener('dragleave', () => {
+            area.classList.remove('dragover');
+        });
+        
+        area.addEventListener('drop', (e) => {
+            e.preventDefault();
+            area.classList.remove('dragover');
+            if (e.dataTransfer.files[0]) {
+                handleFileUpload(e.dataTransfer.files[0], docType, progressBar, area);
+            }
+        });
+        
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) {
+                handleFileUpload(e.target.files[0], docType, progressBar, area);
+            }
+        });
+    });
+}
 
-        async function handleFileUpload(file, docType, progressBar) {
-            if (!file) return;
-            
-            try {
-                // Create unique filename
-                const fileName = `${currentUser.uid}/${docType}_${Date.now()}_${file.name}`;
-                const storageRef = storage.ref().child(fileName);
-                
-                // Upload file with progress tracking
-                const uploadTask = storageRef.put(file);
-                
-                uploadTask.on('state_changed',
-                    (snapshot) => {
-                        // Update progress bar
-                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                        progressBar.style.width = progress + '%';
-                    },
-                    (error) => {
-                        console.error('Upload failed:', error);
-                        alert('Upload failed: ' + error.message);
-                        progressBar.style.width = '0%';
-                    },
-                    async () => {
-                        // Upload completed
-                        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-                        
-                        // Update application in Firestore
-                        await db.collection('applications').doc(currentUser.uid).update({
-                            [`documents.${docType}`]: {
-                                url: downloadURL,
-                                fileName: file.name,
-                                uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                                status: 'pending_review',
-                                reviewedBy: null,
-                                reviewDate: null,
-                                comments: ''
-                            },
-                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                        
-                        progressBar.style.width = '0%';
-                        alert('Document uploaded successfully! It is now pending review.');
-                    }
-                );
-            } catch (error) {
-                console.error('Upload error:', error);
+async function handleFileUpload(file, docType, progressBar, uploadArea) {
+    if (!file || !currentUser) {
+        alert('Please log in to upload documents.');
+        return;
+    }
+    
+    // Validate file type
+    const validTypes = ['.pdf', '.jpg', '.jpeg', '.png'];
+    const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+    
+    if (!validTypes.includes(fileExtension)) {
+        alert('Please upload PDF, JPG, JPEG, or PNG files only.');
+        return;
+    }
+    
+    // Validate file size (10MB max)
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+        alert('File size must be less than 10MB.');
+        return;
+    }
+    
+    try {
+        console.log(`Starting upload for ${docType}: ${file.name}`);
+        
+        // Create unique filename
+        const fileName = `${currentUser.uid}/${docType}_${Date.now()}_${file.name}`;
+        const storageRef = storage.ref().child(fileName);
+        
+        // Show uploading state
+        uploadArea.innerHTML = `
+            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 10px;"></i>
+            <p>Uploading... Please wait</p>
+            <div class="upload-progress">
+                <div class="upload-progress-bar" style="width: 0%"></div>
+            </div>
+        `;
+        
+        progressBar = uploadArea.querySelector('.upload-progress-bar');
+        
+        // Upload file with progress tracking
+        const uploadTask = storageRef.put(file);
+        
+        uploadTask.on('state_changed',
+            (snapshot) => {
+                // Update progress bar
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                progressBar.style.width = progress + '%';
+                console.log(`Upload progress: ${progress}%`);
+            },
+            (error) => {
+                console.error('Upload failed:', error);
+                uploadArea.innerHTML = `
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                    <p>Click or drag file to upload</p>
+                    <div class="upload-progress">
+                        <div class="upload-progress-bar" style="width: 0%"></div>
+                    </div>
+                    <p style="color: red; font-size: 0.8em;">Upload failed. Please try again.</p>
+                `;
                 alert('Upload failed: ' + error.message);
-                progressBar.style.width = '0%';
+            },
+            async () => {
+                try {
+                    // Upload completed - get download URL
+                    const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                    console.log('File uploaded successfully. Download URL:', downloadURL);
+                    
+                    // Update application in Firestore
+                    await db.collection('applications').doc(currentUser.uid).update({
+                        [`documents.${docType}`]: {
+                            url: downloadURL,
+                            fileName: file.name,
+                            uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            status: 'pending_review',
+                            fileSize: file.size,
+                            fileType: file.type,
+                            reviewedBy: null,
+                            reviewDate: null,
+                            comments: ''
+                        },
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        status: 'document_upload'
+                    });
+                    
+                    // Update application stages
+                    await updateApplicationStage('document_upload', true);
+                    
+                    // Show success state
+                    uploadArea.innerHTML = `
+                        <i class="fas fa-check-circle" style="font-size: 2rem; margin-bottom: 10px; color: #4CAF50;"></i>
+                        <p>Upload Successful!</p>
+                        <p style="font-size: 0.8em; color: #666;">${file.name}</p>
+                        <div class="upload-progress">
+                            <div class="upload-progress-bar" style="width: 100%; background: #4CAF50;"></div>
+                        </div>
+                    `;
+                    
+                    // Update document status in UI
+                    const statusElement = document.getElementById(`${docType}Status`);
+                    if (statusElement) {
+                        statusElement.textContent = 'PENDING REVIEW';
+                        statusElement.className = 'document-status status-pending';
+                    }
+                    
+                    alert('Document uploaded successfully! It is now pending review.');
+                    
+                    // Reset after 3 seconds
+                    setTimeout(() => {
+                        uploadArea.innerHTML = `
+                            <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                            <p>Click or drag file to upload</p>
+                            <p style="font-size: 0.8em; color: #666;">Upload another file</p>
+                            <div class="upload-progress">
+                                <div class="upload-progress-bar" style="width: 0%"></div>
+                            </div>
+                        `;
+                    }, 3000);
+                    
+                } catch (error) {
+                    console.error('Error updating Firestore:', error);
+                    alert('Upload completed but failed to update application. Please contact support.');
+                }
+            }
+        );
+        
+    } catch (error) {
+        console.error('Upload error:', error);
+        alert('Upload failed: ' + error.message);
+    }
+}
+
+async function updateApplicationStage(stage, completed) {
+    if (!currentUser) return;
+    
+    try {
+        await db.collection('applications').doc(currentUser.uid).update({
+            [`applicationStages.${stage}`]: {
+                completed: completed,
+                status: completed ? 'completed' : 'in_progress',
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            },
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    } catch (error) {
+        console.error('Error updating application stage:', error);
+    }
+}
+
+// Missing function for admin dashboard
+function calculateOverallProgress(applicant) {
+    if (!applicant || !applicant.applicationStages) return 0;
+    
+    const stages = applicant.applicationStages;
+    let completedCount = 0;
+    const totalStages = Object.keys(stages).length;
+    
+    Object.values(stages).forEach(stage => {
+        if (stage && stage.completed) completedCount++;
+    });
+    
+    return Math.round((completedCount / totalStages) * 100);
+}
+
+// Safe date formatting function for timeline
+function formatTimelineDate(date) {
+    if (!date) return getStepDateText('pending');
+    try {
+        if (date.toDate && typeof date.toDate === 'function') {
+            return date.toDate().toLocaleDateString();
+        }
+        return getStepDateText('pending');
+    } catch (error) {
+        return getStepDateText('pending');
+    }
+}
+
+// Safe document date function
+function getLatestDocumentDate(documents) {
+    if (!documents) return null;
+    
+    let latestDate = null;
+    Object.values(documents).forEach(doc => {
+        if (doc && doc.uploadedAt && doc.uploadedAt.toDate && 
+            (!latestDate || doc.uploadedAt > latestDate)) {
+            latestDate = doc.uploadedAt;
+        }
+    });
+    return latestDate;
+}
+        // Enhanced Dashboard UI Updates
+function updateDashboardUI() {
+    if (!userApplication) return;
+    
+    // Update progress bars and steps based on actual application status
+    updateProgressBars();
+    
+    // Update document status
+    updateDocumentStatus();
+    
+    // Update application timeline
+    updateApplicationTimeline();
+    
+    // Update next steps based on current progress
+    updateNextSteps();
+}
+
+function updateProgressBars() {
+    if (!userApplication) return;
+    
+    const progress = calculateOverallProgress();
+    document.getElementById('mainProgressBar').style.width = progress + '%';
+    document.getElementById('progressPercentage').textContent = progress + '% Complete';
+    
+    // Update step indicators based on application status
+    updateStepIndicators();
+}
+
+function calculateOverallProgress() {
+    if (!userApplication || !userApplication.applicationStages) return 0;
+    
+    const stages = userApplication.applicationStages;
+    let completedCount = 0;
+    const totalStages = Object.keys(stages).length;
+    
+    // Count completed stages
+    Object.values(stages).forEach(stage => {
+        if (stage.completed) completedCount++;
+    });
+    
+    return Math.round((completedCount / totalStages) * 100);
+}
+
+function updateStepIndicators() {
+    if (!userApplication || !userApplication.applicationStages) return;
+    
+    const stages = userApplication.applicationStages;
+    const status = userApplication.status;
+    
+    // Map application status to step completion
+    const stepStatus = {
+        'draft': { completed: 0, current: 1 },
+        'submitted': { completed: 1, current: 2 },
+        'document_upload': { completed: 1, current: 2 },
+        'payment_pending': { completed: 2, current: 3 },
+        'under_review': { completed: 3, current: 4 },
+        'approved': { completed: 4, current: 5 },
+        'rejected': { completed: 2, current: 2 } // Stops at document stage if rejected
+    };
+    
+    const currentStep = stepStatus[status] || { completed: 0, current: 1 };
+    
+    // Update each step indicator
+    for (let i = 1; i <= 5; i++) {
+        const stepIndicator = document.getElementById(`step${i}`);
+        if (stepIndicator) {
+            if (i <= currentStep.completed) {
+                stepIndicator.className = 'step-indicator completed';
+                stepIndicator.innerHTML = '✓';
+            } else if (i === currentStep.current) {
+                stepIndicator.className = 'step-indicator active';
+                stepIndicator.innerHTML = i;
+            } else {
+                stepIndicator.className = 'step-indicator';
+                stepIndicator.innerHTML = i;
             }
         }
+    }
+}
 
-        // Enhanced Dashboard UI Updates
-        function updateDashboardUI() {
-            if (!userApplication) return;
-            
-            // Update progress bars
-            updateProgressBars();
-            
-            // Update document status
-            updateDocumentStatus();
-            
-            // Update application timeline
-            updateApplicationTimeline();
-        }
-
-        function updateProgressBars() {
-            const progress = calculateOverallProgress();
-            document.getElementById('mainProgressBar').style.width = progress + '%';
-            document.getElementById('progressPercentage').textContent = progress + '% Complete';
-            
-            // Update step indicators
-            updateStepIndicators();
-        }
-
-        function calculateOverallProgress() {
-            if (!userApplication || !userApplication.applicationStages) return 0;
-            
-            const stages = userApplication.applicationStages;
-            const completedStages = Object.values(stages).filter(stage => stage.completed).length;
-            const totalStages = Object.keys(stages).length;
-            
-            return Math.round((completedStages / totalStages) * 100);
-        }
-
-        function updateStepIndicators() {
-            const stages = userApplication.applicationStages || {};
-            
-            // Update each step indicator based on stage status
-            Object.keys(stages).forEach((stage, index) => {
-                const stepIndicator = document.getElementById(`step${index + 1}`);
-                if (stepIndicator) {
-                    if (stages[stage].completed) {
-                        stepIndicator.className = 'step-indicator completed';
-                    } else if (stages[stage].status === 'in_progress') {
-                        stepIndicator.className = 'step-indicator active';
-                    } else {
-                        stepIndicator.className = 'step-indicator';
-                    }
-                }
-            });
-        }
+function updateNextSteps() {
+    if (!userApplication) return;
+    
+    const nextStepsList = document.getElementById('nextStepsList');
+    if (!nextStepsList) return;
+    
+    const status = userApplication.status;
+    let nextSteps = [];
+    
+    switch (status) {
+        case 'draft':
+            nextSteps = [
+                'Complete your profile information',
+                'Upload required documents',
+                'Submit your application for review'
+            ];
+            break;
+        case 'submitted':
+        case 'document_upload':
+            nextSteps = [
+                'Wait for document verification',
+                'Complete payment for application processing',
+                'Prepare for possible interview'
+            ];
+            break;
+        case 'payment_pending':
+            nextSteps = [
+                'Complete payment processing',
+                'Wait for application review',
+                'Monitor your email for updates'
+            ];
+            break;
+        case 'under_review':
+            nextSteps = [
+                'Application is under review',
+                'Check for any additional document requests',
+                'Wait for final decision'
+            ];
+            break;
+        case 'approved':
+            nextSteps = [
+                'Visa has been approved!',
+                'Prepare for travel arrangements',
+                'Contact us for relocation support'
+            ];
+            break;
+        case 'rejected':
+            nextSteps = [
+                'Application was not approved',
+                'Contact us for feedback and next steps',
+                'Consider reapplying with additional documentation'
+            ];
+            break;
+        default:
+            nextSteps = [
+                'Complete your profile information',
+                'Upload required documents',
+                'Complete payment for application processing'
+            ];
+    }
+    
+    nextStepsList.innerHTML = nextSteps.map(step => `<li>${step}</li>`).join('');
+}
 
         function updateDocumentStatus() {
             const documents = userApplication.documents || {};
@@ -3970,19 +4224,132 @@ function setupAdminRealTimeWithDelete() {
         }
 
         function updateApplicationTimeline() {
-    // This function updates the application timeline in the dashboard
     if (!userApplication) return;
     
-    const stages = userApplication.applicationStages || {};
     const timelineContainer = document.querySelector('#status .dashboard-section');
+    if (!timelineContainer) return;
     
-    if (timelineContainer) {
-        // This will update the timeline based on application progress
-        // For now, we'll just make sure it doesn't throw errors
-        console.log('Updating application timeline...');
+    const status = userApplication.status || 'draft';
+    const createdAt = userApplication.createdAt;
+    
+    const timelineSteps = [
+        {
+            id: 'submitted',
+            title: 'Application Submitted',
+            description: 'Your initial application has been received and is under review.',
+            status: getStepStatus('submitted', status),
+            date: createdAt
+        },
+        {
+            id: 'document_review',
+            title: 'Document Review',
+            description: 'We are currently reviewing your submitted documents. Please ensure all required documents are uploaded.',
+            status: getStepStatus('document_upload', status),
+            date: userApplication.documents ? getLatestDocumentDate(userApplication.documents) : null
+        },
+        {
+            id: 'payment',
+            title: 'Payment Processing',
+            description: 'Once documents are approved, you\'ll need to complete payment for processing fees.',
+            status: getStepStatus('payment_pending', status),
+            date: null
+        },
+        {
+            id: 'embassy',
+            title: 'Embassy Submission',
+            description: 'Your application will be submitted to the appropriate embassy for final review.',
+            status: getStepStatus('under_review', status),
+            date: null
+        },
+        {
+            id: 'visa',
+            title: 'Visa Issuance',
+            description: 'Upon approval, your visa will be issued and prepared for collection.',
+            status: getStepStatus('approved', status),
+            date: null
+        }
+    ];
+    
+    const timelineHTML = `
+        <div style="margin: 30px 0;">
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: ${calculateOverallProgress()}%;"></div>
+            </div>
+            <p style="text-align: center; font-weight: 600; margin-top: 10px;">
+                Application Status: ${getStatusText(status)}
+            </p>
+        </div>
+        
+        <div style="position: relative; margin: 40px 0;">
+            <div style="position: absolute; left: 15px; top: 0; bottom: 0; width: 2px; background-color: var(--primary-red);"></div>
+            
+            ${timelineSteps.map((step, index) => `
+                <div style="position: relative; padding-left: 50px; margin-bottom: 30px;">
+                    <div style="position: absolute; left: 0; top: 0; width: 32px; height: 32px; border-radius: 50%; 
+                         background-color: ${getStepColor(step.status)}; color: white; 
+                         display: flex; align-items: center; justify-content: center; font-weight: bold;
+                         border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        ${step.status === 'completed' ? '✓' : index + 1}
+                    </div>
+                    <h4 style="margin-bottom: 5px; color: ${getStepColor(step.status)};">${step.title}</h4>
+                    <p style="color: var(--medium-gray); margin-bottom: 5px;">
+                        ${step.date ? step.date.toDate().toLocaleDateString() : getStepDateText(step.status)}
+                    </p>
+                    <p style="color: var(--dark-gray);">${step.description}</p>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    
+    const existingTimeline = timelineContainer.querySelector('.timeline-content');
+    if (existingTimeline) {
+        existingTimeline.innerHTML = timelineHTML;
+    } else {
+        const newTimeline = document.createElement('div');
+        newTimeline.className = 'timeline-content';
+        newTimeline.innerHTML = timelineHTML;
+        timelineContainer.appendChild(newTimeline);
     }
 }
 
+function getStepStatus(step, currentStatus) {
+    const statusOrder = ['draft', 'submitted', 'document_upload', 'payment_pending', 'under_review', 'approved', 'rejected'];
+    const currentIndex = statusOrder.indexOf(currentStatus);
+    const stepIndex = statusOrder.indexOf(step);
+    
+    if (stepIndex < currentIndex) return 'completed';
+    if (stepIndex === currentIndex) return 'current';
+    return 'pending';
+}
+
+function getStepColor(status) {
+    switch (status) {
+        case 'completed': return '#4CAF50';
+        case 'current': return 'var(--primary-red)';
+        default: return '#ccc';
+    }
+}
+
+function getStatusText(status) {
+    const statusMap = {
+        'draft': 'Draft - In Progress',
+        'submitted': 'Submitted for Review',
+        'document_upload': 'Document Submission Phase',
+        'payment_pending': 'Payment Processing',
+        'under_review': 'Under Review',
+        'approved': 'Approved - Visa Ready',
+        'rejected': 'Application Rejected'
+    };
+    return statusMap[status] || 'Application Started';
+}
+
+function getStepDateText(status) {
+    switch (status) {
+        case 'completed': return 'Completed';
+        case 'current': return 'Current Step';
+        default: return 'Upcoming';
+    }
+}
         // Admin Dashboard Functions
         function showAdminDashboard() {
     document.getElementById('dashboard').style.display = 'none';
@@ -4182,13 +4549,17 @@ function setupAdminRealTimeWithDelete() {
         }
 
         function showDashboard() {
-            document.getElementById('authModal').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'block';
-            document.querySelector('main').style.display = 'none';
-            document.querySelector('footer').style.display = 'none';
-            document.getElementById('userName').textContent = `Welcome, ${currentUser.email.split('@')[0]}`;
-            initializeDocumentUpload();
-        }
+    document.getElementById('authModal').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    document.querySelector('main').style.display = 'none';
+    document.querySelector('footer').style.display = 'none';
+    document.getElementById('userName').textContent = `Welcome, ${currentUser.email.split('@')[0]}`;
+    
+    // Initialize all systems
+    initializeDocumentUpload();
+    initializeProfileManagement();
+    updateDashboardUI(); // This will update progress, timeline, etc.
+}
 
         // Initialize when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
