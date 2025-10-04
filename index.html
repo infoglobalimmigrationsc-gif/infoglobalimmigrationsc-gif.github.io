@@ -3428,24 +3428,75 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 
-    <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyAJ3p91t83EQeQ6XopPfvisc1fIdsWIMm8",
-            authDomain: "global-immigration-sc.firebaseapp.com",
-            projectId: "global-immigration-sc",
-            storageBucket: "global-immigration-sc.firebasestorage.app",
-            messagingSenderId: "791181145117",
-            appId: "1:791181145117:web:527b7df63c9a32adf9c2f4",
-            measurementId: "G-1FJHEV0NLW"
-        };
+    <!-- Load Firebase Configuration from external file -->
+<script src="config.js"></script>
 
-        // Initialize Firebase
+<script>
+    // Initialize Firebase with configuration from config.js
+    console.log('🚀 Initializing Firebase...');
+    
+    try {
+        // Use the configuration from config.js
         firebase.initializeApp(firebaseConfig);
+        console.log('✅ Firebase initialized successfully');
+        
+        // Initialize Firebase services
         const auth = firebase.auth();
         const db = firebase.firestore();
         const storage = firebase.storage();
+        
+        console.log('✅ Firebase services ready');
+    } catch (error) {
+        console.error('❌ Firebase initialization error:', error);
+        alert('Configuration error: ' + error.message);
+    }
+</script>
 
+<script>
+// Security validation functions
+function sanitizeInput(input) {
+    const div = document.createElement('div');
+    div.textContent = input;
+    return div.innerHTML;
+}
+
+function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
+}
+
+function validatePhone(phone) {
+    const re = /^[\+]?[1-9][\d]{0,15}$/;
+    return re.test(phone.replace(/[\s\-\(\)]/g, ''));
+}
+
+function validateFileType(file, allowedTypes) {
+    const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+    return allowedTypes.includes(fileExtension);
+}
+
+function validateFileSize(file, maxSizeMB) {
+    return file.size <= maxSizeMB * 1024 * 1024;
+}
+
+// Enhanced admin access verification
+async function verifyAdminAccess() {
+    if (!currentUser) {
+        throw new Error('User not authenticated');
+    }
+    
+    const userDoc = await db.collection('users').doc(currentUser.uid).get();
+    if (!userDoc.exists || userDoc.data().userType !== 'admin') {
+        throw new Error('Unauthorized admin access attempt');
+    }
+    
+    return true;
+}
+
+console.log('🔐 Security functions loaded');
+</script>
+
+<script>
 // Enhanced admin dashboard with delete functionality
 function enhanceAdminDashboard() {
     console.log('🚀 Enhancing admin dashboard with delete functionality...');
@@ -4003,8 +4054,10 @@ async function handlePaymentConfirmationUpload(file) {
     
     try {
         const uploadArea = document.getElementById('paymentConfirmationUpload');
-        let progressBar = document.getElementById('paymentProgress'); // CHANGED: const -> let
         const statusElement = document.getElementById('paymentConfirmationStatus');
+        
+        // Store original state
+        const originalHTML = uploadArea.innerHTML;
         
         // Show uploading state
         uploadArea.innerHTML = `
@@ -4015,24 +4068,23 @@ async function handlePaymentConfirmationUpload(file) {
             </div>
         `;
         
-        // Get the new progress bar element after updating innerHTML
-        progressBar = uploadArea.querySelector('.upload-progress-bar'); // NOW THIS WORKS
+        // Get the NEW progress bar element
+        const progressBar = uploadArea.querySelector('.upload-progress-bar');
         
         // Validate file type
         const validTypes = ['.pdf', '.jpg', '.jpeg', '.png'];
-        const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
-        
-        if (!validTypes.includes(fileExtension)) {
+        if (!validateFileType(file, validTypes)) {
             alert('Please upload PDF, JPG, JPEG, or PNG files only.');
-            resetPaymentUploadArea();
+            uploadArea.innerHTML = originalHTML;
+            reinitializePaymentUpload();
             return;
         }
         
         // Validate file size (10MB max)
-        const maxSize = 10 * 1024 * 1024;
-        if (file.size > maxSize) {
+        if (!validateFileSize(file, 10)) {
             alert('File size must be less than 10MB.');
-            resetPaymentUploadArea();
+            uploadArea.innerHTML = originalHTML;
+            reinitializePaymentUpload();
             return;
         }
         
@@ -4055,7 +4107,8 @@ async function handlePaymentConfirmationUpload(file) {
                 if (statusElement) {
                     statusElement.innerHTML = '<p style="color: red;">Upload failed. Please try again.</p>';
                 }
-                resetPaymentUploadArea();
+                uploadArea.innerHTML = originalHTML;
+                reinitializePaymentUpload();
             },
             async () => {
                 try {
@@ -4089,7 +4142,8 @@ async function handlePaymentConfirmationUpload(file) {
                     if (statusElement) {
                         statusElement.innerHTML = '<p style="color: red;">Error saving confirmation. Please contact support.</p>';
                     }
-                    resetPaymentUploadArea();
+                    uploadArea.innerHTML = originalHTML;
+                    reinitializePaymentUpload();
                 }
             }
         );
@@ -4101,7 +4155,8 @@ async function handlePaymentConfirmationUpload(file) {
     }
 }
 
-function resetPaymentUploadArea() {
+// Add this helper function
+function reinitializePaymentUpload() {
     const uploadArea = document.getElementById('paymentConfirmationUpload');
     if (!uploadArea) return;
     
@@ -4378,35 +4433,54 @@ function initializeDocumentUpload() {
 }
 
 async function handleFileUpload(file, docType, progressBar, uploadArea) {
+    console.log('🚀 Starting file upload...', { 
+        file: file.name, 
+        docType: docType,
+        currentUser: currentUser?.uid 
+    });
+
     if (!file || !currentUser) {
+        console.error('❌ Missing file or user not logged in');
         alert('Please log in to upload documents.');
         return;
     }
-    
-    // Validate file type
-    const validTypes = ['.pdf', '.jpg', '.jpeg', '.png'];
-    const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
-    
-    if (!validTypes.includes(fileExtension)) {
-        alert('Please upload PDF, JPG, JPEG, or PNG files only.');
+
+    // Validate docType is not undefined
+    if (!docType || docType === 'undefined') {
+        console.error('❌ Invalid document type:', docType);
+        alert('Document type is invalid. Please refresh the page and try again.');
         return;
     }
-    
-    // Validate file size (10MB max)
-    const maxSize = 10 * 1024 * 1024;
-    if (file.size > maxSize) {
-        alert('File size must be less than 10MB.');
-        return;
-    }
-    
+
     try {
-        console.log(`Starting upload for ${docType}: ${file.name}`);
+        // Validate file type
+        const validTypes = ['.pdf', '.jpg', '.jpeg', '.png'];
+        const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
         
-        // Create unique filename
-        const fileName = `${currentUser.uid}/${docType}_${Date.now()}_${file.name}`;
+        if (!validTypes.includes(fileExtension)) {
+            alert('Please upload PDF, JPG, JPEG, or PNG files only.');
+            return;
+        }
+
+        // Validate file size (10MB max)
+        const maxSize = 10 * 1024 * 1024;
+        if (file.size > maxSize) {
+            alert('File size must be less than 10MB.');
+            return;
+        }
+
+        console.log('✅ File validation passed, docType:', docType);
+
+        // Create unique filename with user ID
+        const fileName = `${currentUser.uid}/${docType}_${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+        console.log('📁 File path:', fileName);
+        
         const storageRef = storage.ref().child(fileName);
-        
-        // Show uploading state
+
+        // Store original upload area HTML for reset
+        const originalHTML = uploadArea.innerHTML;
+
+        // Show uploading state - FIXED: Use template without progress bar ID dependency
         uploadArea.innerHTML = `
             <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 10px;"></i>
             <p>Uploading... Please wait</p>
@@ -4414,54 +4488,77 @@ async function handleFileUpload(file, docType, progressBar, uploadArea) {
                 <div class="upload-progress-bar" style="width: 0%"></div>
             </div>
         `;
-        
-        progressBar = uploadArea.querySelector('.upload-progress-bar');
-        
+
+        // Get the progress bar from the NEW HTML we just created
+        const newProgressBar = uploadArea.querySelector('.upload-progress-bar');
+
         // Upload file with progress tracking
         const uploadTask = storageRef.put(file);
         
         uploadTask.on('state_changed',
             (snapshot) => {
-                // Update progress bar
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                progressBar.style.width = progress + '%';
-                console.log(`Upload progress: ${progress}%`);
+                console.log(`📊 Upload progress: ${progress}%`);
+                if (newProgressBar) {
+                    newProgressBar.style.width = progress + '%';
+                }
             },
             (error) => {
-                console.error('Upload failed:', error);
+                console.error('❌ Upload failed:', error);
+                console.error('Error code:', error.code, 'Message:', error.message);
+                
+                let errorMessage = 'Upload failed: ' + error.message;
+                
+                // Specific error handling
+                if (error.code === 'storage/unauthorized') {
+                    errorMessage = 'Storage access denied. Please check Firebase Storage rules.';
+                } else if (error.code === 'storage/canceled') {
+                    errorMessage = 'Upload was canceled.';
+                } else if (error.code === 'storage/unknown') {
+                    errorMessage = 'Unknown error occurred. Please check your internet connection.';
+                }
+                
                 uploadArea.innerHTML = `
-                    <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; margin-bottom: 10px;"></i>
-                    <p>Click or drag file to upload</p>
-                    <div class="upload-progress">
-                        <div class="upload-progress-bar" style="width: 0%"></div>
-                    </div>
-                    <p style="color: red; font-size: 0.8em;">Upload failed. Please try again.</p>
+                    <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 10px; color: red;"></i>
+                    <p>Upload Failed</p>
+                    <p style="color: red; font-size: 0.8em;">${errorMessage}</p>
+                    <p style="font-size: 0.7em; color: #666;">Check Firebase Storage rules and try again.</p>
                 `;
-                alert('Upload failed: ' + error.message);
+                
+                // Reset after 5 seconds
+                setTimeout(() => {
+                    uploadArea.innerHTML = originalHTML;
+                    reinitializeUploadArea(uploadArea, docType);
+                }, 5000);
             },
             async () => {
                 try {
-                    // Upload completed - get download URL
+                    console.log('✅ File uploaded to storage, getting download URL...');
                     const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-                    console.log('File uploaded successfully. Download URL:', downloadURL);
+                    console.log('📎 Download URL obtained');
                     
-                    // Update application in Firestore
+                    // Create the document data with proper validation
+                    const documentData = {
+                        url: downloadURL,
+                        fileName: file.name,
+                        uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        status: 'pending_review',
+                        fileSize: file.size,
+                        fileType: file.type
+                    };
+
+                    console.log('📝 Updating Firestore for docType:', docType);
+                    console.log('Document data:', documentData);
+
+                    // Update Firestore with document info - using proper field name
                     await db.collection('applications').doc(currentUser.uid).update({
-                        [`documents.${docType}`]: {
-                            url: downloadURL,
-                            fileName: file.name,
-                            uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            status: 'pending_review',
-                            fileSize: file.size,
-                            fileType: file.type,
-                            reviewedBy: null,
-                            reviewDate: null,
-                            comments: ''
-                        },
+                        [`documents.${docType}`]: documentData,
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                         status: 'document_upload'
                     });
-                    
+
+                    console.log('✅ Firestore updated successfully');
+
                     // Update application stages
                     await updateApplicationStage('document_upload', true);
                     
@@ -4482,31 +4579,69 @@ async function handleFileUpload(file, docType, progressBar, uploadArea) {
                         statusElement.className = 'document-status status-pending';
                     }
                     
-                    alert('Document uploaded successfully! It is now pending review.');
-                    
-                    // Reset after 3 seconds
-                    setTimeout(() => {
-                        uploadArea.innerHTML = `
-                            <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; margin-bottom: 10px;"></i>
-                            <p>Click or drag file to upload</p>
-                            <p style="font-size: 0.8em; color: #666;">Upload another file</p>
-                            <div class="upload-progress">
-                                <div class="upload-progress-bar" style="width: 0%"></div>
-                            </div>
-                        `;
-                    }, 3000);
+                    alert('✅ Document uploaded successfully! It is now pending review.');
                     
                 } catch (error) {
-                    console.error('Error updating Firestore:', error);
-                    alert('Upload completed but failed to update application. Please contact support.');
+                    console.error('❌ Error updating Firestore:', error);
+                    uploadArea.innerHTML = `
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 10px; color: orange;"></i>
+                        <p>Upload Completed but Update Failed</p>
+                        <p style="color: orange; font-size: 0.8em;">File uploaded but failed to update application. Please contact support.</p>
+                        <p style="font-size: 0.7em; color: #666;">Error: ${error.message}</p>
+                    `;
+                    
+                    // Reset after 5 seconds
+                    setTimeout(() => {
+                        uploadArea.innerHTML = originalHTML;
+                        reinitializeUploadArea(uploadArea, docType);
+                    }, 5000);
                 }
             }
         );
         
     } catch (error) {
-        console.error('Upload error:', error);
+        console.error('❌ Upload error:', error);
         alert('Upload failed: ' + error.message);
+        
+        // Reset upload area
+        uploadArea.innerHTML = originalHTML;
+        reinitializeUploadArea(uploadArea, docType);
     }
+}
+
+// Add this helper function to reinitialize upload areas after reset
+function reinitializeUploadArea(uploadArea, docType) {
+    const fileInput = uploadArea.parentElement.querySelector('input[type="file"]');
+    
+    // Re-attach click event
+    uploadArea.addEventListener('click', () => fileInput.click());
+    
+    // Re-attach drag and drop events
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+    
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        if (e.dataTransfer.files[0]) {
+            const progressBar = uploadArea.querySelector('.upload-progress-bar');
+            handleFileUpload(e.dataTransfer.files[0], docType, progressBar, uploadArea);
+        }
+    });
+    
+    // Re-attach file input change event
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files[0]) {
+            const progressBar = uploadArea.querySelector('.upload-progress-bar');
+            handleFileUpload(e.target.files[0], docType, progressBar, uploadArea);
+        }
+    });
 }
 
 async function updateApplicationStage(stage, completed) {
