@@ -3944,48 +3944,121 @@ function handlePasswordChange(event) {
             button.disabled = false;
         });
 }
-
-// Payment Confirmation System
+<script>
+// Enhanced Payment Confirmation System
 function initializePaymentConfirmation() {
-    const makePaymentBtn = document.querySelector('#payments .btn-primary');
-    if (makePaymentBtn) {
-        makePaymentBtn.addEventListener('click', showPaymentInformation);
+    const paymentsSection = document.getElementById('payments');
+    if (!paymentsSection) return;
+    
+    // Remove existing payment confirmation if any
+    const existingConfirmation = paymentsSection.querySelector('.payment-confirmation-section');
+    if (existingConfirmation) {
+        existingConfirmation.remove();
     }
     
-    // Add payment confirmation upload area to payments section
-    const paymentsSection = document.getElementById('payments');
-    const confirmationSection = document.createElement('div');
-    confirmationSection.innerHTML = `
-        <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
-            <h4>Payment Confirmation</h4>
-            <p>Upload screenshot or proof of payment for verification</p>
+    const confirmationHTML = `
+        <div class="payment-confirmation-section" style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+            <h4>💰 Payment Confirmation</h4>
+            <p><strong>After making payment, confirm via:</strong></p>
             
-            <div class="upload-area" id="paymentConfirmationUpload" style="margin: 15px 0;">
-                <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; margin-bottom: 10px;"></i>
-                <p>Click or drag payment confirmation screenshot</p>
-                <input type="file" id="paymentUploadInput" accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
-                <div class="upload-progress">
-                    <div class="upload-progress-bar" id="paymentProgress"></div>
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 15px 0;">
+                <div style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
+                    <button onclick="sendPaymentEmail()" class="btn" style="flex: 1; min-width: 120px; background: #ea4335; color: white;">
+                        <i class="fas fa-envelope"></i> Email Proof
+                    </button>
+                    <button onclick="sendPaymentWhatsApp()" class="btn" style="flex: 1; min-width: 120px; background: #25D366; color: white;">
+                        <i class="fab fa-whatsapp"></i> WhatsApp
+                    </button>
+                    <button onclick="markPaymentAsSent()" class="btn" style="flex: 1; min-width: 120px; background: #E30613; color: white;">
+                        <i class="fas fa-check"></i> Mark as Sent
+                    </button>
+                </div>
+                
+                <div style="font-size: 0.9rem; color: #666;">
+                    <p><strong>Payment Methods:</strong></p>
+                    <p>📱 Orange Money: +231 770562292</p>
+                    <p>📱 Lonestar Money: +231 886590302</p>
+                    <p>🏦 UBA Bank: 53080500327155</p>
+                    <p><em>Account Name: Darlington Tamba</em></p>
                 </div>
             </div>
-            
-            <div id="paymentConfirmationStatus" style="margin-top: 10px;"></div>
         </div>
     `;
     
-    paymentsSection.appendChild(confirmationSection);
-    
-    // Initialize payment confirmation upload
-    const paymentUploadArea = document.getElementById('paymentConfirmationUpload');
-    const paymentFileInput = document.getElementById('paymentUploadInput');
-    
-    paymentUploadArea.addEventListener('click', () => paymentFileInput.click());
-    paymentFileInput.addEventListener('change', (e) => {
-        if (e.target.files[0]) {
-            handlePaymentConfirmationUpload(e.target.files[0]);
-        }
-    });
+    paymentsSection.innerHTML += confirmationHTML;
 }
+
+function sendPaymentEmail() {
+    const user = currentUser ? currentUser.uid : 'not_logged_in';
+    const subject = `Payment Confirmation - User: ${user}`;
+    const body = `Dear Global Immigration SC Team,
+
+I have made the payment for my application. Please find the payment confirmation attached.
+
+Application Details:
+• User ID: ${user}
+• Date: ${new Date().toLocaleDateString()}
+• Payment Method: [Please specify]
+
+Please confirm receipt of this payment.
+
+Thank you,
+Global Immigration SC Applicant`;
+
+    window.location.href = `mailto:infoglobalimmigrationsc@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    trackPaymentAction('email');
+}
+
+function sendPaymentWhatsApp() {
+    const user = currentUser ? currentUser.uid : 'not_logged_in';
+    const message = `💰 Global Immigration SC - Payment Confirmation
+
+User ID: ${user}
+Date: ${new Date().toLocaleDateString()}
+
+Hello! I have made the payment for my application. Please confirm receipt and provide further instructions.
+
+Thank you!`;
+
+    window.open(`https://wa.me/231886590302?text=${encodeURIComponent(message)}`, '_blank');
+    trackPaymentAction('whatsapp');
+}
+
+async function markPaymentAsSent() {
+    if (!currentUser) {
+        alert('Please log in to mark payment as sent');
+        return;
+    }
+    
+    try {
+        await db.collection('applications').doc(currentUser.uid).update({
+            paymentStatus: 'proof_sent',
+            paymentMethod: 'marked_by_user',
+            paymentProofSentAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        alert('✅ Thank you! We will verify your payment and update your application status soon.');
+        trackPaymentAction('marked');
+        
+    } catch (error) {
+        alert('Error updating payment status: ' + error.message);
+    }
+}
+
+async function trackPaymentAction(method) {
+    if (!currentUser) return;
+    
+    try {
+        await db.collection('applications').doc(currentUser.uid).update({
+            [`payment.${method}At`]: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    } catch (error) {
+        console.log('Payment tracking error:', error);
+    }
+}
+</script>
 
 function showPaymentInformation() {
     const paymentInfoHTML = `
@@ -4393,256 +4466,275 @@ async function loadUserProfile() {
                 });
         }
 
-        // Enhanced Document Upload System
+        // 🚀 ENHANCED UPLOAD SYSTEM with Firebase Storage Backup
 function initializeDocumentUpload() {
+    console.log('🚀 Initializing enhanced upload system...');
+    
+    // Check if Firebase Storage is available
+    const storageAvailable = typeof firebase.storage !== 'undefined';
+    console.log('📦 Storage available:', storageAvailable);
+    
     const uploadAreas = document.querySelectorAll('.upload-area');
     
     uploadAreas.forEach(area => {
-        const fileInput = area.parentElement.querySelector('input[type="file"]');
-        const progressBar = area.querySelector('.upload-progress-bar');
         const docType = area.dataset.docType;
         
-        // Click to upload
-        area.addEventListener('click', () => fileInput.click());
-        
-        // Drag and drop functionality
-        area.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            area.classList.add('dragover');
-        });
-        
-        area.addEventListener('dragleave', () => {
-            area.classList.remove('dragover');
-        });
-        
-        area.addEventListener('drop', (e) => {
-            e.preventDefault();
-            area.classList.remove('dragover');
-            if (e.dataTransfer.files[0]) {
-                handleFileUpload(e.dataTransfer.files[0], docType, progressBar, area);
-            }
-        });
-        
-        // File input change
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files[0]) {
-                handleFileUpload(e.target.files[0], docType, progressBar, area);
-            }
-        });
+        if (storageAvailable) {
+            // Show hybrid options (Storage + Free methods)
+            area.innerHTML = `
+                <div style="margin-bottom: 15px;">
+                    <div onclick="handleDirectUpload('${docType}')" 
+                         style="text-align: center; padding: 15px; border: 2px dashed #E30613; border-radius: 8px; cursor: pointer; margin-bottom: 10px; background: #fff0f0;">
+                        <i class="fas fa-cloud-upload-alt" style="color: #E30613; font-size: 1.5rem;"></i>
+                        <div style="font-weight: bold; color: #E30613; margin-top: 8px;">Direct Upload</div>
+                        <div style="font-size: 0.8rem; color: #666;">Fast & Secure</div>
+                    </div>
+                </div>
+                
+                <div style="color: #666; text-align: center; margin: 10px 0; font-size: 0.9rem;">
+                    ─── OR USE ───
+                </div>
+                
+                <div class="upload-options" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <div class="upload-option" onclick="openGoogleForm('${docType}')" 
+                         style="flex: 1; min-width: 80px; text-align: center; padding: 10px; border: 2px solid #4285f4; border-radius: 8px; cursor: pointer; background: white;">
+                        <i class="fab fa-google-drive" style="color: #4285f4; font-size: 1.2rem;"></i>
+                        <div style="font-size: 0.7rem; margin-top: 5px;">Google Form</div>
+                    </div>
+                    <div class="upload-option" onclick="sendViaEmail('${docType}')" 
+                         style="flex: 1; min-width: 80px; text-align: center; padding: 10px; border: 2px solid #ea4335; border-radius: 8px; cursor: pointer; background: white;">
+                        <i class="fas fa-envelope" style="color: #ea4335; font-size: 1.2rem;"></i>
+                        <div style="font-size: 0.7rem; margin-top: 5px;">Email</div>
+                    </div>
+                    <div class="upload-option" onclick="sendViaWhatsApp('${docType}')" 
+                         style="flex: 1; min-width: 80px; text-align: center; padding: 10px; border: 2px solid #25D366; border-radius: 8px; cursor: pointer; background: white;">
+                        <i class="fab fa-whatsapp" style="color: #25D366; font-size: 1.2rem;"></i>
+                        <div style="font-size: 0.7rem; margin-top: 5px;">WhatsApp</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            // Storage not available - show only free options
+            area.innerHTML = `
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: #666; margin-bottom: 10px;"></i>
+                    <p style="font-weight: bold; color: #333;">Choose Upload Method</p>
+                </div>
+                
+                <div class="upload-options" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <div class="upload-option" onclick="openGoogleForm('${docType}')" 
+                         style="flex: 1; min-width: 100px; text-align: center; padding: 15px; border: 2px solid #4285f4; border-radius: 8px; cursor: pointer; background: #f8f9fa;">
+                        <i class="fab fa-google-drive" style="color: #4285f4; font-size: 1.5rem;"></i>
+                        <div style="font-size: 0.8rem; margin-top: 8px; font-weight: 500;">Google Form</div>
+                        <div style="font-size: 0.7rem; color: #666; margin-top: 4px;">Recommended</div>
+                    </div>
+                    <div class="upload-option" onclick="sendViaEmail('${docType}')" 
+                         style="flex: 1; min-width: 100px; text-align: center; padding: 15px; border: 2px solid #ea4335; border-radius: 8px; cursor: pointer; background: #f8f9fa;">
+                        <i class="fas fa-envelope" style="color: #ea4335; font-size: 1.5rem;"></i>
+                        <div style="font-size: 0.8rem; margin-top: 8px; font-weight: 500;">Email</div>
+                        <div style="font-size: 0.7rem; color: #666; margin-top: 4px;">Attach File</div>
+                    </div>
+                    <div class="upload-option" onclick="sendViaWhatsApp('${docType}')" 
+                         style="flex: 1; min-width: 100px; text-align: center; padding: 15px; border: 2px solid #25D366; border-radius: 8px; cursor: pointer; background: #f8f9fa;">
+                        <i class="fab fa-whatsapp" style="color: #25D366; font-size: 1.5rem;"></i>
+                        <div style="font-size: 0.8rem; margin-top: 8px; font-weight: 500;">WhatsApp</div>
+                        <div style="font-size: 0.7rem; color: #666; margin-top: 4px;">Fast & Easy</div>
+                    </div>
+                </div>
+                
+                <p style="font-size: 0.8em; margin-top: 15px; color: #666; text-align: center; padding: 0 10px;">
+                    All methods are completely free and secure
+                </p>
+            `;
+        }
     });
 }
 
-async function handleFileUpload(file, docType, progressBar, uploadArea) {
-    console.log('🚀 Starting file upload...', { 
-        file: file.name, 
-        docType: docType,
-        currentUser: currentUser?.uid 
-    });
-
-    if (!file || !currentUser) {
-        console.error('❌ Missing file or user not logged in');
-        alert('Please log in to upload documents.');
-        return;
-    }
-
-    // Validate docType is not undefined
-    if (!docType || docType === 'undefined') {
-        console.error('❌ Invalid document type:', docType);
-        alert('Document type is invalid. Please refresh the page and try again.');
-        return;
-    }
-
-    try {
-        // Validate file type
-        const validTypes = ['.pdf', '.jpg', '.jpeg', '.png'];
-        const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+// Firebase Storage Direct Upload
+function handleDirectUpload(docType) {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.pdf,.jpg,.jpeg,.png,.doc,.docx';
+    
+    fileInput.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
         
-        if (!validTypes.includes(fileExtension)) {
-            alert('Please upload PDF, JPG, JPEG, or PNG files only.');
+        if (!currentUser) {
+            alert('Please log in to upload files directly');
             return;
         }
-
+        
         // Validate file size (10MB max)
-        const maxSize = 10 * 1024 * 1024;
-        if (file.size > maxSize) {
-            alert('File size must be less than 10MB.');
+        if (file.size > 10 * 1024 * 1024) {
+            alert('File size must be less than 10MB. Please use Google Form for larger files.');
             return;
         }
-
-        console.log('✅ File validation passed, docType:', docType);
-
-        // Create unique filename with user ID
-        const fileName = `${currentUser.uid}/${docType}_${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
-        console.log('📁 File path:', fileName);
         
-        const storageRef = storage.ref().child(fileName);
-
-        // Store original upload area HTML for reset
-        const originalHTML = uploadArea.innerHTML;
-
-        // Show uploading state - FIXED: Use template without progress bar ID dependency
-        uploadArea.innerHTML = `
-            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 10px;"></i>
-            <p>Uploading... Please wait</p>
-            <div class="upload-progress">
-                <div class="upload-progress-bar" style="width: 0%"></div>
-            </div>
-        `;
-
-        // Get the progress bar from the NEW HTML we just created
-        const newProgressBar = uploadArea.querySelector('.upload-progress-bar');
-
-        // Upload file with progress tracking
-        const uploadTask = storageRef.put(file);
+        // Validate file type
+        const validTypes = ['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx'];
+        const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+        if (!validTypes.includes(fileExtension)) {
+            alert('Please upload PDF, Word, or image files only.');
+            return;
+        }
         
-        uploadTask.on('state_changed',
-            (snapshot) => {
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                console.log(`📊 Upload progress: ${progress}%`);
-                if (newProgressBar) {
-                    newProgressBar.style.width = progress + '%';
-                }
-            },
-            (error) => {
-                console.error('❌ Upload failed:', error);
-                console.error('Error code:', error.code, 'Message:', error.message);
-                
-                let errorMessage = 'Upload failed: ' + error.message;
-                
-                // Specific error handling
-                if (error.code === 'storage/unauthorized') {
-                    errorMessage = 'Storage access denied. Please check Firebase Storage rules.';
-                } else if (error.code === 'storage/canceled') {
-                    errorMessage = 'Upload was canceled.';
-                } else if (error.code === 'storage/unknown') {
-                    errorMessage = 'Unknown error occurred. Please check your internet connection.';
-                }
-                
-                uploadArea.innerHTML = `
-                    <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 10px; color: red;"></i>
-                    <p>Upload Failed</p>
-                    <p style="color: red; font-size: 0.8em;">${errorMessage}</p>
-                    <p style="font-size: 0.7em; color: #666;">Check Firebase Storage rules and try again.</p>
-                `;
-                
-                // Reset after 5 seconds
-                setTimeout(() => {
-                    uploadArea.innerHTML = originalHTML;
-                    reinitializeUploadArea(uploadArea, docType);
-                }, 5000);
-            },
-            async () => {
-                try {
-                    console.log('✅ File uploaded to storage, getting download URL...');
-                    const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-                    console.log('📎 Download URL obtained');
-                    
-                    // Create the document data with proper validation
-                    const documentData = {
-                        url: downloadURL,
-                        fileName: file.name,
-                        uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        status: 'pending_review',
-                        fileSize: file.size,
-                        fileType: file.type
-                    };
-
-                    console.log('📝 Updating Firestore for docType:', docType);
-                    console.log('Document data:', documentData);
-
-                    // Update Firestore with document info - using proper field name
-                    await db.collection('applications').doc(currentUser.uid).update({
-                        [`documents.${docType}`]: documentData,
-                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        status: 'document_upload'
-                    });
-
-                    console.log('✅ Firestore updated successfully');
-
-                    // Update application stages
-                    await updateApplicationStage('document_upload', true);
-                    
-                    // Show success state
-                    uploadArea.innerHTML = `
-                        <i class="fas fa-check-circle" style="font-size: 2rem; margin-bottom: 10px; color: #4CAF50;"></i>
-                        <p>Upload Successful!</p>
-                        <p style="font-size: 0.8em; color: #666;">${file.name}</p>
-                        <div class="upload-progress">
-                            <div class="upload-progress-bar" style="width: 100%; background: #4CAF50;"></div>
-                        </div>
-                    `;
-                    
-                    // Update document status in UI
-                    const statusElement = document.getElementById(`${docType}Status`);
-                    if (statusElement) {
-                        statusElement.textContent = 'PENDING REVIEW';
-                        statusElement.className = 'document-status status-pending';
+        try {
+            const fileName = `${currentUser.uid}/${docType}_${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+            const storageRef = firebase.storage().ref().child(fileName);
+            
+            // Show upload progress
+            const uploadArea = document.querySelector(`[data-doc-type="${docType}"]`);
+            const originalHTML = uploadArea.innerHTML;
+            
+            uploadArea.innerHTML = `
+                <div style="text-align: center; padding: 15px;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; color: #E30613;"></i>
+                    <p style="margin: 10px 0; font-weight: 500;">Uploading to secure cloud...</p>
+                    <div style="background: #f0f0f0; border-radius: 10px; height: 8px; margin: 10px 0;">
+                        <div id="uploadProgress" style="background: #E30613; height: 100%; width: 0%; border-radius: 10px; transition: width 0.3s;"></div>
+                    </div>
+                    <p style="font-size: 0.8rem; color: #666; margin-top: 5px;">${file.name}</p>
+                </div>
+            `;
+            
+            const uploadTask = storageRef.put(file);
+            
+            uploadTask.on('state_changed',
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    const progressBar = document.getElementById('uploadProgress');
+                    if (progressBar) {
+                        progressBar.style.width = progress + '%';
                     }
-                    
-                    alert('✅ Document uploaded successfully! It is now pending review.');
-                    
-                } catch (error) {
-                    console.error('❌ Error updating Firestore:', error);
-                    uploadArea.innerHTML = `
-                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 10px; color: orange;"></i>
-                        <p>Upload Completed but Update Failed</p>
-                        <p style="color: orange; font-size: 0.8em;">File uploaded but failed to update application. Please contact support.</p>
-                        <p style="font-size: 0.7em; color: #666;">Error: ${error.message}</p>
-                    `;
-                    
-                    // Reset after 5 seconds
-                    setTimeout(() => {
+                },
+                (error) => {
+                    console.error('Upload failed:', error);
+                    uploadArea.innerHTML = originalHTML;
+                    alert('Direct upload failed: ' + error.message + '\n\nPlease use Google Form, Email, or WhatsApp instead.');
+                },
+                async () => {
+                    try {
+                        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                        
+                        // Save to Firestore
+                        await db.collection('applications').doc(currentUser.uid).update({
+                            [`documents.${docType}`]: {
+                                url: downloadURL,
+                                fileName: file.name,
+                                uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                status: 'uploaded',
+                                method: 'direct_upload',
+                                fileSize: file.size,
+                                fileType: file.type
+                            },
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        
+                        uploadArea.innerHTML = `
+                            <div style="text-align: center; padding: 15px; color: green;">
+                                <i class="fas fa-check-circle" style="font-size: 1.5rem;"></i>
+                                <p style="margin: 10px 0; font-weight: 500;">Upload Successful!</p>
+                                <p style="font-size: 0.8rem; margin: 5px 0;">${file.name}</p>
+                                <p style="font-size: 0.7rem; color: #666; margin-top: 8px;">Securely stored in cloud</p>
+                            </div>
+                        `;
+                        
+                        // Update status
+                        const statusElement = document.getElementById(`${docType}Status`);
+                        if (statusElement) {
+                            statusElement.textContent = 'UPLOADED';
+                            statusElement.className = 'document-status status-approved';
+                        }
+                        
+                        console.log('✅ Direct upload successful:', docType);
+                        
+                    } catch (error) {
+                        console.error('Error saving to Firestore:', error);
                         uploadArea.innerHTML = originalHTML;
-                        reinitializeUploadArea(uploadArea, docType);
-                    }, 5000);
+                        alert('Upload completed but failed to save record. Please contact support.');
+                    }
                 }
-            }
-        );
-        
+            );
+            
+        } catch (error) {
+            console.error('Upload error:', error);
+            alert('Direct upload not available. Please use Google Form, Email, or WhatsApp.');
+        }
+    };
+    
+    fileInput.click();
+}
+
+// Free Upload Methods
+function openGoogleForm(docType) {
+    // Use your existing application form
+    const formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform';
+    const params = new URLSearchParams({
+        'usp': 'pp_url',
+        'entry.123456789': docType, // You'll need to get actual field IDs
+        'entry.987654321': currentUser ? currentUser.uid : 'not_logged_in'
+    });
+    
+    window.open(`${formUrl}?${params}`, '_blank');
+    trackDocumentAction(docType, 'google_form');
+}
+
+function sendViaEmail(docType) {
+    const user = currentUser ? currentUser.uid : 'not_logged_in';
+    const subject = `Document Upload: ${docType} - User: ${user}`;
+    const body = `Dear Global Immigration SC Team,
+
+Please find attached my ${docType} document.
+
+Application Details:
+• Document Type: ${docType}
+• User ID: ${user}
+• Date: ${new Date().toLocaleDateString()}
+
+Please confirm receipt of this document.
+
+Thank you,
+Global Immigration SC Applicant`;
+
+    window.location.href = `mailto:infoglobalimmigrationsc@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    trackDocumentAction(docType, 'email');
+}
+
+function sendViaWhatsApp(docType) {
+    const user = currentUser ? currentUser.uid : 'not_logged_in';
+    const message = `🌍 Global Immigration SC - Document Upload
+
+Document Type: ${docType}
+User ID: ${user}
+Date: ${new Date().toLocaleDateString()}
+
+Hello! I would like to upload my ${docType} document. Please guide me on how to proceed.
+
+Thank you!`;
+
+    window.open(`https://wa.me/231886590302?text=${encodeURIComponent(message)}`, '_blank');
+    trackDocumentAction(docType, 'whatsapp');
+}
+
+// Track user actions in Firestore
+async function trackDocumentAction(docType, method) {
+    if (!currentUser) return;
+    
+    try {
+        await db.collection('applications').doc(currentUser.uid).update({
+            [`documents.${docType}.lastAction`]: method,
+            [`documents.${docType}.${method}At`]: firebase.firestore.FieldValue.serverTimestamp(),
+            [`documents.${docType}.status`]: 'pending_upload',
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        console.log(`✅ Tracked ${method} action for ${docType}`);
     } catch (error) {
-        console.error('❌ Upload error:', error);
-        alert('Upload failed: ' + error.message);
-        
-        // Reset upload area
-        uploadArea.innerHTML = originalHTML;
-        reinitializeUploadArea(uploadArea, docType);
+        console.log('Tracking error:', error);
     }
 }
 
-// Add this helper function to reinitialize upload areas after reset
-function reinitializeUploadArea(uploadArea, docType) {
-    const fileInput = uploadArea.parentElement.querySelector('input[type="file"]');
-    
-    // Re-attach click event
-    uploadArea.addEventListener('click', () => fileInput.click());
-    
-    // Re-attach drag and drop events
-    uploadArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadArea.classList.add('dragover');
-    });
-    
-    uploadArea.addEventListener('dragleave', () => {
-        uploadArea.classList.remove('dragover');
-    });
-    
-    uploadArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        uploadArea.classList.remove('dragover');
-        if (e.dataTransfer.files[0]) {
-            const progressBar = uploadArea.querySelector('.upload-progress-bar');
-            handleFileUpload(e.dataTransfer.files[0], docType, progressBar, uploadArea);
-        }
-    });
-    
-    // Re-attach file input change event
-    fileInput.addEventListener('change', (e) => {
-        if (e.target.files[0]) {
-            const progressBar = uploadArea.querySelector('.upload-progress-bar');
-            handleFileUpload(e.target.files[0], docType, progressBar, uploadArea);
-        }
-    });
-}
+console.log('✅ Enhanced upload system loaded successfully');
 
 async function updateApplicationStage(stage, completed) {
     if (!currentUser) return;
@@ -5223,26 +5315,35 @@ function getStepDateText(status) {
                 location.reload();
             });
 
-            // Loading Screen - UPDATED CODE
-            window.addEventListener('load', function() {
-                setTimeout(function() {
-                    document.getElementById('loading-screen').style.opacity = '0';
-                    setTimeout(function() {
-                        document.getElementById('loading-screen').style.display = 'none';
-                    }, 500);
-                }, 2000);
-                
-                // Add a timeout to ensure loading screen disappears even if images fail
-                setTimeout(() => {
-                    document.getElementById('loading-screen').style.display = 'none';
-                }, 4000); // 4 second maximum loading time
-                
-                // Animate stats
-                animateValue('clients', 0, 500, 2000);
-                animateValue('success', 0, 98, 2000);
-                animateValue('countries', 0, 80, 2000);
-                animateValue('experience', 0, 10, 2000);
-            });
+            // Loading Screen - FIXED CODE
+window.addEventListener('load', function() {
+    // Hide loading screen after 2 seconds max, regardless of image loading
+    setTimeout(function() {
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+            loadingScreen.style.opacity = '0';
+            setTimeout(function() {
+                loadingScreen.style.display = 'none';
+            }, 500);
+        }
+    }, 2000);
+    
+    // Force hide after 3 seconds as backup
+    setTimeout(() => {
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+            loadingScreen.style.display = 'none';
+        }
+    }, 3000);
+});
+
+// Animate stats
+setTimeout(() => {
+    animateValue('clients', 0, 500, 2000);
+    animateValue('success', 0, 98, 2000);
+    animateValue('countries', 0, 80, 2000);
+    animateValue('experience', 0, 10, 2000);
+}, 500);
             
             // Mobile Menu Toggle - Fixed version
             document.querySelector('.mobile-toggle').addEventListener('click', function() {
@@ -5706,21 +5807,19 @@ function getStepDateText(status) {
                 });
             }
 
-            // Check if images are loading properly
-            function checkImage(url, callback) {
-                const img = new Image();
-                img.onload = function() { callback(true); };
-                img.onerror = function() { callback(false); };
-                img.src = url;
-            }
-
-            // Check logo
-            checkImage('GISC-LOGO.webp', function(success) {
-                if (!success) {
-                    document.querySelector('.logo img').style.display = 'none';
-                    document.getElementById('header-logo-fallback').style.display = 'flex';
-                }
-            });
+            // Check logo with timeout
+function checkLogo() {
+    const logoImg = document.querySelector('.logo img');
+    const fallback = document.getElementById('header-logo-fallback');
+    
+    setTimeout(() => {
+        if (!logoImg.complete || logoImg.naturalHeight === 0) {
+            console.log('Logo image failed, showing fallback');
+            if (logoImg) logoImg.style.display = 'none';
+            if (fallback) fallback.style.display = 'flex';
+        }
+    }, 1000);
+}
 
             // Check about image
             checkImage('IMAGES.webp', function(success) {
