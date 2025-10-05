@@ -5315,26 +5315,35 @@ function getStepDateText(status) {
                 location.reload();
             });
 
-            // Loading Screen - UPDATED CODE
-            window.addEventListener('load', function() {
-                setTimeout(function() {
-                    document.getElementById('loading-screen').style.opacity = '0';
-                    setTimeout(function() {
-                        document.getElementById('loading-screen').style.display = 'none';
-                    }, 500);
-                }, 2000);
-                
-                // Add a timeout to ensure loading screen disappears even if images fail
-                setTimeout(() => {
-                    document.getElementById('loading-screen').style.display = 'none';
-                }, 4000); // 4 second maximum loading time
-                
-                // Animate stats
-                animateValue('clients', 0, 500, 2000);
-                animateValue('success', 0, 98, 2000);
-                animateValue('countries', 0, 80, 2000);
-                animateValue('experience', 0, 10, 2000);
-            });
+            // Loading Screen - FIXED CODE
+window.addEventListener('load', function() {
+    // Hide loading screen after 2 seconds max, regardless of image loading
+    setTimeout(function() {
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+            loadingScreen.style.opacity = '0';
+            setTimeout(function() {
+                loadingScreen.style.display = 'none';
+            }, 500);
+        }
+    }, 2000);
+    
+    // Force hide after 3 seconds as backup
+    setTimeout(() => {
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+            loadingScreen.style.display = 'none';
+        }
+    }, 3000);
+});
+
+// Animate stats
+setTimeout(() => {
+    animateValue('clients', 0, 500, 2000);
+    animateValue('success', 0, 98, 2000);
+    animateValue('countries', 0, 80, 2000);
+    animateValue('experience', 0, 10, 2000);
+}, 500);
             
             // Mobile Menu Toggle - Fixed version
             document.querySelector('.mobile-toggle').addEventListener('click', function() {
@@ -5798,21 +5807,19 @@ function getStepDateText(status) {
                 });
             }
 
-            // Check if images are loading properly
-            function checkImage(url, callback) {
-                const img = new Image();
-                img.onload = function() { callback(true); };
-                img.onerror = function() { callback(false); };
-                img.src = url;
-            }
-
-            // Check logo
-            checkImage('GISC-LOGO.webp', function(success) {
-                if (!success) {
-                    document.querySelector('.logo img').style.display = 'none';
-                    document.getElementById('header-logo-fallback').style.display = 'flex';
-                }
-            });
+            // Check logo with timeout
+function checkLogo() {
+    const logoImg = document.querySelector('.logo img');
+    const fallback = document.getElementById('header-logo-fallback');
+    
+    setTimeout(() => {
+        if (!logoImg.complete || logoImg.naturalHeight === 0) {
+            console.log('Logo image failed, showing fallback');
+            if (logoImg) logoImg.style.display = 'none';
+            if (fallback) fallback.style.display = 'flex';
+        }
+    }, 1000);
+}
 
             // Check about image
             checkImage('IMAGES.webp', function(success) {
