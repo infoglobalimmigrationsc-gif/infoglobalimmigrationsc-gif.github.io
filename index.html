@@ -31,7 +31,21 @@
             --medium-gray: #777777;
             --dark-gray: #333333;
         }
-        
+        /* Ensure loading screen can be hidden */
+#loading-screen {
+    transition: opacity 0.5s ease !important;
+}
+
+#loading-screen[style*="display: none"] {
+    display: none !important;
+}
+
+/* Add a force-hide class */
+.force-hide {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
         /* Custom Scrollbar Styles - Brand Themed */
         /* Always show vertical scrollbar */
         html {
@@ -3432,11 +3446,12 @@
 <script src="config.js"></script>
 
 <script>
-    // Initialize Firebase with configuration from config.js
-    console.log('🚀 Initializing Firebase...');
-    
-    try {
-        // Use the configuration from config.js
+    // Initialize Firebase with fallback
+console.log('🚀 Initializing Firebase...');
+
+try {
+    // Check if config exists
+    if (typeof firebaseConfig !== 'undefined') {
         firebase.initializeApp(firebaseConfig);
         console.log('✅ Firebase initialized successfully');
         
@@ -3446,10 +3461,16 @@
         const storage = firebase.storage();
         
         console.log('✅ Firebase services ready');
-    } catch (error) {
-        console.error('❌ Firebase initialization error:', error);
-        alert('Configuration error: ' + error.message);
+    } else {
+        console.log('⚠️ Firebase config not found, continuing without Firebase');
+        // Set dummy values to prevent errors
+        window.auth = { onAuthStateChanged: (cb) => cb(null) };
+        window.db = { collection: () => ({ doc: () => ({ get: () => Promise.resolve({ exists: false }) }) }) };
     }
+} catch (error) {
+    console.error('❌ Firebase initialization error:', error);
+    console.log('⚠️ Continuing without Firebase features');
+}
 </script>
 
 <script>
@@ -5290,6 +5311,27 @@ function getStepDateText(status) {
 
         // Initialize when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
+           
+            // Emergency function to hide loading screen
+    function forceHideLoadingScreen() {
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+            loadingScreen.classList.add('force-hide');
+            loadingScreen.style.display = 'none';
+            loadingScreen.style.opacity = '0';
+            console.log('⚠️ Loading screen force-hidden');
+        }
+    }
+
+    // Log any errors that might be blocking execution
+    window.addEventListener('error', function(e) {
+        console.error('Global error:', e.error);
+        console.log('Error at:', e.filename, e.lineno);
+    });
+    
+    // Call this if loading screen persists
+    setTimeout(forceHideLoadingScreen, 5000);
+
             // Check if user is already logged in
             auth.onAuthStateChanged(async (user) => {
                 if (user) {
@@ -5316,7 +5358,10 @@ function getStepDateText(status) {
             });
 
             // Loading Screen - FIXED CODE
+// Loading Screen - FIXED CODE
 window.addEventListener('load', function() {
+    console.log('✅ Page fully loaded, hiding loading screen');
+    
     // Hide loading screen after 2 seconds max, regardless of image loading
     setTimeout(function() {
         const loadingScreen = document.getElementById('loading-screen');
@@ -5324,6 +5369,7 @@ window.addEventListener('load', function() {
             loadingScreen.style.opacity = '0';
             setTimeout(function() {
                 loadingScreen.style.display = 'none';
+                console.log('✅ Loading screen hidden normally');
             }, 500);
         }
     }, 2000);
@@ -5331,13 +5377,15 @@ window.addEventListener('load', function() {
     // Force hide after 3 seconds as backup
     setTimeout(() => {
         const loadingScreen = document.getElementById('loading-screen');
-        if (loadingScreen) {
+        if (loadingScreen && loadingScreen.style.display !== 'none') {
             loadingScreen.style.display = 'none';
+            loadingScreen.classList.add('force-hide');
+            console.log('🔄 Loading screen force-hidden by backup timer');
         }
     }, 3000);
 });
 
-// Animate stats
+// Animate stats with delay
 setTimeout(() => {
     animateValue('clients', 0, 500, 2000);
     animateValue('success', 0, 98, 2000);
