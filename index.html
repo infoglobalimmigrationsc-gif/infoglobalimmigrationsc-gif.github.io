@@ -705,8 +705,8 @@
             font-size: 0.9rem;
         }
         
-         /* Stats Section */
-        .stats {
+        /* Stats Section */
+.stats {
     background: linear-gradient(135deg, var(--primary-red) 0%, #b30000 100%);
     color: white;
     text-align: center;
@@ -732,6 +732,7 @@
     font-weight: bold;
     margin-bottom: 10px;
     display: block;
+    color: white !important; /* Keep white for main stats section */
 }
 
 .stat-label {
@@ -740,8 +741,14 @@
     color: white !important;
 }
 
-.stat-number {
-    color: white !important;
+/* OVERRIDE for Admin Dashboard stats - make text dark */
+.admin-dashboard .stat-number,
+.admin-dashboard .stat-label {
+    color: var(--dark-gray) !important;
+}
+
+.admin-dashboard .stats-container {
+    color: var(--dark-gray);
 }
 
 /* Mobile responsiveness for stats - FIXED */
@@ -3367,25 +3374,87 @@
     </div>
 </div>
 
-<!-- Add this after the Upload History section -->
-<div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
-    <h4>Admin Controls (For Testing)</h4>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 15px;">
-        <button onclick="testStatusUpdate('passport', 'file_received')" class="btn btn-small btn-outline">
-            Mark Passport as Received
-        </button>
-        <button onclick="testStatusUpdate('academic_transcripts', 'file_received')" class="btn btn-small btn-outline">
-            Mark Transcripts as Received
-        </button>
-        <button onclick="testStatusUpdate('passport', 'under_review')" class="btn btn-small btn-outline">
-            Mark Under Review
-        </button>
-        <button onclick="testStatusUpdate('passport', 'approved')" class="btn btn-small btn-outline">
-            Mark Approved
-        </button>
-        <button onclick="testNotificationTest()" class="btn btn-small btn-outline">
-            Test Notification
-        </button>
+<!-- REAL ADMIN DOCUMENT CONTROLS -->
+<div id="adminDocumentControls" style="display: none; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+    <h4>📋 Admin Document Management</h4>
+    
+    <!-- Document Quick Actions -->
+    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+        <h5 style="margin-bottom: 10px;">Quick Document Status Updates</h5>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 10px;">
+            <button onclick="adminUpdateDocumentStatus('passport', 'file_received')" class="btn btn-small btn-outline">
+                ✅ Passport Received
+            </button>
+            <button onclick="adminUpdateDocumentStatus('academic_transcripts', 'file_received')" class="btn btn-small btn-outline">
+                ✅ Transcripts Received
+            </button>
+            <button onclick="adminUpdateDocumentStatus('passport', 'under_review')" class="btn btn-small btn-outline">
+                🔍 Under Review
+            </button>
+            <button onclick="adminUpdateDocumentStatus('passport', 'approved')" class="btn btn-small btn-outline">
+                ✅ Passport Approved
+            </button>
+            <button onclick="adminUpdateDocumentStatus('academic_transcripts', 'approved')" class="btn btn-small btn-outline">
+                ✅ Transcripts Approved
+            </button>
+            <button onclick="adminUpdateDocumentStatus('proof_of_funds', 'needs_correction')" class="btn btn-small btn-outline">
+                ⚠️ Needs Correction
+            </button>
+        </div>
+    </div>
+
+    <!-- Manual Document Status Update -->
+    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+        <h5 style="margin-bottom: 10px;">📝 Manual Status Update</h5>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: end;">
+            <div>
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Document Type</label>
+                <select id="adminDocType" class="form-control" style="min-width: 180px;">
+                    <option value="passport">Passport</option>
+                    <option value="academic_transcripts">Academic Transcripts</option>
+                    <option value="proof_of_funds">Proof of Funds</option>
+                    <option value="cv_resume">CV/Resume</option>
+                    <option value="recommendation_letter">Recommendation Letter</option>
+                    <option value="passport_photos">Passport Photos</option>
+                </select>
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Status</label>
+                <select id="adminDocStatus" class="form-control" style="min-width: 180px;">
+                    <option value="file_received">✅ File Received</option>
+                    <option value="under_review">🔍 Under Review</option>
+                    <option value="approved">✅ Approved</option>
+                    <option value="needs_correction">⚠️ Needs Correction</option>
+                    <option value="rejected">❌ Rejected</option>
+                </select>
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Notes (Optional)</label>
+                <input type="text" id="adminDocNotes" class="form-control" placeholder="Add comments..." style="min-width: 200px;">
+            </div>
+            <button onclick="adminManualStatusUpdate()" class="btn btn-primary btn-small">
+                Update Status
+            </button>
+        </div>
+    </div>
+
+    <!-- Application Progress Controls -->
+    <div style="background: #e8f5e8; padding: 15px; border-radius: 8px;">
+        <h5 style="margin-bottom: 10px;">🚀 Application Progress</h5>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 10px;">
+            <button onclick="adminUpdateApplicationStage('document_upload', true)" class="btn btn-small btn-outline">
+                ✅ Complete Document Stage
+            </button>
+            <button onclick="adminUpdateApplicationStage('payment', true)" class="btn btn-small btn-outline">
+                ✅ Complete Payment Stage
+            </button>
+            <button onclick="adminUpdateApplicationStage('review', true)" class="btn btn-small btn-outline">
+                ✅ Complete Review Stage
+            </button>
+            <button onclick="adminSendStatusNotification()" class="btn btn-small btn-outline">
+                📧 Send Status Update
+            </button>
+        </div>
     </div>
 </div>
                 
@@ -3664,15 +3733,95 @@
                     </div>
                     
                     <div id="documentReview" class="dashboard-section">
-                        <h3>Document Review</h3>
-                        <div id="documentReviewList">
-                            <!-- Documents for review will be loaded here -->
-                        </div>
-                    </div>
+    <h3>Document Review</h3>
+    <div id="documentReviewList">
+        <!-- Documents for review will be loaded here -->
+    </div>
+    
+    <!-- ADD THIS SECTION - Admin Document Controls for Admin Dashboard -->
+    <div id="adminDocumentControls" style="display: block; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+        <h4>📋 Admin Document Management</h4>
+        
+        <!-- Document Quick Actions -->
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+            <h5 style="margin-bottom: 10px;">Quick Document Status Updates</h5>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 10px;">
+                <button onclick="adminUpdateDocumentStatus('passport', 'file_received')" class="btn btn-small btn-outline">
+                    ✅ Passport Received
+                </button>
+                <button onclick="adminUpdateDocumentStatus('academic_transcripts', 'file_received')" class="btn btn-small btn-outline">
+                    ✅ Transcripts Received
+                </button>
+                <button onclick="adminUpdateDocumentStatus('passport', 'under_review')" class="btn btn-small btn-outline">
+                    🔍 Under Review
+                </button>
+                <button onclick="adminUpdateDocumentStatus('passport', 'approved')" class="btn btn-small btn-outline">
+                    ✅ Passport Approved
+                </button>
+                <button onclick="adminUpdateDocumentStatus('academic_transcripts', 'approved')" class="btn btn-small btn-outline">
+                    ✅ Transcripts Approved
+                </button>
+                <button onclick="adminUpdateDocumentStatus('proof_of_funds', 'needs_correction')" class="btn btn-small btn-outline">
+                    ⚠️ Needs Correction
+                </button>
+            </div>
+        </div>
+
+        <!-- Manual Document Status Update -->
+        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+            <h5 style="margin-bottom: 10px;">📝 Manual Status Update</h5>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: end;">
+                <div>
+                    <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Document Type</label>
+                    <select id="adminDocType" class="form-control" style="min-width: 180px;">
+                        <option value="passport">Passport</option>
+                        <option value="academic_transcripts">Academic Transcripts</option>
+                        <option value="proof_of_funds">Proof of Funds</option>
+                        <option value="cv_resume">CV/Resume</option>
+                        <option value="recommendation_letter">Recommendation Letter</option>
+                        <option value="passport_photos">Passport Photos</option>
+                    </select>
                 </div>
+                <div>
+                    <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Status</label>
+                    <select id="adminDocStatus" class="form-control" style="min-width: 180px;">
+                        <option value="file_received">✅ File Received</option>
+                        <option value="under_review">🔍 Under Review</option>
+                        <option value="approved">✅ Approved</option>
+                        <option value="needs_correction">⚠️ Needs Correction</option>
+                        <option value="rejected">❌ Rejected</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Notes (Optional)</label>
+                    <input type="text" id="adminDocNotes" class="form-control" placeholder="Add comments..." style="min-width: 200px;">
+                </div>
+                <button onclick="adminManualStatusUpdate()" class="btn btn-primary btn-small">
+                    Update Status
+                </button>
+            </div>
+        </div>
+
+        <!-- Application Progress Controls -->
+        <div style="background: #e8f5e8; padding: 15px; border-radius: 8px;">
+            <h5 style="margin-bottom: 10px;">🚀 Application Progress</h5>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 10px;">
+                <button onclick="adminUpdateApplicationStage('document_upload', true)" class="btn btn-small btn-outline">
+                    ✅ Complete Document Stage
+                </button>
+                <button onclick="adminUpdateApplicationStage('payment', true)" class="btn btn-small btn-outline">
+                    ✅ Complete Payment Stage
+                </button>
+                <button onclick="adminUpdateApplicationStage('review', true)" class="btn btn-small btn-outline">
+                    ✅ Complete Review Stage
+                </button>
+                <button onclick="adminSendStatusNotification()" class="btn btn-small btn-outline">
+                    📧 Send Status Update
+                </button>
             </div>
         </div>
     </div>
+</div>
 
     <!-- Add Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -4852,6 +5001,195 @@ class AdminManager {
 
 // Initialize admin manager
 const adminManager = new AdminManager();
+
+// ==================== REAL ADMIN FUNCTIONS ====================
+
+// Show/hide admin controls based on user role - FIXED VERSION
+function toggleAdminControls() {
+    const adminControls = document.getElementById('adminDocumentControls');
+    
+    // Only show admin controls if we're in the ADMIN dashboard
+    const isInAdminDashboard = document.getElementById('adminDashboard').style.display === 'block';
+    
+    if (adminControls && currentUser && isAdmin && isInAdminDashboard) {
+        adminControls.style.display = 'block';
+    } else if (adminControls) {
+        adminControls.style.display = 'none';
+    }
+}
+
+// Real document status update function
+async function adminUpdateDocumentStatus(docType, status) {
+    if (!currentUser || !isAdmin) {
+        alert('Admin access required');
+        return;
+    }
+
+    const statusMessages = {
+        'file_received': 'Document received and queued for review',
+        'under_review': 'Document is currently under review', 
+        'approved': 'Document has been approved',
+        'needs_correction': 'Document needs corrections',
+        'rejected': 'Document was rejected'
+    };
+
+    try {
+        // Update in Firestore
+        await db.collection('applications').doc(currentUser.uid).update({
+            [`documents.${docType}.status`]: status,
+            [`documents.${docType}.adminStatus`]: status,
+            [`documents.${docType}.reviewedBy`]: currentUser.uid,
+            [`documents.${docType}.reviewDate`]: firebase.firestore.FieldValue.serverTimestamp(),
+            [`documents.${docType}.lastUpdated`]: new Date(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        // Send notification to user
+        await adminSendDocumentNotification(docType, status, statusMessages[status]);
+        
+        // Show success
+        alert(`✅ ${docType.replace('_', ' ').toUpperCase()} status updated to: ${status.replace('_', ' ').toUpperCase()}`);
+        
+        // Refresh the UI
+        documentManager.loadUserDocuments();
+        
+    } catch (error) {
+        console.error('Admin document update error:', error);
+        alert('Error updating document: ' + error.message);
+    }
+}
+
+// Manual status update with custom notes
+async function adminManualStatusUpdate() {
+    if (!currentUser || !isAdmin) {
+        alert('Admin access required');
+        return;
+    }
+
+    const docType = document.getElementById('adminDocType').value;
+    const status = document.getElementById('adminDocStatus').value;
+    const notes = document.getElementById('adminDocNotes').value;
+
+    if (!docType || !status) {
+        alert('Please select document type and status');
+        return;
+    }
+
+    try {
+        const updateData = {
+            [`documents.${docType}.status`]: status,
+            [`documents.${docType}.adminStatus`]: status,
+            [`documents.${docType}.reviewedBy`]: currentUser.uid,
+            [`documents.${docType}.reviewDate`]: firebase.firestore.FieldValue.serverTimestamp(),
+            [`documents.${docType}.lastUpdated`]: new Date(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        // Add notes if provided
+        if (notes.trim()) {
+            updateData[`documents.${docType}.adminNotes`] = notes.trim();
+        }
+
+        await db.collection('applications').doc(currentUser.uid).update(updateData);
+
+        // Send notification
+        await adminSendDocumentNotification(docType, status, notes.trim() || `Status updated to: ${status.replace('_', ' ')}`);
+
+        alert(`✅ Document status updated successfully!`);
+        
+        // Clear form
+        document.getElementById('adminDocNotes').value = '';
+        
+        // Refresh UI
+        documentManager.loadUserDocuments();
+
+    } catch (error) {
+        console.error('Manual status update error:', error);
+        alert('Error updating status: ' + error.message);
+    }
+}
+
+// Update application stage
+async function adminUpdateApplicationStage(stage, completed) {
+    if (!currentUser || !isAdmin) {
+        alert('Admin access required');
+        return;
+    }
+
+    try {
+        await db.collection('applications').doc(currentUser.uid).update({
+            [`applicationStages.${stage}`]: {
+                completed: completed,
+                status: completed ? 'completed' : 'in_progress',
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                updatedBy: currentUser.uid
+            },
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        alert(`✅ Application stage "${stage}" updated to ${completed ? 'completed' : 'in progress'}`);
+        
+        // Refresh dashboard
+        updateDashboardUI();
+
+    } catch (error) {
+        console.error('Stage update error:', error);
+        alert('Error updating stage: ' + error.message);
+    }
+}
+
+// Send document status notification to user
+async function adminSendDocumentNotification(docType, status, message) {
+    if (!currentUser) return;
+
+    const statusEmoji = {
+        'file_received': '✅',
+        'under_review': '🔍', 
+        'approved': '🎉',
+        'needs_correction': '⚠️',
+        'rejected': '❌'
+    };
+
+    const notificationMessage = `
+${statusEmoji[status] || '📄'} DOCUMENT UPDATE
+
+Your ${docType.replace('_', ' ').toUpperCase()} has been updated.
+
+Status: ${status.replace('_', ' ').toUpperCase()}
+${message ? `Notes: ${message}` : ''}
+
+Thank you for using Global Immigration SC!
+    `.trim();
+
+    try {
+        // Store in user notifications
+        await db.collection('applications').doc(currentUser.uid).update({
+            userNotifications: firebase.firestore.FieldValue.arrayUnion({
+                message: notificationMessage,
+                type: 'document_update',
+                timestamp: new Date(),
+                read: false,
+                docType: docType,
+                status: status
+            }),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        console.log('Document notification sent to user');
+
+    } catch (error) {
+        console.error('Error sending notification:', error);
+    }
+}
+
+// Send general status notification
+async function adminSendStatusNotification() {
+    const message = prompt('Enter status update message for the applicant:');
+    if (message) {
+        await adminSendDocumentNotification('general', 'info', message);
+        alert('✅ Status notification sent to applicant!');
+    }
+}
         
 // Enhanced admin dashboard with delete functionality
 function enhanceAdminDashboard() {
@@ -6288,8 +6626,11 @@ function getStepDateText(status) {
     document.getElementById('adminDashboard').style.display = 'block';
     adminManager.initialize();
     
-    // ADD THIS LINE to enable enhanced admin features:
+    // Enable enhanced admin features
     enhanceAdminDashboard();
+    
+    // NOW show admin controls since we're in admin dashboard
+    toggleAdminControls();
 }
         async function loadAdminData() {
     // Load all applications for admin review
@@ -6552,13 +6893,19 @@ function clearFieldError(field) {
             
             // Check if user is already logged in
             auth.onAuthStateChanged(async (user) => {
-                if (user) {
-                    currentUser = user;
-                    await checkUserRole();
-                    await loadUserApplication();
-                    showDashboard();
-                }
-            });
+    if (user) {
+        currentUser = user;
+        await checkUserRole();
+        await loadUserApplication();
+        showDashboard();
+        
+        // Only show admin controls if we're actually in admin dashboard
+        // Don't show them in the applicant dashboard
+        if (document.getElementById('adminDashboard').style.display === 'block') {
+            toggleAdminControls();
+        }
+    }
+});
 
             // Admin access button
             document.getElementById('adminAccessBtn').addEventListener('click', showAdminDashboard);
