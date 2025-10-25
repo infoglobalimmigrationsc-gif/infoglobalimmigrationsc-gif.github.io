@@ -2642,6 +2642,8 @@
     .fraud-report-form {
         padding: 20px;
     }
+
+
     
     .form-row {
         grid-template-columns: 1fr;
@@ -2670,6 +2672,55 @@
     
     .form-navigation button {
         width: 100%;
+    }
+}
+
+/* Social Share Buttons Styles */
+.social-share-section {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.social-share-buttons {
+    animation: fadeIn 0.8s ease-out;
+}
+
+.social-share-btn {
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.social-share-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    opacity: 0.9;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Mobile Responsive Styles for Share Buttons */
+@media (max-width: 768px) {
+    .social-share-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .social-share-btn {
+        width: 200px;
+        justify-content: center;
     }
 }
     </style>
@@ -2877,6 +2928,7 @@
                     <li><a href="#destinations">Destinations</a></li>
                     <li><a href="#blog">Blog</a></li>
                     <li><a href="#application-portal">Application Portal</a></li>
+                    <li><a href="#report-fraud">Report It</a></li>
                     <li><a href="#contact">Contact Us</a></li>
                     <li><a href="#" class="btn btn-live" id="liveSessionBtn"><i class="fas fa-video" aria-hidden="true"></i> Watch Our Live Session</a></li>
                 </ul>
@@ -3062,6 +3114,30 @@
                     <h2>Application Portal</h2>
                     <p>Access your application dashboard to track progress, upload documents, and manage your immigration journey</p>
                 </div>
+
+                        <div class="social-share-section" style="text-align: center; margin: 30px 0;">
+            <h4 style="margin-bottom: 15px; color: var(--dark-gray);">Share This Opportunity</h4>
+            <div class="social-share-buttons" style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+                <a href="https://www.facebook.com/sharer/sharer.php?u=https://globalimmigrationsc.com&quote=Apply%20for%20global%20immigration%20and%20study%20abroad%20opportunities%20with%20Global%20Immigration%20SC" 
+                   target="_blank" class="social-share-btn" style="background: #1877F2; color: white; padding: 12px 20px; border-radius: 6px; text-decoration: none; display: flex; align-items: center; gap: 8px; font-weight: 500;">
+                    <i class="fab fa-facebook-f"></i> Share on Facebook
+                </a>
+                <a href="https://twitter.com/intent/tweet?text=Apply%20for%20global%20immigration%20and%20study%20abroad%20opportunities%20with%20Global%20Immigration%20SC&url=https://globalimmigrationsc.com" 
+                   target="_blank" class="social-share-btn" style="background: #1DA1F2; color: white; padding: 12px 20px; border-radius: 6px; text-decoration: none; display: flex; align-items: center; gap: 8px; font-weight: 500;">
+                    <i class="fab fa-twitter"></i> Share on Twitter
+                </a>
+                <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://globalimmigrationsc.com" 
+                   target="_blank" class="social-share-btn" style="background: #0077B5; color: white; padding: 12px 20px; border-radius: 6px; text-decoration: none; display: flex; align-items: center; gap: 8px; font-weight: 500;">
+                    <i class="fab fa-linkedin-in"></i> Share on LinkedIn
+                </a>
+                <a href="https://wa.me/?text=Check%20out%20Global%20Immigration%20SC%20for%20immigration%20and%20study%20abroad%20opportunities%3A%20https%3A%2F%2Fglobalimmigrationsc.com" 
+                   target="_blank" class="social-share-btn" style="background: #25D366; color: white; padding: 12px 20px; border-radius: 6px; text-decoration: none; display: flex; align-items: center; gap: 8px; font-weight: 500;">
+                    <i class="fab fa-whatsapp"></i> Share on WhatsApp
+                </a>
+            </div>
+        </div>
+        
+        <div class="portal-options">
                 
                 <div class="portal-options">
                     <div class="portal-option">
@@ -3416,6 +3492,29 @@
             <p style="font-size: 0.9rem; margin-top: 10px;">
                 <a href="#privacy-policy" style="color: var(--primary-red);">Privacy Policy & Legal Terms</a>
             </p>
+        </div>
+
+         <div class="social-share-section" style="text-align: center; margin: 30px 0; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+            <h4 style="margin-bottom: 15px; color: var(--primary-red);">Help Others - Share This Resource</h4>
+            <p style="margin-bottom: 20px; color: var(--medium-gray);">Share this fraud reporting tool to help others avoid immigration scams</p>
+            <div class="social-share-buttons" style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+                <a href="https://www.facebook.com/sharer/sharer.php?u=https://globalimmigrationsc.com&quote=Report%20immigration%20and%20travel%20fraud%20with%20Global%20Immigration%20SC%20-%20Help%20protect%20others%20from%20scams" 
+                   target="_blank" class="social-share-btn" style="background: #1877F2; color: white; padding: 10px 16px; border-radius: 6px; text-decoration: none; display: flex; align-items: center; gap: 6px; font-weight: 500; font-size: 0.9rem;">
+                    <i class="fab fa-facebook-f"></i> Facebook
+                </a>
+                <a href="https://twitter.com/intent/tweet?text=Report%20immigration%20and%20travel%20fraud%20with%20Global%20Immigration%20SC%20-%20Help%20protect%20others%20from%20scams&url=https://globalimmigrationsc.com" 
+                   target="_blank" class="social-share-btn" style="background: #1DA1F2; color: white; padding: 10px 16px; border-radius: 6px; text-decoration: none; display: flex; align-items: center; gap: 6px; font-weight: 500; font-size: 0.9rem;">
+                    <i class="fab fa-twitter"></i> Twitter
+                </a>
+                <a href="https://wa.me/?text=Report%20immigration%20fraud%20and%20travel%20scams%20with%20Global%20Immigration%20SC%3A%20https%3A%2F%2Fglobalimmigrationsc.com%20%23StopImmigrationFraud" 
+                   target="_blank" class="social-share-btn" style="background: #25D366; color: white; padding: 10px 16px; border-radius: 6px; text-decoration: none; display: flex; align-items: center; gap: 6px; font-weight: 500; font-size: 0.9rem;">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                </a>
+                <a href="mailto:?subject=Report Immigration Fraud - Global Immigration SC&body=Check out this fraud reporting tool to help protect others from immigration scams: https://globalimmigrationsc.com" 
+                   class="social-share-btn" style="background: #EA4335; color: white; padding: 10px 16px; border-radius: 6px; text-decoration: none; display: flex; align-items: center; gap: 6px; font-weight: 500; font-size: 0.9rem;">
+                    <i class="fas fa-envelope"></i> Email
+                </a>
+            </div>
         </div>
 
         <!-- Multi-step Form -->
