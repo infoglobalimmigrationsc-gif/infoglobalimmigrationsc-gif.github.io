@@ -2299,6 +2299,379 @@
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+/* Report Fraud Section */
+.report-fraud {
+    background-color: var(--primary-white);
+}
+
+.fraud-report-form {
+    max-width: 800px;
+    margin: 0 auto;
+    background: var(--light-gray);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+/* Form Progress */
+.form-progress {
+    margin-bottom: 40px;
+}
+
+.progress-steps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.progress-step {
+    text-align: center;
+    flex: 1;
+    position: relative;
+}
+
+.progress-step .step-indicator {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.progress-step.active .step-indicator {
+    background: var(--primary-red);
+    color: white;
+}
+
+.progress-step span {
+    font-size: 0.9rem;
+    color: var(--medium-gray);
+}
+
+.progress-step.active span {
+    color: var(--dark-gray);
+    font-weight: 600;
+}
+
+/* Form Steps */
+.form-step {
+    display: none;
+}
+
+.form-step.active {
+    display: block;
+}
+
+.form-step h3 {
+    margin-bottom: 25px;
+    color: var(--dark-gray);
+    border-bottom: 2px solid var(--primary-red);
+    padding-bottom: 10px;
+}
+
+/* Form Layout */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+/* Radio and Checkbox Styles */
+.radio-group, .checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.radio-option, .checkbox-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.radio-option:hover, .checkbox-option:hover {
+    border-color: var(--primary-red);
+    background: #fff0f0;
+}
+
+.radio-option input, .checkbox-option input {
+    margin: 0;
+}
+
+.radio-checkmark, .checkmark {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    display: inline-block;
+    position: relative;
+}
+
+.checkmark {
+    border-radius: 4px;
+}
+
+.radio-option input:checked + .radio-checkmark::after {
+    content: '';
+    width: 10px;
+    height: 10px;
+    background: var(--primary-red);
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.checkbox-option input:checked + .checkmark {
+    background: var(--primary-red);
+    border-color: var(--primary-red);
+}
+
+.checkbox-option input:checked + .checkmark::after {
+    content: '✓';
+    color: white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* Amount Input */
+.amount-input {
+    display: flex;
+    gap: 10px;
+}
+
+.currency-select {
+    min-width: 100px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 12px;
+}
+
+/* Character Counter */
+.char-counter {
+    text-align: right;
+    font-size: 0.8rem;
+    color: var(--medium-gray);
+    margin-top: 5px;
+}
+
+/* Upload Section */
+.upload-section {
+    margin-bottom: 30px;
+}
+
+.upload-area {
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #fafafa;
+}
+
+.upload-area:hover {
+    border-color: var(--primary-red);
+    background: #fff0f0;
+}
+
+.upload-area.dragover {
+    border-color: var(--primary-red);
+    background: #ffe6e6;
+}
+
+.upload-area i {
+    font-size: 3rem;
+    color: var(--primary-red);
+    margin-bottom: 15px;
+}
+
+.upload-info {
+    font-size: 0.9rem;
+    color: var(--medium-gray);
+    margin: 10px 0;
+}
+
+.file-previews {
+    margin-top: 20px;
+}
+
+.file-preview {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    background: white;
+}
+
+.file-preview-info {
+    flex: 1;
+}
+
+.file-preview-name {
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.file-preview-size {
+    font-size: 0.8rem;
+    color: var(--medium-gray);
+}
+
+.file-preview-remove {
+    background: var(--primary-red);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+/* Review Summary */
+.review-summary {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid var(--primary-red);
+}
+
+.review-item {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.review-label {
+    font-weight: 600;
+    color: var(--dark-gray);
+    margin-bottom: 5px;
+}
+
+.review-value {
+    color: var(--medium-gray);
+}
+
+/* Legal Disclaimer */
+.legal-disclaimer {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.disclaimer-warning {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    color: #856404;
+}
+
+.disclaimer-warning i {
+    color: #ffc107;
+}
+
+.legal-consent {
+    margin-top: 15px;
+    padding: 15px;
+    background: white;
+    border-radius: 6px;
+}
+
+/* CAPTCHA Section */
+.captcha-section {
+    margin-bottom: 20px;
+}
+
+/* Form Navigation */
+.form-navigation {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+/* Success Message */
+.form-success {
+    text-align: center;
+    padding: 40px;
+}
+
+.form-success i {
+    font-size: 4rem;
+    color: #4CAF50;
+    margin-bottom: 20px;
+}
+
+.form-success h3 {
+    color: #4CAF50;
+    margin-bottom: 20px;
+}
+
+.form-success ul {
+    text-align: left;
+    max-width: 400px;
+    margin: 20px auto;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .fraud-report-form {
+        padding: 20px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .progress-steps {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .progress-step {
+        text-align: left;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .amount-input {
+        flex-direction: column;
+    }
+    
+    .form-navigation {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .form-navigation button {
+        width: 100%;
+    }
+}
     </style>
 </head>
 <body>
@@ -2855,7 +3228,6 @@
     </div>
 </section>
 
-
         <!-- Blog Preview Section -->
         <section id="blog" class="section blog-preview">
             <div class="container">
@@ -3034,6 +3406,330 @@
                 </div>
             </div>
         </section>
+
+        <!-- Report Fraud Section -->
+<section id="report-fraud" class="section report-fraud">
+    <div class="container">
+        <div class="section-title">
+            <h2>REPORT IT — Report Travel/Immigration Fraud</h2>
+            <p>If you suspect a travel or visa scam, report it here with your evidence. All reports are reviewed confidentially. <strong>False accusations are illegal and may result in legal action.</strong></p>
+            <p style="font-size: 0.9rem; margin-top: 10px;">
+                <a href="#privacy-policy" style="color: var(--primary-red);">Privacy Policy & Legal Terms</a>
+            </p>
+        </div>
+
+        <!-- Multi-step Form -->
+        <div class="fraud-report-form">
+            <!-- Progress Steps -->
+            <div class="form-progress">
+                <div class="progress-steps">
+                    <div class="progress-step active" data-step="1">
+                        <div class="step-indicator">1</div>
+                        <span>Basic Info</span>
+                    </div>
+                    <div class="progress-step" data-step="2">
+                        <div class="step-indicator">2</div>
+                        <span>Incident Details</span>
+                    </div>
+                    <div class="progress-step" data-step="3">
+                        <div class="step-indicator">3</div>
+                        <span>Evidence</span>
+                    </div>
+                    <div class="progress-step" data-step="4">
+                        <div class="step-indicator">4</div>
+                        <span>Review & Submit</span>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 25%;"></div>
+                </div>
+            </div>
+
+            <!-- Step 1: Basic Information -->
+            <div class="form-step active" id="step-1">
+                <h3>Your Information</h3>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="reporterName">Full Name *</label>
+                        <input type="text" id="reporterName" name="reporterName" class="form-control" required>
+                        <div class="form-error" id="reporterNameError">Please enter your full name</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reporterEmail">Email Address *</label>
+                        <input type="email" id="reporterEmail" name="reporterEmail" class="form-control" required>
+                        <div class="form-error" id="reporterEmailError">Please enter a valid email address</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reporterPhone">Phone / WhatsApp</label>
+                        <input type="tel" id="reporterPhone" name="reporterPhone" class="form-control">
+                        <div class="form-error" id="reporterPhoneError">Please enter a valid phone number</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Preferred Contact Method *</label>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="contactMethod" value="email" required>
+                                <span class="radio-checkmark"></span>
+                                Email
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="contactMethod" value="whatsapp">
+                                <span class="radio-checkmark"></span>
+                                WhatsApp
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="contactMethod" value="phone">
+                                <span class="radio-checkmark"></span>
+                                Phone Call
+                            </label>
+                        </div>
+                        <div class="form-error" id="contactMethodError">Please select preferred contact method</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="checkbox-option">
+                        <input type="checkbox" id="anonymousReport">
+                        <span class="checkbox-checkmark"></span>
+                        I wish to remain anonymous (your name will be hidden from public outputs)
+                    </label>
+                </div>
+                
+                <div class="form-navigation">
+                    <button type="button" class="btn btn-primary next-step" data-next="2">Next: Incident Details</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Incident Details -->
+            <div class="form-step" id="step-2">
+                <h3>Incident Details</h3>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="incidentCountry">Country of Incident *</label>
+                        <select id="incidentCountry" name="incidentCountry" class="form-control" required>
+                            <option value="">Select Country</option>
+                            <option value="usa">United States</option>
+                            <option value="canada">Canada</option>
+                            <option value="uk">United Kingdom</option>
+                            <option value="australia">Australia</option>
+                            <option value="germany">Germany</option>
+                            <option value="liberia">Liberia</option>
+                            <option value="ghana">Ghana</option>
+                            <option value="nigeria">Nigeria</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <div class="form-error" id="incidentCountryError">Please select country</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="incidentCity">City / Location</label>
+                        <input type="text" id="incidentCity" name="incidentCity" class="form-control">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="suspectName">Suspected Agency/Person Name *</label>
+                    <input type="text" id="suspectName" name="suspectName" class="form-control" required>
+                    <div class="form-error" id="suspectNameError">Please enter the name of suspected agency/person</div>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="suspectWebsite">Suspected Agency Website/Social Links</label>
+                        <input type="url" id="suspectWebsite" name="suspectWebsite" class="form-control" placeholder="https://">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="suspectContact">Suspect Contact Info (phone/email)</label>
+                        <input type="text" id="suspectContact" name="suspectContact" class="form-control">
+                    </div>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="incidentDateFrom">Incident Start Date *</label>
+                        <input type="date" id="incidentDateFrom" name="incidentDateFrom" class="form-control" required>
+                        <div class="form-error" id="incidentDateFromError">Please select start date</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="incidentDateTo">Incident End Date (if ongoing, leave blank)</label>
+                        <input type="date" id="incidentDateTo" name="incidentDateTo" class="form-control">
+                    </div>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="amountPaid">Amount Paid (if any)</label>
+                        <div class="amount-input">
+                            <select id="currency" name="currency" class="currency-select">
+                                <option value="USD">USD</option>
+                                <option value="LRD">LRD</option>
+                                <option value="EUR">EUR</option>
+                                <option value="GBP">GBP</option>
+                            </select>
+                            <input type="number" id="amountPaid" name="amountPaid" class="form-control" min="0" step="0.01" placeholder="0.00">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Payment Method(s)</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="paymentMethod" value="bank_transfer">
+                                <span class="checkbox-checkmark"></span>
+                                Bank Transfer
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="paymentMethod" value="mobile_money">
+                                <span class="checkbox-checkmark"></span>
+                                Mobile Money
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="paymentMethod" value="cash">
+                                <span class="checkbox-checkmark"></span>
+                                Cash
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="paymentMethod" value="card">
+                                <span class="checkbox-checkmark"></span>
+                                Card
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="paymentMethod" value="other">
+                                <span class="checkbox-checkmark"></span>
+                                Other
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-navigation">
+                    <button type="button" class="btn btn-outline prev-step" data-prev="1">Previous</button>
+                    <button type="button" class="btn btn-primary next-step" data-next="3">Next: Evidence</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Evidence Upload -->
+            <div class="form-step" id="step-3">
+                <h3>Evidence & Details</h3>
+                
+                <div class="form-group">
+                    <label for="complaintSummary">Short Summary of Complaint *</label>
+                    <textarea id="complaintSummary" name="complaintSummary" class="form-control" maxlength="1000" required placeholder="Brief summary of what happened (max 1000 characters)"></textarea>
+                    <div class="char-counter"><span id="summaryChars">0</span>/1000 characters</div>
+                    <div class="form-error" id="complaintSummaryError">Please provide a summary</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="detailedDescription">Detailed Description & Timeline *</label>
+                    <textarea id="detailedDescription" name="detailedDescription" class="form-control" maxlength="3000" required placeholder="Detailed timeline and description of events (max 3000 characters)"></textarea>
+                    <div class="char-counter"><span id="descriptionChars">0</span>/3000 characters</div>
+                    <div class="form-error" id="detailedDescriptionError">Please provide detailed description</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="witnesses">Witnesses (names & contacts)</label>
+                    <textarea id="witnesses" name="witnesses" class="form-control" placeholder="List any witnesses with their contact information"></textarea>
+                </div>
+                
+                <!-- File Upload Area -->
+                <div class="form-group">
+                    <label>Upload Evidence * <small>(Required - screenshots, receipts, contracts, etc.)</small></label>
+                    <div class="upload-area evidence-upload" id="evidenceUploadArea">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h4>Drop files here or click to upload</h4>
+                        <p>Supported formats: JPG, PNG, PDF, DOC, DOCX, XLSX, MP4 (max 20MB per file, 100MB total)</p>
+                        <p><small>Videos must be under 60 seconds. All files are virus-scanned.</small></p>
+                        <input type="file" id="evidenceFiles" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xlsx,.mp4" style="display: none;">
+                        <div class="upload-progress">
+                            <div class="upload-progress-bar" id="evidenceProgress"></div>
+                        </div>
+                    </div>
+                    <div class="file-previews" id="filePreviews"></div>
+                    <div class="form-error" id="evidenceError">Please upload at least one evidence file</div>
+                </div>
+                
+                <div class="form-navigation">
+                    <button type="button" class="btn btn-outline prev-step" data-prev="2">Previous</button>
+                    <button type="button" class="btn btn-primary next-step" data-next="4">Next: Review & Submit</button>
+                </div>
+            </div>
+
+            <!-- Step 4: Review & Submit -->
+            <div class="form-step" id="step-4">
+                <h3>Review & Submit</h3>
+                
+                <div class="review-section">
+                    <h4>Please review your report</h4>
+                    <div id="reviewContent"></div>
+                </div>
+                
+                <!-- Legal Disclaimer -->
+                <div class="legal-disclaimer">
+                    <div class="disclaimer-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>LEGAL DISCLAIMER</strong>
+                    </div>
+                    <p>Only genuine cases of fraudulent acts should be reported. Filing false reports or falsely accusing others is a criminal offense and may result in legal action against the reporter. By submitting this form you confirm the accuracy of your report and consent to GISC storing and processing this information for investigation and legal referral purposes.</p>
+                </div>
+                
+                <!-- Consent Checkbox -->
+                <div class="form-group">
+                    <label class="checkbox-option required">
+                        <input type="checkbox" id="legalConsent" name="legalConsent" required>
+                        <span class="checkbox-checkmark"></span>
+                        I confirm the information I submit is true to the best of my knowledge. I understand false reporting may lead to legal action. *
+                    </label>
+                    <div class="form-error" id="legalConsentError">You must agree to continue</div>
+                </div>
+
+<!-- SIMPLE CAPTCHA ALTERNATIVE -->
+<div class="form-group">
+    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;">
+        <p><strong>Security Check</strong></p>
+        <p>To prove you're human, please type "I AM HUMAN" in the box below:</p>
+        <input type="text" id="humanVerification" class="form-control" placeholder="Type: I AM HUMAN" style="text-align: center; max-width: 200px; margin: 0 auto;">
+        <div class="form-error" id="captchaError" style="display: none;">Please type "I AM HUMAN" exactly as shown</div>
+    </div>
+</div>
+
+<!-- === ADD THE MISSING SUBMIT BUTTON HERE === -->
+<div class="form-navigation">
+    <button type="button" class="btn btn-outline prev-step" data-prev="3">Previous</button>
+    <button type="button" class="btn btn-primary" id="submitReport">
+        <span class="btn-text">Submit Report</span>
+        <span class="loading-spinner" style="display: none;"></span>
+    </button>
+</div>
+        <!-- Success Message (Hidden by default) -->
+<div id="reportSuccess" class="form-success" style="display: none;">
+    <div class="success-content">
+        <i class="fas fa-check-circle"></i>
+        <h3>Report Submitted Successfully!</h3>
+        <p>Your report <strong id="successReportId">[Report ID]</strong> has been received.</p>
+        <p>We are reviewing your submission and will keep you updated. If legal action is needed, we will contact you for next steps.</p>
+        <div class="success-details">
+            <p><strong>What to expect:</strong></p>
+            <ul>
+                <li>Acknowledgement within 48 hours</li>
+                <li>Initial review within 5-14 business days</li>
+                <li>Updates via your preferred contact method</li>
+            </ul>
+        </div>
+        <div class="contact-info">
+            <p><strong>For urgent matters:</strong></p>
+            <p>WhatsApp: +231 770562292 | Email: infoglobalimmigrationsc@gmail.com</p>
+        </div>
+        <button class="btn btn-outline" onclick="resetReportForm()">Submit Another Report</button>
+    </div>
+</div>
+</section>
 
         <!-- Contact Section -->
         <section id="contact" class="section contact">
@@ -5469,11 +6165,248 @@ function setupAdminRealTimeWithDelete() {
         });
 }
 
-        // Application State Management
+// === ADD THIS FUNCTION - COLLECTS ALL FORM DATA ===
+function collectFormData(reportId) {
+    const formData = {
+        reportId: reportId,
+        timestamp: new Date().toISOString(),
+        reporterName: document.getElementById('reporterName').value,
+        reporterEmail: document.getElementById('reporterEmail').value,
+        reporterPhone: document.getElementById('reporterPhone').value,
+        contactMethod: document.querySelector('input[name="contactMethod"]:checked')?.value,
+        anonymousReport: document.getElementById('anonymousReport').checked,
+        incidentCountry: document.getElementById('incidentCountry').value,
+        incidentCity: document.getElementById('incidentCity').value,
+        suspectName: document.getElementById('suspectName').value,
+        suspectWebsite: document.getElementById('suspectWebsite').value,
+        suspectContact: document.getElementById('suspectContact').value,
+        incidentDateFrom: document.getElementById('incidentDateFrom').value,
+        incidentDateTo: document.getElementById('incidentDateTo').value,
+        currency: document.getElementById('currency').value,
+        amountPaid: document.getElementById('amountPaid').value || '0',
+        paymentMethods: Array.from(document.querySelectorAll('input[name="paymentMethod"]:checked')).map(cb => cb.value).join(', '),
+        complaintSummary: document.getElementById('complaintSummary').value,
+        detailedDescription: document.getElementById('detailedDescription').value,
+        witnesses: document.getElementById('witnesses').value,
+        fileCount: uploadedFiles.length,
+        fileNames: uploadedFiles.map(file => file.name).join(', '),
+        status: 'New Report',
+        submissionDate: new Date().toLocaleDateString()
+    };
+    
+    console.log('Form data collected:', formData);
+    return formData;
+}
+
+// === REPLACE YOUR submitToGoogleSheets FUNCTION ===
+async function submitToGoogleSheets(formData) {
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbwo7OkMyoZuizM8dQJFcczdygmZOBtz1LMn91yuKFvmSV0JOgYZAkjceJp81Ky3ZZI/exec';
+    
+    try {
+        console.log('Starting form submission to Google Sheets...', formData);
+        
+        // Convert to URL-encoded form data
+        const formDataToSend = new URLSearchParams();
+        Object.keys(formData).forEach(key => {
+            if (formData[key] !== null && formData[key] !== undefined) {
+                formDataToSend.append(key, formData[key].toString());
+            }
+        });
+        
+        console.log('Sending data to:', scriptURL);
+        
+        const response = await fetch(scriptURL, {
+            method: 'POST',
+            body: formDataToSend
+            // Don't set Content-Type header - let browser set it for FormData
+        });
+        
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
+        const result = await response.json();
+        console.log('Response received:', result);
+        
+        if (result.status === 'success') {
+            console.log('Form submitted successfully!');
+            return { 
+                status: 'success', 
+                message: 'Report submitted successfully',
+                reportId: result.reportId,
+                sheetRow: result.sheetRow
+            };
+        } else {
+            throw new Error(result.message || 'Submission failed');
+        }
+        
+    } catch (error) {
+        console.error('Submission error:', error);
+        throw new Error('Failed to submit report: ' + error.message);
+    }
+}
+
+// === ADD THIS FUNCTION TO RESET THE FORM ===
+function resetReportForm() {
+    document.querySelector('.fraud-report-form').style.display = 'block';
+    document.getElementById('reportSuccess').style.display = 'none';
+    
+    // Clear all form fields
+    document.getElementById('reporterName').value = '';
+    document.getElementById('reporterEmail').value = '';
+    document.getElementById('reporterPhone').value = '';
+    document.getElementById('incidentCountry').value = '';
+    document.getElementById('incidentCity').value = '';
+    document.getElementById('suspectName').value = '';
+    document.getElementById('suspectWebsite').value = '';
+    document.getElementById('suspectContact').value = '';
+    document.getElementById('incidentDateFrom').value = '';
+    document.getElementById('incidentDateTo').value = '';
+    document.getElementById('amountPaid').value = '';
+    document.getElementById('complaintSummary').value = '';
+    document.getElementById('detailedDescription').value = '';
+    document.getElementById('witnesses').value = '';
+    document.getElementById('legalConsent').checked = false;
+    document.getElementById('humanVerification').value = '';
+    
+    // Clear file uploads
+    const filePreviews = document.getElementById('filePreviews');
+    if (filePreviews) filePreviews.innerHTML = '';
+    uploadedFiles = [];
+    
+    // Reset to first step
+    navigateToStep('1');
+    updateProgressBar();
+    
+    console.log('Form reset successfully');
+}
+
+// === UPDATE YOUR SUBMIT REPORT FUNCTION ===
+async function submitReportForm() {
+    const submitBtn = document.getElementById('submitReport');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const spinner = submitBtn.querySelector('.loading-spinner');
+    
+    try {
+        // Validate final step
+        if (!validateStep('step-4')) {
+            alert('Please complete all required fields before submitting.');
+            return;
+        }
+        
+        // Validate CAPTCHA
+        const humanInput = document.getElementById('humanVerification');
+        if (!humanInput || humanInput.value.trim().toUpperCase() !== 'I AM HUMAN') {
+            alert('Please complete the security check by typing "I AM HUMAN" exactly as shown.');
+            return;
+        }
+        
+        // Show loading state
+        btnText.textContent = 'Submitting...';
+        spinner.style.display = 'inline-block';
+        submitBtn.disabled = true;
+        
+        // Generate unique report ID
+        const reportId = 'FR-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        
+        // Collect form data
+        const formData = collectFormData(reportId);
+        
+        // Submit to Google Sheets
+        const result = await submitToGoogleSheets(formData);
+        
+        if (result.status === 'success') {
+            // Show success message
+            document.querySelector('.fraud-report-form').style.display = 'none';
+            document.getElementById('reportSuccess').style.display = 'block';
+            document.getElementById('successReportId').textContent = reportId;
+            
+            console.log('Report submitted successfully with ID:', reportId);
+        } else {
+            throw new Error(result.message);
+        }
+        
+    } catch (error) {
+        console.error('Form submission error:', error);
+        alert('Error submitting report: ' + error.message);
+        
+        // Reset button state
+        btnText.textContent = 'Submit Report';
+        spinner.style.display = 'none';
+        submitBtn.disabled = false;
+    }
+}
+
+// Application State Management
         let currentUser = null;
         let userApplication = null;
         let realTimeListener = null;
         let isAdmin = false;
+
+                // Collect all form data for submission - ADD THIS FUNCTION
+        function collectFormData(reportId) {
+            const formData = {
+                reportId: reportId,
+                timestamp: new Date().toISOString(),
+                reporterName: document.getElementById('reporterName').value,
+                reporterEmail: document.getElementById('reporterEmail').value,
+                reporterPhone: document.getElementById('reporterPhone').value,
+                contactMethod: document.querySelector('input[name="contactMethod"]:checked')?.value,
+                anonymousReport: document.getElementById('anonymousReport').checked,
+                incidentCountry: document.getElementById('incidentCountry').value,
+                incidentCity: document.getElementById('incidentCity').value,
+                suspectName: document.getElementById('suspectName').value,
+                suspectWebsite: document.getElementById('suspectWebsite').value,
+                suspectContact: document.getElementById('suspectContact').value,
+                incidentDateFrom: document.getElementById('incidentDateFrom').value,
+                incidentDateTo: document.getElementById('incidentDateTo').value,
+                currency: document.getElementById('currency').value,
+                amountPaid: document.getElementById('amountPaid').value || '0',
+                paymentMethods: Array.from(document.querySelectorAll('input[name="paymentMethod"]:checked')).map(cb => cb.value).join(', '),
+                complaintSummary: document.getElementById('complaintSummary').value,
+                detailedDescription: document.getElementById('detailedDescription').value,
+                witnesses: document.getElementById('witnesses').value,
+                fileCount: uploadedFiles.length,
+                fileNames: uploadedFiles.map(file => file.name).join(', '),
+                status: 'New Report',
+                submissionDate: new Date().toLocaleDateString()
+            };
+            
+            console.log('Form data collected:', formData);
+            return formData;
+        }
+
+                // Reset the report form to initial state - ADD THIS FUNCTION
+        function resetReportForm() {
+            document.querySelector('.fraud-report-form').style.display = 'block';
+            document.getElementById('reportSuccess').style.display = 'none';
+            
+            document.getElementById('reporterName').value = '';
+            document.getElementById('reporterEmail').value = '';
+            document.getElementById('reporterPhone').value = '';
+            document.getElementById('incidentCountry').value = '';
+            document.getElementById('incidentCity').value = '';
+            document.getElementById('suspectName').value = '';
+            document.getElementById('suspectWebsite').value = '';
+            document.getElementById('suspectContact').value = '';
+            document.getElementById('incidentDateFrom').value = '';
+            document.getElementById('incidentDateTo').value = '';
+            document.getElementById('amountPaid').value = '';
+            document.getElementById('complaintSummary').value = '';
+            document.getElementById('detailedDescription').value = '';
+            document.getElementById('witnesses').value = '';
+            document.getElementById('legalConsent').checked = false;
+            document.getElementById('humanVerification').value = '';
+            
+            const filePreviews = document.getElementById('filePreviews');
+            if (filePreviews) filePreviews.innerHTML = '';
+            uploadedFiles = [];
+            
+            navigateToStep('1');
+            updateProgressBar();
+            initializeFileUpload();
+            
+            console.log('Form reset successfully');
+        }
 
         // Profile Management Functions
 function handleProfileUpdate(event) {
@@ -7599,6 +8532,40 @@ function clearFieldError(field) {
                 }
             });
         });
+
+        // ==================== CAPTCHA VALIDATION ====================
+
+// Enable/disable submit button based on conditions
+function updateSubmitButtonState() {
+    const submitBtn = document.getElementById('submitReport');
+    const legalConsent = document.getElementById('legalConsent');
+    const humanInput = document.getElementById('humanVerification');
+    
+    const isLegalChecked = legalConsent.checked;
+    const isHumanValid = humanInput && humanInput.value.trim().toUpperCase() === 'I AM HUMAN';
+    
+    submitBtn.disabled = !(isLegalChecked && isHumanValid);
+}
+
+// Set up event listeners for real-time validation
+function setupCaptchaListeners() {
+    // Legal consent checkbox
+    const legalConsent = document.getElementById('legalConsent');
+    if (legalConsent) {
+        legalConsent.addEventListener('change', updateSubmitButtonState);
+    }
+    
+    // Human verification input
+    const humanInput = document.getElementById('humanVerification');
+    if (humanInput) {
+        humanInput.addEventListener('input', updateSubmitButtonState);
+    }
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(setupCaptchaListeners, 1000);
+});
         // ==================== TESTING FUNCTIONS ====================
 
 // Test status updates
@@ -7637,6 +8604,311 @@ async function quickStatusUpdate(docType, action) {
     
     await documentManager.updateDocumentStatusManually(docType, status, notes);
 }
+// Report Fraud Form Functionality - UPDATED WITH GOOGLE SHEETS INTEGRATION
+document.addEventListener('DOMContentLoaded', function() {
+    initializeReportForm();
+});
+
+// Global variable for uploaded files
+let uploadedFiles = [];
+
+function initializeReportForm() {
+    // Form navigation
+    const nextButtons = document.querySelectorAll('.next-step');
+    const prevButtons = document.querySelectorAll('.prev-step');
+    
+    // File upload functionality
+    initializeFileUpload();
+    
+    // Character counters
+    initializeCharacterCounters();
+
+    setupCaptchaListeners();
+    
+    // Next step buttons
+    nextButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const currentStep = this.closest('.form-step');
+            const nextStepId = this.getAttribute('data-next');
+            
+            if (validateStep(currentStep.id)) {
+                navigateToStep(nextStepId);
+                updateProgressBar();
+            }
+        });
+    });
+    
+    // Next step buttons
+    nextButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const currentStep = this.closest('.form-step');
+            const nextStepId = this.getAttribute('data-next');
+            
+            if (validateStep(currentStep.id)) {
+                navigateToStep(nextStepId);
+                updateProgressBar();
+            }
+        });
+    });
+    
+    // Previous step buttons
+    prevButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const prevStepId = this.getAttribute('data-prev');
+            navigateToStep(prevStepId);
+            updateProgressBar();
+        });
+    });
+    
+    // Form submission
+    document.getElementById('submitReport').addEventListener('click', submitReportForm);
+}
+
+function navigateToStep(stepId) {
+    // Hide all steps
+    document.querySelectorAll('.form-step').forEach(step => {
+        step.classList.remove('active');
+    });
+    
+    // Show target step
+    document.getElementById(`step-${stepId}`).classList.add('active');
+    
+    // Update progress steps
+    document.querySelectorAll('.progress-step').forEach(step => {
+        step.classList.remove('active');
+        if (parseInt(step.getAttribute('data-step')) <= parseInt(stepId)) {
+            step.classList.add('active');
+        }
+    });
+}
+
+function updateProgressBar() {
+    const activeStep = document.querySelector('.form-step.active');
+    const stepNumber = parseInt(activeStep.id.split('-')[1]);
+    const progress = (stepNumber / 4) * 100;
+    document.querySelector('.progress-fill').style.width = `${progress}%`;
+}
+
+function validateStep(stepId) {
+    const step = document.getElementById(stepId);
+    const inputs = step.querySelectorAll('input[required], select[required], textarea[required]');
+    let isValid = true;
+    
+    inputs.forEach(input => {
+        const errorElement = document.getElementById(`${input.id}Error`);
+        if (!input.value.trim()) {
+            if (errorElement) errorElement.style.display = 'block';
+            isValid = false;
+            input.style.borderColor = 'var(--primary-red)';
+        } else {
+            if (errorElement) errorElement.style.display = 'none';
+            input.style.borderColor = '#ddd';
+        }
+        
+        // Email validation
+        if (input.type === 'email' && input.value.trim()) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(input.value)) {
+                if (errorElement) {
+                    errorElement.textContent = 'Please enter a valid email address';
+                    errorElement.style.display = 'block';
+                }
+                isValid = false;
+                input.style.borderColor = 'var(--primary-red)';
+            }
+        }
+    });
+    
+    return isValid;
+}
+
+function initializeFileUpload() {
+    const uploadArea = document.getElementById('evidenceUploadArea');
+    const fileInput = document.getElementById('evidenceFiles');
+    const filePreviews = document.getElementById('filePreviews');
+    
+    // Reset uploaded files
+    uploadedFiles = [];
+    
+    // Click to upload
+    uploadArea.addEventListener('click', () => fileInput.click());
+    
+    // Drag and drop
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+    
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        if (e.dataTransfer.files.length > 0) {
+            handleFiles(Array.from(e.dataTransfer.files));
+        }
+    });
+    
+    // File input change
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleFiles(Array.from(e.target.files));
+        }
+    });
+    
+    function handleFiles(files) {
+        const validFiles = files.filter(file => {
+            const validTypes = ['.jpg', '.jpeg', '.png', '.pdf', '.doc', '.docx', '.xlsx', '.mp4'];
+            const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+            const maxSize = 20 * 1024 * 1024; // 20MB
+            const totalSize = uploadedFiles.reduce((sum, f) => sum + f.size, 0) + file.size;
+            
+            if (!validTypes.includes(fileExtension)) {
+                alert(`File type ${fileExtension} is not supported.`);
+                return false;
+            }
+            
+            if (file.size > maxSize) {
+                alert(`File ${file.name} is too large. Maximum size is 20MB.`);
+                return false;
+            }
+            
+            if (uploadedFiles.length >= 10) {
+                alert('Maximum 10 files allowed.');
+                return false;
+            }
+            
+            if (totalSize > 100 * 1024 * 1024) {
+                alert('Total upload size cannot exceed 100MB.');
+                return false;
+            }
+            
+            return true;
+        });
+        
+        validFiles.forEach(file => {
+            uploadedFiles.push(file);
+            addFilePreview(file);
+        });
+        
+        updateUploadArea();
+    }
+    
+    function addFilePreview(file) {
+        const preview = document.createElement('div');
+        preview.className = 'file-preview';
+        preview.innerHTML = `
+            <div class="file-preview-info">
+                <div class="file-preview-name">${file.name}</div>
+                <div class="file-preview-size">${formatFileSize(file.size)}</div>
+            </div>
+            <button type="button" class="file-preview-remove" data-filename="${file.name}">
+                <i class="fas fa-times"></i> Remove
+            </button>
+        `;
+        
+        preview.querySelector('.file-preview-remove').addEventListener('click', function() {
+            const filename = this.getAttribute('data-filename');
+            uploadedFiles = uploadedFiles.filter(f => f.name !== filename);
+            preview.remove();
+            updateUploadArea();
+        });
+        
+        filePreviews.appendChild(preview);
+    }
+    
+    function updateUploadArea() {
+        if (uploadedFiles.length > 0) {
+            uploadArea.innerHTML = `
+                <i class="fas fa-check-circle" style="color: #4CAF50;"></i>
+                <p>${uploadedFiles.length} file(s) ready for upload</p>
+                <p class="upload-info">Click to add more files or drag and drop</p>
+                <input type="file" id="evidenceFiles" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xlsx,.mp4" style="display: none;">
+            `;
+            // Re-attach event listeners
+            uploadArea.addEventListener('click', () => fileInput.click());
+        }
+    }
+    
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+}
+
+function initializeCharacterCounters() {
+    const summaryTextarea = document.getElementById('complaintSummary');
+    const detailTextarea = document.getElementById('detailedDescription');
+    
+    // Check if elements exist before adding event listeners
+    if (summaryTextarea) {
+        summaryTextarea.addEventListener('input', function() {
+            const counter = document.getElementById('summaryChars');
+            if (counter) {
+                counter.textContent = this.value.length;
+            }
+        });
+    }
+    
+    if (detailTextarea) {
+        detailTextarea.addEventListener('input', function() {
+            const counter = document.getElementById('detailChars');
+            if (counter) {
+                counter.textContent = this.value.length;
+            }
+        });
+    }
+}
+
+// GOOGLE SHEETS INTEGRATION FUNCTIONS
+async function submitToGoogleSheets(formData) {
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbwo7OkMyoZuizM8dQJFcczdygmZOBtz1LMn91yuKFvmSV0JOgYZAkjceJp81Ky3ZZI/exec';
+    
+    try {
+        console.log('Starting form submission to Google Sheets...', formData);
+        
+        // Convert to URL-encoded form data (simpler for Apps Script)
+        const formDataToSend = new URLSearchParams();
+        Object.keys(formData).forEach(key => {
+            formDataToSend.append(key, formData[key]);
+        });
+        
+        console.log('Sending data to Google Apps Script...');
+        
+        const response = await fetch(scriptURL, {
+            method: 'POST',
+            body: formDataToSend,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        });
+        
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('Response received:', result);
+        
+        if (result.status === 'success') {
+            console.log('Form submitted successfully!');
+            return { status: 'success', message: 'Report submitted successfully' };
+        } else {
+            throw new Error('Submission failed: ' + result.message);
+        }
+        
+    } catch (error) {
+        console.error('Submission error:', error);
+        throw new Error('Failed to submit report: ' + error.message);
+    }
+}
     </script>
 </body>
-</html>  
+</html>
