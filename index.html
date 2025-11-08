@@ -3458,7 +3458,7 @@
     </div>
 </section>
 
-      <!-- Newsletter Section - FIXED VERSION -->
+      <!-- Newsletter Section -->
 <section class="section newsletter">
     <div class="container">
         <div class="section-title">
@@ -3467,6 +3467,7 @@
         </div>
         
         <div class="newsletter-content">
+            <!-- CHANGED: Remove Formspree action and use only Google Apps Script -->
             <form id="newsletterForm" class="newsletter-form">
                 <input type="email" name="email" id="newsletterEmail" class="newsletter-input" placeholder="Enter your email address" required>
                 <button type="submit" class="btn btn-primary">Subscribe Now</button>
@@ -3477,7 +3478,7 @@
         </div>
         
         <div id="newsletterSuccess" class="form-success" style="display: none; margin-top: 20px;">
-            Thank you for subscribing! Please check your email to confirm your subscription.
+            Thank you for subscribing! You've been added to our newsletter list.
         </div>
         
         <div id="newsletterError" class="form-error" style="display: none; margin-top: 20px; text-align: center;">
@@ -4620,16 +4621,12 @@
         </div>
     </div>
 </div>
-// ==================== EMAILOCTOPUS NEWSLETTER INTEGRATION - FIXED VERSION ====================
+// ==================== SIMPLIFIED NEWSLETTER - GOOGLE SHEETS ONLY ====================
 <script>
-// EmailOctopus API Configuration - CORRECT VERSION
-const EMAILOCTOPUS_API_KEY = 'eo_bfb5ae16c1204603feb75e8be773aa6bcb0a64abe2bcaa923bdc1a121abe2f6f';
-const EMAILOCTOPUS_LIST_ID = '11eef312-bcb4-11f0-b655-99bb0f5dec6a';
+// CORRECT NEWSLETTER Google Apps Script URL
+const NEWSLETTER_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbybjc4zzbjlAVqTzxHOWw_jP_hc-afK-7vwfWy81wXeFePimUak6zvRgy3IqAo27sVkXw/exec';
 
-// CORRECTED: Use your NEWSLETTER Google Apps Script URL
-const GOOGLE_SHEETS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbybjc4zzbjlAVqTzxHOWw_jP_hc-afK-7vwfWy81wXeFePimUak6zvRgy3IqAo27sVkXw/exec';
-
-// Simple newsletter form handler
+// Newsletter form handler - Google Sheets only
 document.getElementById('newsletterForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
@@ -4644,35 +4641,44 @@ document.getElementById('newsletterForm').addEventListener('submit', async funct
     }
     
     // Show loading state
+    const originalText = submitBtn.textContent;
     submitBtn.textContent = 'Subscribing...';
     submitBtn.disabled = true;
     
+    // Hide previous messages
+    document.getElementById('newsletterSuccess').style.display = 'none';
+    document.getElementById('newsletterError').style.display = 'none';
+    
     try {
-        // Submit to all services
-        await Promise.all([
-            submitToGoogleSheets(email),
-            submitToEmailOctopus(email),
-            submitToFormspree(email)
-        ]);
+        // Submit ONLY to Google Sheets (Newsletter)
+        const result = await submitToNewsletterSheet(email);
         
-        // Show success
-        document.getElementById('newsletterSuccess').style.display = 'block';
-        this.reset();
+        if (result.status === 'success') {
+            // Show success message
+            document.getElementById('newsletterSuccess').style.display = 'block';
+            console.log('Newsletter subscription successful:', result);
+            
+            // Reset form
+            this.reset();
+            
+            // Optional: Track in analytics
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'newsletter_subscription', {
+                    'event_category': 'engagement',
+                    'event_label': 'newsletter_signup'
+                });
+            }
+        } else {
+            throw new Error(result.message || 'Subscription failed');
+        }
         
     } catch (error) {
-        console.error('Subscription error:', error);
+        console.error('Newsletter subscription error:', error);
         document.getElementById('newsletterError').style.display = 'block';
-        
-        // Still try to save to Google Sheets even if other services fail
-        try {
-            await submitToGoogleSheets(email);
-            document.getElementById('newsletterSuccess').style.display = 'block';
-            this.reset();
-        } catch (sheetsError) {
-            console.error('Google Sheets also failed:', sheetsError);
-        }
+        document.getElementById('newsletterError').textContent = 'Subscription failed. Please try again.';
     } finally {
-        submitBtn.textContent = 'Subscribe Now';
+        // Reset button
+        submitBtn.textContent = originalText;
         submitBtn.disabled = false;
         
         // Hide messages after 5 seconds
@@ -4683,70 +4689,29 @@ document.getElementById('newsletterForm').addEventListener('submit', async funct
     }
 });
 
-// Primary function: Submit to Google Sheets (NEWSLETTER SHEET)
-async function submitToGoogleSheets(email) {
-    console.log('Submitting to Google Sheets (Newsletter):', email);
+// Submit to Newsletter Google Sheet only
+async function submitToNewsletterSheet(email) {
+    console.log('Submitting to Newsletter Google Sheet:', email);
     
+    // Create form data
     const formData = new FormData();
     formData.append('email', email);
     formData.append('timestamp', new Date().toISOString());
     formData.append('source', 'website_newsletter');
     formData.append('form_type', 'newsletter_subscription');
     
-    const response = await fetch(GOOGLE_SHEETS_SCRIPT_URL, {
+    const response = await fetch(NEWSLETTER_SCRIPT_URL, {
         method: 'POST',
         body: formData
     });
     
     if (!response.ok) {
-        throw new Error('Google Sheets submission failed');
+        throw new Error(`HTTP error! status: ${response.status}`);
     }
     
     const result = await response.json();
-    console.log('Google Sheets response:', result);
+    console.log('Newsletter Google Sheets response:', result);
     return result;
-}
-
-// Optional: Submit to EmailOctopus (with CORS workaround)
-async function submitToEmailOctopus(email) {
-    try {
-        // Using proxy through Google Apps Script to avoid CORS
-        const proxyData = new FormData();
-        proxyData.append('email', email);
-        proxyData.append('service', 'emailoctopus');
-        
-        const response = await fetch(GOOGLE_SHEETS_SCRIPT_URL, {
-            method: 'POST',
-            body: proxyData
-        });
-        
-        if (!response.ok) throw new Error('EmailOctopus proxy failed');
-        return response.json();
-    } catch (error) {
-        console.warn('EmailOctopus submission failed, continuing without it:', error);
-        // Don't throw error - continue with other services
-        return { status: 'skipped', message: 'EmailOctopus unavailable' };
-    }
-}
-
-// Optional: Submit to Formspree for backup
-async function submitToFormspree(email) {
-    try {
-        const formData = new FormData();
-        formData.append('email', email);
-        formData.append('form_type', 'newsletter_subscription');
-        
-        await fetch('https://formspree.io/f/mrbaejkr', {
-            method: 'POST',
-            body: formData
-        });
-        
-        return { status: 'success', message: 'Formspree submitted' };
-    } catch (error) {
-        console.warn('Formspree submission failed, continuing without it:', error);
-        // Don't throw error - continue with other services
-        return { status: 'skipped', message: 'Formspree unavailable' };
-    }
 }
 </script>
                     
