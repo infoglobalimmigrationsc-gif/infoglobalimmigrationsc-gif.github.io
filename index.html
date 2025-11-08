@@ -4592,7 +4592,7 @@
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Notes (Optional)</label>
-                    <input type="text" id="adminDocNotes" class="form-control" placeholder="Add comments..." style="min-width: 200px;">
+                    <input type="text" id="adminDocNotes2" class="form-control" placeholder="Add comments..." style="min-width: 200px;">
                 </div>
                 <button onclick="adminManualStatusUpdate()" class="btn btn-primary btn-small">
                     Update Status
@@ -4623,9 +4623,9 @@
 <!-- ==================== EMAILOCTOPUS NEWSLETTER INTEGRATION ==================== -->
 <script>
 // EmailOctopus API Configuration
-const EMAILOCTOPUS_API_KEY = 'YOUR_EMAILOCTOPUS_API_KEY'; eo_bfb5ae16c1204603feb75e8be773aa6bcb0a64abe2bcaa923bdc1a121abe2f6f
+const EMAILOCTOPUS_API_KEY = 'eo_bfb5ae16c1204603feb75e8be773aa6bcb0a64abe2bcaa923bdc1a121abe2f6f';
 const EMAILOCTOPUS_LIST_ID = '11eef312-bcb4-11f0-b655-99bb0f5dec6a';
-const GOOGLE_SHEETS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwo7OkMyoZuizM8dQJFcczdygmZOBtz1LMn91yuKFvmSV0JOgYZAkjceJp81Ky3ZZI/exec';
+const GOOGLE_SHEETS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbybjc4zzbjlAVqTzxHOWw_jP_hc-afK-7vwfWy81wXeFePimUak6zvRgy3IqAo27sVkXw/exec';
 
 // Newsletter form submission
 document.getElementById('newsletterForm').addEventListener('submit', async function(e) {
