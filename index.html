@@ -4633,10 +4633,15 @@ document.getElementById('newsletterForm').addEventListener('submit', async funct
     const email = document.getElementById('newsletterEmail').value.trim();
     const submitBtn = this.querySelector('button[type="submit"]');
     
-    // Validate email
+    // Hide previous messages
+    document.getElementById('newsletterSuccess').style.display = 'none';
+    document.getElementById('newsletterError').style.display = 'none';
+    
+    // Validate email - REPLACED ALERT WITH PROPER ERROR DISPLAY
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailRegex.test(email)) {
-        alert('Please enter a valid email address');
+        document.getElementById('newsletterError').style.display = 'block';
+        document.getElementById('newsletterError').textContent = 'Please enter a valid email address';
         return;
     }
     
@@ -4644,10 +4649,6 @@ document.getElementById('newsletterForm').addEventListener('submit', async funct
     const originalText = submitBtn.textContent;
     submitBtn.textContent = 'Subscribing...';
     submitBtn.disabled = true;
-    
-    // Hide previous messages
-    document.getElementById('newsletterSuccess').style.display = 'none';
-    document.getElementById('newsletterError').style.display = 'none';
     
     try {
         // Submit ONLY to Google Sheets (Newsletter)
