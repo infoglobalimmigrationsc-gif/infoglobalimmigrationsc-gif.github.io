@@ -4650,68 +4650,107 @@ document.getElementById('newsletterForm').addEventListener('submit', async funct
     document.getElementById('newsletterError').style.display = 'none';
     
     try {
-        // Submit ONLY to Google Sheets (Newsletter)
+        console.log('Starting newsletter subscription for:', email);
+        
+        // Submit to Google Sheets
         const result = await submitToNewsletterSheet(email);
         
-        if (result.status === 'success') {
-            // Show success message
+        console.log('Subscription result:', result);
+        
+        if (result && result.status === 'success') {
+            // Show success message immediately
             document.getElementById('newsletterSuccess').style.display = 'block';
-            console.log('Newsletter subscription successful:', result);
+            console.log('Newsletter subscription successful');
             
             // Reset form
             this.reset();
             
-            // Optional: Track in analytics
+            // Track in analytics
             if (typeof gtag !== 'undefined') {
                 gtag('event', 'newsletter_subscription', {
                     'event_category': 'engagement',
                     'event_label': 'newsletter_signup'
                 });
             }
+            
+            // DON'T show alert - let the success message handle it
+            // Remove any existing alert timeout
+            clearTimeout(window.newsletterAlertTimeout);
+            
         } else {
-            throw new Error(result.message || 'Subscription failed');
+            // Handle different error scenarios
+            const errorMsg = result?.message || 'Subscription failed. Please try again.';
+            throw new Error(errorMsg);
         }
         
     } catch (error) {
         console.error('Newsletter subscription error:', error);
+        
+        // Show error in the form, not alert
         document.getElementById('newsletterError').style.display = 'block';
-        document.getElementById('newsletterError').textContent = 'Subscription failed. Please try again.';
+        document.getElementById('newsletterError').textContent = error.message;
+        
+        // Hide error after 5 seconds
+        setTimeout(() => {
+            document.getElementById('newsletterError').style.display = 'none';
+        }, 5000);
+        
     } finally {
         // Reset button
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
-        
-        // Hide messages after 5 seconds
-        setTimeout(() => {
-            document.getElementById('newsletterSuccess').style.display = 'none';
-            document.getElementById('newsletterError').style.display = 'none';
-        }, 5000);
     }
 });
 
-// Submit to Newsletter Google Sheet only
+// Improved function to submit to Newsletter Google Sheet
 async function submitToNewsletterSheet(email) {
     console.log('Submitting to Newsletter Google Sheet:', email);
     
-    // Create form data
-    const formData = new FormData();
-    formData.append('email', email);
-    formData.append('timestamp', new Date().toISOString());
-    formData.append('source', 'website_newsletter');
-    formData.append('form_type', 'newsletter_subscription');
-    
-    const response = await fetch(NEWSLETTER_SCRIPT_URL, {
-        method: 'POST',
-        body: formData
-    });
-    
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+    try {
+        // Create URL-encoded data instead of FormData for better compatibility
+        const formData = new URLSearchParams();
+        formData.append('email', email);
+        formData.append('timestamp', new Date().toISOString());
+        formData.append('source', 'website_newsletter');
+        formData.append('form_type', 'newsletter_subscription');
+        
+        console.log('Sending data to Google Apps Script...');
+        
+        const response = await fetch(NEWSLETTER_SCRIPT_URL, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        });
+        
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        // Try to parse JSON response
+        const responseText = await response.text();
+        console.log('Raw response:', responseText);
+        
+        let result;
+        try {
+            result = JSON.parse(responseText);
+        } catch (parseError) {
+            console.log('Response is not JSON, treating as success');
+            // If it's not JSON but response was ok, assume success
+            return { status: 'success', message: 'Subscription successful' };
+        }
+        
+        console.log('Parsed response:', result);
+        return result;
+        
+    } catch (error) {
+        console.error('Error in submitToNewsletterSheet:', error);
+        throw error;
     }
-    
-    const result = await response.json();
-    console.log('Newsletter Google Sheets response:', result);
-    return result;
 }
 </script>
                     
