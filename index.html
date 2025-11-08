@@ -3467,6 +3467,7 @@
         </div>
         
         <div class="newsletter-content">
+            <!-- REMOVED Formspree action - using only Google Apps Script -->
             <form id="newsletterForm" class="newsletter-form">
                 <input type="email" name="email" id="newsletterEmail" class="newsletter-input" placeholder="Enter your email address" required>
                 <button type="submit" class="btn btn-primary">Subscribe Now</button>
@@ -4622,85 +4623,6 @@
 </div>
 // ==================== SIMPLIFIED NEWSLETTER - GOOGLE SHEETS ONLY ====================
 <script>
-// CORRECT NEWSLETTER Google Apps Script URL
-const NEWSLETTER_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbybjc4zzbjlAVqTzxHOWw_jP_hc-afK-7vwfWy81wXeFePimUak6zvRgy3IqAo27sVkXw/exec';
-
-// Newsletter form handler - Google Sheets only
-document.getElementById('newsletterForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const email = document.getElementById('newsletterEmail').value.trim();
-    const submitBtn = this.querySelector('button[type="submit"]');
-    
-    // Validate email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email || !emailRegex.test(email)) {
-        alert('Please enter a valid email address');
-        return;
-    }
-    
-    // Show loading state
-    const originalText = submitBtn.textContent;
-    submitBtn.textContent = 'Subscribing...';
-    submitBtn.disabled = true;
-    
-    // Hide previous messages
-    document.getElementById('newsletterSuccess').style.display = 'none';
-    document.getElementById('newsletterError').style.display = 'none';
-    
-    try {
-        console.log('Starting newsletter subscription for:', email);
-        
-        // Submit to Google Sheets
-        const result = await submitToNewsletterSheet(email);
-        
-        console.log('Subscription result:', result);
-        
-        if (result && result.status === 'success') {
-            // Show success message immediately
-            document.getElementById('newsletterSuccess').style.display = 'block';
-            console.log('Newsletter subscription successful');
-            
-            // Reset form
-            this.reset();
-            
-            // Track in analytics
-            if (typeof gtag !== 'undefined') {
-                gtag('event', 'newsletter_subscription', {
-                    'event_category': 'engagement',
-                    'event_label': 'newsletter_signup'
-                });
-            }
-            
-            // DON'T show alert - let the success message handle it
-            // Remove any existing alert timeout
-            clearTimeout(window.newsletterAlertTimeout);
-            
-        } else {
-            // Handle different error scenarios
-            const errorMsg = result?.message || 'Subscription failed. Please try again.';
-            throw new Error(errorMsg);
-        }
-        
-    } catch (error) {
-        console.error('Newsletter subscription error:', error);
-        
-        // Show error in the form, not alert
-        document.getElementById('newsletterError').style.display = 'block';
-        document.getElementById('newsletterError').textContent = error.message;
-        
-        // Hide error after 5 seconds
-        setTimeout(() => {
-            document.getElementById('newsletterError').style.display = 'none';
-        }, 5000);
-        
-    } finally {
-        // Reset button
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
-    }
-});
-
 // CORRECT NEWSLETTER Google Apps Script URL
 const NEWSLETTER_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbybjc4zzbjlAVqTzxHOWw_jP_hc-afK-7vwfWy81wXeFePimUak6zvRgy3IqAo27sVkXw/exec';
 
