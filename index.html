@@ -4702,49 +4702,107 @@ document.getElementById('newsletterForm').addEventListener('submit', async funct
     }
 });
 
-// Improved function to submit to Newsletter Google Sheet
+// CORRECT NEWSLETTER Google Apps Script URL
+const NEWSLETTER_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbybjc4zzbjlAVqTzxHOWw_jP_hc-afK-7vwfWy81wXeFePimUak6zvRgy3IqAo27sVkXw/exec';
+
+// Newsletter form handler - Google Sheets only
+document.getElementById('newsletterForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('newsletterEmail').value.trim();
+    const submitBtn = this.querySelector('button[type="submit"]');
+    
+    // Validate email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
+        alert('Please enter a valid email address');
+        return;
+    }
+    
+    // Show loading state
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Subscribing...';
+    submitBtn.disabled = true;
+    
+    // Hide previous messages
+    document.getElementById('newsletterSuccess').style.display = 'none';
+    document.getElementById('newsletterError').style.display = 'none';
+    
+    try {
+        console.log('Starting newsletter subscription for:', email);
+        
+        // Submit to Google Sheets
+        const result = await submitToNewsletterSheet(email);
+        
+        console.log('Subscription result:', result);
+        
+        if (result && result.status === 'success') {
+            // Show success message
+            document.getElementById('newsletterSuccess').style.display = 'block';
+            console.log('Newsletter subscription successful');
+            
+            // Reset form
+            this.reset();
+            
+            // Track in analytics
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'newsletter_subscription', {
+                    'event_category': 'engagement',
+                    'event_label': 'newsletter_signup'
+                });
+            }
+        } else {
+            throw new Error(result?.message || 'Subscription failed');
+        }
+        
+    } catch (error) {
+        console.error('Newsletter subscription error:', error);
+        document.getElementById('newsletterError').style.display = 'block';
+        document.getElementById('newsletterError').textContent = error.message;
+        
+        // Hide error after 5 seconds
+        setTimeout(() => {
+            document.getElementById('newsletterError').style.display = 'none';
+        }, 5000);
+        
+    } finally {
+        // Reset button
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    }
+});
+
+// FIXED: Submit to Newsletter Google Sheet with GET method
 async function submitToNewsletterSheet(email) {
     console.log('Submitting to Newsletter Google Sheet:', email);
     
     try {
-        // Create URL-encoded data instead of FormData for better compatibility
-        const formData = new URLSearchParams();
-        formData.append('email', email);
-        formData.append('timestamp', new Date().toISOString());
-        formData.append('source', 'website_newsletter');
-        formData.append('form_type', 'newsletter_subscription');
+        // Create URL parameters for GET request
+        const params = new URLSearchParams({
+            'email': email,
+            'timestamp': new Date().toISOString(),
+            'source': 'website_newsletter',
+            'form_type': 'newsletter_subscription'
+        });
         
-        console.log('Sending data to Google Apps Script...');
+        console.log('Sending data to Google Apps Script via GET...');
         
-        const response = await fetch(NEWSLETTER_SCRIPT_URL, {
-            method: 'POST',
-            body: formData,
+        // Use GET instead of POST (to avoid 405 error)
+        const response = await fetch(`${NEWSLETTER_SCRIPT_URL}?${params}`, {
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Accept': 'application/json'
             }
         });
         
         console.log('Response status:', response.status);
-        console.log('Response ok:', response.ok);
         
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        // Try to parse JSON response
-        const responseText = await response.text();
-        console.log('Raw response:', responseText);
-        
-        let result;
-        try {
-            result = JSON.parse(responseText);
-        } catch (parseError) {
-            console.log('Response is not JSON, treating as success');
-            // If it's not JSON but response was ok, assume success
-            return { status: 'success', message: 'Subscription successful' };
-        }
-        
-        console.log('Parsed response:', result);
+        const result = await response.json();
+        console.log('Google Sheets response:', result);
         return result;
         
     } catch (error) {
