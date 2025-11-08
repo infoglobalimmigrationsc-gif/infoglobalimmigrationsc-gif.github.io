@@ -3467,7 +3467,6 @@
         </div>
         
         <div class="newsletter-content">
-            <!-- REMOVED Formspree action - using only Google Apps Script -->
             <form id="newsletterForm" class="newsletter-form">
                 <input type="email" name="email" id="newsletterEmail" class="newsletter-input" placeholder="Enter your email address" required>
                 <button type="submit" class="btn btn-primary">Subscribe Now</button>
@@ -3477,12 +3476,14 @@
             </p>
         </div>
         
+        <!-- Success Message -->
         <div id="newsletterSuccess" class="form-success" style="display: none; margin-top: 20px;">
             Thank you for subscribing! You've been added to our newsletter list.
         </div>
         
+        <!-- Error Message -->
         <div id="newsletterError" class="form-error" style="display: none; margin-top: 20px; text-align: center;">
-            There was an error with your subscription. Please try again.
+            <!-- Error text will be inserted here -->
         </div>
     </div>
 </section>
@@ -4636,8 +4637,9 @@ document.getElementById('newsletterForm').addEventListener('submit', async funct
     // Hide previous messages
     document.getElementById('newsletterSuccess').style.display = 'none';
     document.getElementById('newsletterError').style.display = 'none';
+    document.getElementById('newsletterError').textContent = ''; // Clear any previous error text
     
-    // Validate email - REPLACED ALERT WITH PROPER ERROR DISPLAY
+    // Validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailRegex.test(email)) {
         document.getElementById('newsletterError').style.display = 'block';
@@ -4682,10 +4684,10 @@ document.getElementById('newsletterForm').addEventListener('submit', async funct
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
         
-        // Hide messages after 5 seconds
+        // Hide messages after 5 seconds - ONLY if there was an error
         setTimeout(() => {
-            document.getElementById('newsletterSuccess').style.display = 'none';
             document.getElementById('newsletterError').style.display = 'none';
+            document.getElementById('newsletterError').textContent = ''; // Clear error text
         }, 5000);
     }
 });
