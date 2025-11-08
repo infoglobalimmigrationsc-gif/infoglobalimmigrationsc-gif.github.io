@@ -4620,11 +4620,13 @@
         </div>
     </div>
 </div>
-<!-- ==================== EMAILOCTOPUS NEWSLETTER INTEGRATION ==================== -->
+// ==================== EMAILOCTOPUS NEWSLETTER INTEGRATION - FIXED VERSION ====================
 <script>
 // EmailOctopus API Configuration - CORRECT VERSION
 const EMAILOCTOPUS_API_KEY = 'eo_bfb5ae16c1204603feb75e8be773aa6bcb0a64abe2bcaa923bdc1a121abe2f6f';
 const EMAILOCTOPUS_LIST_ID = '11eef312-bcb4-11f0-b655-99bb0f5dec6a';
+
+// CORRECTED: Use your NEWSLETTER Google Apps Script URL
 const GOOGLE_SHEETS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbybjc4zzbjlAVqTzxHOWw_jP_hc-afK-7vwfWy81wXeFePimUak6zvRgy3IqAo27sVkXw/exec';
 
 // Simple newsletter form handler
@@ -4648,8 +4650,8 @@ document.getElementById('newsletterForm').addEventListener('submit', async funct
     try {
         // Submit to all services
         await Promise.all([
-            submitToEmailOctopus(email),
             submitToGoogleSheets(email),
+            submitToEmailOctopus(email),
             submitToFormspree(email)
         ]);
         
@@ -4658,47 +4660,93 @@ document.getElementById('newsletterForm').addEventListener('submit', async funct
         this.reset();
         
     } catch (error) {
-        document.getElementById('newsletterError').style.display = 'block';
         console.error('Subscription error:', error);
+        document.getElementById('newsletterError').style.display = 'block';
+        
+        // Still try to save to Google Sheets even if other services fail
+        try {
+            await submitToGoogleSheets(email);
+            document.getElementById('newsletterSuccess').style.display = 'block';
+            this.reset();
+        } catch (sheetsError) {
+            console.error('Google Sheets also failed:', sheetsError);
+        }
     } finally {
         submitBtn.textContent = 'Subscribe Now';
         submitBtn.disabled = false;
+        
+        // Hide messages after 5 seconds
+        setTimeout(() => {
+            document.getElementById('newsletterSuccess').style.display = 'none';
+            document.getElementById('newsletterError').style.display = 'none';
+        }, 5000);
     }
 });
 
-async function submitToEmailOctopus(email) {
-    const response = await fetch(`https://emailoctopus.com/api/1.6/lists/${EMAILOCTOPUS_LIST_ID}/contacts`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-            api_key: EMAILOCTOPUS_API_KEY,
-            email_address: email,
-            status: 'SUBSCRIBED'
-        })
-    });
-    if (!response.ok) throw new Error('EmailOctopus failed');
-    return response.json();
-}
-
+// Primary function: Submit to Google Sheets (NEWSLETTER SHEET)
 async function submitToGoogleSheets(email) {
+    console.log('Submitting to Google Sheets (Newsletter):', email);
+    
     const formData = new FormData();
     formData.append('email', email);
     formData.append('timestamp', new Date().toISOString());
     formData.append('source', 'website_newsletter');
+    formData.append('form_type', 'newsletter_subscription');
     
     const response = await fetch(GOOGLE_SHEETS_SCRIPT_URL, {
         method: 'POST',
         body: formData
     });
-    if (!response.ok) throw new Error('Google Sheets failed');
-    return response.json();
+    
+    if (!response.ok) {
+        throw new Error('Google Sheets submission failed');
+    }
+    
+    const result = await response.json();
+    console.log('Google Sheets response:', result);
+    return result;
 }
 
+// Optional: Submit to EmailOctopus (with CORS workaround)
+async function submitToEmailOctopus(email) {
+    try {
+        // Using proxy through Google Apps Script to avoid CORS
+        const proxyData = new FormData();
+        proxyData.append('email', email);
+        proxyData.append('service', 'emailoctopus');
+        
+        const response = await fetch(GOOGLE_SHEETS_SCRIPT_URL, {
+            method: 'POST',
+            body: proxyData
+        });
+        
+        if (!response.ok) throw new Error('EmailOctopus proxy failed');
+        return response.json();
+    } catch (error) {
+        console.warn('EmailOctopus submission failed, continuing without it:', error);
+        // Don't throw error - continue with other services
+        return { status: 'skipped', message: 'EmailOctopus unavailable' };
+    }
+}
+
+// Optional: Submit to Formspree for backup
 async function submitToFormspree(email) {
-    const formData = new FormData();
-    formData.append('email', email);
-    formData.append('form_type', 'newsletter_subscription');
-    await fetch('https://formspree.io/f/mrbaejkr', {method: 'POST', body: formData});
+    try {
+        const formData = new FormData();
+        formData.append('email', email);
+        formData.append('form_type', 'newsletter_subscription');
+        
+        await fetch('https://formspree.io/f/mrbaejkr', {
+            method: 'POST',
+            body: formData
+        });
+        
+        return { status: 'success', message: 'Formspree submitted' };
+    } catch (error) {
+        console.warn('Formspree submission failed, continuing without it:', error);
+        // Don't throw error - continue with other services
+        return { status: 'skipped', message: 'Formspree unavailable' };
+    }
 }
 </script>
                     
