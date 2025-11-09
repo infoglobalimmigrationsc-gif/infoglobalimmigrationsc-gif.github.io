@@ -4631,6 +4631,13 @@ const NEWSLETTER_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbybjc4zzb
 document.getElementById('newsletterForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
+    // Add this debug code temporarily
+console.log('Newsletter form elements:');
+console.log('Success element:', document.getElementById('newsletterSuccess'));
+console.log('Error element:', document.getElementById('newsletterError'));
+console.log('Current error display:', document.getElementById('newsletterError').style.display);
+console.log('Current error text:', document.getElementById('newsletterError').textContent);
+    
     const email = document.getElementById('newsletterEmail').value.trim();
     const submitBtn = this.querySelector('button[type="submit"]');
     
