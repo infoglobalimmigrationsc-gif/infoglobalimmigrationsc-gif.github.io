@@ -3468,10 +3468,11 @@
         
         <div class="newsletter-content">
             <form id="newsletterForm" class="newsletter-form">
-                <input type="email" name="email" id="newsletterEmail" class="newsletter-input" placeholder="Enter your email address" required>
-                <button type="submit" class="btn btn-primary">Subscribe Now</button>
-            </form>
-            <p style="margin-top: 15px; color: var(--medium-gray); font-size: 0.9rem; text-align: center;">
+    <!-- REMOVE any action or method attributes -->
+    <input type="email" name="email" id="newsletterEmail" class="newsletter-input" placeholder="Enter your email address" required>
+    <button type="submit" class="btn btn-primary">Subscribe Now</button>
+</form>
+<p style="margin-top: 15px; color: var(--medium-gray); font-size: 0.9rem; text-align: center;">
                 We respect your privacy. You can unsubscribe at any time.
             </p>
         </div>
@@ -4627,16 +4628,11 @@
 // CORRECT NEWSLETTER Google Apps Script URL
 const NEWSLETTER_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbybjc4zzbjlAVqTzxHOWw_jP_hc-afK-7vwfWy81wXeFePimUak6zvRgy3IqAo27sVkXw/exec';
 
-// Newsletter form handler - Google Sheets only
+// Newsletter form handler - Google Sheets only - FIXED VERSION
 document.getElementById('newsletterForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
-    // Add this debug code temporarily
-console.log('Newsletter form elements:');
-console.log('Success element:', document.getElementById('newsletterSuccess'));
-console.log('Error element:', document.getElementById('newsletterError'));
-console.log('Current error display:', document.getElementById('newsletterError').style.display);
-console.log('Current error text:', document.getElementById('newsletterError').textContent);
+    e.stopPropagation(); // Add this to prevent any bubbling
+    e.stopImmediatePropagation(); // Add this to prevent other handlers
     
     const email = document.getElementById('newsletterEmail').value.trim();
     const submitBtn = this.querySelector('button[type="submit"]');
@@ -4644,14 +4640,14 @@ console.log('Current error text:', document.getElementById('newsletterError').te
     // Hide previous messages
     document.getElementById('newsletterSuccess').style.display = 'none';
     document.getElementById('newsletterError').style.display = 'none';
-    document.getElementById('newsletterError').textContent = ''; // Clear any previous error text
+    document.getElementById('newsletterError').textContent = '';
     
     // Validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailRegex.test(email)) {
         document.getElementById('newsletterError').style.display = 'block';
         document.getElementById('newsletterError').textContent = 'Please enter a valid email address';
-        return;
+        return false; // Return false to prevent any default behavior
     }
     
     // Show loading state
@@ -4691,38 +4687,17 @@ console.log('Current error text:', document.getElementById('newsletterError').te
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
         
-        // Hide messages after 5 seconds - ONLY if there was an error
-        setTimeout(() => {
-            document.getElementById('newsletterError').style.display = 'none';
-            document.getElementById('newsletterError').textContent = ''; // Clear error text
-        }, 5000);
+        // Hide error message after 5 seconds (only if it's showing)
+        if (document.getElementById('newsletterError').style.display === 'block') {
+            setTimeout(() => {
+                document.getElementById('newsletterError').style.display = 'none';
+                document.getElementById('newsletterError').textContent = '';
+            }, 5000);
+        }
     }
+    
+    return false; // Prevent default form submission
 });
-
-// Submit to Newsletter Google Sheet only
-async function submitToNewsletterSheet(email) {
-    console.log('Submitting to Newsletter Google Sheet:', email);
-    
-    // Create form data
-    const formData = new FormData();
-    formData.append('email', email);
-    formData.append('timestamp', new Date().toISOString());
-    formData.append('source', 'website_newsletter');
-    formData.append('form_type', 'newsletter_subscription');
-    
-    const response = await fetch(NEWSLETTER_SCRIPT_URL, {
-        method: 'POST',
-        body: formData
-    });
-    
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const result = await response.json();
-    console.log('Newsletter Google Sheets response:', result);
-    return result;
-}
 </script>
                     
     <!-- Add Firebase SDK -->
