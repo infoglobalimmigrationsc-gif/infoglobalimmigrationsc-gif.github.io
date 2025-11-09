@@ -3476,14 +3476,14 @@
             </p>
         </div>
         
-        <!-- Success Message -->
+        <!-- Success Message (empty by default) -->
         <div id="newsletterSuccess" class="form-success" style="display: none; margin-top: 20px;">
             Thank you for subscribing! You've been added to our newsletter list.
         </div>
         
-        <!-- Error Message -->
+        <!-- Error Message (empty by default) -->
         <div id="newsletterError" class="form-error" style="display: none; margin-top: 20px; text-align: center;">
-            <!-- Error text will be inserted here -->
+            <!-- JavaScript will insert error text here when needed -->
         </div>
     </div>
 </section>
@@ -4627,9 +4627,10 @@
 // CORRECT NEWSLETTER Google Apps Script URL
 const NEWSLETTER_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbybjc4zzbjlAVqTzxHOWw_jP_hc-afK-7vwfWy81wXeFePimUak6zvRgy3IqAo27sVkXw/exec';
 
-// Newsletter form handler - Google Sheets only
+// Newsletter form handler - Google Sheets only (FIXED VERSION)
 document.getElementById('newsletterForm').addEventListener('submit', async function(e) {
     e.preventDefault();
+    e.stopPropagation(); // Add this to prevent any bubbling
     
     const email = document.getElementById('newsletterEmail').value.trim();
     const submitBtn = this.querySelector('button[type="submit"]');
@@ -4637,14 +4638,14 @@ document.getElementById('newsletterForm').addEventListener('submit', async funct
     // Hide previous messages
     document.getElementById('newsletterSuccess').style.display = 'none';
     document.getElementById('newsletterError').style.display = 'none';
-    document.getElementById('newsletterError').textContent = ''; // Clear any previous error text
+    document.getElementById('newsletterError').textContent = '';
     
     // Validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailRegex.test(email)) {
         document.getElementById('newsletterError').style.display = 'block';
         document.getElementById('newsletterError').textContent = 'Please enter a valid email address';
-        return;
+        return false; // Return false to prevent any default behavior
     }
     
     // Show loading state
@@ -4683,13 +4684,9 @@ document.getElementById('newsletterForm').addEventListener('submit', async funct
         // Reset button
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
-        
-        // Hide messages after 5 seconds - ONLY if there was an error
-        setTimeout(() => {
-            document.getElementById('newsletterError').style.display = 'none';
-            document.getElementById('newsletterError').textContent = ''; // Clear error text
-        }, 5000);
     }
+    
+    return false; // Prevent default form submission
 });
 
 // Submit to Newsletter Google Sheet only
@@ -8617,9 +8614,6 @@ function clearFieldError(field) {
                     } else {
                         throw new Error('Form submission failed');
                     }
-                })
-                .catch(error => {
-                    alert('There was a problem with your subscription. Please try again later.');
                 })
                 .finally(() => {
                     // Reset button
