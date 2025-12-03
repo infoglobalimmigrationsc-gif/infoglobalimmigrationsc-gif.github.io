@@ -2071,10 +2071,8 @@
         min-height: 44px;
         padding: 12px 16px;
     }
-    /* === END OF NEW LINES === */
 }
-        
-        /* Accessibility Improvements */
+     /* Accessibility Improvements */
         .skip-link {
             position: absolute;
             top: -40px;
@@ -2158,7 +2156,6 @@
             max-width: 100%;
             height: auto;
         }
-        /* ==================== ENHANCED STYLES ==================== */
 
 /* Enhanced Document Card Styles */
 .document-header {
@@ -2723,6 +2720,88 @@
         justify-content: center;
     }
 }
+
+/* ==================== PARTNERS SECTION STYLES ==================== */
+.partners-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 30px;
+    align-items: center;
+    justify-items: center;
+}
+
+.partner-logo {
+    background-color: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 200px;
+}
+
+.partner-logo:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.partner-logo img {
+    max-width: 100%;
+    max-height: 100px;
+    height: auto;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.partner-logo:hover img {
+    transform: scale(1.05);
+}
+
+/* Responsive adjustments for partners section */
+@media (max-width: 992px) {
+    .partners-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 20px;
+    }
+    
+    .partner-logo {
+        padding: 20px;
+        height: 130px;
+        min-width: 180px;
+    }
+}
+
+@media (max-width: 768px) {
+    .partners-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    
+    .partner-logo {
+        padding: 15px;
+        height: 120px;
+        min-width: 150px;
+    }
+    
+    .partner-logo img {
+        max-height: 80px;
+    }
+}
+
+@media (max-width: 480px) {
+    .partners-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .partner-logo {
+        height: 100px;
+        min-width: 100%;
+    }
+}
     </style>
 </head>
 <body>
@@ -3223,6 +3302,227 @@
                 </div>
             </div>
         </section>
+
+        <!-- Partners Section -->
+<section id="partners" class="section partners" style="background-color: var(--light-gray);">
+    <div class="container">
+        <div class="section-title">
+            <h2>Our Trusted Partners</h2>
+            <p>We collaborate with leading educational institutions and partners worldwide</p>
+        </div>
+        
+        <!-- GEDU Global Education -->
+        <div class="partner-group" style="margin-bottom: 60px;">
+            <h3 style="text-align: center; margin-bottom: 30px; color: var(--primary-red);">Strategic Partner</h3>
+            <div class="partner-logo" style="text-align: center;">
+                <a href="https://gedu.global/" target="_blank" rel="noopener noreferrer">
+                    <img src="https://i.imgur.com/r9V7Y5i.png" alt="GEDU Global Education" style="max-width: 300px; height: auto;" onerror="this.onerror=null; this.src='https://placehold.co/300x100/0056D2/FFFFFF?text=GEDU+Global+Education';">
+                </a>
+            </div>
+        </div>
+        
+        <!-- GEDU Partner Schools -->
+        <div class="partner-group" style="margin-bottom: 60px;">
+            <h3 style="text-align: center; margin-bottom: 40px; color: var(--dark-gray);">GEDU Partner Schools</h3>
+            <div class="partners-grid">
+                <!-- Queen Elizabeth's Global Schools -->
+                <div class="partner-logo">
+                    <img src="https://i.imgur.com/WFk4L8o.png" alt="Queen Elizabeth's Global Schools" onerror="this.onerror=null; this.src='https://placehold.co/180x80/003366/FFFFFF?text=Queen+Elizabeth%27s';">
+                </div>
+                
+                <!-- EMA Paris -->
+                <div class="partner-logo">
+                    <img src="https://i.imgur.com/cQpTy7e.png" alt="École de Management Appliqué Paris" onerror="this.onerror=null; this.src='https://placehold.co/180x80/0066CC/FFFFFF?text=EMA+Paris';">
+                </div>
+                
+                <!-- GBS Dubai -->
+                <div class="partner-logo">
+                    <img src="https://i.imgur.com/mV3sN8P.png" alt="GBS Dubai" onerror="this.onerror=null; this.src='https://placehold.co/180x80/FF6600/FFFFFF?text=GBS+Dubai';">
+                </div>
+                
+                <!-- Schiller International University -->
+                <div class="partner-logo">
+                    <img src="https://i.imgur.com/Z0ET0Lg.png" alt="Schiller International University" onerror="this.onerror=null; this.src='https://placehold.co/180x80/0033CC/FFFFFF?text=Schiller+University';">
+                </div>
+                
+                <!-- English Path -->
+                <div class="partner-logo">
+                    <img src="https://i.imgur.com/Q5D2vM9.png" alt="English Path" onerror="this.onerror=null; this.src='https://placehold.co/180x80/00AAFF/FFFFFF?text=English+Path';">
+                </div>
+                
+                <!-- GBS Malta -->
+                <div class="partner-logo">
+                    <img src="https://i.imgur.com/8BwJyfd.png" alt="GBS Malta" onerror="this.onerror=null; this.src='https://placehold.co/180x80/FF3300/FFFFFF?text=GBS+Malta';">
+                </div>
+                
+                <!-- MLA College -->
+                <div class="partner-logo">
+                    <img src="https://i.imgur.com/tN4oxXh.png" alt="MLA College" onerror="this.onerror=null; this.src='https://placehold.co/180x80/663399/FFFFFF?text=MLA+College';">
+                </div>
+                
+                <!-- APAC -->
+                <div class="partner-logo">
+                    <img src="https://i.imgur.com/vF9Zq6U.png" alt="Australian Performing Arts Conservatory" onerror="this.onerror=null; this.src='https://placehold.co/180x80/FF0066/FFFFFF?text=APAC';">
+                </div>
+                
+                <!-- Global U -->
+                <div class="partner-logo">
+                    <img src="https://i.imgur.com/bIpD8lE.png" alt="Global University Systems" onerror="this.onerror=null; this.src='https://placehold.co/180x80/0055AA/FFFFFF?text=Global+University';">
+                </div>
+                
+                <!-- MetaGedu -->
+                <div class="partner-logo">
+                    <img src="https://i.imgur.com/kqWhd0q.png" alt="MetaGedu Apprenticeships" onerror="this.onerror=null; this.src='https://placehold.co/180x80/009900/FFFFFF?text=MetaGedu';">
+                </div>
+                
+                <!-- Lokmani -->
+                <div class="partner-logo">
+                    <img src="https://i.imgur.com/kL4Stmn.png" alt="Lokmani" onerror="this.onerror=null; this.src='https://placehold.co/180x80/993300/FFFFFF?text=Lokmani';">
+                </div>
+                
+                <!-- Global Banking Training -->
+                <div class="partner-logo">
+                    <img src="https://i.imgur.com/ouOD9Yu.png" alt="Global Banking Training London" onerror="this.onerror=null; this.src='https://placehold.co/180x80/000066/FFFFFF?text=Global+Banking+Training';">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Universities by Country -->
+        <div class="universities-section">
+            <!-- Canada Universities -->
+            <div class="country-universities" style="margin-bottom: 60px;">
+                <h3 style="text-align: center; margin-bottom: 40px; color: var(--dark-gray);">Top Universities in Canada</h3>
+                <div class="partners-grid">
+                    <!-- Thompson Rivers University -->
+                    <div class="partner-logo">
+                        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/2/2e/Thompson_Rivers_University_logo.svg/320px-Thompson_Rivers_University_logo.svg.png" alt="Thompson Rivers University" onerror="this.onerror=null; this.src='https://placehold.co/180x80/0055AA/FFFFFF?text=Thompson+Rivers';">
+                    </div>
+                    
+                    <!-- University of Toronto -->
+                    <div class="partner-logo">
+                        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/6/6e/University_of_Toronto_coat_of_arms.svg/320px-University_of_Toronto_coat_of_arms.svg.png" alt="University of Toronto" onerror="this.onerror=null; this.src='https://placehold.co/180x80/002A5C/FFFFFF?text=U+of+Toronto';">
+                    </div>
+                    
+                    <!-- University of British Columbia -->
+                    <div class="partner-logo">
+                        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/6/69/UBC_logo.svg/320px-UBC_logo.svg.png" alt="University of British Columbia" onerror="this.onerror=null; this.src='https://placehold.co/180x80/002145/FFFFFF?text=UBC';">
+                    </div>
+                    
+                    <!-- McGill University -->
+                    <div class="partner-logo">
+                        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/5/53/McGill_University_CoA.svg/320px-McGill_University_CoA.svg.png" alt="McGill University" onerror="this.onerror=null; this.src='https://placehold.co/180x80/ED1B2F/FFFFFF?text=McGill';">
+                    </div>
+                    
+                    <!-- University of Alberta -->
+                    <div class="partner-logo">
+                        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/4/44/University_of_Alberta_coat_of_arms.svg/320px-University_of_Alberta_coat_of_arms.svg.png" alt="University of Alberta" onerror="this.onerror=null; this.src='https://placehold.co/180x80/006A4D/FFFFFF?text=U+Alberta';">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- USA Universities -->
+            <div class="country-universities" style="margin-bottom: 60px;">
+                <h3 style="text-align: center; margin-bottom: 40px; color: var(--dark-gray);">Top Universities in USA</h3>
+                <div class="partners-grid">
+                    <!-- University of Windsor -->
+                    <div class="partner-logo">
+                        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/d/d0/University_of_Windsor_logo.svg/320px-University_of_Windsor_logo.svg.png" alt="University of Windsor" onerror="this.onerror=null; this.src='https://placehold.co/180x80/005596/FFFFFF?text=U+Windsor';">
+                    </div>
+                    
+                    <!-- Wingate University -->
+                    <div class="partner-logo">
+                        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/9/9f/Wingate_University_seal.svg/320px-Wingate_University_seal.svg.png" alt="Wingate University" onerror="this.onerror=null; this.src='https://placehold.co/180x80/003057/FFFFFF?text=Wingate+U';">
+                    </div>
+                    
+                    <!-- Harvard University -->
+                    <div class="partner-logo">
+                        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/2/29/Harvard_shield_wreath.svg/320px-Harvard_shield_wreath.svg.png" alt="Harvard University" onerror="this.onerror=null; this.src='https://placehold.co/180x80/A51C30/FFFFFF?text=Harvard';">
+                    </div>
+                    
+                    <!-- Stanford University -->
+                    <div class="partner-logo">
+                        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/aa/Stanford_University_seal_2003.svg/320px-Stanford_University_seal_2003.svg.png" alt="Stanford University" onerror="this.onerror=null; this.src='https://placehold.co/180x80/8C1515/FFFFFF?text=Stanford';">
+                    </div>
+                    
+                    <!-- MIT -->
+                    <div class="partner-logo">
+                        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/4/44/MIT_Seal.svg/320px-MIT_Seal.svg.png" alt="Massachusetts Institute of Technology" onerror="this.onerror=null; this.src='https://placehold.co/180x80/A31F34/FFFFFF?text=MIT';">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- UK Universities -->
+            <div class="country-universities" style="margin-bottom: 60px;">
+                <h3 style="text-align: center; margin-bottom: 40px; color: var(--dark-gray);">Top Universities in UK</h3>
+                <div class="partners-grid">
+                    <!-- University of Oxford -->
+                    <div class="partner-logo">
+                        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/f/ff/University_of_Oxford_seal.svg/320px-University_of_Oxford_seal.svg.png" alt="University of Oxford" onerror="this.onerror=null; this.src='https://placehold.co/180x80/002147/FFFFFF?text=Oxford';">
+                    </div>
+                    
+                    <!-- University of Cambridge -->
+                    <div class="partner-logo">
+                        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/6/6a/University_of_Cambridge_coat_of_arms.svg/320px-University_of_Cambridge_coat_of_arms.svg.png" alt="University of Cambridge" onerror="this.onerror=null; this.src='https://placehold.co/180x80/0072CE/FFFFFF?text=Cambridge';">
+                    </div>
+                    
+                    <!-- Imperial College London -->
+                    <div class="partner-logo">
+                        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/4/4a/Imperial_College_London_seal.svg/320px-Imperial_College_London_seal.svg.png" alt="Imperial College London" onerror="this.onerror=null; this.src='https://placehold.co/180x80/001F3F/FFFFFF?text=Imperial+College';">
+                    </div>
+                    
+                    <!-- London School of Economics -->
+                    <div class="partner-logo">
+                        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/4/46/London_School_of_Economics_and_Political_Science_logo.svg/320px-London_School_of_Economics_and_Political_Science_logo.svg.png" alt="London School of Economics" onerror="this.onerror=null; this.src='https://placehold.co/180x80/BB0D19/FFFFFF?text=LSE';">
+                    </div>
+                    
+                    <!-- University College London -->
+                    <div class="partner-logo">
+                        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/7/70/University_College_London_logo.svg/320px-University_College_London_logo.svg.png" alt="University College London" onerror="this.onerror=null; this.src='https://placehold.co/180x80/6E0A75/FFFFFF?text=UCL';">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Australia Universities -->
+            <div class="country-universities" style="margin-bottom: 60px;">
+                <h3 style="text-align: center; margin-bottom: 40px; color: var(--dark-gray);">Top Universities in Australia</h3>
+                <div class="partners-grid">
+                    <!-- University of Melbourne -->
+                    <div class="partner-logo">
+                        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/6/61/University_of_Melbourne_coat_of_arms.svg/320px-University_of_Melbourne_coat_of_arms.svg.png" alt="University of Melbourne" onerror="this.onerror=null; this.src='https://placehold.co/180x80/800000/FFFFFF?text=Melbourne';">
+                    </div>
+                    
+                    <!-- Australian National University -->
+                    <div class="partner-logo">
+                        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/5/5e/Australian_National_University_logo.svg/320px-Australian_National_University_logo.svg.png" alt="Australian National University" onerror="this.onerror=null; this.src='https://placehold.co/180x80/005DAA/FFFFFF?text=ANU';">
+                    </div>
+                    
+                    <!-- University of Sydney -->
+                    <div class="partner-logo">
+                        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/5/5e/University_of_Sydney_seal.svg/320px-University_of_Sydney_seal.svg.png" alt="University of Sydney" onerror="this.onerror=null; this.src='https://placehold.co/180x80/DC4405/FFFFFF?text=Sydney+U';">
+                    </div>
+                    
+                    <!-- University of Queensland -->
+                    <div class="partner-logo">
+                        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/8/86/University_of_Queensland_seal.svg/320px-University_of_Queensland_seal.svg.png" alt="University of Queensland" onerror="this.onerror=null; this.src='https://placehold.co/180x80/51247A/FFFFFF?text=U+Queensland';">
+                    </div>
+                    
+                    <!-- Monash University -->
+                    <div class="partner-logo">
+                        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/6/67/Monash_University_seal.svg/320px-Monash_University_seal.svg.png" alt="Monash University" onerror="this.onerror=null; this.src='https://placehold.co/180x80/006DAE/FFFFFF?text=Monash';">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 40px;">
+            <p style="color: var(--medium-gray); font-size: 0.9rem;">
+    All trademarks, logos, and brand names are the property of their respective owners.
+    All company, product, and service names used are for identification purposes only.
+    Use does not imply endorsement.
+</p>
+</div>
+</div>
+</section>
 
         <!-- Process Section -->
         <section class="section process">
@@ -4002,8 +4302,7 @@
                                         <input type="radio" id="work" name="interest" value="work">
                                         <label for="work" style="display: inline;">Work</label>
                                     </div>
-                                    
-                                    <div style="display: flex; align-items; center; gap: 5px;">
+                                    <div style="display: flex; align-items: center; gap: 5px;">
                                         <input type="radio" id="travel" name="interest" value="travel">
                                         <label for="travel" style="display: inline;">Travel</label>
                                     </div>
@@ -4051,6 +4350,8 @@
                         <li><a href="#about">About Us</a></li>
                         <li><a href="#services">Services</a></li>
                         <li><a href="#destinations">Destinations</a></li>
+                        <li><a href="#destinations">Destinations</a></li>
+                        <li><a href="#partners">Partners</a></li>
                         <li><a href="#blog">Blog</a></li>
                         <li><a href="#application-portal">Application Portal</a></li>
                         <li><a href="#contact">Contact Us</a></li>
