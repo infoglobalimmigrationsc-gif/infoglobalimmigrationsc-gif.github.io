@@ -2802,6 +2802,115 @@
         min-width: 100%;
     }
 }
+
+/* ==================== LATEST NEWS SLIDER STYLES ==================== */
+.news-slider-container {
+    background-color: var(--primary-red);
+    color: white;
+    padding: 15px 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.news-slider-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.news-label {
+    font-weight: 600;
+    font-size: 1.1rem;
+    white-space: nowrap;
+    padding: 0 15px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 150px;
+}
+
+.news-label i {
+    font-size: 1.2rem;
+}
+
+.news-slider {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    height: 30px;
+}
+
+.news-slider-content {
+    position: absolute;
+    white-space: nowrap;
+    animation: marquee 30s linear infinite;
+}
+
+.news-slider-content span {
+    display: inline-block;
+    margin-right: 50px;
+    font-size: 1rem;
+}
+
+.holiday-wish {
+    color: #FFD700;
+    font-weight: bold;
+    animation: pulse 2s infinite;
+    padding: 0 10px;
+    border-radius: 4px;
+    background-color: rgba(255, 215, 0, 0.1);
+}
+
+@keyframes marquee {
+    0% {
+        transform: translateX(100%);
+    }
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.8;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.8;
+    }
+}
+
+/* Pause animation on hover */
+.news-slider:hover .news-slider-content {
+    animation-play-state: paused;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .news-slider-wrapper {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .news-label {
+        min-width: 100%;
+        justify-content: center;
+        padding: 8px 15px;
+    }
+    
+    .news-slider {
+        width: 100%;
+    }
+    
+    .news-slider-content span {
+        font-size: 0.9rem;
+    }
+}
     </style>
 </head>
 <body>
@@ -3032,6 +3141,23 @@
             </div>
         </div>
     </section>
+
+            <!-- Latest News Slider -->
+        <div class="news-slider-container" id="newsSlider">
+            <div class="container">
+                <div class="news-slider-wrapper">
+                    <div class="news-label">
+                        <i class="fas fa-bullhorn"></i>
+                        Latest News
+                    </div>
+                    <div class="news-slider">
+                        <div class="news-slider-content" id="newsContent">
+                            <!-- News items will be dynamically added here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     <!-- Main Content -->
     <main id="main-content">
@@ -9516,6 +9642,163 @@ async function submitToGoogleSheets(formData) {
         throw new Error('Failed to submit report: ' + error.message);
     }
 }
+
+// ==================== LATEST NEWS SLIDER ====================
+
+// Holiday dates configuration
+const holidays = {
+    // Christian holidays
+    christmas: {
+        date: new Date(new Date().getFullYear(), 11, 25), // Dec 25
+        message: "🎄 Merry Christmas! May your holidays be filled with joy and peace.",
+        duration: 7 // days before and after to show message
+    },
+    newYear: {
+        date: new Date(new Date().getFullYear() + 1, 0, 1), // Jan 1
+        message: "🎉 Happy New Year! Wishing you success in your global journey!",
+        duration: 5
+    },
+    easter: {
+        date: calculateEaster(), // Calculated dynamically
+        message: "🐣 Happy Easter! New beginnings and fresh starts await you.",
+        duration: 3
+    },
+    
+    // Islamic holidays (using estimated dates - would need actual Hijri calendar)
+    eidAlFitr: {
+        date: new Date(new Date().getFullYear(), 3, 10), // Approximate - varies yearly
+        message: "🌙 Eid Mubarak! May Allah accept your good deeds.",
+        duration: 5
+    },
+    eidAlAdha: {
+        date: new Date(new Date().getFullYear(), 6, 19), // Approximate - varies yearly
+        message: "🌙 Eid Al-Adha Mubarak! May your sacrifices be accepted.",
+        duration: 5
+    },
+    
+    // Other holidays
+    independenceDay: {
+        date: new Date(new Date().getFullYear(), 6, 26), // Liberia Independence Day
+        message: "🇱🇷 Happy Independence Day! Celebrating freedom and opportunity.",
+        duration: 3
+    },
+    thanksgiving: {
+        date: new Date(new Date().getFullYear(), 10, 23), // 4th Thursday of Nov
+        message: "🦃 Happy Thanksgiving! Grateful for your trust in our services.",
+        duration: 3
+    }
+};
+
+// Calculate Easter date (Western Christianity)
+function calculateEaster() {
+    const year = new Date().getFullYear();
+    const a = year % 19;
+    const b = Math.floor(year / 100);
+    const c = year % 100;
+    const d = Math.floor(b / 4);
+    const e = b % 4;
+    const f = Math.floor((b + 8) / 25);
+    const g = Math.floor((b - f + 1) / 3);
+    const h = (19 * a + b - d - g + 15) % 30;
+    const i = Math.floor(c / 4);
+    const k = c % 4;
+    const l = (32 + 2 * e + 2 * i - h - k) % 7;
+    const m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const month = Math.floor((h + l - 7 * m + 114) / 31);
+    const day = ((h + l - 7 * m + 114) % 31) + 1;
+    
+    return new Date(year, month - 1, day);
+}
+
+// News items array
+const newsItems = [
+    "📢 New: Express visa processing now available for select countries!",
+    "🌟 Scholarship opportunities: Apply now for 2024 academic year.",
+    "✈️ Special discount: 10% off on flight bookings for students.",
+    "📅 Upcoming webinar: 'Visa Interview Tips' on next Friday at 3 PM.",
+    "✅ Success story: 50+ students placed in top universities this month.",
+    "🌍 New destination: Now offering services for Japan and South Korea.",
+    "🎓 Partner update: 5 new university partnerships established.",
+    "💼 Work permits: New opportunities in Canada and Australia.",
+    "🏆 Award: Global Immigration SC wins 'Best Consultancy 2024' award.",
+    "📱 New feature: Track your application status via WhatsApp bot."
+];
+
+// Check if today is within holiday range
+function isHolidayActive(holiday) {
+    const today = new Date();
+    const startDate = new Date(holiday.date);
+    startDate.setDate(startDate.getDate() - holiday.duration);
+    
+    const endDate = new Date(holiday.date);
+    endDate.setDate(endDate.getDate() + holiday.duration);
+    
+    return today >= startDate && today <= endDate;
+}
+
+// Get current holiday message
+function getCurrentHolidayMessage() {
+    for (const [key, holiday] of Object.entries(holidays)) {
+        if (isHolidayActive(holiday)) {
+            return holiday.message;
+        }
+    }
+    return null;
+}
+
+// Initialize news slider
+function initializeNewsSlider() {
+    const newsContent = document.getElementById('newsContent');
+    if (!newsContent) return;
+    
+    // Get holiday message if applicable
+    const holidayMessage = getCurrentHolidayMessage();
+    
+    // Create news items array
+    let allNewsItems = [...newsItems];
+    
+    // Add holiday message at the beginning if exists
+    if (holidayMessage) {
+        allNewsItems.unshift(`<span class="holiday-wish">${holidayMessage}</span>`);
+    }
+    
+    // Create HTML for news items
+    const newsHTML = allNewsItems
+        .map(item => `<span>${item}</span>`)
+        .join('');
+    
+    // Duplicate content for seamless looping
+    newsContent.innerHTML = newsHTML + newsHTML;
+    
+    // Adjust animation speed based on content length
+    const totalItems = allNewsItems.length;
+    const animationDuration = totalItems * 6; // 6 seconds per item
+    
+    newsContent.style.animationDuration = `${animationDuration}s`;
+}
+
+// Update holiday dates for next year
+function updateHolidayDatesForNextYear() {
+    const currentYear = new Date().getFullYear();
+    
+    // Update Christmas for next year if we're past December
+    if (new Date().getMonth() === 11) {
+        holidays.christmas.date = new Date(currentYear + 1, 11, 25);
+        holidays.newYear.date = new Date(currentYear + 2, 0, 1);
+    }
+    
+    // Update Easter for next year if needed
+    holidays.easter.date = calculateEaster();
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    updateHolidayDatesForNextYear();
+    initializeNewsSlider();
+    
+    // Refresh news every hour to check for holiday updates
+    setInterval(initializeNewsSlider, 60 * 60 * 1000);
+});
     </script>
 </body>
 </html>
