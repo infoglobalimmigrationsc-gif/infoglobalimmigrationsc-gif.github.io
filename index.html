@@ -2891,58 +2891,86 @@
 }
 
 /* Responsive styles - CHANGED BREAKPOINT FROM 768px TO 680px */
+/* Responsive styles - CHANGED BREAKPOINT FROM 768px TO 680px */
 @media (max-width: 680px) {
     .news-slider-container {
-        padding: 10px 0;
+        padding: 15px 0;
+        height: auto;
+        min-height: auto;
     }
     
     .news-slider-wrapper {
-        flex-direction: row;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
+        flex-direction: column;
+        align-items: center;
         gap: 15px;
-        padding: 0 10px;
-    }
-    
-    .news-slider-wrapper::-webkit-scrollbar {
-        display: none;
+        padding: 0 15px;
     }
     
     .news-label {
-        flex-shrink: 0;
-        padding: 5px 10px;
-        font-size: 0.9rem;
-        min-width: 120px;
+        padding: 8px 15px;
+        font-size: 1rem;
+        min-width: auto;
+        justify-content: center;
+        width: auto;
     }
     
     .news-slider {
-        display: none; /* Hide marquee animation on mobile */
+        display: block !important;
+        height: auto;
+        overflow: visible;
+        position: static;
+        width: 100%;
     }
     
     .news-slider-content {
-        display: flex;
-        flex-direction: row;
-        gap: 15px;
         position: static;
-        animation: none;
+        animation: none !important;
         white-space: normal;
-        padding: 5px 0;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        transform: none !important;
     }
     
     .news-slider-content span {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding: 5px 10px;
-        background-color: rgba(255, 255, 255, 0.1);
-        border-radius: 4px;
-        font-size: 0.85rem;
-        white-space: normal;
-        text-align: center;
-        min-height: 40px;
+        display: block;
         margin-right: 0;
+        padding: 10px 15px;
+        background-color: rgba(255, 255, 255, 0.15);
+        border-radius: 6px;
+        font-size: 0.95rem;
+        text-align: center;
+        margin-bottom: 0;
+        white-space: normal;
+        line-height: 1.4;
+        animation: fadeIn 0.8s ease-out;
+    }
+    
+    .holiday-wish {
+        background-color: rgba(255, 215, 0, 0.2) !important;
+        border: 1px solid rgba(255, 215, 0, 0.3);
+    }
+    
+    /* Remove hover effect on mobile */
+    .news-slider:hover .news-slider-content {
+        animation-play-state: inherit;
+    }
+}
+
+/* For very small screens */
+@media (max-width: 480px) {
+    .news-slider-content span {
+        font-size: 0.9rem;
+        padding: 8px 12px;
+    }
+    
+    .news-label {
+        font-size: 0.95rem;
+        padding: 6px 12px;
+    }
+    
+    .news-slider-container {
+        padding: 12px 0;
     }
 }
     </style>
@@ -9796,19 +9824,30 @@ function initializeNewsSlider() {
         allNewsItems.unshift(`<span class="holiday-wish">${holidayMessage}</span>`);
     }
     
+    // Check if mobile
+    const isMobile = window.innerWidth <= 680;
+    
     // Create HTML for news items
     const newsHTML = allNewsItems
         .map(item => `<span>${item}</span>`)
         .join('');
     
-    // Duplicate content for seamless looping
-    newsContent.innerHTML = newsHTML + newsHTML;
-    
-    // Adjust animation speed based on content length
-    const totalItems = allNewsItems.length;
-    const animationDuration = totalItems * 6; // 6 seconds per item
-    
-    newsContent.style.animationDuration = `${animationDuration}s`;
+    if (isMobile) {
+        // For mobile: Show as a static list (no duplication)
+        newsContent.innerHTML = newsHTML;
+        newsContent.style.animation = 'none';
+        newsContent.style.width = '100%';
+    } else {
+        // For desktop: Use marquee animation with duplicated content
+        newsContent.innerHTML = newsHTML + newsHTML;
+        
+        // Adjust animation speed based on content length
+        const totalItems = allNewsItems.length;
+        const animationDuration = totalItems * 6; // 6 seconds per item
+        
+        newsContent.style.animationDuration = `${animationDuration}s`;
+        newsContent.style.animation = `marquee ${animationDuration}s linear infinite`;
+    }
 }
 
 // Update holiday dates for next year
@@ -9825,14 +9864,23 @@ function updateHolidayDatesForNextYear() {
     holidays.easter.date = calculateEaster();
 }
 
+// Handle window resize
+function handleResize() {
+    initializeNewsSlider();
+}
+
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
     updateHolidayDatesForNextYear();
     initializeNewsSlider();
     
+    // Add resize listener
+    window.addEventListener('resize', handleResize);
+    
     // Refresh news every hour to check for holiday updates
     setInterval(initializeNewsSlider, 60 * 60 * 1000);
 });
+
     </script>
 </body>
 </html>
