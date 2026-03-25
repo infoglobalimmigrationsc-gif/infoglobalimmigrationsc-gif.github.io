@@ -2973,6 +2973,15 @@
         padding: 12px 0;
     }
 }
+        /* Country filtering animation - ADD THIS TO MAIN STYLE SECTION */
+        .country-flag {
+            transition: all 0.3s ease;
+        }
+        
+        /* Smooth transition for country filter visibility */
+        .country-flag[style*="display: none"] {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
@@ -3495,8 +3504,8 @@
         <!-- Destinations by Continent -->
         <div class="destinations-container">
             
-            <!-- North America -->
-            <div class="continent-group" style="margin-bottom: 50px;">
+                        <!-- North America -->
+            <div class="continent-group" data-continent="north-america" style="margin-bottom: 50px;">
                 <h3 style="color: var(--primary-red); margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
                     <i class="fas fa-globe-americas"></i> North America
                 </h3>
@@ -3534,8 +3543,8 @@
                 </div>
             </div>
             
-            <!-- Europe -->
-            <div class="continent-group" style="margin-bottom: 50px;">
+                        <!-- Europe -->
+            <div class="continent-group" data-continent="europe" style="margin-bottom: 50px;">
                 <h3 style="color: var(--primary-red); margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
                     <i class="fas fa-map-marked-alt"></i> Europe (Schengen & Non-Schengen)
                 </h3>
@@ -3678,8 +3687,8 @@
                 </div>
             </div>
             
-            <!-- Asia Pacific -->
-            <div class="continent-group" style="margin-bottom: 50px;">
+                        <!-- Asia Pacific -->
+            <div class="continent-group" data-continent="asia-pacific" style="margin-bottom: 50px;">
                 <h3 style="color: var(--primary-red); margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
                     <i class="fas fa-globe-asia"></i> Asia Pacific
                 </h3>
@@ -3748,7 +3757,7 @@
             </div>
             
             <!-- Middle East -->
-            <div class="continent-group" style="margin-bottom: 50px;">
+            <div class="continent-group" data-continent="middle-east" style="margin-bottom: 50px;">
                 <h3 style="color: var(--primary-red); margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
                     <i class="fas fa-flag"></i> Middle East
                 </h3>
@@ -3791,8 +3800,8 @@
                 </div>
             </div>
             
-            <!-- Africa -->
-            <div class="continent-group" style="margin-bottom: 50px;">
+             <!-- Africa -->
+            <div class="continent-group" data-continent="africa" style="margin-bottom: 50px;">
                 <h3 style="color: var(--primary-red); margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
                     <i class="fas fa-africa"></i> Africa
                 </h3>
@@ -3845,8 +3854,8 @@
                 </div>
             </div>
             
-            <!-- South America -->
-            <div class="continent-group" style="margin-bottom: 30px;">
+                        <!-- South America -->
+            <div class="continent-group" data-continent="south-america" style="margin-bottom: 30px;">
                 <h3 style="color: var(--primary-red); margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
                     <i class="fas fa-globe-americas"></i> South America
                 </h3>
@@ -5349,7 +5358,7 @@
         <i class="fab fa-whatsapp"></i>
     </a>
 
-        <!-- Live Chat Support Widget - ADD THIS HERE -->
+                <!-- Live Chat Support Widget - ADD THIS HERE -->
     <div id="supportWidget" style="position: fixed; bottom: 100px; right: 20px; z-index: 1000;">
         <button id="openSupport" style="background: linear-gradient(135deg, var(--primary-red) 0%, #b30000 100%); color: white; border: none; border-radius: 50px; padding: 14px 24px; display: flex; align-items: center; gap: 10px; cursor: pointer; box-shadow: 0 4px 15px rgba(227,6,19,0.3); transition: all 0.3s ease; font-weight: 600;">
             <i class="fas fa-headset"></i> Need Help? Chat Now
@@ -5383,7 +5392,7 @@
             </div>
         </div>
     </div>
-
+    
     <style>
         @keyframes slideUp {
             from {
@@ -5393,6 +5402,18 @@
             to {
                 opacity: 1;
                 transform: translateY(0);
+            }
+        }
+
+                /* Exit Popup Animation - ADD THIS TO MAIN STYLE SECTION */
+        @keyframes popupSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
             }
         }
     </style>
@@ -8252,12 +8273,10 @@ async function handlePaymentConfirmationUpload(file) {
             return;
         }
         
-        // Create unique filename
+             // Create unique filename
         const fileName = `${currentUser.uid}/payment_confirmation_${Date.now()}_${file.name}`;
-    
-        
-        // Upload file
-       
+        const storageRef = storage.ref().child(fileName);
+        const uploadTask = storageRef.put(file);
         
         uploadTask.on('state_changed',
             (snapshot) => {
@@ -8273,8 +8292,23 @@ async function handlePaymentConfirmationUpload(file) {
                 }
                 resetPaymentUploadArea();
             },
-            async () => {
+                        async () => {
                 try {
+                    // Get the download URL after upload completes
+                    const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                    
+                    // Update application with payment confirmation
+                    await db.collection('applications').doc(currentUser.uid).update({
+                        paymentConfirmation: {
+                            url: downloadURL,
+                            fileName: file.name,
+                            uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            status: 'pending_verification',
+                            fileSize: file.size,
+                            fileType: file.type
+                        },
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
                     
     
                     // Update application with payment confirmation
@@ -10443,16 +10477,85 @@ async function submitToGoogleSheets(formData) {
 
         // ==================== NEW FEATURES JAVASCRIPT ====================
         
-        // Country Data for Search & Filter
+             // Country Data for Search & Filter - EXPANDED VERSION
         const countriesData = [
-            { name: "USA", flag: "🇺🇸", continent: "north-america", visaTypes: ["student", "work", "tourist", "business"], processingTime: "3-8 weeks", successRate: "92%", tuitionRange: "$20,000-55,000/year", popularUniversities: "Harvard, MIT, Stanford" },
-            { name: "Canada", flag: "🇨🇦", continent: "north-america", visaTypes: ["student", "work", "tourist", "residence"], processingTime: "4-12 weeks", successRate: "94%", tuitionRange: "CAD 20,000-45,000/year", popularUniversities: "UofT, UBC, McGill" },
-            { name: "UK", flag: "🇬🇧", continent: "europe", visaTypes: ["student", "work", "tourist", "business"], processingTime: "3-6 weeks", successRate: "91%", tuitionRange: "£12,000-38,000/year", popularUniversities: "Oxford, Cambridge, Imperial" },
-            { name: "Germany", flag: "🇩🇪", continent: "europe", visaTypes: ["student", "work", "tourist"], processingTime: "4-8 weeks", successRate: "95%", tuitionRange: "€0-15,000/year", popularUniversities: "LMU, TUM, Heidelberg" },
-            { name: "Australia", flag: "🇦🇺", continent: "asia-pacific", visaTypes: ["student", "work", "tourist", "residence"], processingTime: "4-10 weeks", successRate: "93%", tuitionRange: "AUD 20,000-45,000/year", popularUniversities: "UniMelb, ANU, Sydney" },
-            { name: "UAE", flag: "🇦🇪", continent: "middle-east", visaTypes: ["work", "tourist", "business", "residence"], processingTime: "2-4 weeks", successRate: "96%", tuitionRange: "AED 40,000-80,000/year", popularUniversities: "UAEU, AUS, NYUAD" },
+            // ========== NORTH AMERICA ==========
+            { name: "USA", flag: "🇺🇸", continent: "north-america", visaTypes: ["student", "work", "tourist", "business", "residence"], processingTime: "3-8 weeks", successRate: "92%", tuitionRange: "$20,000-55,000/year", popularUniversities: "Harvard, MIT, Stanford, UCLA, NYU" },
+            { name: "Canada", flag: "🇨🇦", continent: "north-america", visaTypes: ["student", "work", "tourist", "residence"], processingTime: "4-12 weeks", successRate: "94%", tuitionRange: "CAD 20,000-45,000/year", popularUniversities: "UofT, UBC, McGill, UAlberta, McMaster" },
+            { name: "Mexico", flag: "🇲🇽", continent: "north-america", visaTypes: ["student", "work", "tourist"], processingTime: "2-4 weeks", successRate: "86%", tuitionRange: "$5,000-15,000/year", popularUniversities: "UNAM, ITESM, UDLAP" },
+            { name: "Costa Rica", flag: "🇨🇷", continent: "north-america", visaTypes: ["student", "tourist", "residence"], processingTime: "3-5 weeks", successRate: "89%", tuitionRange: "$8,000-18,000/year", popularUniversities: "UCR, INCAE, ULACIT" },
+            { name: "Panama", flag: "🇵🇦", continent: "north-america", visaTypes: ["student", "work", "tourist"], processingTime: "2-3 weeks", successRate: "87%", tuitionRange: "$7,000-16,000/year", popularUniversities: "UP, USMA, UTP" },
+            { name: "Jamaica", flag: "🇯🇲", continent: "north-america", visaTypes: ["student", "work", "tourist"], processingTime: "3-4 weeks", successRate: "85%", tuitionRange: "$6,000-14,000/year", popularUniversities: "UWI, UTech, NCU" },
+            
+            // ========== EUROPE ==========
+            { name: "UK", flag: "🇬🇧", continent: "europe", visaTypes: ["student", "work", "tourist", "business", "residence"], processingTime: "3-6 weeks", successRate: "91%", tuitionRange: "£12,000-38,000/year", popularUniversities: "Oxford, Cambridge, Imperial, LSE, UCL" },
+            { name: "France", flag: "🇫🇷", continent: "europe", visaTypes: ["student", "work", "tourist", "business"], processingTime: "4-8 weeks", successRate: "90%", tuitionRange: "€2,000-20,000/year", popularUniversities: "Sorbonne, HEC Paris, Sciences Po" },
+            { name: "Germany", flag: "🇩🇪", continent: "europe", visaTypes: ["student", "work", "tourist", "residence"], processingTime: "4-8 weeks", successRate: "95%", tuitionRange: "€0-15,000/year", popularUniversities: "LMU, TUM, Heidelberg, RWTH Aachen" },
+            { name: "Italy", flag: "🇮🇹", continent: "europe", visaTypes: ["student", "work", "tourist"], processingTime: "3-6 weeks", successRate: "88%", tuitionRange: "€900-20,000/year", popularUniversities: "Polimi, Sapienza, Bocconi" },
+            { name: "Spain", flag: "🇪🇸", continent: "europe", visaTypes: ["student", "work", "tourist", "residence"], processingTime: "3-5 weeks", successRate: "89%", tuitionRange: "€750-18,000/year", popularUniversities: "UB, UAB, UC3M, IE University" },
+            { name: "Portugal", flag: "🇵🇹", continent: "europe", visaTypes: ["student", "work", "tourist", "residence"], processingTime: "3-5 weeks", successRate: "87%", tuitionRange: "€3,000-12,000/year", popularUniversities: "ULisboa, UPorto, NOVA" },
+            { name: "Netherlands", flag: "🇳🇱", continent: "europe", visaTypes: ["student", "work", "tourist"], processingTime: "4-6 weeks", successRate: "92%", tuitionRange: "€6,000-20,000/year", popularUniversities: "TU Delft, UvA, Erasmus" },
+            { name: "Belgium", flag: "🇧🇪", continent: "europe", visaTypes: ["student", "work", "tourist"], processingTime: "3-5 weeks", successRate: "88%", tuitionRange: "€900-7,000/year", popularUniversities: "KU Leuven, ULB, UGent" },
+            { name: "Switzerland", flag: "🇨🇭", continent: "europe", visaTypes: ["student", "work", "tourist", "residence"], processingTime: "5-10 weeks", successRate: "93%", tuitionRange: "CHF 1,500-8,000/year", popularUniversities: "ETH Zurich, EPFL, Uni Zurich" },
+            { name: "Austria", flag: "🇦🇹", continent: "europe", visaTypes: ["student", "work", "tourist"], processingTime: "4-6 weeks", successRate: "89%", tuitionRange: "€1,500-15,000/year", popularUniversities: "Uni Vienna, TU Wien, WU" },
+            { name: "Sweden", flag: "🇸🇪", continent: "europe", visaTypes: ["student", "work", "tourist"], processingTime: "3-5 weeks", successRate: "91%", tuitionRange: "SEK 80,000-140,000/year", popularUniversities: "KTH, Lund, Uppsala" },
+            { name: "Norway", flag: "🇳🇴", continent: "europe", visaTypes: ["student", "work", "tourist"], processingTime: "4-7 weeks", successRate: "90%", tuitionRange: "NOK 0-50,000/year", popularUniversities: "UiO, NTNU, UiB" },
+            { name: "Denmark", flag: "🇩🇰", continent: "europe", visaTypes: ["student", "work", "tourist"], processingTime: "3-6 weeks", successRate: "92%", tuitionRange: "DKK 45,000-120,000/year", popularUniversities: "KU, DTU, CBS" },
+            { name: "Finland", flag: "🇫🇮", continent: "europe", visaTypes: ["student", "work", "tourist"], processingTime: "3-6 weeks", successRate: "91%", tuitionRange: "€8,000-18,000/year", popularUniversities: "Helsinki, Aalto, Tampere" },
+            { name: "Iceland", flag: "🇮🇸", continent: "europe", visaTypes: ["student", "work", "tourist"], processingTime: "4-6 weeks", successRate: "88%", tuitionRange: "ISK 300,000-800,000/year", popularUniversities: "UI, RU" },
+            { name: "Ireland", flag: "🇮🇪", continent: "europe", visaTypes: ["student", "work", "tourist", "residence"], processingTime: "4-8 weeks", successRate: "93%", tuitionRange: "€10,000-25,000/year", popularUniversities: "TCD, UCD, NUIG" },
+            { name: "Poland", flag: "🇵🇱", continent: "europe", visaTypes: ["student", "work", "tourist"], processingTime: "3-5 weeks", successRate: "86%", tuitionRange: "€2,000-8,000/year", popularUniversities: "UW, AGH, Jagiellonian" },
+            { name: "Czech Republic", flag: "🇨🇿", continent: "europe", visaTypes: ["student", "work", "tourist"], processingTime: "3-6 weeks", successRate: "87%", tuitionRange: "€3,000-12,000/year", popularUniversities: "Charles Uni, CTU, MU" },
+            { name: "Hungary", flag: "🇭🇺", continent: "europe", visaTypes: ["student", "work", "tourist"], processingTime: "3-5 weeks", successRate: "85%", tuitionRange: "€3,000-10,000/year", popularUniversities: "ELTE, BME, CEU" },
+            { name: "Greece", flag: "🇬🇷", continent: "europe", visaTypes: ["student", "work", "tourist"], processingTime: "4-6 weeks", successRate: "84%", tuitionRange: "€1,500-12,000/year", popularUniversities: "NKUA, AUTH, AUEB" },
+            { name: "Turkey", flag: "🇹🇷", continent: "europe", visaTypes: ["student", "work", "tourist"], processingTime: "3-5 weeks", successRate: "83%", tuitionRange: "$3,000-20,000/year", popularUniversities: "Bogazici, METU, Koc" },
+            { name: "Romania", flag: "🇷🇴", continent: "europe", visaTypes: ["student", "work", "tourist"], processingTime: "3-4 weeks", successRate: "86%", tuitionRange: "€2,000-8,000/year", popularUniversities: "UB, UPB, UBB" },
+            { name: "Bulgaria", flag: "🇧🇬", continent: "europe", visaTypes: ["student", "work", "tourist"], processingTime: "3-5 weeks", successRate: "84%", tuitionRange: "€2,500-10,000/year", popularUniversities: "SU, TU Sofia" },
+            { name: "Lithuania", flag: "🇱🇹", continent: "europe", visaTypes: ["student", "work", "tourist"], processingTime: "3-4 weeks", successRate: "88%", tuitionRange: "€2,500-8,000/year", popularUniversities: "VU, VGTU" },
+            { name: "Latvia", flag: "🇱🇻", continent: "europe", visaTypes: ["student", "work", "tourist"], processingTime: "3-4 weeks", successRate: "87%", tuitionRange: "€2,500-7,500/year", popularUniversities: "LU, RTU" },
+            { name: "Estonia", flag: "🇪🇪", continent: "europe", visaTypes: ["student", "work", "tourist"], processingTime: "3-4 weeks", successRate: "89%", tuitionRange: "€3,000-8,000/year", popularUniversities: "UT, TUT" },
+            
+            // ========== ASIA PACIFIC ==========
+            { name: "Australia", flag: "🇦🇺", continent: "asia-pacific", visaTypes: ["student", "work", "tourist", "residence"], processingTime: "4-10 weeks", successRate: "93%", tuitionRange: "AUD 20,000-45,000/year", popularUniversities: "UniMelb, ANU, Sydney, UNSW" },
+            { name: "New Zealand", flag: "🇳🇿", continent: "asia-pacific", visaTypes: ["student", "work", "tourist", "residence"], processingTime: "4-8 weeks", successRate: "94%", tuitionRange: "NZD 22,000-40,000/year", popularUniversities: "UoA, Otago, Canterbury" },
+            { name: "Singapore", flag: "🇸🇬", continent: "asia-pacific", visaTypes: ["student", "work", "tourist"], processingTime: "3-6 weeks", successRate: "95%", tuitionRange: "SGD 20,000-40,000/year", popularUniversities: "NUS, NTU, SMU" },
+            { name: "Malaysia", flag: "🇲🇾", continent: "asia-pacific", visaTypes: ["student", "work", "tourist"], processingTime: "2-4 weeks", successRate: "89%", tuitionRange: "MYR 15,000-40,000/year", popularUniversities: "UM, USM, Monash Malaysia" },
+            { name: "Thailand", flag: "🇹🇭", continent: "asia-pacific", visaTypes: ["student", "work", "tourist"], processingTime: "2-3 weeks", successRate: "87%", tuitionRange: "THB 100,000-500,000/year", popularUniversities: "Chula, Mahidol, Thammasat" },
+            { name: "Vietnam", flag: "🇻🇳", continent: "asia-pacific", visaTypes: ["student", "work", "tourist"], processingTime: "2-3 weeks", successRate: "85%", tuitionRange: "$3,000-12,000/year", popularUniversities: "VNU, HUST, RMIT Vietnam" },
+            { name: "Japan", flag: "🇯🇵", continent: "asia-pacific", visaTypes: ["student", "work", "tourist"], processingTime: "3-8 weeks", successRate: "91%", tuitionRange: "¥500,000-1,500,000/year", popularUniversities: "UTokyo, KyotoU, Tohoku" },
+            { name: "South Korea", flag: "🇰🇷", continent: "asia-pacific", visaTypes: ["student", "work", "tourist"], processingTime: "3-6 weeks", successRate: "92%", tuitionRange: "KRW 6,000,000-12,000,000/year", popularUniversities: "SNU, KAIST, Yonsei" },
+            { name: "China", flag: "🇨🇳", continent: "asia-pacific", visaTypes: ["student", "work", "tourist"], processingTime: "4-8 weeks", successRate: "86%", tuitionRange: "¥20,000-60,000/year", popularUniversities: "Tsinghua, Peking, Fudan" },
+            { name: "India", flag: "🇮🇳", continent: "asia-pacific", visaTypes: ["student", "work", "tourist"], processingTime: "3-5 weeks", successRate: "84%", tuitionRange: "₹100,000-500,000/year", popularUniversities: "IIT, IIM, DU" },
+            { name: "Indonesia", flag: "🇮🇩", continent: "asia-pacific", visaTypes: ["student", "work", "tourist"], processingTime: "3-4 weeks", successRate: "83%", tuitionRange: "IDR 20,000,000-80,000,000/year", popularUniversities: "UI, ITB, UGM" },
+            { name: "Philippines", flag: "🇵🇭", continent: "asia-pacific", visaTypes: ["student", "work", "tourist"], processingTime: "2-3 weeks", successRate: "86%", tuitionRange: "PHP 50,000-200,000/year", popularUniversities: "UP, DLSU, ADMU" },
+            
+            // ========== MIDDLE EAST ==========
+            { name: "UAE", flag: "🇦🇪", continent: "middle-east", visaTypes: ["work", "tourist", "business", "residence"], processingTime: "2-4 weeks", successRate: "96%", tuitionRange: "AED 40,000-80,000/year", popularUniversities: "UAEU, AUS, NYUAD, HCT" },
+            { name: "Qatar", flag: "🇶🇦", continent: "middle-east", visaTypes: ["work", "tourist", "business"], processingTime: "3-5 weeks", successRate: "94%", tuitionRange: "QAR 50,000-100,000/year", popularUniversities: "QU, HBKU, CMU Qatar" },
+            { name: "Saudi Arabia", flag: "🇸🇦", continent: "middle-east", visaTypes: ["work", "tourist", "business"], processingTime: "4-8 weeks", successRate: "92%", tuitionRange: "SAR 30,000-70,000/year", popularUniversities: "KFUPM, KSU, KAUST" },
+            { name: "Kuwait", flag: "🇰🇼", continent: "middle-east", visaTypes: ["work", "tourist"], processingTime: "3-5 weeks", successRate: "89%", tuitionRange: "KWD 3,000-8,000/year", popularUniversities: "KU, AUM" },
+            { name: "Oman", flag: "🇴🇲", continent: "middle-east", visaTypes: ["work", "tourist"], processingTime: "3-4 weeks", successRate: "88%", tuitionRange: "OMR 3,000-8,000/year", popularUniversities: "SQU, GUtech" },
+            { name: "Bahrain", flag: "🇧🇭", continent: "middle-east", visaTypes: ["work", "tourist"], processingTime: "2-3 weeks", successRate: "90%", tuitionRange: "BHD 3,000-7,000/year", popularUniversities: "UOB, Ahlia" },
+            { name: "Jordan", flag: "🇯🇴", continent: "middle-east", visaTypes: ["student", "work", "tourist"], processingTime: "3-5 weeks", successRate: "85%", tuitionRange: "JOD 5,000-12,000/year", popularUniversities: "JU, JUST" },
+            
+            // ========== AFRICA ==========
             { name: "South Africa", flag: "🇿🇦", continent: "africa", visaTypes: ["student", "work", "tourist"], processingTime: "4-8 weeks", successRate: "88%", tuitionRange: "ZAR 30,000-80,000/year", popularUniversities: "UCT, Wits, Stellenbosch" },
-            { name: "Brazil", flag: "🇧🇷", continent: "south-america", visaTypes: ["student", "work", "tourist"], processingTime: "3-6 weeks", successRate: "85%", tuitionRange: "R$ 15,000-40,000/year", popularUniversities: "USP, UNICAMP, UFRJ" }
+            { name: "Morocco", flag: "🇲🇦", continent: "africa", visaTypes: ["student", "work", "tourist"], processingTime: "3-5 weeks", successRate: "84%", tuitionRange: "MAD 20,000-60,000/year", popularUniversities: "UM5, UIR, Al Akhawayn" },
+            { name: "Egypt", flag: "🇪🇬", continent: "africa", visaTypes: ["student", "work", "tourist"], processingTime: "3-5 weeks", successRate: "83%", tuitionRange: "EGP 20,000-100,000/year", popularUniversities: "Cairo, AUC, Alexandria" },
+            { name: "Kenya", flag: "🇰🇪", continent: "africa", visaTypes: ["student", "work", "tourist"], processingTime: "3-4 weeks", successRate: "82%", tuitionRange: "KES 200,000-600,000/year", popularUniversities: "UoN, Strathmore, KU" },
+            { name: "Nigeria", flag: "🇳🇬", continent: "africa", visaTypes: ["student", "work", "tourist"], processingTime: "3-4 weeks", successRate: "81%", tuitionRange: "NGN 500,000-2,000,000/year", popularUniversities: "UNN, UI, OAU" },
+            { name: "Ghana", flag: "🇬🇭", continent: "africa", visaTypes: ["student", "work", "tourist"], processingTime: "2-3 weeks", successRate: "85%", tuitionRange: "GHS 10,000-30,000/year", popularUniversities: "UG, KNUST, Ashesi" },
+            { name: "Rwanda", flag: "🇷🇼", continent: "africa", visaTypes: ["student", "work", "tourist"], processingTime: "2-3 weeks", successRate: "87%", tuitionRange: "$3,000-10,000/year", popularUniversities: "UR, ALU" },
+            { name: "Mauritius", flag: "🇲🇺", continent: "africa", visaTypes: ["student", "work", "tourist", "residence"], processingTime: "2-4 weeks", successRate: "91%", tuitionRange: "MUR 100,000-300,000/year", popularUniversities: "UoM, UTM, Middlesex" },
+            { name: "Seychelles", flag: "🇸🇨", continent: "africa", visaTypes: ["student", "work", "tourist"], processingTime: "2-3 weeks", successRate: "86%", tuitionRange: "SCR 50,000-150,000/year", popularUniversities: "UniSey" },
+            
+            // ========== SOUTH AMERICA ==========
+            { name: "Brazil", flag: "🇧🇷", continent: "south-america", visaTypes: ["student", "work", "tourist"], processingTime: "3-6 weeks", successRate: "85%", tuitionRange: "R$ 15,000-40,000/year", popularUniversities: "USP, UNICAMP, UFRJ" },
+            { name: "Argentina", flag: "🇦🇷", continent: "south-america", visaTypes: ["student", "work", "tourist"], processingTime: "3-5 weeks", successRate: "84%", tuitionRange: "ARS 200,000-800,000/year", popularUniversities: "UBA, UNC, UNLP" },
+            { name: "Chile", flag: "🇨🇱", continent: "south-america", visaTypes: ["student", "work", "tourist"], processingTime: "3-5 weeks", successRate: "86%", tuitionRange: "CLP 4,000,000-10,000,000/year", popularUniversities: "PUC, UCH, USACH" },
+            { name: "Colombia", flag: "🇨🇴", continent: "south-america", visaTypes: ["student", "work", "tourist"], processingTime: "3-4 weeks", successRate: "83%", tuitionRange: "COP 10,000,000-25,000,000/year", popularUniversities: "UNAB, Uniandes, Javeriana" },
+            { name: "Peru", flag: "🇵🇪", continent: "south-america", visaTypes: ["student", "work", "tourist"], processingTime: "3-4 weeks", successRate: "82%", tuitionRange: "PEN 10,000-30,000/year", popularUniversities: "PUCP, UNI, USMP" },
+            { name: "Uruguay", flag: "🇺🇾", continent: "south-america", visaTypes: ["student", "work", "tourist"], processingTime: "2-3 weeks", successRate: "87%", tuitionRange: "UYU 100,000-300,000/year", popularUniversities: "UDELAR, UCU" }
         ];
 
         // Country Search & Filter Functionality
@@ -10564,6 +10667,7 @@ async function submitToGoogleSheets(formData) {
         }
         
         // Live Chat Widget
+                // Enhanced Live Chat Widget with Intelligent Responses
         function initializeLiveChat() {
             const openBtn = document.getElementById('openSupport');
             const closeBtn = document.getElementById('closeSupport');
@@ -10574,36 +10678,278 @@ async function submitToGoogleSheets(formData) {
             
             if (!openBtn) return;
             
+            // Track conversation context
+            let conversationContext = {};
+            
+            // Intelligent response database
+            const responses = {
+                // Greetings
+                greetings: {
+                    keywords: ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'greetings'],
+                    response: "👋 Hello! Welcome to Global Immigration SC. I'm here to help you with any questions about study abroad, visa applications, work permits, or immigration services. How can I assist you today?"
+                },
+                // Company Info
+                about_company: {
+                    keywords: ['what is global immigration sc', 'who are you', 'about your company', 'tell me about yourself', 'what do you do'],
+                    response: "🌍 Global Immigration SC is a trusted immigration consultancy firm based in Monrovia, Liberia. We specialize in study abroad admissions, visa applications, work permits, and relocation services. With 10+ years of experience, we've helped 500+ clients achieve their dreams of studying, working, and living abroad."
+                },
+                // Legitimacy / Registration
+                legitimacy: {
+                    keywords: ['are you real', 'legit', 'registered', 'licensed', 'scam', 'fake', 'trust', 'authentic', 'genuine', 'official'],
+                    response: "✅ Yes, Global Immigration SC is a fully registered and licensed immigration consultancy firm based in Monrovia, Liberia. We are sponsored by Motiva Corporation Group of Companies. Our team consists of experienced professionals who have helped over 500 clients successfully. You can verify our registration by contacting us directly or visiting our office. We pride ourselves on transparency and ethical practices."
+                },
+                // Success Rate
+                success_rate: {
+                    keywords: ['success rate', 'successful', 'approval rate', 'success percentage', 'how many get approved', 'chances'],
+                    response: "📊 Our overall success rate is 98% across all visa types and countries. For student visas, we maintain a 95% success rate. Work visas have a 96% approval rate. This high success rate comes from our thorough preparation, document verification, and embassy interview coaching. Each application is personally reviewed by our experts to maximize approval chances."
+                },
+                // USA Applications
+                usa_applications: {
+                    keywords: ['usa', 'united states', 'america', 'us visa', 'f1 visa', 'f-1', 'study in usa', 'work in usa'],
+                    response: "🇺🇸 Yes! We process applications for the USA including: F-1 Student Visas, H-1B Work Visas, B-1/B-2 Tourist/Business Visas, and Green Card applications. Our USA services include: university admissions guidance, scholarship assistance, visa application preparation, and embassy interview coaching. We have partnerships with top US universities including Harvard, MIT, Stanford, and many more."
+                },
+                // Canada Applications
+                canada_applications: {
+                    keywords: ['canada', 'canadian', 'study in canada', 'work in canada', 'canada visa', 'express entry', 'study permit'],
+                    response: "🇨🇦 Yes! We process all types of Canadian applications including: Study Permits, Work Permits (PGWP, LMIA), Express Entry, Provincial Nominee Programs (PNP), and Visitor Visas. We have partnerships with top Canadian universities like University of Toronto, UBC, McGill, and more. Our Canada success rate is 94%."
+                },
+                // UK Applications
+                uk_applications: {
+                    keywords: ['uk', 'united kingdom', 'britain', 'england', 'uk visa', 'tier 4', 'study in uk', 'work in uk'],
+                    response: "🇬🇧 Yes! We process UK applications including: Student Visas (formerly Tier 4), Skilled Worker Visas, Visitor Visas, and Graduate Route visas. We work with top UK universities like Oxford, Cambridge, Imperial College, LSE, and UCL. Our UK team provides comprehensive support from admission to visa approval."
+                },
+                // Australia Applications
+                australia_applications: {
+                    keywords: ['australia', 'aussie', 'study in australia', 'work in australia', 'australian visa', 'subclass 500'],
+                    response: "🇦🇺 Yes! We process Australian applications including: Student Visas (Subclass 500), Work Visas (Subclass 482, 186), Working Holiday Visas, and Visitor Visas. We partner with top Australian universities like University of Melbourne, ANU, University of Sydney, and UNSW."
+                },
+                // Services Offered
+                services: {
+                    keywords: ['what services', 'services you offer', 'what do you help with', 'can you help me', 'what can you do'],
+                    response: "📋 We offer comprehensive immigration services including:\n\n✅ Study Abroad Admissions & Scholarships\n✅ Student Visa Applications (USA, Canada, UK, Australia, Europe)\n✅ Work Visas & Immigration Assistance\n✅ Business Trip Visa Planning\n✅ Embassy Interview Coaching\n✅ Student Loan & Sponsorship Support\n✅ Flight & Accommodation Booking\n✅ Relocation Support & Document Translation\n✅ Travel Insurance & Medical Clearance\n✅ Pre-Departure Orientation & Airport Pickup\n\nWhat specific service are you interested in?"
+                },
+                // Countries Served
+                countries: {
+                    keywords: ['which countries', 'destinations', 'where can i go', 'available countries', 'study destinations'],
+                    response: "🌎 We serve over 70 countries across 6 continents including:\n\n• North America: USA, Canada, Mexico, Costa Rica\n• Europe: UK, Germany, France, Italy, Spain, Sweden, Norway, Finland, Ireland, Netherlands, Switzerland, Austria\n• Asia Pacific: Australia, New Zealand, Singapore, Japan, South Korea, Malaysia\n• Middle East: UAE, Qatar, Saudi Arabia\n• Africa: South Africa, Morocco, Egypt, Kenya, Ghana\n• South America: Brazil, Argentina, Chile\n\nWhich country are you interested in?"
+                },
+                // Scholarships
+                scholarships: {
+                    keywords: ['scholarship', 'financial aid', 'funding', 'money for study', 'tuition waiver', 'scholarships available'],
+                    response: "🎓 Yes! We help students secure scholarships ranging from 25% to 100% tuition coverage. We have partnerships with universities offering scholarships for international students. We can assist with:\n\n✅ Merit-based scholarships\n✅ Need-based financial aid\n✅ Government scholarships\n✅ University-specific awards\n✅ External funding opportunities\n\nContact us with your academic background and desired country for personalized scholarship guidance."
+                },
+                // Document Requirements
+                documents: {
+                    keywords: ['documents needed', 'what documents', 'required documents', 'paperwork', 'application documents', 'visa documents'],
+                    response: "📄 Common documents required for visa applications include:\n\n✅ Valid Passport (with 6+ months validity)\n✅ Completed Application Forms\n✅ Academic Transcripts & Certificates\n✅ English Proficiency Test Scores (IELTS/TOEFL)\n✅ Statement of Purpose / Personal Statement\n✅ Letters of Recommendation\n✅ Proof of Funds / Bank Statements\n✅ Medical Examination Reports\n✅ Police Clearance Certificate\n✅ Passport-sized Photographs\n\nSpecific requirements vary by country. Let me know your target country for detailed requirements."
+                },
+                // Processing Time
+                processing_time: {
+                    keywords: ['processing time', 'how long', 'timeframe', 'when will i get', 'duration', 'how many weeks'],
+                    response: "⏱️ Processing times vary by country and visa type:\n\n• USA: 3-8 weeks\n• Canada: 4-12 weeks\n• UK: 3-6 weeks\n• Australia: 4-10 weeks\n• Schengen (Europe): 3-8 weeks\n• UAE: 2-4 weeks\n\nRush processing options available for select countries. Express service can reduce processing time by 30-40%."
+                },
+                // Fees/Costs
+                fees: {
+                    keywords: ['how much', 'cost', 'fee', 'price', 'charges', 'consultation fee', 'service fee', 'expensive'],
+                    response: "💰 Our consultation services start at competitive rates with flexible payment options. We offer:\n\n✅ Free initial consultation\n✅ Customized service packages\n✅ Installment payment plans\n✅ Discounted rates for students\n✅ Scholarship assistance included in packages\n\nContact us for a personalized quote based on your specific needs and target country. We offer transparent pricing with no hidden fees."
+                },
+                // Office Location
+                location: {
+                    keywords: ['where are you', 'office address', 'location', 'visit you', 'come to office', 'physical address'],
+                    response: "📍 Our head office is located in Monrovia, Liberia. Address: Monrovia Liberia, P.O.BOX 1000.\n\nOffice Hours:\nMonday-Friday: 9:00 AM - 5:00 PM\nWednesday: 9:00 AM - 3:00 PM\nSaturday: Emergency Only\n\nYou can also reach us via WhatsApp at +231 886590302 or email at infoglobalimmigrationsc@gmail.com"
+                },
+                // Contact Info
+                contact: {
+                    keywords: ['contact', 'phone number', 'email', 'reach you', 'how to contact', 'call you'],
+                    response: "📞 You can contact us through:\n\n📱 Phone: +231886590302, +231770562292, +231772876644\n📧 Email: ceo@globalimmigrationsclr.com, infoglobalimmigrationsc@gmail.com\n💬 WhatsApp: +231 886590302\n🌐 Website: globalimmigrationsclr.com\n📍 Address: Monrovia Liberia, P.O.BOX 1000\n\nWe typically respond within 24 hours."
+                },
+                // Help/Support
+                help: {
+                    keywords: ['help', 'support', 'assistance', 'help me', 'need help', 'stuck'],
+                    response: "🤝 Of course! I'm here to help. Could you please tell me more about your situation? Are you looking to:\n\n• Study abroad\n• Apply for a work visa\n• Travel for tourism/business\n• Get help with an existing application\n• Something else\n\nLet me know and I'll provide specific guidance."
+                },
+                // Prices/Application Fees
+                application_fees: {
+                    keywords: ['application fee', 'visa fee', 'embassy fee', 'how much to apply', 'cost of application'],
+                    response: "💰 Visa application fees vary by country:\n\n• USA: $160 (F-1) / $190 (H-1B)\n• Canada: CAD 150 (Study Permit) / CAD 100 (Visitor)\n• UK: £363 (Student) / £625 (Skilled Worker)\n• Australia: AUD 650 (Student) / AUD 415 (Visitor)\n• Schengen: €80 (Short-stay)\n\nNote: These are embassy fees only. Our service fees are separate. Contact us for a detailed breakdown."
+                },
+                // Express Processing
+                express: {
+                    keywords: ['express', 'urgent', 'fast', 'priority', 'expedited', 'quick', 'rush'],
+                    response: "⚡ Yes! We offer express processing services for urgent applications:\n\n✅ Priority visa processing (3-5 business days for select countries)\n✅ Expedited document preparation\n✅ Rush application review (24-48 hours)\n✅ Emergency consultation services\n\nExpress services may incur additional fees. Contact us for availability and pricing."
+                },
+                // Language Support
+                language: {
+                    keywords: ['language', 'translation', 'translate', 'interpreter', 'english'],
+                    response: "🌐 We provide support in multiple languages! Our team offers:\n\n✅ English (primary)\n✅ French\n✅ Arabic\n✅ Spanish\n✅ Portuguese\n✅ Chinese\n\nWe also provide certified document translation services for 24+ languages."
+                },
+                // Appointment
+                appointment: {
+                    keywords: ['appointment', 'meeting', 'consult', 'book', 'schedule', 'talk to expert'],
+                    response: "📅 Yes! You can book a consultation appointment here: https://docs.google.com/forms/d/1HUsRbKHsZlZKL7T2DgT7crgAhkAnuslmWjopUD2Cutg/edit\n\nAvailable appointment types:\n\n✅ Free 15-min initial consultation\n✅ 30-min detailed consultation\n✅ 1-hour comprehensive consultation\n✅ Emergency consultation (within 24 hours)\n\nChoose a time that works for you!"
+                },
+                // Follow-ups
+                follow_up: {
+                    keywords: ['thank', 'thanks', 'okay', 'ok', 'got it', 'understand', 'clear'],
+                    response: "😊 You're welcome! Is there anything else I can help you with? Feel free to ask about:\n\n• Specific countries\n• Visa requirements\n• Scholarship opportunities\n• Document preparation\n• Application timeline\n\nWe're here to help you achieve your global dreams! 🌍"
+                },
+                // Farewell
+                goodbye: {
+                    keywords: ['bye', 'goodbye', 'see you', 'later', 'quit', 'exit', 'end chat'],
+                    response: "👋 Thank you for chatting with Global Immigration SC! We wish you the best in your journey abroad. Remember, you can always reach us at +231 886590302 or infoglobalimmigrationsc@gmail.com if you have more questions. Have a great day! 🌟"
+                },
+                // Default response
+                default: {
+                    response: "Thank you for your message! I'd be happy to help. Could you please provide more details about what you're looking for? For example:\n\n• Study abroad in which country?\n• Type of visa needed?\n• Application status?\n\nYou can also visit our website or contact us directly at +231 886590302 for immediate assistance."
+                }
+            };
+            
+            // Function to find best matching response
+            function getResponse(message) {
+                const lowerMessage = message.toLowerCase().trim();
+                
+                // Check each response category for keyword matches
+                for (const [key, responseObj] of Object.entries(responses)) {
+                    if (key === 'default') continue;
+                    
+                    // Check if any keyword matches
+                    const hasKeyword = responseObj.keywords.some(keyword => 
+                        lowerMessage.includes(keyword.toLowerCase())
+                    );
+                    
+                    if (hasKeyword) {
+                        return responseObj.response;
+                    }
+                }
+                
+                // Check for specific country names not in the main categories
+                const countryNames = ['germany', 'france', 'italy', 'spain', 'sweden', 'norway', 'denmark', 
+                                      'finland', 'ireland', 'netherlands', 'switzerland', 'austria', 'belgium',
+                                      'singapore', 'malaysia', 'japan', 'korea', 'china', 'india', 'brazil',
+                                      'argentina', 'chile', 'south africa', 'egypt', 'morocco', 'kenya', 'ghana'];
+                
+                for (const country of countryNames) {
+                    if (lowerMessage.includes(country)) {
+                        return `🌍 Yes! We process applications for ${country.toUpperCase()}. Our services include student visas, work permits, and relocation support for this destination. Would you like more specific information about studying or working in ${country.toUpperCase()}?`;
+                    }
+                }
+                
+                // Check for visa types
+                const visaTypes = ['student visa', 'work visa', 'tourist visa', 'business visa', 'residence permit', 'permanent residency'];
+                for (const visa of visaTypes) {
+                    if (lowerMessage.includes(visa)) {
+                        return `✅ Yes, we handle ${visa} applications for multiple countries. Our process includes document preparation, application submission, and interview coaching. Which country are you interested in for your ${visa}?`;
+                    }
+                }
+                
+                // Return default response if no matches
+                return responses.default.response;
+            }
+            
+            // Add message to chat
+            function addMessage(text, isUser = true) {
+                const messageDiv = document.createElement('div');
+                messageDiv.style.cssText = `
+                    margin-bottom: 12px;
+                    display: flex;
+                    justify-content: ${isUser ? 'flex-end' : 'flex-start'};
+                `;
+                
+                const bubble = document.createElement('div');
+                bubble.style.cssText = `
+                    max-width: 85%;
+                    padding: 10px 14px;
+                    border-radius: 18px;
+                    background: ${isUser ? 'var(--primary-red)' : 'white'};
+                    color: ${isUser ? 'white' : 'var(--dark-gray)'};
+                    border: ${isUser ? 'none' : '1px solid #eee'};
+                    font-size: 0.9rem;
+                    line-height: 1.4;
+                    white-space: pre-wrap;
+                    word-wrap: break-word;
+                `;
+                
+                // Convert newlines to <br> tags
+                bubble.innerHTML = text.replace(/\n/g, '<br>');
+                
+                messageDiv.appendChild(bubble);
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            // Send message handler
+            function sendMessage() {
+                const message = chatInput.value.trim();
+                if (!message) return;
+                
+                // Add user message
+                addMessage(message, true);
+                
+                // Clear input
+                chatInput.value = '';
+                
+                // Show typing indicator
+                const typingIndicator = document.createElement('div');
+                typingIndicator.id = 'typingIndicator';
+                typingIndicator.style.cssText = `
+                    margin-bottom: 12px;
+                    display: flex;
+                    justify-content: flex-start;
+                `;
+                typingIndicator.innerHTML = `
+                    <div style="background: white; padding: 10px 14px; border-radius: 18px; border: 1px solid #eee;">
+                        <i class="fas fa-ellipsis-h" style="color: #999;"></i> Typing...
+                    </div>
+                `;
+                chatMessages.appendChild(typingIndicator);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                // Get and send response after delay
+                setTimeout(() => {
+                    // Remove typing indicator
+                    const indicator = document.getElementById('typingIndicator');
+                    if (indicator) indicator.remove();
+                    
+                    // Get response
+                    const response = getResponse(message);
+                    addMessage(response, false);
+                    
+                    // Track conversation context
+                    conversationContext.lastMessage = message;
+                    conversationContext.lastResponse = response;
+                }, 800 + Math.random() * 400); // Random delay for natural feel
+            }
+            
+            // Open chat
             openBtn.addEventListener('click', () => {
                 panel.style.display = 'block';
                 if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
             });
             
+            // Close chat
             if (closeBtn) closeBtn.addEventListener('click', () => panel.style.display = 'none');
             
-            function sendMessage() {
-                const message = chatInput.value.trim();
-                if (!message) return;
-                
-                const userMessage = document.createElement('div');
-                userMessage.style.cssText = 'background: var(--primary-red); color: white; padding: 8px 12px; border-radius: 18px; margin-bottom: 10px; max-width: 85%; margin-left: auto; text-align: right;';
-                userMessage.innerHTML = message;
-                chatMessages.appendChild(userMessage);
-                
-                setTimeout(() => {
-                    const autoReply = document.createElement('div');
-                    autoReply.style.cssText = 'background: white; padding: 8px 12px; border-radius: 18px; margin-bottom: 10px; max-width: 85%; border: 1px solid #eee;';
-                    autoReply.innerHTML = 'Thanks for reaching out! Our team will get back to you shortly. Meanwhile, you can also WhatsApp us at +231 886590302';
-                    chatMessages.appendChild(autoReply);
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                }, 1000);
-                
-                chatInput.value = '';
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+            // Send button click
+            if (sendBtn) sendBtn.addEventListener('click', sendMessage);
+            
+            // Enter key press
+            if (chatInput) {
+                chatInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        sendMessage();
+                    }
+                });
             }
             
-            if (sendBtn) sendBtn.addEventListener('click', sendMessage);
-            if (chatInput) chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+            // Click outside to close? (Optional)
+            document.addEventListener('click', function(e) {
+                if (panel && panel.style.display === 'block' && 
+                    !panel.contains(e.target) && 
+                    !openBtn.contains(e.target)) {
+                    panel.style.display = 'none';
+                }
+            });
         }
         
         // Application Status Tracker
@@ -10890,18 +11236,5 @@ document.addEventListener('DOMContentLoaded', function() {
             <p style="font-size: 0.8rem; color: #999; margin-top: 15px;">✓ No spam • Unsubscribe anytime</p>
         </div>
     </div>
-
-    <style>
-        @keyframes popupSlideIn {
-            from {
-                opacity: 0;
-                transform: scale(0.9) translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-        }
-    </style>
 </body>
 </html>
