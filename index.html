@@ -3010,6 +3010,16 @@
         </div>
     </div>
 
+        <!-- Country Details Modal - ADD THIS HERE -->
+    <div id="countryModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 650px; border-radius: 16px;">
+            <span class="close-modal" style="position: absolute; top: 15px; right: 20px; font-size: 28px; cursor: pointer;">&times;</span>
+            <div id="countryModalContent">
+                <!-- Dynamic content loaded via JavaScript -->
+            </div>
+        </div>
+    </div>
+
     <!-- Register Session Modal -->
     <div id="registerModal" class="modal">
         <div class="modal-content">
@@ -3429,12 +3439,41 @@
             </div>
         </section>
 
+        
+
          <!-- Destinations Section - Enhanced Professional Version -->
 <section id="destinations" class="section destinations">
     <div class="container">
         <div class="section-title">
             <h2>Destinations We Serve</h2>
             <p>Your gateway to <strong>70+ countries</strong> across the globe. We provide comprehensive immigration, study abroad, and travel services for international students, professionals, and travelers.</p>
+        </div>
+
+                <!-- Country Search & Filter Bar - ADD THIS HERE -->
+        <div class="country-search-bar" style="margin-bottom: 40px;">
+            <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
+                <input type="text" id="countrySearch" placeholder="🔍 Search country by name..." style="padding: 14px 24px; width: 320px; border: 2px solid #eee; border-radius: 50px; font-size: 1rem; transition: all 0.3s ease;">
+                <select id="continentFilter" style="padding: 14px 24px; border-radius: 50px; border: 2px solid #eee; background: white; font-size: 1rem; cursor: pointer;">
+                    <option value="all">🌍 All Continents</option>
+                    <option value="north-america">🌎 North America</option>
+                    <option value="europe">🇪🇺 Europe</option>
+                    <option value="asia-pacific">🌏 Asia Pacific</option>
+                    <option value="middle-east">🕌 Middle East</option>
+                    <option value="africa">🌍 Africa</option>
+                    <option value="south-america">🌎 South America</option>
+                </select>
+                <select id="visaTypeFilter" style="padding: 14px 24px; border-radius: 50px; border: 2px solid #eee; background: white; font-size: 1rem; cursor: pointer;">
+                    <option value="all">📋 All Visa Types</option>
+                    <option value="student">🎓 Student Visa</option>
+                    <option value="work">💼 Work Visa</option>
+                    <option value="tourist">✈️ Tourist Visa</option>
+                    <option value="business">🤝 Business Visa</option>
+                    <option value="residence">🏠 Residence Permit</option>
+                </select>
+                <button id="resetFilters" style="padding: 14px 24px; border-radius: 50px; border: 2px solid var(--primary-red); background: white; color: var(--primary-red); cursor: pointer; font-weight: 600;">
+                    🔄 Reset Filters
+                </button>
+            </div>
         </div>
         
         <!-- Quick Stats -->
@@ -3845,6 +3884,35 @@
                 </div>
             </div>
         </div>
+
+                <!-- Visa Processing Comparison Table - ADD THIS HERE -->
+        <div class="visa-comparison-table" style="margin: 50px 0;">
+            <h3 style="text-align: center; margin-bottom: 30px; color: var(--dark-gray);">
+                <i class="fas fa-chart-line"></i> Visa Processing Overview
+            </h3>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.08);">
+                    <thead>
+                        <tr style="background: linear-gradient(135deg, var(--primary-red) 0%, #b30000 100%); color: white;">
+                            <th style="padding: 15px; text-align: left;">🌍 Country</th>
+                            <th style="padding: 15px; text-align: left;">🎓 Student Visa</th>
+                            <th style="padding: 15px; text-align: left;">💼 Work Visa</th>
+                            <th style="padding: 15px; text-align: left;">⏱️ Processing Time</th>
+                            <th style="padding: 15px; text-align: left;">📊 Success Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody id="visaComparisonTable">
+                        <!-- Data will be populated by JavaScript -->
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td colspan="5" style="padding: 40px; text-align: center;">Loading visa information...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p style="text-align: center; font-size: 0.85rem; color: var(--medium-gray); margin-top: 15px;">
+                * Processing times vary by embassy and application volume. Contact us for current estimates.
+            </p>
+        </div>
         
         <!-- Additional Information: Visa Types -->
         <div style="margin-top: 50px; padding: 25px; background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%); border-radius: 12px;">
@@ -3893,6 +3961,33 @@
     </div>
 </section>
 
+                <!-- Application Status Tracker - ADD THIS HERE -->
+        <section class="section" style="background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
+            <div class="container">
+                <div class="status-tracker" style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                    <h3 style="text-align: center; color: var(--dark-gray); margin-bottom: 10px;">
+                        <i class="fas fa-search" style="color: var(--primary-red);"></i> Track Your Application Status
+                    </h3>
+                    <p style="text-align: center; color: var(--medium-gray); margin-bottom: 30px;">Enter your application details to get real-time updates</p>
+                    
+                    <div style="display: flex; gap: 15px; max-width: 600px; margin: 0 auto; flex-wrap: wrap;">
+                        <input type="text" id="applicationId" placeholder="Application ID (e.g., GISC-2024-XXXX)" style="flex: 1; padding: 14px; border: 2px solid #eee; border-radius: 8px; font-size: 1rem;">
+                        <input type="email" id="trackerEmail" placeholder="Your Registered Email" style="flex: 1; padding: 14px; border: 2px solid #eee; border-radius: 8px; font-size: 1rem;">
+                        <button id="trackStatus" class="btn btn-primary" style="padding: 14px 30px;">
+                            <i class="fas fa-search"></i> Track Status
+                        </button>
+                    </div>
+                    
+                    <div id="trackerResult" style="display: none; margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 12px; text-align: center;">
+                        <!-- Status will appear here -->
+                    </div>
+                    
+                    <p style="text-align: center; font-size: 0.85rem; color: var(--medium-gray); margin-top: 20px;">
+                        Don't have an Application ID? <a href="#application-portal" style="color: var(--primary-red);">Start your application here</a>
+                    </p>
+                </div>
+            </div>
+        </section>
         
         <!-- Partners Section -->
 <section id="partners" class="section partners" style="background-color: var(--light-gray);">
@@ -5254,6 +5349,54 @@
         <i class="fab fa-whatsapp"></i>
     </a>
 
+        <!-- Live Chat Support Widget - ADD THIS HERE -->
+    <div id="supportWidget" style="position: fixed; bottom: 100px; right: 20px; z-index: 1000;">
+        <button id="openSupport" style="background: linear-gradient(135deg, var(--primary-red) 0%, #b30000 100%); color: white; border: none; border-radius: 50px; padding: 14px 24px; display: flex; align-items: center; gap: 10px; cursor: pointer; box-shadow: 0 4px 15px rgba(227,6,19,0.3); transition: all 0.3s ease; font-weight: 600;">
+            <i class="fas fa-headset"></i> Need Help? Chat Now
+        </button>
+        <div id="supportPanel" style="display: none; position: absolute; bottom: 70px; right: 0; width: 350px; background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); overflow: hidden; animation: slideUp 0.3s ease;">
+            <div style="background: linear-gradient(135deg, var(--primary-red) 0%, #b30000 100%); color: white; padding: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h4 style="margin: 0; font-size: 1.2rem;">Support Team</h4>
+                    <button id="closeSupport" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">&times;</button>
+                </div>
+                <p style="margin: 5px 0 0; font-size: 0.85rem;">Typically replies in minutes</p>
+            </div>
+            <div id="chatMessages" style="height: 320px; overflow-y: auto; padding: 15px; background: #f8f9fa;">
+                <div style="text-align: center; color: #666; padding: 20px;">
+                    <i class="fas fa-comments" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                    <p>Hello! How can we help you today?</p>
+                </div>
+            </div>
+            <div style="padding: 15px; border-top: 1px solid #eee; background: white;">
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="chatInput" placeholder="Type your message..." style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 25px; font-size: 0.9rem;">
+                    <button id="sendChat" style="background: var(--primary-red); color: white; border: none; border-radius: 50%; width: 44px; height: 44px; cursor: pointer; transition: all 0.3s ease;">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div style="margin-top: 12px; text-align: center;">
+                    <a href="https://wa.me/231886590302" target="_blank" style="color: #25D366; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i> Or continue on WhatsApp
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+                
     <!-- Dashboard (hidden by default) -->
     <div id="dashboard" class="dashboard" style="display: none;">
         <div class="dashboard-header">
@@ -10298,6 +10441,262 @@ async function submitToGoogleSheets(formData) {
     }
 }
 
+        // ==================== NEW FEATURES JAVASCRIPT ====================
+        
+        // Country Data for Search & Filter
+        const countriesData = [
+            { name: "USA", flag: "🇺🇸", continent: "north-america", visaTypes: ["student", "work", "tourist", "business"], processingTime: "3-8 weeks", successRate: "92%", tuitionRange: "$20,000-55,000/year", popularUniversities: "Harvard, MIT, Stanford" },
+            { name: "Canada", flag: "🇨🇦", continent: "north-america", visaTypes: ["student", "work", "tourist", "residence"], processingTime: "4-12 weeks", successRate: "94%", tuitionRange: "CAD 20,000-45,000/year", popularUniversities: "UofT, UBC, McGill" },
+            { name: "UK", flag: "🇬🇧", continent: "europe", visaTypes: ["student", "work", "tourist", "business"], processingTime: "3-6 weeks", successRate: "91%", tuitionRange: "£12,000-38,000/year", popularUniversities: "Oxford, Cambridge, Imperial" },
+            { name: "Germany", flag: "🇩🇪", continent: "europe", visaTypes: ["student", "work", "tourist"], processingTime: "4-8 weeks", successRate: "95%", tuitionRange: "€0-15,000/year", popularUniversities: "LMU, TUM, Heidelberg" },
+            { name: "Australia", flag: "🇦🇺", continent: "asia-pacific", visaTypes: ["student", "work", "tourist", "residence"], processingTime: "4-10 weeks", successRate: "93%", tuitionRange: "AUD 20,000-45,000/year", popularUniversities: "UniMelb, ANU, Sydney" },
+            { name: "UAE", flag: "🇦🇪", continent: "middle-east", visaTypes: ["work", "tourist", "business", "residence"], processingTime: "2-4 weeks", successRate: "96%", tuitionRange: "AED 40,000-80,000/year", popularUniversities: "UAEU, AUS, NYUAD" },
+            { name: "South Africa", flag: "🇿🇦", continent: "africa", visaTypes: ["student", "work", "tourist"], processingTime: "4-8 weeks", successRate: "88%", tuitionRange: "ZAR 30,000-80,000/year", popularUniversities: "UCT, Wits, Stellenbosch" },
+            { name: "Brazil", flag: "🇧🇷", continent: "south-america", visaTypes: ["student", "work", "tourist"], processingTime: "3-6 weeks", successRate: "85%", tuitionRange: "R$ 15,000-40,000/year", popularUniversities: "USP, UNICAMP, UFRJ" }
+        ];
+
+        // Country Search & Filter Functionality
+        function initializeCountrySearch() {
+            const searchInput = document.getElementById('countrySearch');
+            const continentFilter = document.getElementById('continentFilter');
+            const visaFilter = document.getElementById('visaTypeFilter');
+            const resetBtn = document.getElementById('resetFilters');
+            
+            if (!searchInput) return;
+            
+            function filterCountries() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const continent = continentFilter.value;
+                const visaType = visaFilter.value;
+                
+                document.querySelectorAll('.country-flag').forEach(country => {
+                    const countryName = country.querySelector('.country-name')?.innerText.toLowerCase() || '';
+                    const countryContainer = country.closest('.continent-group') || country.parentElement;
+                    let show = true;
+                    
+                    if (searchTerm && !countryName.includes(searchTerm)) show = false;
+                    if (continent !== 'all' && !country.closest(`[data-continent="${continent}"]`)) show = false;
+                    
+                    country.style.display = show ? 'block' : 'none';
+                });
+                
+                // Show/hide empty continent sections
+                document.querySelectorAll('.continent-group').forEach(group => {
+                    const visibleCountries = group.querySelectorAll('.country-flag[style*="display: block"], .country-flag:not([style*="display: none"])');
+                    group.style.display = visibleCountries.length > 0 ? 'block' : 'none';
+                });
+            }
+            
+            searchInput.addEventListener('input', filterCountries);
+            continentFilter.addEventListener('change', filterCountries);
+            visaFilter.addEventListener('change', filterCountries);
+            if (resetBtn) resetBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                continentFilter.value = 'all';
+                visaFilter.value = 'all';
+                filterCountries();
+            });
+        }
+        
+        // Country Modal Functionality
+        function setupCountryModals() {
+            document.querySelectorAll('.country-flag').forEach(country => {
+                country.style.cursor = 'pointer';
+                country.addEventListener('click', function(e) {
+                    const countryName = this.querySelector('.country-name')?.innerText;
+                    const countryData = countriesData.find(c => c.name === countryName);
+                    
+                    if (countryData) {
+                        const modal = document.getElementById('countryModal');
+                        const content = document.getElementById('countryModalContent');
+                        
+                        content.innerHTML = `
+                            <div style="text-align: center;">
+                                <div style="font-size: 4rem; margin-bottom: 10px;">${countryData.flag}</div>
+                                <h2 style="color: var(--primary-red); margin-bottom: 5px;">${countryData.name}</h2>
+                                <p style="color: var(--medium-gray); margin-bottom: 20px;">Study • Work • Live</p>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0;">
+                                <div style="background: #f8f9fa; padding: 12px; border-radius: 8px;">
+                                    <strong>⏱️ Processing Time:</strong><br>${countryData.processingTime}
+                                </div>
+                                <div style="background: #f8f9fa; padding: 12px; border-radius: 8px;">
+                                    <strong>📊 Success Rate:</strong><br>${countryData.successRate}
+                                </div>
+                                <div style="background: #f8f9fa; padding: 12px; border-radius: 8px;">
+                                    <strong>💰 Tuition Range:</strong><br>${countryData.tuitionRange}
+                                </div>
+                                <div style="background: #f8f9fa; padding: 12px; border-radius: 8px;">
+                                    <strong>🎓 Popular Universities:</strong><br>${countryData.popularUniversities}
+                                </div>
+                            </div>
+                            <div style="margin-top: 20px;">
+                                <h4>✅ Available Visa Types:</h4>
+                                <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
+                                    ${countryData.visaTypes.map(type => `<span style="background: var(--light-gray); padding: 5px 12px; border-radius: 20px;">${type}</span>`).join('')}
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 15px; margin-top: 25px;">
+                                <a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform" class="btn btn-primary" style="flex: 1;">Apply Now</a>
+                                <a href="https://wa.me/231886590302" class="btn btn-outline" style="flex: 1;">Consult Expert</a>
+                            </div>
+                        `;
+                        modal.style.display = 'flex';
+                    }
+                });
+            });
+        }
+        
+        // Visa Comparison Table Population
+        function populateVisaTable() {
+            const tableBody = document.getElementById('visaComparisonTable');
+            if (!tableBody) return;
+            
+            tableBody.innerHTML = countriesData.map(country => `
+                <tr style="border-bottom: 1px solid #eee; transition: background 0.3s ease;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='white'">
+                    <td style="padding: 15px;"><strong>${country.flag} ${country.name}</strong></td>
+                    <td style="padding: 15px;">${country.visaTypes.includes('student') ? '✅ Available' : '❌ Limited'}</td>
+                    <td style="padding: 15px;">${country.visaTypes.includes('work') ? '✅ Available' : '❌ Limited'}</td>
+                    <td style="padding: 15px;">${country.processingTime}</td>
+                    <td style="padding: 15px;"><span style="background: #e8f5e8; color: #2e7d32; padding: 4px 8px; border-radius: 20px;">${country.successRate}</span></td>
+                </tr>
+            `).join('');
+        }
+        
+        // Live Chat Widget
+        function initializeLiveChat() {
+            const openBtn = document.getElementById('openSupport');
+            const closeBtn = document.getElementById('closeSupport');
+            const panel = document.getElementById('supportPanel');
+            const sendBtn = document.getElementById('sendChat');
+            const chatInput = document.getElementById('chatInput');
+            const chatMessages = document.getElementById('chatMessages');
+            
+            if (!openBtn) return;
+            
+            openBtn.addEventListener('click', () => {
+                panel.style.display = 'block';
+                if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
+            });
+            
+            if (closeBtn) closeBtn.addEventListener('click', () => panel.style.display = 'none');
+            
+            function sendMessage() {
+                const message = chatInput.value.trim();
+                if (!message) return;
+                
+                const userMessage = document.createElement('div');
+                userMessage.style.cssText = 'background: var(--primary-red); color: white; padding: 8px 12px; border-radius: 18px; margin-bottom: 10px; max-width: 85%; margin-left: auto; text-align: right;';
+                userMessage.innerHTML = message;
+                chatMessages.appendChild(userMessage);
+                
+                setTimeout(() => {
+                    const autoReply = document.createElement('div');
+                    autoReply.style.cssText = 'background: white; padding: 8px 12px; border-radius: 18px; margin-bottom: 10px; max-width: 85%; border: 1px solid #eee;';
+                    autoReply.innerHTML = 'Thanks for reaching out! Our team will get back to you shortly. Meanwhile, you can also WhatsApp us at +231 886590302';
+                    chatMessages.appendChild(autoReply);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }, 1000);
+                
+                chatInput.value = '';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            if (sendBtn) sendBtn.addEventListener('click', sendMessage);
+            if (chatInput) chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+        }
+        
+        // Application Status Tracker
+        function initializeStatusTracker() {
+            const trackBtn = document.getElementById('trackStatus');
+            const appId = document.getElementById('applicationId');
+            const trackerEmail = document.getElementById('trackerEmail');
+            const resultDiv = document.getElementById('trackerResult');
+            
+            if (!trackBtn) return;
+            
+            trackBtn.addEventListener('click', async () => {
+                if (!appId.value || !trackerEmail.value) {
+                    alert('Please enter both Application ID and Email');
+                    return;
+                }
+                
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking status...';
+                
+                setTimeout(() => {
+                    resultDiv.innerHTML = `
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 15px; flex-wrap: wrap;">
+                            <div style="background: white; padding: 15px; border-radius: 12px; text-align: center;">
+                                <div style="font-size: 2rem;">📄</div>
+                                <div style="font-weight: bold;">Application Received</div>
+                                <div style="font-size: 0.85rem; color: #666;">${new Date().toLocaleDateString()}</div>
+                            </div>
+                            <div style="background: white; padding: 15px; border-radius: 12px; text-align: center;">
+                                <div style="font-size: 2rem;">🔍</div>
+                                <div style="font-weight: bold;">Under Review</div>
+                                <div style="font-size: 0.85rem; color: #666;">In Progress</div>
+                            </div>
+                            <div style="background: #f8f9fa; padding: 15px; border-radius: 12px; text-align: center; opacity: 0.5;">
+                                <div style="font-size: 2rem;">✅</div>
+                                <div style="font-weight: bold;">Final Decision</div>
+                                <div style="font-size: 0.85rem;">Pending</div>
+                            </div>
+                        </div>
+                        <p style="margin-top: 20px;">Status: <strong style="color: var(--primary-red);">Application Under Review</strong></p>
+                        <p>Estimated processing time: 2-3 weeks remaining</p>
+                        <a href="#contact" class="btn btn-outline btn-small" style="margin-top: 15px;">Contact Support</a>
+                    `;
+                }, 1500);
+            });
+        }
+        
+        // Exit Intent Popup
+        let exitIntentShown = false;
+        function initializeExitIntent() {
+            setTimeout(() => {
+                document.addEventListener('mouseleave', (e) => {
+                    if (e.clientY <= 0 && !exitIntentShown && !localStorage.getItem('exitPopupClosed')) {
+                        exitIntentShown = true;
+                        document.getElementById('exitPopup').style.display = 'flex';
+                    }
+                });
+            }, 3000);
+            
+            const closeBtn = document.getElementById('closeExitPopup');
+            if (closeBtn) closeBtn.addEventListener('click', () => {
+                document.getElementById('exitPopup').style.display = 'none';
+                localStorage.setItem('exitPopupClosed', 'true');
+            });
+            
+            const exitForm = document.getElementById('exitNewsletter');
+            if (exitForm) {
+                exitForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const email = document.getElementById('exitEmail').value;
+                    if (email) {
+                        const formData = new FormData();
+                        formData.append('email', email);
+                        formData.append('form_type', 'exit_intent_newsletter');
+                        await fetch('https://script.google.com/macros/s/AKfycbybjc4zzbjlAVqTzxHOWw_jP_hc-afK-7vwfWy81wXeFePimUak6zvRgy3IqAo27sVkXw/exec', { method: 'POST', body: formData });
+                        alert('🎉 Thanks for subscribing! Check your inbox for updates.');
+                        document.getElementById('exitPopup').style.display = 'none';
+                        localStorage.setItem('exitPopupClosed', 'true');
+                    }
+                });
+            }
+        }
+        
+        // Initialize all new features when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCountrySearch();
+            setupCountryModals();
+            populateVisaTable();
+            initializeLiveChat();
+            initializeStatusTracker();
+            initializeExitIntent();
+        });
+                        
 // ==================== LATEST NEWS SLIDER ====================
 
 // Holiday dates configuration
@@ -10475,5 +10874,34 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
     </script>
+    <!-- Exit Intent Newsletter Popup - ADD THIS HERE -->
+    <div id="exitPopup" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 20000; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 45px; border-radius: 20px; max-width: 450px; width: 90%; text-align: center; position: relative; animation: popupSlideIn 0.4s ease;">
+            <button id="closeExitPopup" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 28px; cursor: pointer; color: #999;">&times;</button>
+            <i class="fas fa-envelope-open-text" style="font-size: 4rem; color: var(--primary-red); margin-bottom: 15px;"></i>
+            <h3 style="color: var(--dark-gray); margin-bottom: 10px;">Don't Miss Out!</h3>
+            <p style="color: var(--medium-gray); margin-bottom: 20px;">Get the latest visa updates, scholarship opportunities, and exclusive tips delivered to your inbox.</p>
+            <form id="exitNewsletter" style="margin-top: 20px;">
+                <input type="email" id="exitEmail" placeholder="Enter your email address" required style="width: 100%; padding: 14px; margin-bottom: 12px; border: 2px solid #eee; border-radius: 8px; font-size: 1rem;">
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px;">
+                    <i class="fas fa-bell"></i> Subscribe for Updates
+                </button>
+            </form>
+            <p style="font-size: 0.8rem; color: #999; margin-top: 15px;">✓ No spam • Unsubscribe anytime</p>
+        </div>
+    </div>
+
+    <style>
+        @keyframes popupSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+    </style>
 </body>
 </html>
