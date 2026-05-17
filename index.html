@@ -5416,6 +5416,287 @@
                 transform: scale(1) translateY(0);
             }
         }
+
+                /* ========================================
+           GLASSMORPHISM UI/UX DESIGN UPGRADE
+           ======================================== */
+
+        /* Base Glass Effect for Cards */
+        .service-card,
+        .testimonial,
+        .blog-card,
+        .fb-post,
+        .portal-option,
+        .team-member,
+        .partner-logo,
+        .contact-form,
+        .fraud-report-form,
+        .status-tracker {
+            background: rgba(255, 255, 255, 0.15) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            border-radius: 20px !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(255, 255, 255, 0.1) !important;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+        }
+
+        /* Glass shine effect on hover */
+        .service-card:hover,
+        .testimonial:hover,
+        .blog-card:hover,
+        .portal-option:hover,
+        .team-member:hover,
+        .partner-logo:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+            background: rgba(255, 255, 255, 0.25) !important;
+        }
+
+        /* Glass effect for the header */
+        header {
+            background: rgba(255, 255, 255, 0.9) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5) !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+        }
+
+        /* Glass effect for the stats section background */
+        .stats {
+            background: linear-gradient(135deg, rgba(227, 6, 19, 0.85) 0%, rgba(179, 0, 0, 0.9) 100%) !important;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        /* Glass effect for the footer */
+        footer {
+            background: rgba(227, 6, 19, 0.92) !important;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Glass effect for the hero section overlay */
+        .hero {
+            position: relative;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            z-index: 1;
+        }
+        
+        .hero-content {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 30px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Glass effect for modal windows */
+        .modal-content,
+        .auth-modal-content {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(15px) !important;
+            -webkit-backdrop-filter: blur(15px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.5) !important;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        /* Glass effect for the dashboard sidebar and content */
+        .dashboard-sidebar,
+        .dashboard-content {
+            background: rgba(255, 255, 255, 0.85) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.4) !important;
+            border-radius: 20px !important;
+        }
+
+        /* Glass effect for country flags container */
+        .flags-container .country-flag {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 16px;
+            padding: 12px 8px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .flags-container .country-flag:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Glass effect for upload areas */
+        .upload-area {
+            background: rgba(255, 255, 255, 0.08) !important;
+            backdrop-filter: blur(8px) !important;
+            -webkit-backdrop-filter: blur(8px) !important;
+            border: 2px dashed rgba(255, 255, 255, 0.4) !important;
+        }
+        
+        .upload-area:hover {
+            background: rgba(255, 255, 255, 0.15) !important;
+            border-color: var(--primary-red) !important;
+        }
+
+        /* Glass effect for the newsletter section */
+        .newsletter {
+            background: rgba(248, 249, 250, 0.7) !important;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+        
+        .newsletter-content {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Glass effect for the search and filter bar */
+        .country-search-bar input,
+        .country-search-bar select,
+        .country-search-bar button {
+            background: rgba(255, 255, 255, 0.85) !important;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.5) !important;
+        }
+        
+        .country-search-bar input:focus,
+        .country-search-bar select:focus {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border-color: var(--primary-red) !important;
+            box-shadow: 0 0 0 3px rgba(227, 6, 19, 0.2);
+        }
+
+        /* Glass effect for buttons */
+        .btn-primary {
+            background: rgba(227, 6, 19, 0.9) !important;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        }
+        
+        .btn-primary:hover {
+            background: rgba(227, 6, 19, 1) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(227, 6, 19, 0.3);
+        }
+        
+        .btn-outline {
+            background: rgba(255, 255, 255, 0.15) !important;
+            backdrop-filter: blur(4px);
+            border: 1px solid var(--primary-red) !important;
+        }
+        
+        .btn-outline:hover {
+            background: var(--primary-red) !important;
+            color: white !important;
+        }
+
+        /* Glass effect for form inputs */
+        .form-control {
+            background: rgba(255, 255, 255, 0.8) !important;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.4) !important;
+        }
+        
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border-color: var(--primary-red) !important;
+            box-shadow: 0 0 0 3px rgba(227, 6, 19, 0.1);
+        }
+
+        /* Glass effect for the visa comparison table */
+        .visa-comparison-table table {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        
+        .visa-comparison-table th {
+            background: rgba(227, 6, 19, 0.85) !important;
+            backdrop-filter: blur(4px);
+        }
+        
+        .visa-comparison-table td {
+            background: rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Glass effect for the live chat widget */
+        #supportPanel {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(15px) !important;
+            -webkit-backdrop-filter: blur(15px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.5) !important;
+        }
+        
+        /* Glass effect for the application portal options */
+        .portal-option {
+            background: rgba(255, 255, 255, 0.12) !important;
+        }
+        
+        /* Glass effect for the partners section */
+        .partners .partner-group .partner-logo {
+            background: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        /* Smooth body background for better glass effect visibility */
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background-attachment: fixed;
+        }
+        
+        /* Adjust text colors for better contrast on glass backgrounds */
+        .service-card h3,
+        .testimonial h4,
+        .blog-title,
+        .portal-option h3,
+        .team-name {
+            color: #1a1a2e !important;
+        }
+        
+        .service-card p,
+        .testimonial-text,
+        .blog-excerpt,
+        .portal-option p {
+            color: #2d3436 !important;
+        }
+        
+        /* Ensure the loading screen stays solid */
+        #loading-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        #loading-screen .loading-text {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            border-radius: 50px;
+        }
     </style>
                 
     <!-- Dashboard (hidden by default) -->
