@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Global Immigration SC</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/glass-system.css">
+    <link rel="stylesheet" href="css/admin-glass.css">
+</head>
+<body class="admin-dashboard">
+    <!-- Sidebar -->
+    <aside class="glass-sidebar admin-sidebar">
+        <div class="sidebar-header">
+            <img src="../assets/images/logo-small.png" alt="Logo" class="sidebar-logo">
+            <h3>Admin Panel</h3>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="#dashboard" class="sidebar-link active" data-section="dashboard">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="#applications" class="sidebar-link" data-section="applications">
+                <i class="fas fa-file-alt"></i> Applications
+                <span class="badge" id="pendingAppsCount">0</span>
+            </a>
+            <a href="#users" class="sidebar-link" data-section="users">
+                <i class="fas fa-users"></i> Users
+            </a>
+            <a href="#documents" class="sidebar-link" data-section="documents">
+                <i class="fas fa-folder-open"></i> Documents
+            </a>
+            <a href="#payments" class="sidebar-link" data-section="payments">
+                <i class="fas fa-credit-card"></i> Payments
+            </a>
+            <a href="#blog" class="sidebar-link" data-section="blog">
+                <i class="fas fa-blog"></i> Blog Manager
+            </a>
+            <a href="#contacts" class="sidebar-link" data-section="contacts">
+                <i class="fas fa-envelope"></i> Contact Submissions
+            </a>
+            <a href="#appointments" class="sidebar-link" data-section="appointments">
+                <i class="fas fa-calendar-check"></i> Appointments
+            </a>
+            <a href="#settings" class="sidebar-link" data-section="settings">
+                <i class="fas fa-cog"></i> Settings
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <div class="admin-info">
+                <img src="" alt="Admin" id="adminAvatar" class="admin-avatar">
+                <div>
+                    <p id="adminName">Loading...</p>
+                    <small id="adminRole">Admin</small>
+                </div>
+            </div>
+            <button id="logoutBtn" class="glass-btn glass-btn-danger">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <!-- Dashboard Section -->
+        <section id="dashboard-section" class="admin-section active">
+            <div class="section-header">
+                <h1><i class="fas fa-tachometer-alt"></i> Dashboard Overview</h1>
+                <div class="header-actions">
+                    <button class="glass-btn" id="refreshData">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Analytics Cards -->
+            <div class="stats-grid">
+                <div class="glass-stats stat-card">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-info">
+                        <h3 id="totalUsers">0</h3>
+                        <p>Total Users</p>
+                    </div>
+                </div>
+                <div class="glass-stats stat-card">
+                    <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+                    <div class="stat-info">
+                        <h3 id="totalApps">0</h3>
+                        <p>Applications</p>
+                    </div>
+                </div>
+                <div class="glass-stats stat-card">
+                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                    <div class="stat-info">
+                        <h3 id="pendingApps">0</h3>
+                        <p>Pending Review</p>
+                    </div>
+                </div>
+                <div class="glass-stats stat-card">
+                    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-info">
+                        <h3 id="approvedApps">0</h3>
+                        <p>Approved</p>
+                    </div>
+                </div>
+                <div class="glass-stats stat-card">
+                    <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+                    <div class="stat-info">
+                        <h3 id="totalRevenue">$0</h3>
+                        <p>Revenue</p>
+                    </div>
+                </div>
+                <div class="glass-stats stat-card">
+                    <div class="stat-icon"><i class="fas fa-newspaper"></i></div>
+                    <div class="stat-info">
+                        <h3 id="totalBlogs">0</h3>
+                        <p>Blog Posts</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="glass-container" style="margin-top: 30px;">
+                <h3>Recent Activity</h3>
+                <div id="recentActivityList" class="activity-list">
+                    <!-- Loaded dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Blog Manager Section -->
+        <section id="blog-section" class="admin-section">
+            <div class="section-header">
+                <h1><i class="fas fa-blog"></i> Blog Manager</h1>
+                <button class="glass-btn glass-btn-primary" id="newPostBtn">
+                    <i class="fas fa-plus"></i> New Post
+                </button>
+            </div>
+            
+            <!-- Blog Stats -->
+            <div class="stats-grid small">
+                <div class="glass-stats">
+                    <h3 id="totalPostsCount">0</h3>
+                    <p>Total Posts</p>
+                </div>
+                <div class="glass-stats">
+                    <h3 id="publishedPostsCount">0</h3>
+                    <p>Published</p>
+                </div>
+                <div class="glass-stats">
+                    <h3 id="draftPostsCount">0</h3>
+                    <p>Drafts</p>
+                </div>
+            </div>
+            
+            <!-- Posts List -->
+            <div class="glass-container">
+                <div class="search-bar">
+                    <input type="text" id="searchPosts" placeholder="Search posts..." class="glass-input">
+                    <select id="filterCategory" class="glass-input">
+                        <option value="all">All Categories</option>
+                    </select>
+                </div>
+                <div id="blogPostsList" class="posts-list">
+                    <!-- Posts loaded dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Blog Editor Modal -->
+        <div id="blogEditorModal" class="glass-modal" style="display: none;">
+            <div class="modal-header">
+                <h2 id="modalTitle">Create New Blog Post</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="blogForm">
+                    <div class="form-group">
+                        <label>Title *</label>
+                        <input type="text" id="blogTitle" class="glass-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Category *</label>
+                        <select id="blogCategory" class="glass-input" required>
+                            <option value="">Select Category</option>
+                            <option value="Study Abroad">Study Abroad</option>
+                            <option value="Visa Tips">Visa Tips</option>
+                            <option value="Scholarships">Scholarships</option>
+                            <option value="Immigration News">Immigration News</option>
+                            <option value="Student Stories">Student Stories</option>
+                            <option value="Travel Guides">Travel Guides</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Featured Image</label>
+                        <div class="glass-upload" id="imageUploadArea">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Click or drag image to upload</p>
+                            <input type="file" id="blogImage" accept="image/*" style="display: none;">
+                        </div>
+                        <div id="imagePreview" style="display: none; margin-top: 15px;">
+                            <img id="previewImg" style="max-width: 200px; border-radius: 8px;">
+                            <button type="button" id="removeImage" class="glass-btn-small">Remove</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Excerpt (Short Description)</label>
+                        <textarea id="blogExcerpt" class="glass-input" rows="3" placeholder="Brief summary of the post..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Content *</label>
+                        <textarea id="blogContent" class="glass-input" rows="15"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="blogStatus" class="glass-input">
+                            <option value="draft">Draft</option>
+                            <option value="published">Publish Now</option>
+                            <option value="scheduled">Schedule</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" id="scheduleDateGroup" style="display: none;">
+                        <label>Schedule Date</label>
+                        <input type="datetime-local" id="scheduleDate" class="glass-input">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="glass-btn" id="cancelPostBtn">Cancel</button>
+                <button class="glass-btn glass-btn-primary" id="savePostBtn">Save Post</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.tiny.cloud/1/YOUR_API_KEY/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script src="../config/firebase-config.js"></script>
+    <script src="js/admin-auth.js"></script>
+    <script src="js/admin-applications.js"></script>
+    <script src="js/admin-documents.js"></script>
+    <script src="js/admin-users.js"></script>
+    <script src="js/admin-blogs.js"></script>
+    <script src="js/admin-notifications.js"></script>
+    <script src="js/admin-analytics.js"></script>
+    <script src="js/admin-main.js"></script>
+</body>
+</html>
