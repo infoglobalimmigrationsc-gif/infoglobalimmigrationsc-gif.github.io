@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Global Immigration SC</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/glass-system.css">
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .login-container {
+            max-width: 450px;
+            width: 100%;
+        }
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .login-header img {
+            max-width: 120px;
+            margin-bottom: 20px;
+        }
+        .login-header h2 {
+            color: var(--gray-dark);
+            margin-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--gray-dark);
+        }
+        .error-message {
+            background: rgba(227, 6, 19, 0.1);
+            color: var(--primary-red);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            text-align: center;
+        }
+        .login-footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+    </style>
+</head>
+<body>
+    <div class="glass-card login-container" style="padding: 40px;">
+        <div class="login-header">
+            <img src="../assets/images/logo-small.png" alt="Logo" onerror="this.src='https://placehold.co/120x120/E30613/white?text=GISC'">
+            <h2>Admin Login</h2>
+            <p>Enter your credentials to access the dashboard</p>
+        </div>
+        
+        <div id="errorMessage" class="error-message">
+            <i class="fas fa-exclamation-circle"></i> Invalid email or password
+        </div>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label><i class="fas fa-envelope"></i> Email Address</label>
+                <input type="email" id="email" class="glass-input" placeholder="admin@globalimmigrationsc.com" required style="width: 100%;">
+            </div>
+            
+            <div class="form-group">
+                <label><i class="fas fa-lock"></i> Password</label>
+                <input type="password" id="password" class="glass-input" placeholder="••••••••" required style="width: 100%;">
+            </div>
+            
+            <button type="submit" class="glass-btn glass-btn-primary" style="width: 100%; padding: 14px;">
+                <i class="fas fa-sign-in-alt"></i> Login to Dashboard
+            </button>
+        </form>
+        
+        <div class="login-footer">
+            <p>Secure Admin Access Only</p>
+            <p><small>© 2024 Global Immigration SC</small></p>
+        </div>
+    </div>
+    
+    <script>
+        const API_URL = 'https://gisc-app-production.up.railway.app/api';
+        
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('errorMessage');
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            
+            errorDiv.style.display = 'none';
+            
+            // Show loading
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+            submitBtn.disabled = true;
+            
+            try {
+                const response = await fetch(`${API_URL}/admin/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    localStorage.setItem('adminToken', data.token);
+                    localStorage.setItem('adminData', JSON.stringify(data.admin));
+                    window.location.href = 'dashboard.html';
+                } else {
+                    errorDiv.style.display = 'block';
+                    errorDiv.textContent = data.message || 'Invalid credentials';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                errorDiv.style.display = 'block';
+                errorDiv.textContent = 'Connection error. Please try again.';
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
