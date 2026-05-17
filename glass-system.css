@@ -375,3 +375,59 @@ body {
 .glass-border-red {
     border: 1px solid rgba(227, 6, 19, 0.3);
 }
+
+/* ========================================
+   ADD THIS TO YOUR EXISTING glass-system.css
+   Ensures ALL existing elements get glass effect
+   ======================================== */
+
+/* Apply glass to ALL existing containers */
+.container, .section, .about-content, .services-grid, 
+.destinations, .process-steps, .testimonials-container,
+.team-grid, .contact-container, .footer-container {
+    position: relative;
+    z-index: 1;
+}
+
+/* Make ALL cards glass by default */
+.service-card, .testimonial, .blog-card, .fb-post,
+.portal-option, .team-member, .partner-logo,
+.contact-form, .fraud-report-form, .status-tracker,
+.country-flag, .step, .newsletter-content {
+    background: rgba(255, 255, 255, 0.12) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Make ALL forms glass */
+form, .form-group, .auth-modal-content, .modal-content {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+/* Make ALL inputs glass */
+input, select, textarea, .form-control {
+    background: rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(5px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Fix for dashboard sections */
+.dashboard-sidebar, .dashboard-content {
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(12px) !important;
+}
+
+/* Fix for stats section text contrast */
+.stats .stat-number, .stats .stat-label {
+    color: white !important;
+}
+
+/* Fix for admin dashboard stats */
+.admin-dashboard .stat-number,
+.admin-dashboard .stat-label {
+    color: var(--gray-dark) !important;
+}
