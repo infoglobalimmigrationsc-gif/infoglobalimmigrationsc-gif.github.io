@@ -3455,9 +3455,9 @@
             </div>
         </section>
 
-        
 
-         <!-- Destinations Section - Enhanced Professional Version -->
+        
+        <!-- Destinations Section - Enhanced Professional Version with Real Flags -->
 <section id="destinations" class="section destinations">
     <div class="container">
         <div class="section-title">
@@ -3465,11 +3465,15 @@
             <p>Your gateway to <strong>70+ countries</strong> across the globe. We provide comprehensive immigration, study abroad, and travel services for international students, professionals, and travelers.</p>
         </div>
 
-                <!-- Country Search & Filter Bar - ADD THIS HERE -->
-        <div class="country-search-bar" style="margin-bottom: 40px;">
-            <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
-                <input type="text" id="countrySearch" placeholder="🔍 Search country by name..." style="padding: 14px 24px; width: 320px; border: 2px solid #eee; border-radius: 50px; font-size: 1rem; transition: all 0.3s ease;">
-                <select id="continentFilter" style="padding: 14px 24px; border-radius: 50px; border: 2px solid #eee; background: white; font-size: 1rem; cursor: pointer;">
+        <!-- Advanced Search & Filter Bar -->
+        <div class="country-search-bar glass-card" style="margin-bottom: 40px; padding: 25px;">
+            <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; align-items: center;">
+                <div style="flex: 1; min-width: 250px; position: relative;">
+                    <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--primary-red);"></i>
+                    <input type="text" id="countrySearch" placeholder="Search country by name..." 
+                           style="width: 100%; padding: 14px 24px 14px 45px; border: 2px solid rgba(255,255,255,0.2); border-radius: 50px; font-size: 1rem; background: rgba(255,255,255,0.9); backdrop-filter: blur(5px); transition: all 0.3s ease;">
+                </div>
+                <select id="continentFilter" class="glass-input" style="min-width: 160px; cursor: pointer;">
                     <option value="all">🌍 All Continents</option>
                     <option value="north-america">🌎 North America</option>
                     <option value="europe">🇪🇺 Europe</option>
@@ -3478,7 +3482,7 @@
                     <option value="africa">🌍 Africa</option>
                     <option value="south-america">🌎 South America</option>
                 </select>
-                <select id="visaTypeFilter" style="padding: 14px 24px; border-radius: 50px; border: 2px solid #eee; background: white; font-size: 1rem; cursor: pointer;">
+                <select id="visaTypeFilter" class="glass-input" style="min-width: 160px; cursor: pointer;">
                     <option value="all">📋 All Visa Types</option>
                     <option value="student">🎓 Student Visa</option>
                     <option value="work">💼 Work Visa</option>
@@ -3486,279 +3490,244 @@
                     <option value="business">🤝 Business Visa</option>
                     <option value="residence">🏠 Residence Permit</option>
                 </select>
-                <button id="resetFilters" style="padding: 14px 24px; border-radius: 50px; border: 2px solid var(--primary-red); background: white; color: var(--primary-red); cursor: pointer; font-weight: 600;">
-                    🔄 Reset Filters
+                <button id="resetFilters" class="glass-btn glass-btn-outline" style="padding: 14px 28px;">
+                    <i class="fas fa-sync-alt"></i> Reset Filters
                 </button>
+            </div>
+            <div id="filterStats" style="text-align: center; margin-top: 15px; font-size: 0.85rem; color: var(--gray);">
+                <span id="visibleCountriesCount">70</span> countries displayed
             </div>
         </div>
         
         <!-- Quick Stats -->
-        <div style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; margin-bottom: 40px;">
-            <div style="text-align: center;">
-                <div style="font-size: 2rem; font-weight: bold; color: var(--primary-red);">70+</div>
-                <div style="color: var(--medium-gray);">Countries</div>
+        <div class="stats-grid" style="display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; margin-bottom: 50px;">
+            <div class="glass-stats" style="padding: 20px 30px; text-align: center;">
+                <div class="stat-number" style="font-size: 2.5rem; font-weight: bold; color: var(--primary-red);">70+</div>
+                <div class="stat-label" style="color: var(--dark-gray);">Countries</div>
             </div>
-            <div style="text-align: center;">
-                <div style="font-size: 2rem; font-weight: bold; color: var(--primary-red);">6</div>
-                <div style="color: var(--medium-gray);">Continents</div>
+            <div class="glass-stats" style="padding: 20px 30px; text-align: center;">
+                <div class="stat-number" style="font-size: 2.5rem; font-weight: bold; color: var(--primary-red);">6</div>
+                <div class="stat-label" style="color: var(--dark-gray);">Continents</div>
             </div>
-            <div style="text-align: center;">
-                <div style="font-size: 2rem; font-weight: bold; color: var(--primary-red);">500+</div>
-                <div style="color: var(--medium-gray);">Partner Universities</div>
+            <div class="glass-stats" style="padding: 20px 30px; text-align: center;">
+                <div class="stat-number" style="font-size: 2.5rem; font-weight: bold; color: var(--primary-red);">500+</div>
+                <div class="stat-label" style="color: var(--dark-gray);">Partner Universities</div>
+            </div>
+            <div class="glass-stats" style="padding: 20px 30px; text-align: center;">
+                <div class="stat-number" style="font-size: 2.5rem; font-weight: bold; color: var(--primary-red);">98%</div>
+                <div class="stat-label" style="color: var(--dark-gray);">Success Rate</div>
             </div>
         </div>
         
         <!-- Destinations by Continent -->
         <div class="destinations-container">
             
-                        <!-- North America -->
+            <!-- North America -->
             <div class="continent-group" data-continent="north-america" style="margin-bottom: 50px;">
                 <h3 style="color: var(--primary-red); margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
                     <i class="fas fa-globe-americas"></i> North America
+                    <span style="font-size: 0.8rem; background: rgba(227,6,19,0.1); padding: 2px 8px; border-radius: 20px;">6 Countries</span>
                 </h3>
                 <div class="flags-container" style="display: flex; flex-wrap: wrap; gap: 20px;">
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇺🇸</div>
+                    <!-- USA -->
+                    <div class="country-flag glass-country" data-country="USA" data-continent="north-america" data-visa-types="student,work,tourist,business,residence">
+                        <img src="https://flagcdn.com/w80/us.png" alt="USA Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">USA</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Student/Work/Tourist</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇨🇦</div>
+                    <!-- Canada -->
+                    <div class="country-flag glass-country" data-country="Canada" data-continent="north-america" data-visa-types="student,work,tourist,residence">
+                        <img src="https://flagcdn.com/w80/ca.png" alt="Canada Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Canada</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Study/Work/PR</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇲🇽</div>
+                    <!-- Mexico -->
+                    <div class="country-flag glass-country" data-country="Mexico" data-continent="north-america" data-visa-types="student,work,tourist">
+                        <img src="https://flagcdn.com/w80/mx.png" alt="Mexico Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Mexico</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Open</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇨🇷</div>
+                    <!-- Costa Rica -->
+                    <div class="country-flag glass-country" data-country="Costa Rica" data-continent="north-america" data-visa-types="student,tourist,residence">
+                        <img src="https://flagcdn.com/w80/cr.png" alt="Costa Rica Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Costa Rica</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Open</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇵🇦</div>
+                    <!-- Panama -->
+                    <div class="country-flag glass-country" data-country="Panama" data-continent="north-america" data-visa-types="student,work,tourist">
+                        <img src="https://flagcdn.com/w80/pa.png" alt="Panama Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Panama</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Open</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇯🇲</div>
+                    <!-- Jamaica -->
+                    <div class="country-flag glass-country" data-country="Jamaica" data-continent="north-america" data-visa-types="student,work,tourist">
+                        <img src="https://flagcdn.com/w80/jm.png" alt="Jamaica Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Jamaica</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Open</div>
                     </div>
                 </div>
             </div>
             
-                        <!-- Europe -->
+            <!-- Europe -->
             <div class="continent-group" data-continent="europe" style="margin-bottom: 50px;">
                 <h3 style="color: var(--primary-red); margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
                     <i class="fas fa-map-marked-alt"></i> Europe (Schengen & Non-Schengen)
+                    <span style="font-size: 0.8rem; background: rgba(227,6,19,0.1); padding: 2px 8px; border-radius: 20px;">30+ Countries</span>
                 </h3>
                 <div class="flags-container" style="display: flex; flex-wrap: wrap; gap: 20px;">
-                    <!-- Western Europe -->
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇬🇧</div>
-                        <div class="country-name" style="font-weight: 600;">UK</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                    <!-- UK -->
+                    <div class="country-flag glass-country" data-country="UK" data-continent="europe" data-visa-types="student,work,tourist,business,residence">
+                        <img src="https://flagcdn.com/w80/gb.png" alt="UK Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div class="country-name" style="font-weight: 600;">United Kingdom</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Student/Work Visa</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇫🇷</div>
-                        <div class="country-name" style="font-weight: 600;">France</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇩🇪</div>
+                    <!-- Germany -->
+                    <div class="country-flag glass-country" data-country="Germany" data-continent="europe" data-visa-types="student,work,tourist,residence">
+                        <img src="https://flagcdn.com/w80/de.png" alt="Germany Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Germany</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Free Tuition</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇮🇹</div>
+                    <!-- France -->
+                    <div class="country-flag glass-country" data-country="France" data-continent="europe" data-visa-types="student,work,tourist,business">
+                        <img src="https://flagcdn.com/w80/fr.png" alt="France Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div class="country-name" style="font-weight: 600;">France</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Open</div>
+                    </div>
+                    <!-- Italy -->
+                    <div class="country-flag glass-country" data-country="Italy" data-continent="europe" data-visa-types="student,work,tourist">
+                        <img src="https://flagcdn.com/w80/it.png" alt="Italy Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Italy</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Open</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇪🇸</div>
+                    <!-- Spain -->
+                    <div class="country-flag glass-country" data-country="Spain" data-continent="europe" data-visa-types="student,work,tourist,residence">
+                        <img src="https://flagcdn.com/w80/es.png" alt="Spain Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Spain</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Open</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇵🇹</div>
+                    <!-- Portugal -->
+                    <div class="country-flag glass-country" data-country="Portugal" data-continent="europe" data-visa-types="student,work,tourist,residence">
+                        <img src="https://flagcdn.com/w80/pt.png" alt="Portugal Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Portugal</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ D7 Visa Available</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇳🇱</div>
+                    <!-- Netherlands -->
+                    <div class="country-flag glass-country" data-country="Netherlands" data-continent="europe" data-visa-types="student,work,tourist">
+                        <img src="https://flagcdn.com/w80/nl.png" alt="Netherlands Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Netherlands</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Open</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇧🇪</div>
-                        <div class="country-name" style="font-weight: 600;">Belgium</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇨🇭</div>
+                    <!-- Switzerland -->
+                    <div class="country-flag glass-country" data-country="Switzerland" data-continent="europe" data-visa-types="student,work,tourist,residence">
+                        <img src="https://flagcdn.com/w80/ch.png" alt="Switzerland Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Switzerland</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ High Salary Jobs</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇦🇹</div>
-                        <div class="country-name" style="font-weight: 600;">Austria</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    
-                    <!-- Northern Europe -->
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇸🇪</div>
+                    <!-- Sweden -->
+                    <div class="country-flag glass-country" data-country="Sweden" data-continent="europe" data-visa-types="student,work,tourist">
+                        <img src="https://flagcdn.com/w80/se.png" alt="Sweden Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Sweden</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Open</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇳🇴</div>
+                    <!-- Norway -->
+                    <div class="country-flag glass-country" data-country="Norway" data-continent="europe" data-visa-types="student,work,tourist">
+                        <img src="https://flagcdn.com/w80/no.png" alt="Norway Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Norway</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Free Education</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇩🇰</div>
+                    <!-- Denmark -->
+                    <div class="country-flag glass-country" data-country="Denmark" data-continent="europe" data-visa-types="student,work,tourist">
+                        <img src="https://flagcdn.com/w80/dk.png" alt="Denmark Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Denmark</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Open</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇫🇮</div>
+                    <!-- Finland -->
+                    <div class="country-flag glass-country" data-country="Finland" data-continent="europe" data-visa-types="student,work,tourist">
+                        <img src="https://flagcdn.com/w80/fi.png" alt="Finland Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Finland</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Open</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇮🇸</div>
-                        <div class="country-name" style="font-weight: 600;">Iceland</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇮🇪</div>
+                    <!-- Ireland -->
+                    <div class="country-flag glass-country" data-country="Ireland" data-continent="europe" data-visa-types="student,work,tourist,residence">
+                        <img src="https://flagcdn.com/w80/ie.png" alt="Ireland Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Ireland</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Post-Study Work Visa</div>
                     </div>
-                    
-                    <!-- Eastern Europe -->
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇵🇱</div>
+                    <!-- Poland -->
+                    <div class="country-flag glass-country" data-country="Poland" data-continent="europe" data-visa-types="student,work,tourist">
+                        <img src="https://flagcdn.com/w80/pl.png" alt="Poland Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Poland</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Open</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇨🇿</div>
+                    <!-- Czech Republic -->
+                    <div class="country-flag glass-country" data-country="Czech Republic" data-continent="europe" data-visa-types="student,work,tourist">
+                        <img src="https://flagcdn.com/w80/cz.png" alt="Czech Republic Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Czech Republic</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Open</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇭🇺</div>
+                    <!-- Hungary -->
+                    <div class="country-flag glass-country" data-country="Hungary" data-continent="europe" data-visa-types="student,work,tourist">
+                        <img src="https://flagcdn.com/w80/hu.png" alt="Hungary Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Hungary</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Stipendium Hungaricum</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇬🇷</div>
+                    <!-- Greece -->
+                    <div class="country-flag glass-country" data-country="Greece" data-continent="europe" data-visa-types="student,work,tourist">
+                        <img src="https://flagcdn.com/w80/gr.png" alt="Greece Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Greece</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Open</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇹🇷</div>
+                    <!-- Turkey -->
+                    <div class="country-flag glass-country" data-country="Turkey" data-continent="europe" data-visa-types="student,work,tourist">
+                        <img src="https://flagcdn.com/w80/tr.png" alt="Turkey Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Turkey</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇷🇴</div>
-                        <div class="country-name" style="font-weight: 600;">Romania</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇧🇬</div>
-                        <div class="country-name" style="font-weight: 600;">Bulgaria</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇱🇹</div>
-                        <div class="country-name" style="font-weight: 600;">Lithuania</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇱🇻</div>
-                        <div class="country-name" style="font-weight: 600;">Latvia</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇪🇪</div>
-                        <div class="country-name" style="font-weight: 600;">Estonia</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Open</div>
                     </div>
                 </div>
             </div>
             
-                        <!-- Asia Pacific -->
+            <!-- Asia Pacific -->
             <div class="continent-group" data-continent="asia-pacific" style="margin-bottom: 50px;">
                 <h3 style="color: var(--primary-red); margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
                     <i class="fas fa-globe-asia"></i> Asia Pacific
+                    <span style="font-size: 0.8rem; background: rgba(227,6,19,0.1); padding: 2px 8px; border-radius: 20px;">12 Countries</span>
                 </h3>
                 <div class="flags-container" style="display: flex; flex-wrap: wrap; gap: 20px;">
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇦🇺</div>
+                    <!-- Australia -->
+                    <div class="country-flag glass-country" data-country="Australia" data-continent="asia-pacific" data-visa-types="student,work,tourist,residence">
+                        <img src="https://flagcdn.com/w80/au.png" alt="Australia Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Australia</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ PR Pathway Available</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇳🇿</div>
+                    <!-- New Zealand -->
+                    <div class="country-flag glass-country" data-country="New Zealand" data-continent="asia-pacific" data-visa-types="student,work,tourist,residence">
+                        <img src="https://flagcdn.com/w80/nz.png" alt="New Zealand Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">New Zealand</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Open</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇸🇬</div>
+                    <!-- Singapore -->
+                    <div class="country-flag glass-country" data-country="Singapore" data-continent="asia-pacific" data-visa-types="student,work,tourist">
+                        <img src="https://flagcdn.com/w80/sg.png" alt="Singapore Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Singapore</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Top Universities</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇲🇾</div>
+                    <!-- Malaysia -->
+                    <div class="country-flag glass-country" data-country="Malaysia" data-continent="asia-pacific" data-visa-types="student,work,tourist">
+                        <img src="https://flagcdn.com/w80/my.png" alt="Malaysia Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Malaysia</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Affordable</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇹🇭</div>
-                        <div class="country-name" style="font-weight: 600;">Thailand</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇻🇳</div>
-                        <div class="country-name" style="font-weight: 600;">Vietnam</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇯🇵</div>
+                    <!-- Japan -->
+                    <div class="country-flag glass-country" data-country="Japan" data-continent="asia-pacific" data-visa-types="student,work,tourist">
+                        <img src="https://flagcdn.com/w80/jp.png" alt="Japan Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Japan</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Open</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇰🇷</div>
+                    <!-- South Korea -->
+                    <div class="country-flag glass-country" data-country="South Korea" data-continent="asia-pacific" data-visa-types="student,work,tourist">
+                        <img src="https://flagcdn.com/w80/kr.png" alt="South Korea Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">South Korea</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇨🇳</div>
-                        <div class="country-name" style="font-weight: 600;">China</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇮🇳</div>
-                        <div class="country-name" style="font-weight: 600;">India</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇮🇩</div>
-                        <div class="country-name" style="font-weight: 600;">Indonesia</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇵🇭</div>
-                        <div class="country-name" style="font-weight: 600;">Philippines</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Scholarships Available</div>
                     </div>
                 </div>
             </div>
@@ -3767,147 +3736,94 @@
             <div class="continent-group" data-continent="middle-east" style="margin-bottom: 50px;">
                 <h3 style="color: var(--primary-red); margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
                     <i class="fas fa-flag"></i> Middle East
+                    <span style="font-size: 0.8rem; background: rgba(227,6,19,0.1); padding: 2px 8px; border-radius: 20px;">7 Countries</span>
                 </h3>
                 <div class="flags-container" style="display: flex; flex-wrap: wrap; gap: 20px;">
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇦🇪</div>
-                        <div class="country-name" style="font-weight: 600;">UAE</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                    <!-- UAE -->
+                    <div class="country-flag glass-country" data-country="UAE" data-continent="middle-east" data-visa-types="work,tourist,business,residence">
+                        <img src="https://flagcdn.com/w80/ae.png" alt="UAE Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div class="country-name" style="font-weight: 600;">United Arab Emirates</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Tax-Free Income</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇶🇦</div>
+                    <!-- Qatar -->
+                    <div class="country-flag glass-country" data-country="Qatar" data-continent="middle-east" data-visa-types="work,tourist,business">
+                        <img src="https://flagcdn.com/w80/qa.png" alt="Qatar Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Qatar</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Open</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇸🇦</div>
+                    <!-- Saudi Arabia -->
+                    <div class="country-flag glass-country" data-country="Saudi Arabia" data-continent="middle-east" data-visa-types="work,tourist,business">
+                        <img src="https://flagcdn.com/w80/sa.png" alt="Saudi Arabia Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Saudi Arabia</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇰🇼</div>
-                        <div class="country-name" style="font-weight: 600;">Kuwait</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇴🇲</div>
-                        <div class="country-name" style="font-weight: 600;">Oman</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇧🇭</div>
-                        <div class="country-name" style="font-weight: 600;">Bahrain</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇯🇴</div>
-                        <div class="country-name" style="font-weight: 600;">Jordan</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Open</div>
                     </div>
                 </div>
             </div>
             
-             <!-- Africa -->
+            <!-- Africa -->
             <div class="continent-group" data-continent="africa" style="margin-bottom: 50px;">
                 <h3 style="color: var(--primary-red); margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
                     <i class="fas fa-africa"></i> Africa
+                    <span style="font-size: 0.8rem; background: rgba(227,6,19,0.1); padding: 2px 8px; border-radius: 20px;">9 Countries</span>
                 </h3>
                 <div class="flags-container" style="display: flex; flex-wrap: wrap; gap: 20px;">
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇿🇦</div>
+                    <!-- South Africa -->
+                    <div class="country-flag glass-country" data-country="South Africa" data-continent="africa" data-visa-types="student,work,tourist">
+                        <img src="https://flagcdn.com/w80/za.png" alt="South Africa Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">South Africa</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Top African Universities</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇲🇦</div>
+                    <!-- Morocco -->
+                    <div class="country-flag glass-country" data-country="Morocco" data-continent="africa" data-visa-types="student,work,tourist">
+                        <img src="https://flagcdn.com/w80/ma.png" alt="Morocco Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Morocco</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Open</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇪🇬</div>
+                    <!-- Egypt -->
+                    <div class="country-flag glass-country" data-country="Egypt" data-continent="africa" data-visa-types="student,work,tourist">
+                        <img src="https://flagcdn.com/w80/eg.png" alt="Egypt Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Egypt</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Open</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇰🇪</div>
-                        <div class="country-name" style="font-weight: 600;">Kenya</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇳🇬</div>
-                        <div class="country-name" style="font-weight: 600;">Nigeria</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇬🇭</div>
+                    <!-- Ghana -->
+                    <div class="country-flag glass-country" data-country="Ghana" data-continent="africa" data-visa-types="student,work,tourist">
+                        <img src="https://flagcdn.com/w80/gh.png" alt="Ghana Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Ghana</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇷🇼</div>
-                        <div class="country-name" style="font-weight: 600;">Rwanda</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇲🇺</div>
-                        <div class="country-name" style="font-weight: 600;">Mauritius</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇸🇨</div>
-                        <div class="country-name" style="font-weight: 600;">Seychelles</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Open</div>
                     </div>
                 </div>
             </div>
             
-                        <!-- South America -->
+            <!-- South America -->
             <div class="continent-group" data-continent="south-america" style="margin-bottom: 30px;">
                 <h3 style="color: var(--primary-red); margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
                     <i class="fas fa-globe-americas"></i> South America
+                    <span style="font-size: 0.8rem; background: rgba(227,6,19,0.1); padding: 2px 8px; border-radius: 20px;">6 Countries</span>
                 </h3>
                 <div class="flags-container" style="display: flex; flex-wrap: wrap; gap: 20px;">
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇧🇷</div>
+                    <!-- Brazil -->
+                    <div class="country-flag glass-country" data-country="Brazil" data-continent="south-america" data-visa-types="student,work,tourist">
+                        <img src="https://flagcdn.com/w80/br.png" alt="Brazil Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Brazil</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Open</div>
                     </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇦🇷</div>
+                    <!-- Argentina -->
+                    <div class="country-flag glass-country" data-country="Argentina" data-continent="south-america" data-visa-types="student,work,tourist">
+                        <img src="https://flagcdn.com/w80/ar.png" alt="Argentina Flag" style="width: 60px; height: 40px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <div class="country-name" style="font-weight: 600;">Argentina</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇨🇱</div>
-                        <div class="country-name" style="font-weight: 600;">Chile</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇨🇴</div>
-                        <div class="country-name" style="font-weight: 600;">Colombia</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇵🇪</div>
-                        <div class="country-name" style="font-weight: 600;">Peru</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
-                    </div>
-                    <div class="country-flag" style="text-align: center; width: 100px;">
-                        <div class="flag-icon" style="font-size: 3rem;">🇺🇾</div>
-                        <div class="country-name" style="font-weight: 600;">Uruguay</div>
-                        <div style="font-size: 0.75rem; color: #4CAF50;">✓ Open</div>
+                        <div style="font-size: 0.7rem; color: #4CAF50;">✓ Free Public Universities</div>
                     </div>
                 </div>
             </div>
         </div>
 
-                <!-- Visa Processing Comparison Table - ADD THIS HERE -->
+        <!-- Visa Processing Comparison Table -->
         <div class="visa-comparison-table" style="margin: 50px 0;">
             <h3 style="text-align: center; margin-bottom: 30px; color: var(--dark-gray);">
                 <i class="fas fa-chart-line"></i> Visa Processing Overview
             </h3>
             <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.08);">
+                <table class="glass-table" style="width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr style="background: linear-gradient(135deg, var(--primary-red) 0%, #b30000 100%); color: white;">
                             <th style="padding: 15px; text-align: left;">🌍 Country</th>
@@ -3918,10 +3834,7 @@
                         </tr>
                     </thead>
                     <tbody id="visaComparisonTable">
-                        <!-- Data will be populated by JavaScript -->
-                        <tr style="border-bottom: 1px solid #eee;">
-                            <td colspan="5" style="padding: 40px; text-align: center;">Loading visa information...</td>
-                        </tr>
+                        <!-- Data populated by JavaScript -->
                     </tbody>
                 </table>
             </div>
@@ -3930,44 +3843,10 @@
             </p>
         </div>
         
-        <!-- Additional Information: Visa Types -->
-        <div style="margin-top: 50px; padding: 25px; background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%); border-radius: 12px;">
-            <h3 style="color: var(--primary-red); margin-bottom: 20px; text-align: center;">
-                <i class="fas fa-passport"></i> Visa Services Available
-            </h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; text-align: center;">
-                <div>
-                    <i class="fas fa-graduation-cap" style="color: var(--primary-red); font-size: 1.5rem;"></i>
-                    <p><strong>Student Visa</strong></p>
-                    <p style="font-size: 0.85rem; color: #666;">F-1, Tier 4, Study Permit</p>
-                </div>
-                <div>
-                    <i class="fas fa-briefcase" style="color: var(--primary-red); font-size: 1.5rem;"></i>
-                    <p><strong>Work Visa</strong></p>
-                    <p style="font-size: 0.85rem; color: #666;">H-1B, Skilled Worker, Work Permit</p>
-                </div>
-                <div>
-                    <i class="fas fa-plane" style="color: var(--primary-red); font-size: 1.5rem;"></i>
-                    <p><strong>Tourist Visa</strong></p>
-                    <p style="font-size: 0.85rem; color: #666;">B-2, Schengen, Visitor Visa</p>
-                </div>
-                <div>
-                    <i class="fas fa-handshake" style="color: var(--primary-red); font-size: 1.5rem;"></i>
-                    <p><strong>Business Visa</strong></p>
-                    <p style="font-size: 0.85rem; color: #666;">B-1, Business Travel</p>
-                </div>
-                <div>
-                    <i class="fas fa-home" style="color: var(--primary-red); font-size: 1.5rem;"></i>
-                    <p><strong>Residence Permit</strong></p>
-                    <p style="font-size: 0.85rem; color: #666;">PR, Golden Visa, Permanent Residency</p>
-                </div>
-            </div>
-        </div>
-        
         <!-- Call to Action -->
         <div style="text-align: center; margin-top: 40px;">
             <p style="font-size: 1.1rem; margin-bottom: 20px;">Not sure which country is right for you?</p>
-            <a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary" style="padding: 14px 40px;">
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="glass-btn glass-btn-primary" style="padding: 14px 40px;">
                 <i class="fas fa-chalkboard-user"></i> Get Free Consultation
             </a>
             <p style="margin-top: 20px; font-size: 0.85rem; color: var(--medium-gray);">
@@ -3976,6 +3855,8 @@
         </div>
     </div>
 </section>
+         
+                
 
                 <!-- Application Status Tracker - ADD THIS HERE -->
         <section class="section" style="background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
@@ -10846,48 +10727,94 @@ async function submitToGoogleSheets(formData) {
             { name: "Uruguay", flag: "🇺🇾", continent: "south-america", visaTypes: ["student", "work", "tourist"], processingTime: "2-3 weeks", successRate: "87%", tuitionRange: "UYU 100,000-300,000/year", popularUniversities: "UDELAR, UCU" }
         ];
 
-        // Country Search & Filter Functionality
-        function initializeCountrySearch() {
-            const searchInput = document.getElementById('countrySearch');
-            const continentFilter = document.getElementById('continentFilter');
-            const visaFilter = document.getElementById('visaTypeFilter');
-            const resetBtn = document.getElementById('resetFilters');
+        // Enhanced Country Search & Filter Functionality
+function initializeCountrySearch() {
+    const searchInput = document.getElementById('countrySearch');
+    const continentFilter = document.getElementById('continentFilter');
+    const visaFilter = document.getElementById('visaTypeFilter');
+    const resetBtn = document.getElementById('resetFilters');
+    const visibleCountSpan = document.getElementById('visibleCountriesCount');
+    
+    if (!searchInput) return;
+    
+    function updateVisibleCount() {
+        const visible = document.querySelectorAll('.country-flag:not([style*="display: none"])').length;
+        if (visibleCountSpan) visibleCountSpan.textContent = visible;
+    }
+    
+    function filterCountries() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const continent = continentFilter.value;
+        const visaType = visaFilter.value;
+        
+        let visibleCount = 0;
+        
+        document.querySelectorAll('.country-flag').forEach(country => {
+            const countryName = country.getAttribute('data-country')?.toLowerCase() || '';
+            const countryContinent = country.closest('.continent-group')?.getAttribute('data-continent') || '';
+            const visaTypes = country.getAttribute('data-visa-types') || '';
             
-            if (!searchInput) return;
+            let show = true;
             
-            function filterCountries() {
-                const searchTerm = searchInput.value.toLowerCase();
-                const continent = continentFilter.value;
-                const visaType = visaFilter.value;
-                
-                document.querySelectorAll('.country-flag').forEach(country => {
-                    const countryName = country.querySelector('.country-name')?.innerText.toLowerCase() || '';
-                    const countryContainer = country.closest('.continent-group') || country.parentElement;
-                    let show = true;
-                    
-                    if (searchTerm && !countryName.includes(searchTerm)) show = false;
-                    if (continent !== 'all' && !country.closest(`[data-continent="${continent}"]`)) show = false;
-                    
-                    country.style.display = show ? 'block' : 'none';
-                });
-                
-                // Show/hide empty continent sections
-                document.querySelectorAll('.continent-group').forEach(group => {
-                    const visibleCountries = group.querySelectorAll('.country-flag[style*="display: block"], .country-flag:not([style*="display: none"])');
-                    group.style.display = visibleCountries.length > 0 ? 'block' : 'none';
-                });
+            // Search filter
+            if (searchTerm && !countryName.includes(searchTerm)) show = false;
+            
+            // Continent filter
+            if (continent !== 'all' && countryContinent !== continent) show = false;
+            
+            // Visa type filter
+            if (visaType !== 'all' && !visaTypes.includes(visaType)) show = false;
+            
+            country.style.display = show ? 'flex' : 'none';
+            if (show) visibleCount++;
+        });
+        
+        // Show/hide empty continent sections
+        document.querySelectorAll('.continent-group').forEach(group => {
+            const visibleCountries = group.querySelectorAll('.country-flag[style*="display: flex"], .country-flag:not([style*="display: none"])');
+            group.style.display = visibleCountries.length > 0 ? 'block' : 'none';
+        });
+        
+        if (visibleCountSpan) visibleCountSpan.textContent = visibleCount;
+        
+        // Show message if no results
+        const noResultsMsg = document.getElementById('noResultsMessage');
+        if (visibleCount === 0) {
+            if (!noResultsMsg) {
+                const msg = document.createElement('div');
+                msg.id = 'noResultsMessage';
+                msg.className = 'glass-card';
+                msg.style.cssText = 'text-align: center; padding: 40px; margin: 20px 0;';
+                msg.innerHTML = `
+                    <i class="fas fa-search" style="font-size: 3rem; color: var(--primary-red); margin-bottom: 15px;"></i>
+                    <h3>No countries found</h3>
+                    <p>Try adjusting your search filters</p>
+                    <button onclick="document.getElementById('resetFilters').click()" class="glass-btn glass-btn-primary" style="margin-top: 15px;">
+                        Reset Filters
+                    </button>
+                `;
+                document.querySelector('.destinations-container').after(msg);
             }
-            
-            searchInput.addEventListener('input', filterCountries);
-            continentFilter.addEventListener('change', filterCountries);
-            visaFilter.addEventListener('change', filterCountries);
-            if (resetBtn) resetBtn.addEventListener('click', () => {
-                searchInput.value = '';
-                continentFilter.value = 'all';
-                visaFilter.value = 'all';
-                filterCountries();
-            });
+        } else if (noResultsMsg) {
+            noResultsMsg.remove();
         }
+    }
+    
+    searchInput.addEventListener('input', filterCountries);
+    continentFilter.addEventListener('change', filterCountries);
+    visaFilter.addEventListener('change', filterCountries);
+    
+    if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            continentFilter.value = 'all';
+            visaFilter.value = 'all';
+            filterCountries();
+        });
+    }
+    
+    filterCountries();
+}
         
         // Country Modal Functionality
         function setupCountryModals() {
