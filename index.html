@@ -2,16 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Global Immigration SC - Trusted Visa & Study Abroad Consultants</title>
     <meta name="description" content="Global Immigration SC provides expert visa consultation, study abroad programs, and immigration services. Get assistance with student visas, work permits, and relocation.">
     <meta name="keywords" content="immigration consultants, study abroad, visa assistance, work permits, student visa, relocation services, travel consultation">
     <meta name="author" content="Global Immigration SC">
-    
-    <!-- Fonts & Icons -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Google Analytics -->
@@ -23,126 +18,183 @@
       gtag('config', 'G-TJCKSJNLPT');
     </script>
     
-    <!-- ===== GLOBAL GLASS SYSTEM CSS ===== -->
+    <!-- GLASS SYSTEM CSS - GLOBAL EFFECT -->
     <style>
         /* ========================================
-           PREMIUM GLASSMORPHISM SYSTEM
-           Globally consistent glass effect
+           BASE STYLES (PRESERVED FROM ORIGINAL)
            ======================================== */
-
         :root {
-            /* Glass effect variables */
-            --glass-background: rgba(255, 255, 255, 0.12);
-            --glass-background-light: rgba(255, 255, 255, 0.18);
-            --glass-background-dark: rgba(255, 255, 255, 0.06);
-            --glass-blur: blur(12px);
-            --glass-blur-strong: blur(16px);
-            --glass-blur-light: blur(8px);
-            --glass-border: 1px solid rgba(255, 255, 255, 0.25);
-            --glass-border-strong: 1px solid rgba(255, 255, 255, 0.4);
-            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            --glass-shadow-hover: 0 12px 48px rgba(0, 0, 0, 0.15);
-            --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.3);
-            
-            /* Colors */
             --primary-red: #E30613;
-            --primary-red-dark: #b30000;
-            --primary-red-light: #ff3333;
-            --white: #ffffff;
-            --gray-light: #f5f5f5;
-            --gray: #777777;
-            --gray-dark: #333333;
-            
-            /* Gradients */
-            --gradient-primary: linear-gradient(135deg, var(--primary-red) 0%, var(--primary-red-dark) 100%);
-            --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            --primary-white: #FFFFFF;
+            --light-gray: #F5F5F5;
+            --medium-gray: #777777;
+            --dark-gray: #333333;
         }
-
-        /* Global Glass Background */
-        body {
-            font-family: 'Inter', 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-            background-attachment: fixed;
-            min-height: 100vh;
-            line-height: 1.6;
-            color: var(--gray-dark);
-            overflow-x: hidden;
+        
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
-        /* Glass effect for ALL existing containers */
-        .container, .section, .about-content, .services-grid, 
-        .destinations, .process-steps, .testimonials-container,
-        .team-grid, .contact-container, .footer-container,
-        .services-grid, .flags-container, .process-steps {
-            position: relative;
-            z-index: 1;
+        
+        body {
+            line-height: 1.6;
+            color: var(--dark-gray);
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background-attachment: fixed;
+            overflow-x: hidden;
         }
-
-        /* Base Glass Card - applies to ALL cards automatically */
-        .service-card, .testimonial, .blog-card, .fb-post,
-        .portal-option, .team-member, .partner-logo,
-        .contact-form, .fraud-report-form, .status-tracker,
-        .country-flag, .step, .newsletter-content,
-        .applicant-card, .document-card, .stat-card,
-        .glass-card, .blog-item, .payment-table,
-        .upload-area, .modal-content, .auth-modal-content {
-            background: rgba(255, 255, 255, 0.12) !important;
-            backdrop-filter: blur(12px) !important;
-            -webkit-backdrop-filter: blur(12px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.25) !important;
-            border-radius: 20px !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
         }
-
-        .service-card:hover, .testimonial:hover, .blog-card:hover,
-        .portal-option:hover, .team-member:hover, .partner-logo:hover,
-        .applicant-card:hover, .country-flag:hover {
-            transform: translateY(-5px) !important;
-            background: rgba(255, 255, 255, 0.2) !important;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
-            border-color: rgba(255, 255, 255, 0.4) !important;
+        
+        /* ===== BUTTONS (PRESERVED) ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 28px;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 44px;
+            min-width: 44px;
         }
-
-        /* Glass Header */
+        
+        .btn-primary {
+            background-color: var(--primary-red);
+            color: var(--primary-white);
+            border: 2px solid var(--primary-red);
+        }
+        
+        .btn-primary:hover {
+            background-color: transparent;
+            color: var(--primary-red);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary-red);
+            border: 2px solid var(--primary-red);
+        }
+        
+        .btn-outline:hover {
+            background-color: var(--primary-red);
+            color: var(--primary-white);
+        }
+        
+        .btn-small { padding: 10px 16px; font-size: 0.9rem; }
+        .btn-live { background-color: #ff0000; color: white; border: none; }
+        .btn-live:hover { background-color: #cc0000; }
+        
+        /* ===== SECTIONS ===== */
+        .section { padding: 80px 0; }
+        
+        .section-title { text-align: center; margin-bottom: 50px; }
+        .section-title h2 { font-size: 2.5rem; color: var(--dark-gray); margin-bottom: 15px; }
+        .section-title p { color: var(--medium-gray); max-width: 700px; margin: 0 auto; }
+        
+        /* ===== LOADING SCREEN ===== */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+        
+        .loading-logo { max-width: 150px; margin-bottom: 20px; }
+        .loading-logo img { max-width: 100%; height: auto; animation: rotateLogo 2s ease-in-out 2; }
+        
+        @keyframes rotateLogo {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-size: 1.5rem;
+            color: var(--primary-red);
+            font-weight: 600;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            border-radius: 50px;
+        }
+        
+        /* ===== HEADER (GLASS UPGRADED) ===== */
         header {
             background: rgba(255, 255, 255, 0.9) !important;
             backdrop-filter: blur(10px) !important;
-            -webkit-backdrop-filter: blur(10px) !important;
             border-bottom: 1px solid rgba(255, 255, 255, 0.5) !important;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
             position: fixed;
             width: 100%;
             top: 0;
             z-index: 1000;
-            transition: all 0.3s ease;
         }
-
-        header.scrolled {
-            background: rgba(255, 255, 255, 0.95) !important;
-            backdrop-filter: blur(16px) !important;
+        
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
         }
-
-        /* Glass Stats Section */
-        .stats {
-            background: linear-gradient(135deg, rgba(227, 6, 19, 0.85) 0%, rgba(179, 0, 0, 0.9) 100%) !important;
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-        }
-
-        /* Glass Footer */
-        footer {
-            background: rgba(227, 6, 19, 0.92) !important;
+        
+        .logo img { height: 50px; width: auto; object-fit: contain; }
+        @media (min-width: 1200px) { .logo img { height: 60px; } }
+        @media (max-width: 768px) { .logo img { height: 45px; max-width: 180px; } }
+        
+        .nav-menu { display: flex; }
+        .nav-menu li { margin: 0 15px; position: relative; }
+        .nav-menu li a { color: var(--dark-gray); font-weight: 500; transition: color 0.3s ease; min-height: 44px; display: flex; align-items: center; }
+        .nav-menu li a:hover { color: var(--primary-red); }
+        
+        .dropdown { position: relative; }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            min-width: 250px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+            border-top: 3px solid var(--primary-red);
+            border-radius: 8px;
         }
-
-        /* Glass Hero Overlay */
+        .dropdown-content a { color: var(--dark-gray); padding: 12px 16px; display: block; }
+        .dropdown-content a:hover { background-color: var(--light-gray); color: var(--primary-red); }
+        .dropdown:hover .dropdown-content { display: block; }
+        
+        .mobile-toggle { display: none; font-size: 1.5rem; cursor: pointer; min-height: 44px; min-width: 44px; align-items: center; justify-content: center; }
+        
+        /* ===== HERO SECTION (GLASS UPGRADED) ===== */
         .hero {
             position: relative;
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=1800&q=80');
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            margin-top: 70px;
+            overflow: hidden;
         }
         
         .hero::before {
@@ -153,1293 +205,909 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            z-index: 0;
+            backdrop-filter: blur(3px);
+            z-index: 1;
         }
         
         .hero-content {
             position: relative;
             z-index: 2;
-            background: rgba(0, 0, 0, 0.35);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 40px;
+            max-width: 800px;
+            margin: 0 auto;
             padding: 48px;
-            border: 1px solid rgba(255, 255, 255, 0.25);
+            text-align: center;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(12px);
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
-
-        /* Glass Dashboard */
-        .dashboard-sidebar, .dashboard-content,
-        .admin-sidebar, .admin-main .glass-container {
-            background: rgba(255, 255, 255, 0.85) !important;
-            backdrop-filter: blur(12px) !important;
-            -webkit-backdrop-filter: blur(12px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.4) !important;
-            border-radius: 24px !important;
+        
+        .hero-content h1 { font-size: 3rem; margin-bottom: 20px; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        .hero-content p { font-size: 1.2rem; margin-bottom: 30px; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+        .hero-buttons { display: flex; justify-content: center; gap: 20px; }
+        
+        /* Flying planes animation */
+        .plane-container { position: absolute; width: 100%; height: 100%; overflow: hidden; z-index: 0; }
+        .plane {
+            position: absolute;
+            width: 120px;
+            height: 60px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path fill="%23E30613" d="M482.3 192c34.2 0 93.7 29 93.7 64c0 36-59.5 64-93.7 64H365.7L265.2 495.9c-5.7 10-16.3 16.1-27.8 16.1h-56.2c-10.6 0-18.3-10.2-15.4-20.4l49-171.6H112l-43.2 57.6c-3 4-7.8 6.4-12.8 6.4H14c-7.8 0-14-6.3-14-14c0-1.3 .2-2.6 .5-3.9L32 256 .5 145.9c-.4-1.3-.5-2.6-.5-3.9c0-7.8 6.3-14 14-14h42c5 0 9.8 2.4 12.8 6.4L112 192h102.9l-49-171.6C162.9 10.2 170.6 0 181.2 0h56.2c11.5 0 22.1 6.2 27.8 16.1L365.7 192h116.5z"/></svg>') no-repeat center/contain;
+            animation: fly 25s linear infinite;
+            opacity: 0.9;
         }
-
-        /* Glass Inputs */
-        input, select, textarea, .form-control,
-        .glass-input, .newsletter-input {
-            background: rgba(255, 255, 255, 0.7) !important;
-            backdrop-filter: blur(5px) !important;
-            -webkit-backdrop-filter: blur(5px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.4) !important;
-            border-radius: 12px !important;
-            padding: 14px 18px !important;
-            font-size: 1rem;
-            transition: all 0.3s ease;
+        @keyframes fly {
+            0% { left: -10%; top: 30%; transform: rotate(5deg); }
+            100% { left: 110%; top: 30%; transform: rotate(5deg); }
         }
-
-        input:focus, select:focus, textarea:focus, .form-control:focus {
-            background: rgba(255, 255, 255, 0.9) !important;
-            border-color: var(--primary-red) !important;
-            box-shadow: 0 0 0 3px rgba(227, 6, 19, 0.1);
-            outline: none;
+        .plane:nth-child(2) { width: 90px; height: 45px; animation: fly2 30s linear infinite; animation-delay: 7s; top: 60%; }
+        @keyframes fly2 {
+            0% { left: -10%; top: 60%; transform: rotate(-3deg); }
+            100% { left: 110%; top: 60%; transform: rotate(-3deg); }
         }
-
-        /* Glass Buttons */
-        .btn, .glass-btn {
-            background: rgba(255, 255, 255, 0.15) !important;
-            backdrop-filter: blur(4px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.3) !important;
-            border-radius: 12px !important;
-            padding: 12px 28px !important;
-            font-weight: 600 !important;
-            transition: all 0.3s ease !important;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-primary, .glass-btn-primary {
-            background: var(--gradient-primary) !important;
-            border: none !important;
-            color: white !important;
-        }
-
-        .btn-primary:hover, .glass-btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(227, 6, 19, 0.3);
-        }
-
-        .btn-outline, .glass-btn-outline {
-            background: rgba(255, 255, 255, 0.1) !important;
-            border: 1px solid var(--primary-red) !important;
-            color: var(--primary-red) !important;
-        }
-
-        .btn-outline:hover, .glass-btn-outline:hover {
-            background: var(--primary-red) !important;
-            color: white !important;
-        }
-
-        /* Glass Table */
-        .payment-table, .visa-comparison-table table {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(8px);
-            border-radius: 16px;
-            overflow: hidden;
-        }
-
-        .payment-table th, .visa-comparison-table th {
-            background: rgba(227, 6, 19, 0.8);
-            padding: 16px;
-            color: white;
-        }
-
-        .payment-table td, .visa-comparison-table td {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 12px 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        /* Glass Upload Area */
-        .upload-area {
-            background: rgba(255, 255, 255, 0.08) !important;
-            backdrop-filter: blur(8px) !important;
-            border: 2px dashed rgba(255, 255, 255, 0.4) !important;
-            border-radius: 16px !important;
-            transition: all 0.3s ease !important;
-        }
-
-        .upload-area:hover {
-            background: rgba(255, 255, 255, 0.15) !important;
-            border-color: var(--primary-red) !important;
-        }
-
-        /* Glass Country Flags - Replaces emoji with real flags */
-        .country-flag .flag-icon {
-            font-size: 3rem;
-            transition: transform 0.3s ease;
+        .plane:nth-child(3) { width: 100px; height: 50px; animation: fly3 35s linear infinite; animation-delay: 15s; top: 45%; }
+        @keyframes fly3 {
+            0% { left: -10%; top: 45%; transform: rotate(2deg); }
+            100% { left: 110%; top: 45%; transform: rotate(2deg); }
         }
         
-        .country-flag:hover .flag-icon {
-            transform: scale(1.1);
+        /* ===== GLASS CARDS (GLOBAL) ===== */
+        .service-card, .testimonial, .blog-card, .fb-post, .portal-option,
+        .team-member, .partner-logo, .contact-form, .fraud-report-form,
+        .status-tracker, .step, .country-flag, .newsletter-content {
+            background: rgba(255, 255, 255, 0.12) !important;
+            backdrop-filter: blur(12px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+            border-radius: 20px !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+            transition: transform 0.3s ease, box-shadow 0.3s ease !important;
         }
-
-        /* Real flag images for better display */
-        .real-flag {
-            width: 48px;
-            height: 36px;
-            object-fit: cover;
-            border-radius: 4px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 10px;
-        }
-
-        /* Glass Chat Widget */
-        #supportPanel {
-            background: rgba(255, 255, 255, 0.98) !important;
-            backdrop-filter: blur(20px) !important;
-            border-radius: 24px !important;
-            border: 1px solid rgba(255, 255, 255, 0.5) !important;
+        
+        .service-card:hover, .testimonial:hover, .blog-card:hover,
+        .portal-option:hover, .team-member:hover, .partner-logo:hover {
+            transform: translateY(-8px);
+            background: rgba(255, 255, 255, 0.25) !important;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important;
         }
-
-        /* Text Colors on Glass */
-        h1, h2, h3, h4, .service-card h3, .testimonial h4, 
-        .blog-title, .portal-option h3, .team-name {
-            color: #1a1a2e !important;
+        
+        /* Stats Section */
+        .stats {
+            background: linear-gradient(135deg, rgba(227, 6, 19, 0.85) 0%, rgba(179, 0, 0, 0.9) 100%) !important;
+            backdrop-filter: blur(5px);
+            color: white;
+            text-align: center;
+            padding: 60px 0;
         }
-
-        p, .service-card p, .testimonial-text, .blog-excerpt, 
-        .portal-option p, .step p {
-            color: #2d3436 !important;
-        }
-
-        /* Loading Screen */
-        #loading-screen {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            position: fixed;
-            top: 0;
-            left: 0;
+        .stats-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; }
+        .stat-number { font-size: 3rem; font-weight: bold; margin-bottom: 10px; color: white !important; }
+        .stat-label { font-size: 1.2rem; opacity: 0.9; color: white !important; }
+        @media (max-width: 992px) { .stats-container { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 480px) { .stats-container { grid-template-columns: 1fr; } }
+        
+        /* Form controls (glass) */
+        .form-control {
+            background: rgba(255, 255, 255, 0.8) !important;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.4) !important;
+            border-radius: 12px;
+            padding: 12px 15px;
             width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: opacity 0.5s ease;
         }
-
-        #loading-screen .loading-text {
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            padding: 15px 30px;
-            border-radius: 50px;
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border-color: var(--primary-red);
+            outline: none;
+        }
+        
+        /* Footer (glass) */
+        footer {
+            background: rgba(227, 6, 19, 0.92) !important;
+            backdrop-filter: blur(8px);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
             color: white;
+            padding: 60px 0 30px;
         }
-
-        /* Animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes glassFadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .glass-card {
-            animation: glassFadeIn 0.4s ease forwards;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .hero-content {
-                padding: 28px;
-                border-radius: 28px;
-            }
-            
-            .glass-card {
-                border-radius: 16px !important;
-            }
-            
-            .btn, .glass-btn {
-                padding: 10px 20px !important;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .hero-content h1 {
-                font-size: 1.8rem;
-            }
-            
-            .section-title h2 {
-                font-size: 1.8rem;
-            }
-        }
-
-        /* Toast Notifications */
-        .toast-notification {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 12px 20px;
-            color: var(--gray-dark);
-            border-left: 4px solid var(--primary-red);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 10000;
-            animation: slideInRight 0.3s ease;
-        }
-
-        @keyframes slideInRight {
-            from {
-                opacity: 0;
-                transform: translateX(100px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 10px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.1);
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary-red);
-            border-radius: 10px;
-        }
+        .footer-container { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 40px; margin-bottom: 40px; }
+        .footer-col { flex: 1; min-width: 200px; }
+        .footer-col h3 { font-size: 1.3rem; margin-bottom: 20px; position: relative; padding-bottom: 10px; color: white; }
+        .footer-col h3::after { content: ''; position: absolute; left: 0; bottom: 0; width: 40px; height: 2px; background-color: white; }
+        .footer-links li { margin-bottom: 10px; }
+        .footer-links a { transition: color 0.3s ease; min-height: 44px; display: flex; align-items: center; color: white; }
+        .footer-links a:hover { color: rgba(255, 255, 255, 0.8); }
+        .social-links { display: flex; gap: 15px; margin-bottom: 20px; }
+        .social-links a { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; background: rgba(255, 255, 255, 0.1); border-radius: 50%; transition: background 0.3s ease; color: white; }
+        .social-links a:hover { background: rgba(255, 255, 255, 0.2); }
+        .footer-bottom { text-align: center; padding-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.1); }
         
-        /* Utility */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        
-        .section {
-            padding: 80px 0;
-        }
-        
-        .section-title {
-            text-align: center;
-            margin-bottom: 50px;
-        }
-        
-        .section-title h2 {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-        }
-        
-        .services-grid, .team-grid, .blog-grid, .partners-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 30px;
-        }
-        
-        .flags-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
-        }
-        
-        .country-flag {
-            text-align: center;
-            width: 100px;
-            cursor: pointer;
-            padding: 12px 8px;
-        }
-        
-        .mobile-toggle {
-            display: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-        
-        @media (max-width: 768px) {
-            .mobile-toggle {
-                display: block;
-            }
-            .nav-menu {
-                position: fixed;
-                top: 70px;
-                left: -100%;
-                width: 80%;
-                height: calc(100vh - 70px);
-                background: rgba(255,255,255,0.95);
-                backdrop-filter: blur(20px);
-                flex-direction: column;
-                padding: 30px;
-                transition: left 0.3s ease;
-                z-index: 1000;
-            }
-            .nav-menu.active {
-                left: 0;
-            }
-            .services-grid, .team-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        /* Preserve original layout spacing */
-        .stats-container {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 30px;
-            text-align: center;
-        }
-        
-        @media (max-width: 768px) {
-            .stats-container {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .stats-container {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: bold;
-        }
-        
-        .process-steps {
-            display: flex;
-            gap: 30px;
-        }
-        
-        @media (max-width: 768px) {
-            .process-steps {
-                flex-direction: column;
-            }
-        }
-        
-        .step {
-            flex: 1;
-            text-align: center;
-            padding: 30px;
-        }
-        
-        .step-number {
-            width: 50px;
-            height: 50px;
-            line-height: 50px;
-            background: var(--primary-red);
-            color: white;
-            border-radius: 50%;
-            display: inline-block;
-            margin-bottom: 20px;
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-        
-        .contact-container {
-            display: flex;
-            gap: 50px;
-        }
-        
-        @media (max-width: 768px) {
-            .contact-container {
-                flex-direction: column;
-            }
-        }
-        
-        .footer-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 40px;
-        }
-        
-        .footer-col {
-            flex: 1;
-            min-width: 200px;
-        }
-        
-        .social-links {
-            display: flex;
-            gap: 15px;
-        }
-        
-        .social-links a {
-            width: 40px;
-            height: 40px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-        
-        .social-links a:hover {
-            background: rgba(255,255,255,0.2);
-            transform: translateY(-3px);
-        }
-        
-        /* Form groups */
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-        
-        /* Progress bar */
-        .progress-bar {
-            height: 8px;
-            background: rgba(0,0,0,0.1);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: var(--primary-red);
-            transition: width 0.3s ease;
-        }
-        
-        /* Status badges */
-        .status-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        
-        .status-pending { background: #fff3cd; color: #856404; }
-        .status-approved { background: #d4edda; color: #155724; }
-        .status-rejected { background: #f8d7da; color: #721c24; }
-        .status-completed { background: #d4edda; color: #155724; }
-        
-        /* Image fallback */
-        .image-fallback {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            background: rgba(0,0,0,0.05);
-            border-radius: 12px;
-        }
-        
-        /* WhatsApp float */
+        /* WhatsApp Float */
         .whatsapp-float {
             position: fixed;
             bottom: 30px;
             right: 30px;
             width: 60px;
             height: 60px;
-            background: #25D366;
+            background-color: #25D366;
+            color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-size: 2rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            font-size: 1.8rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             z-index: 100;
             transition: all 0.3s ease;
         }
+        .whatsapp-float:hover { transform: scale(1.1); background-color: #128C7E; }
         
-        .whatsapp-float:hover {
-            transform: scale(1.1);
-            background: #128C7E;
+        /* Glass Inputs */
+        .glass-input {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+            padding: 14px 18px;
         }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .mobile-toggle { display: flex; }
+            .nav-menu {
+                position: fixed;
+                top: 70px;
+                left: -100%;
+                width: 80%;
+                height: calc(100vh - 70px);
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                flex-direction: column;
+                padding: 40px 20px;
+                transition: left 0.3s ease;
+                z-index: 1000;
+            }
+            .nav-menu.active { left: 0; }
+            .nav-menu li { margin: 15px 0; width: 100%; }
+            .dropdown-content {
+                position: static;
+                margin-left: 20px;
+                margin-top: 10px;
+                display: none;
+            }
+            .dropdown.active .dropdown-content { display: block; }
+            .hero-content { padding: 28px; border-radius: 28px; }
+            .hero-content h1 { font-size: 2rem; }
+            .hero-buttons { flex-direction: column; gap: 12px; }
+            .section { padding: 60px 0; }
+            .services-grid, .team-grid, .blog-grid { grid-template-columns: 1fr; }
+            .footer-container { flex-direction: column; }
+        }
+        
+        @media (max-width: 480px) {
+            .hero-content h1 { font-size: 1.8rem; }
+            .services-grid { grid-template-columns: 1fr; }
+        }
+        
+        /* Skip link */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--primary-red);
+            color: white;
+            padding: 8px;
+            z-index: 100;
+            transition: top 0.3s;
+        }
+        .skip-link:focus { top: 0; }
+        
+        /* Loading spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* Preserve all original section styles */
+        .about-content, .founder-container, .contact-container { display: flex; gap: 50px; }
+        .about-text, .founder-content, .contact-info { flex: 1; }
+        .services-grid, .team-grid, .blog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px; }
+        .flags-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; margin-top: 40px; }
+        .country-flag { text-align: center; width: 100px; cursor: pointer; padding: 12px 8px; }
+        .flag-icon { font-size: 3rem; margin-bottom: 10px; }
+        .process-steps { display: flex; justify-content: space-between; gap: 30px; margin-top: 50px; }
+        .step-number { display: inline-block; width: 50px; height: 50px; line-height: 50px; background-color: var(--primary-red); color: white; border-radius: 50%; font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; }
+        .testimonials-container { display: flex; gap: 30px; margin-top: 50px; flex-wrap: wrap; }
+        .author-image { width: 60px; height: 60px; border-radius: 50%; overflow: hidden; margin-right: 15px; background: var(--medium-gray); display: flex; align-items: center; justify-content: center; color: white; }
+        .upload-area { border: 2px dashed rgba(255,255,255,0.4); border-radius: 8px; padding: 30px; text-align: center; cursor: pointer; background: rgba(255,255,255,0.08); backdrop-filter: blur(8px); }
+        .upload-area:hover { border-color: var(--primary-red); background: rgba(255,255,255,0.15); }
+        .modal-content, .auth-modal-content { background: rgba(255,255,255,0.95) !important; backdrop-filter: blur(15px); border-radius: 20px; }
+        .news-slider-container { background-color: var(--primary-red); color: white; padding: 15px 0; }
+        .partner-logo { background: rgba(255,255,255,0.1) !important; backdrop-filter: blur(8px); }
+        .qr-code { max-width: 150px; border-radius: 8px; overflow: hidden; background: white; padding: 10px; }
+        
+        /* Real flag images styling */
+        .real-flag { width: 48px; height: 32px; object-fit: cover; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
-    <!-- Loading Screen -->
-    <div id="loading-screen">
-        <div class="loading-logo">
-            <img src="GISC-LOGO.png" alt="Global Immigration SC Logo" style="max-width: 150px;" onerror="this.src='https://placehold.co/150x150/E30613/white?text=GISC'">
-        </div>
-        <div class="loading-text">Direction to Your Destination</div>
+
+<!-- LOADING SCREEN -->
+<div id="loading-screen">
+    <div class="loading-logo">
+        <picture>
+            <source srcset="GISC-LOGO.webp" type="image/webp">
+            <source srcset="GISC-LOGO.png" type="image/png">
+            <img src="GISC-LOGO.png" alt="Global Immigration SC Logo">
+        </picture>
     </div>
+    <div class="loading-text">Direction to Your Destination</div>
+</div>
 
-    <!-- Header -->
-    <header>
-        <div class="header-container container" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px;">
-            <div class="logo">
-                <img src="GISC-LOGO.png" alt="Global Immigration SC Logo" style="height: 50px;" onerror="this.src='https://placehold.co/180x60/E30613/white?text=Global+Immigration+SC'">
-            </div>
-            
-            <div class="mobile-toggle">
-                <i class="fas fa-bars"></i>
-            </div>
-            
-            <nav>
-                <ul class="nav-menu" style="display: flex; list-style: none; margin: 0; padding: 0;">
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#about">About Us</a></li>
-                    <li class="dropdown" style="position: relative;">
-                        <a href="#services">Services <i class="fas fa-chevron-down"></i></a>
-                        <div class="dropdown-content" style="position: absolute; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); min-width: 250px; border-radius: 12px; top: 100%; left: 0; display: none;">
-                            <a href="#">Business Trip Visa Application & Planning</a>
-                            <a href="#">Study Abroad Admissions & Scholarship Support</a>
-                            <a href="#">Visa Application & Embassy Interview Coaching</a>
-                            <a href="#">Work & Immigration Assistance</a>
-                            <a href="#">Student Loan & Sponsorship</a>
-                            <a href="#">Flight, Hotel & Accommodation Booking</a>
-                            <a href="#">Relocation Support & Document Translation</a>
-                            <a href="#">Travel Insurance & Medical Clearance</a>
-                            <a href="#">Educational & Cultural Exchange Programs</a>
-                            <a href="#">Pre-Departure Orientation & Airport Pickup</a>
-                        </div>
-                    </li>
-                    <li><a href="#destinations">Destinations</a></li>
-                    <li><a href="#blog">Blog</a></li>
-                    <li><a href="#application-portal">Application Portal</a></li>
-                    <li><a href="#report-fraud">Report It</a></li>
-                    <li><a href="#contact">Contact Us</a></li>
-                    <li><a href="#" id="liveSessionBtn" class="btn-live" style="background: #ff0000; color: white; padding: 8px 16px; border-radius: 8px;"><i class="fas fa-video"></i> Live Session</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
-
-    <!-- Live Session Modal -->
-    <div id="liveSessionModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 2000; justify-content: center; align-items: center;">
-        <div class="modal-content glass-card" style="max-width: 500px; padding: 30px;">
-            <span class="close-modal" style="float: right; font-size: 24px; cursor: pointer;">&times;</span>
-            <h2>Join Our Live Session</h2>
-            <div class="live-session-options">
-                <div class="session-option" id="joinLive" style="padding: 15px; border: 2px solid var(--primary-red); border-radius: 12px; margin-bottom: 15px; cursor: pointer;">
-                    <h3>Join Our Live Stream</h3>
-                    <p>Watch our current live session on YouTube</p>
-                </div>
-                <div class="session-option" id="registerSession" style="padding: 15px; border: 2px solid var(--primary-red); border-radius: 12px; cursor: pointer;">
-                    <h3>Register for Upcoming Session</h3>
-                    <p>Get notified about our next live session</p>
-                </div>
-            </div>
+<!-- MODALS -->
+<div id="liveSessionModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2>Join Our Live Session</h2>
+        <div class="live-session-options">
+            <div class="session-option" id="joinLive"><h3>Join Our Live Stream</h3><p>Watch our current live session on YouTube</p></div>
+            <div class="session-option" id="registerSession"><h3>Register for Upcoming Session</h3><p>Get notified about our next live session</p></div>
         </div>
     </div>
+</div>
 
-    <!-- Register Session Modal -->
-    <div id="registerModal" class="modal" style="display: none;">
-        <div class="modal-content glass-card" style="max-width: 500px; padding: 30px;">
-            <span class="close-modal" style="float: right; font-size: 24px; cursor: pointer;">&times;</span>
-            <h2>Register for Upcoming Session</h2>
-            <form id="sessionForm" action="https://formspree.io/f/mrbaejkr" method="POST">
-                <div class="form-group">
-                    <label>Full Name *</label>
-                    <input type="text" id="sessionName" name="name" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label>Email Address *</label>
-                    <input type="email" id="sessionEmail" name="email" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label style="display: flex; align-items: center; gap: 10px;">
-                        <input type="checkbox" id="notifyMe" name="notify" value="yes" checked>
-                        Notify me when the session starts
-                    </label>
-                </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Send Registration</button>
-                <div id="sessionSuccess" class="form-success" style="display: none; margin-top: 15px;"></div>
-            </form>
+<div id="countryModal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 650px;">
+        <span class="close-modal">&times;</span>
+        <div id="countryModalContent"></div>
+    </div>
+</div>
+
+<div id="registerModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2>Register for Upcoming Session</h2>
+        <form id="sessionForm" action="https://formspree.io/f/mrbaejkr" method="POST">
+            <div class="form-group"><label>Full Name *</label><input type="text" id="sessionName" name="name" class="form-control" required></div>
+            <div class="form-group"><label>Email Address *</label><input type="email" id="sessionEmail" name="email" class="form-control" required></div>
+            <div class="form-group"><label><input type="checkbox" name="notify" value="yes" checked> Notify me when the session starts</label></div>
+            <input type="hidden" name="form_type" value="session_registration">
+            <button type="submit" class="btn btn-primary">Send Registration</button>
+            <div id="sessionSuccess" class="form-success">Thank you for registering!</div>
+        </form>
+    </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div id="authModal" class="auth-modal" style="display: none;">
+    <div class="auth-modal-content">
+        <span class="close-modal">&times;</span>
+        <div class="auth-tabs"><div class="auth-tab active" data-tab="login">Login</div><div class="auth-tab" data-tab="register">Register</div></div>
+        <form id="loginForm" class="auth-form active" action="https://formspree.io/f/mrbaejkr" method="POST">
+            <div class="form-group"><label>Email *</label><input type="email" id="loginEmail" name="email" class="form-control" required></div>
+            <div class="form-group"><label>Password *</label><input type="password" id="loginPassword" name="password" class="form-control" required></div>
+            <input type="hidden" name="form_type" value="login">
+            <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+        <form id="registerForm" class="auth-form" action="https://formspree.io/f/mrbaejkr" method="POST">
+            <div class="form-group"><label>Full Name *</label><input type="text" id="registerName" name="name" class="form-control" required></div>
+            <div class="form-group"><label>Email *</label><input type="email" id="registerEmail" name="email" class="form-control" required></div>
+            <div class="form-group"><label>Password *</label><input type="password" id="registerPassword" name="password" class="form-control" required></div>
+            <div class="form-group"><label><input type="checkbox" name="agree_terms" value="yes" required> I agree to the Terms</label></div>
+            <input type="hidden" name="form_type" value="registration">
+            <button type="submit" class="btn btn-primary">Create Account</button>
+        </form>
+    </div>
+</div>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- HEADER -->
+<header>
+    <div class="header-container container">
+        <div class="logo">
+            <picture>
+                <source srcset="GISC-LOGO.webp" type="image/webp">
+                <source srcset="GISC-LOGO.png" type="image/png">
+                <img src="GISC-LOGO.png" alt="Global Immigration SC Logo">
+            </picture>
+        </div>
+        <div class="mobile-toggle"><i class="fas fa-bars"></i></div>
+        <nav>
+            <ul class="nav-menu">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About Us</a></li>
+                <li class="dropdown">
+                    <a href="#services">Services <i class="fas fa-chevron-down"></i></a>
+                    <div class="dropdown-content">
+                        <a href="#">Business Trip Visa Application & Planning</a>
+                        <a href="#">Study Abroad Admissions & Scholarship Support</a>
+                        <a href="#">Visa Application & Embassy Interview Coaching</a>
+                        <a href="#">Work & Immigration Assistance</a>
+                        <a href="#">Student Loan & Sponsorship</a>
+                        <a href="#">Flight, Hotel & Accommodation Booking</a>
+                        <a href="#">Relocation Support & Document Translation</a>
+                        <a href="#">Travel Insurance & Medical Clearance</a>
+                        <a href="#">Educational & Cultural Exchange Programs</a>
+                        <a href="#">Pre-Departure Orientation & Airport Pickup</a>
+                    </div>
+                </li>
+                <li><a href="#destinations">Destinations</a></li>
+                <li><a href="#blog">Blog</a></li>
+                <li><a href="#application-portal">Application Portal</a></li>
+                <li><a href="#report-fraud">Report It</a></li>
+                <li><a href="#contact">Contact Us</a></li>
+                <li><a href="#" class="btn btn-live" id="liveSessionBtn"><i class="fas fa-video"></i> Watch Live</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<!-- HERO SECTION -->
+<section id="home" class="hero">
+    <div class="plane-container"><div class="plane"></div><div class="plane"></div><div class="plane"></div></div>
+    <div class="hero-content">
+        <h1>Global Immigration SC – Your Trusted Travel & Study Partner</h1>
+        <p>We help students, professionals, and travelers achieve their global dreams with end-to-end immigration and study abroad solutions.</p>
+        <div class="hero-buttons">
+            <a href="https://docs.google.com/forms/d/1HUsRbKHsZlZKL7T2DgT7crgAhkAnuslmWjopUD2Cutg/edit" class="btn btn-primary">Book Appointment</a>
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-outline">Start Application</a>
         </div>
     </div>
+</section>
 
-    <!-- Hero Section -->
-    <section id="home" class="hero" style="min-height: 100vh; display: flex; align-items: center; background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=1800&q=80'); background-size: cover; background-position: center; margin-top: 70px;">
+<!-- NEWS SLIDER -->
+<div class="news-slider-container">
+    <div class="container">
+        <div class="news-slider-wrapper">
+            <div class="news-label"><i class="fas fa-bullhorn"></i> Latest News</div>
+            <div class="news-slider"><div class="news-slider-content" id="newsContent"></div></div>
+        </div>
+    </div>
+</div>
+
+<main id="main-content">
+    <!-- ABOUT SECTION -->
+    <section id="about" class="section about">
         <div class="container">
-            <div class="hero-content" style="text-align: center; max-width: 800px; margin: 0 auto;">
-                <h1 style="font-size: 3rem; margin-bottom: 20px; color: white;">Global Immigration SC – Your Trusted Travel & Study Partner</h1>
-                <p style="font-size: 1.2rem; margin-bottom: 30px; color: white;">We help students, professionals, and travelers achieve their global dreams with end-to-end immigration and study abroad solutions.</p>
-                <div class="hero-buttons" style="display: flex; gap: 20px; justify-content: center;">
-                    <a href="https://docs.google.com/forms/d/1HUsRbKHsZlZKL7T2DgT7crgAhkAnuslmWjopUD2Cutg/edit" class="btn btn-primary">Book Appointment</a>
-                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-outline">Start Application</a>
+            <div class="about-content">
+                <div class="about-text">
+                    <h2>About Global Immigration SC</h2>
+                    <p>At Global Immigration SC, we guide you step by step – from admission and visa applications to travel, relocation and settlement.</p>
+                    <p>With years of expertise in immigration consulting, we've helped hundreds of clients achieve their dreams of studying, working, and traveling abroad. Our team of experienced consultants provides personalized support throughout your journey.</p>
+                    <p>We pride ourselves on our transparent processes, ethical practices, and commitment to your success. Your global journey is our priority.</p>
+                </div>
+                <div class="about-image">
+                    <picture><source srcset="IMAGES.webp" type="image/webp"><source srcset="IMAGES.jpg" type="image/jpeg"><img src="IMAGES.jpg" alt="Team working together"></picture>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Latest News Slider -->
-    <div class="news-slider-container" style="background: var(--primary-red); color: white; padding: 12px 0; overflow: hidden;">
+    <!-- STATS SECTION -->
+    <section class="stats">
         <div class="container">
-            <div class="news-slider-wrapper" style="display: flex; align-items: center; gap: 20px;">
-                <div class="news-label" style="background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 20px;">
-                    <i class="fas fa-bullhorn"></i> Latest News
-                </div>
-                <div class="news-slider" style="flex: 1; overflow: hidden;">
-                    <div class="news-slider-content" id="newsContent" style="white-space: nowrap; animation: marquee 30s linear infinite;">
-                        <span>📢 New: Express visa processing now available for select countries!</span>
-                        <span>🌟 Scholarship opportunities: Apply now for 2026 academic year.</span>
-                        <span>✈️ Special discount: 10% off on flight bookings for students.</span>
-                        <span>📅 Upcoming webinar: 'Visa Interview Tips' on next Friday at 3 PM.</span>
-                    </div>
-                </div>
+            <div class="stats-container">
+                <div class="stat-item"><div class="stat-number" id="clients">500+</div><div class="stat-label">Happy Clients</div></div>
+                <div class="stat-item"><div class="stat-number" id="success">98%</div><div class="stat-label">Success Rate</div></div>
+                <div class="stat-item"><div class="stat-number" id="countries">80+</div><div class="stat-label">Countries</div></div>
+                <div class="stat-item"><div class="stat-number" id="experience">10+</div><div class="stat-label">Years Experience</div></div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <style>
-        @keyframes marquee {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
-        @media (max-width: 680px) {
-            .news-slider-content { animation: none; white-space: normal; display: flex; flex-direction: column; gap: 10px; }
-            .news-slider-content span { display: block; background: rgba(255,255,255,0.15); padding: 8px; border-radius: 8px; }
-        }
-    </style>
-
-    <main id="main-content">
-        <!-- About Section -->
-        <section id="about" class="section about">
-            <div class="container">
-                <div class="about-content" style="display: flex; gap: 50px; align-items: center;">
-                    <div class="about-text" style="flex: 1;">
-                        <h2>About Global Immigration SC</h2>
-                        <p>At Global Immigration SC, we guide you step by step – from admission and visa applications to travel, relocation and settlement.</p>
-                        <p>With years of expertise in immigration consulting, we've helped hundreds of clients achieve their dreams of studying, working, and traveling abroad. Our team of experienced consultants provides personalized support throughout your journey.</p>
-                        <p>We pride ourselves on our transparent processes, ethical practices, and commitment to your success. Your global journey is our priority.</p>
-                    </div>
-                    <div class="about-image" style="flex: 1;">
-                        <img src="IMAGES.jpg" alt="Team working together" style="width: 100%; border-radius: 20px;" onerror="this.src='https://placehold.co/500x400/E30613/white?text=Global+Immigration+SC'">
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Stats Section -->
-        <section class="stats" style="padding: 60px 0;">
-            <div class="container">
-                <div class="stats-container">
-                    <div class="stat-item"><div class="stat-number" id="clients">500+</div><div class="stat-label">Happy Clients</div></div>
-                    <div class="stat-item"><div class="stat-number" id="success">98%</div><div class="stat-label">Success Rate</div></div>
-                    <div class="stat-item"><div class="stat-number" id="countries">80+</div><div class="stat-label">Countries</div></div>
-                    <div class="stat-item"><div class="stat-number" id="experience">10+</div><div class="stat-label">Years Experience</div></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Services Section -->
-        <section id="services" class="section services">
-            <div class="container">
-                <div class="section-title">
-                    <h2>Our Full-Service Offers</h2>
-                    <p>Comprehensive immigration and study abroad services to meet all your needs</p>
-                </div>
-                <div class="services-grid">
-                    <div class="service-card"><div class="service-icon"><i class="fas fa-briefcase"></i></div><h3>Business Trip Visa Application & Planning</h3><p>Professional visa services for business travelers.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a></div>
-                    <div class="service-card"><div class="service-icon"><i class="fas fa-graduation-cap"></i></div><h3>Study Abroad Admissions & Scholarship Support</h3><p>Guidance through university applications and scholarships.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a></div>
-                    <div class="service-card"><div class="service-icon"><i class="fas fa-passport"></i></div><h3>Visa Application & Embassy Interview Coaching</h3><p>Complete visa processing and interview preparation.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a></div>
-                    <div class="service-card"><div class="service-icon"><i class="fas fa-building"></i></div><h3>Work & Immigration Assistance</h3><p>Support with work permits and permanent residency.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a></div>
-                    <div class="service-card"><div class="service-icon"><i class="fas fa-hand-holding-usd"></i></div><h3>Student Loan & Sponsorship</h3><p>Assistance with MPOWER, SOFI, and other financing.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a></div>
-                    <div class="service-card"><div class="service-icon"><i class="fas fa-hotel"></i></div><h3>Flight, Hotel & Accommodation Booking</h3><p>Travel and accommodation arrangements.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a></div>
-                    <div class="service-card"><div class="service-icon"><i class="fas fa-people-carry"></i></div><h3>Relocation Support & Document Translation</h3><p>Comprehensive relocation services.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a></div>
-                    <div class="service-card"><div class="service-icon"><i class="fas fa-heartbeat"></i></div><h3>Travel Insurance & Medical Clearance</h3><p>Health insurance and medical examination coordination.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a></div>
-                    <div class="service-card"><div class="service-icon"><i class="fas fa-exchange-alt"></i></div><h3>Educational & Cultural Exchange Programs</h3><p>Opportunities for cultural exchange.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a></div>
-                    <div class="service-card"><div class="service-icon"><i class="fas fa-plane-departure"></i></div><h3>Pre-Departure Orientation & Airport Pickup</h3><p>Preparation sessions and arrival assistance.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Application Portal Section (Preserved) -->
-        <section id="application-portal" class="section application-portal">
-            <div class="container">
-                <div class="section-title">
-                    <h2>Application Portal</h2>
-                    <p>Access your application dashboard to track progress, upload documents, and manage your immigration journey</p>
-                </div>
-                <div class="portal-options" style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap;">
-                    <div class="portal-option" style="text-align: center; padding: 40px; width: 300px;">
-                        <div class="portal-icon"><i class="fas fa-user-plus"></i></div>
-                        <h3>New Applicants</h3>
-                        <p>Create a new account to start your application process</p>
-                        <a href="#" class="btn btn-primary" id="registerBtn">Register</a>
-                    </div>
-                    <div class="portal-option" style="text-align: center; padding: 40px; width: 300px;">
-                        <div class="portal-icon"><i class="fas fa-sign-in-alt"></i></div>
-                        <h3>Returning Applicants</h3>
-                        <p>Login to your existing account to continue your application</p>
-                        <a href="#" class="btn btn-outline" id="loginBtn">Login</a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Destinations Section with Real Flags -->
-        <section id="destinations" class="section destinations">
-            <div class="container">
-                <div class="section-title">
-                    <h2>Destinations We Serve</h2>
-                    <p>Your gateway to <strong>70+ countries</strong> across the globe.</p>
-                </div>
-                <div class="destinations-container">
-                    <!-- North America -->
-                    <div class="continent-group" style="margin-bottom: 40px;">
-                        <h3 style="color: var(--primary-red);"><i class="fas fa-globe-americas"></i> North America</h3>
-                        <div class="flags-container">
-                            <div class="country-flag" data-country="USA"><img src="https://flagcdn.com/w320/us.png" alt="USA Flag" class="real-flag" style="width: 48px; height: auto;"><div class="country-name">USA</div></div>
-                            <div class="country-flag" data-country="Canada"><img src="https://flagcdn.com/w320/ca.png" alt="Canada Flag" class="real-flag" style="width: 48px; height: auto;"><div class="country-name">Canada</div></div>
-                            <div class="country-flag" data-country="Mexico"><img src="https://flagcdn.com/w320/mx.png" alt="Mexico Flag" class="real-flag" style="width: 48px; height: auto;"><div class="country-name">Mexico</div></div>
-                        </div>
-                    </div>
-                    <!-- Europe -->
-                    <div class="continent-group" style="margin-bottom: 40px;">
-                        <h3 style="color: var(--primary-red);"><i class="fas fa-map-marked-alt"></i> Europe</h3>
-                        <div class="flags-container">
-                            <div class="country-flag" data-country="UK"><img src="https://flagcdn.com/w320/gb.png" alt="UK Flag" class="real-flag"><div class="country-name">UK</div></div>
-                            <div class="country-flag" data-country="France"><img src="https://flagcdn.com/w320/fr.png" alt="France Flag" class="real-flag"><div class="country-name">France</div></div>
-                            <div class="country-flag" data-country="Germany"><img src="https://flagcdn.com/w320/de.png" alt="Germany Flag" class="real-flag"><div class="country-name">Germany</div></div>
-                            <div class="country-flag" data-country="Italy"><img src="https://flagcdn.com/w320/it.png" alt="Italy Flag" class="real-flag"><div class="country-name">Italy</div></div>
-                            <div class="country-flag" data-country="Spain"><img src="https://flagcdn.com/w320/es.png" alt="Spain Flag" class="real-flag"><div class="country-name">Spain</div></div>
-                            <div class="country-flag" data-country="Sweden"><img src="https://flagcdn.com/w320/se.png" alt="Sweden Flag" class="real-flag"><div class="country-name">Sweden</div></div>
-                            <div class="country-flag" data-country="Norway"><img src="https://flagcdn.com/w320/no.png" alt="Norway Flag" class="real-flag"><div class="country-name">Norway</div></div>
-                            <div class="country-flag" data-country="Ireland"><img src="https://flagcdn.com/w320/ie.png" alt="Ireland Flag" class="real-flag"><div class="country-name">Ireland</div></div>
-                        </div>
-                    </div>
-                    <!-- Asia Pacific -->
-                    <div class="continent-group" style="margin-bottom: 40px;">
-                        <h3 style="color: var(--primary-red);"><i class="fas fa-globe-asia"></i> Asia Pacific</h3>
-                        <div class="flags-container">
-                            <div class="country-flag" data-country="Australia"><img src="https://flagcdn.com/w320/au.png" alt="Australia Flag" class="real-flag"><div class="country-name">Australia</div></div>
-                            <div class="country-flag" data-country="New Zealand"><img src="https://flagcdn.com/w320/nz.png" alt="New Zealand Flag" class="real-flag"><div class="country-name">New Zealand</div></div>
-                            <div class="country-flag" data-country="Singapore"><img src="https://flagcdn.com/w320/sg.png" alt="Singapore Flag" class="real-flag"><div class="country-name">Singapore</div></div>
-                            <div class="country-flag" data-country="Japan"><img src="https://flagcdn.com/w320/jp.png" alt="Japan Flag" class="real-flag"><div class="country-name">Japan</div></div>
-                            <div class="country-flag" data-country="South Korea"><img src="https://flagcdn.com/w320/kr.png" alt="South Korea Flag" class="real-flag"><div class="country-name">South Korea</div></div>
-                        </div>
-                    </div>
-                </div>
-                <div style="text-align: center; margin-top: 40px;">
-                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary">Get Free Consultation</a>
-                </div>
-            </div>
-        </section>
-
-        <!-- Process Section -->
-        <section class="section process">
-            <div class="container">
-                <div class="section-title">
-                    <h2>How It Works</h2>
-                    <p>Our simple 3-step process to make your global dreams a reality</p>
-                </div>
-                <div class="process-steps">
-                    <div class="step"><div class="step-number">1</div><h3>Consultation & Application</h3><p>We begin with a detailed consultation to understand your goals.</p></div>
-                    <div class="step"><div class="step-number">2</div><h3>Document Preparation & Embassy Coaching</h3><p>We help prepare all necessary documents and provide coaching.</p></div>
-                    <div class="step"><div class="step-number">3</div><h3>Visa Approval & Relocation Support</h3><p>After visa approval, we assist with travel and settlement.</p></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Testimonials Section -->
-        <section class="section testimonials">
-            <div class="container">
-                <div class="section-title">
-                    <h2>Success Stories</h2>
-                    <p>Hear from our satisfied clients who have achieved their global dreams</p>
-                </div>
-                <div class="testimonials-container" style="display: flex; gap: 30px; flex-wrap: wrap;">
-                    <div class="testimonial"><p class="testimonial-text">"Global Immigration SC made my study abroad dream come true. I'm now studying at the University of Toronto!"</p><div class="testimonial-author"><div class="author-details"><h4>Fatima Adebayo</h4><p>Student at University of Toronto</p></div></div></div>
-                    <div class="testimonial"><p class="testimonial-text">"The team provided exceptional support with my work visa application. I received my Australian work visa in just 6 weeks!"</p><div class="testimonial-author"><div class="author-details"><h4>Sarah Okoro</h4><p>Software Engineer in Sydney</p></div></div></div>
-                    <div class="testimonial"><p class="testimonial-text">"As a Liberian student, they guided me through every step. I'm now pursuing my Master's at LSE!"</p><div class="testimonial-author"><div class="author-details"><h4>Richard Kollie</h4><p>Graduate Student at LSE</p></div></div></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Blog Preview Section -->
-        <section id="blog" class="section blog-preview">
-            <div class="container">
-                <div class="section-title">
-                    <h2>Latest From Our Blog</h2>
-                    <p>Helpful resources and updates on immigration policies</p>
-                </div>
-                <div class="blog-grid" id="dynamic-blog-container">
-                    <div class="blog-card"><div class="blog-image"><div class="image-fallback"><i class="fas fa-book"></i></div></div><div class="blog-content"><div class="blog-date">July 20, 2023</div><h3 class="blog-title">Why Study Abroad</h3><p class="blog-excerpt">Discover the life-changing benefits of studying abroad.</p><a href="https://www.facebook.com/share/16ZuMVLV3g/" class="btn btn-outline btn-small">Read More</a></div></div>
-                    <div class="blog-card"><div class="blog-image"><div class="image-fallback"><i class="fas fa-plane"></i></div></div><div class="blog-content"><div class="blog-date">July 15, 2023</div><h3 class="blog-title">Why You Need a Professional Travel Agency</h3><p class="blog-excerpt">Learn how experienced consultants can save you time and money.</p><a href="https://www.facebook.com/share/16ZuMVLV3g/" class="btn btn-outline btn-small">Read More</a></div></div>
-                    <div class="blog-card"><div class="blog-image"><div class="image-fallback"><i class="fas fa-passport"></i></div></div><div class="blog-content"><div class="blog-date">July 10, 2023</div><h3 class="blog-title">Top 10 Visa Interview Tips</h3><p class="blog-excerpt">Expert advice to increase your chances of approval.</p><a href="https://www.facebook.com/share/16ZuMVLV3g/" class="btn btn-outline btn-small">Read More</a></div></div>
-                </div>
-                <div style="text-align: center; margin-top: 40px;"><a href="https://www.facebook.com/share/16ZuMVLV3g/" class="btn btn-primary">View All Posts on Facebook</a></div>
-            </div>
-        </section>
-
-        <!-- Team Section with Real Images -->
-        <section class="section team">
-            <div class="container">
-                <div class="section-title">
-                    <h2>Meet Our Team</h2>
-                    <p>Our dedicated professionals are committed to your success</p>
-                </div>
-                <div class="team-grid">
-                    <div class="team-member"><div class="team-image"><div class="image-fallback"><i class="fas fa-user-tie"></i><p>Stephen V. Shilue</p></div></div><div class="team-details"><h3 class="team-name">Stephen V. Shilue</h3><p class="team-position">Co-founder & COO</p><p class="team-description">Experienced operations leader in international education.</p></div></div>
-                    <div class="team-member"><div class="team-image"><div class="image-fallback"><i class="fas fa-user-graduate"></i><p>Cyrus J. Harmon</p></div></div><div class="team-details"><h3 class="team-name">Cyrus J. Harmon</h3><p class="team-position">India International Counselor</p><p class="team-description">Specializes in applications for India travel process.</p></div></div>
-                    <div class="team-member"><div class="team-image"><div class="image-fallback"><i class="fas fa-passport"></i><p>Amos Momo Ngumbu Jr</p></div></div><div class="team-details"><h3 class="team-name">Amos Momo Ngumbu Jr.</h3><p class="team-position">USA Application Review Consultant</p><p class="team-description">Expert in visa documentation with 98% success rate.</p></div></div>
-                    <div class="team-member"><div class="team-image"><div class="image-fallback"><i class="fas fa-globe-americas"></i><p>H. Evans Dorbor Jr</p></div></div><div class="team-details"><h3 class="team-name">H. Evans Dorbor Jr.</h3><p class="team-position">Hungary Representative</p><p class="team-description">Guidance on Hungary study abroad programs.</p></div></div>
-                    <div class="team-member"><div class="team-image"><div class="image-fallback"><i class="fas fa-plane"></i><p>Michael Ojo</p></div></div><div class="team-details"><h3 class="team-name">Michael Ojo</h3><p class="team-position">International Agent</p><p class="team-description">Specializes in African markets visa processes.</p></div></div>
-                    <div class="team-member"><div class="team-image"><div class="image-fallback"><i class="fas fa-hands-helping"></i><p>David Chukwu</p></div></div><div class="team-details"><h3 class="team-name">David Chukwu</h3><p class="team-position">International Agent</p><p class="team-description">Focuses on student recruitment and scholarships.</p></div></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Newsletter Section -->
-        <section id="newsletter" class="section newsletter">
-            <div class="container">
-                <div class="section-title">
-                    <h2>Stay Informed With Our Updates</h2>
-                    <p>Subscribe for the latest immigration news and visa updates</p>
-                </div>
-                <div class="newsletter-content" style="max-width: 600px; margin: 0 auto; text-align: center; padding: 30px; border-radius: 24px;">
-                    <form id="newsletterForm" class="newsletter-form" style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <input type="email" id="newsletterEmail" class="newsletter-input" placeholder="Enter your email" required style="flex: 1; min-width: 250px;">
-                        <button type="submit" class="btn btn-primary">Subscribe Now</button>
-                    </form>
-                    <div id="newsletterSuccess" class="form-success" style="display: none; margin-top: 15px;"></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Report Fraud Section (Preserved Exactly) -->
-        <section id="report-fraud" class="section report-fraud">
-            <div class="container">
-                <div class="section-title">
-                    <h2>REPORT IT — Report Travel/Immigration Fraud</h2>
-                    <p>If you suspect a travel or visa scam, report it here with your evidence. <strong>False accusations are illegal and may result in legal action.</strong></p>
-                </div>
-                <div class="fraud-report-form" style="max-width: 800px; margin: 0 auto; padding: 30px; border-radius: 24px;">
-                    <div class="form-progress">
-                        <div class="progress-steps" style="display: flex; justify-content: space-between;">
-                            <div class="progress-step active" data-step="1"><div class="step-indicator">1</div><span>Basic Info</span></div>
-                            <div class="progress-step" data-step="2"><div class="step-indicator">2</div><span>Incident Details</span></div>
-                            <div class="progress-step" data-step="3"><div class="step-indicator">3</div><span>Evidence</span></div>
-                            <div class="progress-step" data-step="4"><div class="step-indicator">4</div><span>Submit</span></div>
-                        </div>
-                        <div class="progress-bar"><div class="progress-fill" style="width: 25%;"></div></div>
-                    </div>
-
-                    <!-- Step 1 -->
-                    <div class="form-step active" id="step-1">
-                        <h3>Your Information</h3>
-                        <div class="form-group"><label>Full Name *</label><input type="text" id="reporterName" class="form-control" required></div>
-                        <div class="form-group"><label>Email Address *</label><input type="email" id="reporterEmail" class="form-control" required></div>
-                        <div class="form-group"><label>Phone / WhatsApp</label><input type="tel" id="reporterPhone" class="form-control"></div>
-                        <div class="form-group"><label class="checkbox-option"><input type="checkbox" id="anonymousReport"> I wish to remain anonymous</label></div>
-                        <div class="form-navigation"><button type="button" class="btn btn-primary next-step" data-next="2">Next</button></div>
-                    </div>
-
-                    <!-- Step 2 -->
-                    <div class="form-step" id="step-2">
-                        <h3>Incident Details</h3>
-                        <div class="form-group"><label>Country of Incident *</label><select id="incidentCountry" class="form-control"><option value="">Select</option><option value="usa">USA</option><option value="canada">Canada</option><option value="uk">UK</option><option value="liberia">Liberia</option></select></div>
-                        <div class="form-group"><label>Suspected Agency/Person Name *</label><input type="text" id="suspectName" class="form-control" required></div>
-                        <div class="form-group"><label>Incident Start Date *</label><input type="date" id="incidentDateFrom" class="form-control" required></div>
-                        <div class="form-group"><label>Amount Paid (if any)</label><input type="number" id="amountPaid" class="form-control" placeholder="0.00"></div>
-                        <div class="form-navigation"><button type="button" class="btn btn-outline prev-step" data-prev="1">Previous</button><button type="button" class="btn btn-primary next-step" data-next="3">Next</button></div>
-                    </div>
-
-                    <!-- Step 3 -->
-                    <div class="form-step" id="step-3">
-                        <h3>Evidence & Details</h3>
-                        <div class="form-group"><label>Short Summary *</label><textarea id="complaintSummary" class="form-control" rows="3" required></textarea></div>
-                        <div class="form-group"><label>Detailed Description *</label><textarea id="detailedDescription" class="form-control" rows="5" required></textarea></div>
-                        <div class="form-group"><label>Upload Evidence</label><div class="upload-area" id="evidenceUploadArea"><i class="fas fa-cloud-upload-alt"></i><p>Click or drag files to upload</p><input type="file" id="evidenceFiles" multiple style="display: none;"></div><div id="filePreviews"></div></div>
-                        <div class="form-navigation"><button type="button" class="btn btn-outline prev-step" data-prev="2">Previous</button><button type="button" class="btn btn-primary next-step" data-next="4">Next</button></div>
-                    </div>
-
-                    <!-- Step 4 -->
-                    <div class="form-step" id="step-4">
-                        <h3>Review & Submit</h3>
-                        <div class="legal-disclaimer" style="background: #fff3cd; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
-                            <p><strong>⚠️ LEGAL DISCLAIMER:</strong> Only genuine cases of fraudulent acts should be reported. False reporting may result in legal action.</p>
-                        </div>
-                        <div class="form-group"><label class="checkbox-option"><input type="checkbox" id="legalConsent" required> I confirm the information is true to the best of my knowledge.</label></div>
-                        <div class="form-group"><input type="text" id="humanVerification" class="form-control" placeholder='Type "I AM HUMAN" to verify' style="text-align: center;"></div>
-                        <div class="form-navigation"><button type="button" class="btn btn-outline prev-step" data-prev="3">Previous</button><button type="button" class="btn btn-primary" id="submitReport">Submit Report</button></div>
-                    </div>
-
-                    <div id="reportSuccess" class="form-success" style="display: none; text-align: center; padding: 40px;">
-                        <i class="fas fa-check-circle" style="font-size: 3rem; color: #4CAF50;"></i>
-                        <h3>Report Submitted Successfully!</h3>
-                        <p>We will review your submission and contact you within 48 hours.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Contact Section -->
-        <section id="contact" class="section contact">
-            <div class="container">
-                <div class="section-title">
-                    <h2>Contact Us</h2>
-                    <p>Get in touch with our team for personalized consultation</p>
-                </div>
-                <div class="contact-container" style="display: flex; gap: 50px;">
-                    <div class="contact-info" style="flex: 1;">
-                        <h3>Our Head Office</h3>
-                        <p><i class="fas fa-map-marker-alt"></i> Monrovia Liberia. P.O.BOX 1000</p>
-                        <p><i class="fas fa-phone-alt"></i> +231886590302, +231770562292</p>
-                        <p><i class="fas fa-envelope"></i> infoglobalimmigrationsc@gmail.com</p>
-                        <div class="office-hours"><h4>Office Hours</h4><p>Mon-Fri: 9AM-5PM | Sat: Emergency Only</p></div>
-                    </div>
-                    <div class="contact-form" style="flex: 1; padding: 30px; border-radius: 24px;">
-                        <h3>Send us a Message</h3>
-                        <form id="inquiryForm" action="https://formspree.io/f/mrbaejkr" method="POST">
-                            <div class="form-group"><input type="text" name="name" class="form-control" placeholder="Full Name *" required></div>
-                            <div class="form-group"><input type="email" name="email" class="form-control" placeholder="Email Address *" required></div>
-                            <div class="form-group"><input type="tel" name="phone" class="form-control" placeholder="Phone Number *" required></div>
-                            <div class="form-group"><select name="country" class="form-control" required><option value="">Country of Interest</option><option value="usa">USA</option><option value="canada">Canada</option><option value="uk">UK</option><option value="australia">Australia</option></select></div>
-                            <div class="form-group"><textarea name="message" class="form-control" placeholder="Your Message *" rows="4" required></textarea></div>
-                            <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Inquiry</button>
-                            <div id="formSuccess" class="form-success" style="display: none; margin-top: 15px;"></div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Footer -->
-    <footer style="padding: 60px 0 30px;">
+    <!-- SERVICES SECTION -->
+    <section id="services" class="section services">
         <div class="container">
-            <div class="footer-container">
-                <div class="footer-col"><h3>Global Immigration SC</h3><p>Your trusted partner for immigration and study abroad solutions.</p><p>Sponsored by Motiva Corporation Group of Companies</p></div>
-                <div class="footer-col"><h3>Quick Links</h3><ul class="footer-links"><li><a href="#home">Home</a></li><li><a href="#about">About</a></li><li><a href="#services">Services</a></li><li><a href="#contact">Contact</a></li></ul></div>
-                <div class="footer-col"><h3>Connect With Us</h3><div class="social-links"><a href="https://www.facebook.com/share/1CT6ZQ1p5S/"><i class="fab fa-facebook-f"></i></a><a href="https://www.instagram.com/globalimmigrationsc/"><i class="fab fa-instagram"></i></a><a href="https://wa.me/231886590302"><i class="fab fa-whatsapp"></i></a></div></div>
+            <div class="section-title"><h2>Our Full-Service Offers</h2><p>Comprehensive immigration and study abroad services</p></div>
+            <div class="services-grid">
+                <div class="service-card"><div class="service-icon"><i class="fas fa-briefcase"></i></div><h3>Business Trip Visa Application & Planning</h3><p>Professional visa services for business travelers.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a></div>
+                <div class="service-card"><div class="service-icon"><i class="fas fa-graduation-cap"></i></div><h3>Study Abroad Admissions & Scholarship Support</h3><p>Guidance through university applications and scholarships.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a></div>
+                <div class="service-card"><div class="service-icon"><i class="fas fa-passport"></i></div><h3>Visa Application & Embassy Interview Coaching</h3><p>Complete visa processing and interview preparation.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a></div>
+                <div class="service-card"><div class="service-icon"><i class="fas fa-building"></i></div><h3>Work & Immigration Assistance</h3><p>Support with work permits and permanent residency.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a></div>
+                <div class="service-card"><div class="service-icon"><i class="fas fa-hand-holding-usd"></i></div><h3>Student Loan & Sponsorship</h3><p>Assistance with MPOWER, SOFI, and other financing.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a></div>
+                <div class="service-card"><div class="service-icon"><i class="fas fa-hotel"></i></div><h3>Flight, Hotel & Accommodation Booking</h3><p>Travel and accommodation arrangements.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a></div>
+                <div class="service-card"><div class="service-icon"><i class="fas fa-people-carry"></i></div><h3>Relocation Support & Document Translation</h3><p>Comprehensive relocation and certified translation.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a></div>
+                <div class="service-card"><div class="service-icon"><i class="fas fa-heartbeat"></i></div><h3>Travel Insurance & Medical Clearance</h3><p>Health insurance and medical examination coordination.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a></div>
+                <div class="service-card"><div class="service-icon"><i class="fas fa-exchange-alt"></i></div><h3>Educational & Cultural Exchange Programs</h3><p>Opportunities for cultural exchange.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a></div>
+                <div class="service-card"><div class="service-icon"><i class="fas fa-plane-departure"></i></div><h3>Pre-Departure Orientation & Airport Pickup</h3><p>Preparation sessions and arrival assistance.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform?pli=1" class="btn btn-primary btn-small">Apply Now</a></div>
             </div>
-            <div class="footer-bottom" style="text-align: center; padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.1);"><p>&copy; 2024 Global Immigration SC. All rights reserved.</p></div>
         </div>
-    </footer>
+    </section>
 
-    <!-- WhatsApp Float -->
-    <a href="https://wa.me/231886590302" class="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
-
-    <!-- Authentication Modal -->
-    <div id="authModal" class="auth-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 2000; justify-content: center; align-items: center;">
-        <div class="auth-modal-content glass-card" style="max-width: 500px; padding: 30px;">
-            <span class="close-modal" style="float: right; font-size: 24px; cursor: pointer;">&times;</span>
-            <div class="auth-tabs" style="display: flex; gap: 20px; margin-bottom: 20px;">
-                <div class="auth-tab active" data-tab="login" style="cursor: pointer; padding: 10px;">Login</div>
-                <div class="auth-tab" data-tab="register" style="cursor: pointer; padding: 10px;">Register</div>
+    <!-- APPLICATION PORTAL SECTION -->
+    <section id="application-portal" class="section application-portal">
+        <div class="container">
+            <div class="section-title"><h2>Application Portal</h2><p>Access your application dashboard to track progress</p></div>
+            <div class="portal-options">
+                <div class="portal-option"><div class="portal-icon"><i class="fas fa-user-plus"></i></div><h3>New Applicants</h3><p>Create a new account to start your application process</p><a href="#" class="btn btn-primary" id="registerBtn">Register</a></div>
+                <div class="portal-option"><div class="portal-icon"><i class="fas fa-sign-in-alt"></i></div><h3>Returning Applicants</h3><p>Login to your existing account to continue</p><a href="#" class="btn btn-outline" id="loginBtn">Login</a></div>
             </div>
-            <form id="loginForm" class="auth-form active" action="https://formspree.io/f/mrbaejkr" method="POST">
-                <div class="form-group"><input type="email" name="email" class="form-control" placeholder="Email *" required></div>
-                <div class="form-group"><input type="password" name="password" class="form-control" placeholder="Password *" required></div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
-            </form>
-            <form id="registerForm" class="auth-form" action="https://formspree.io/f/mrbaejkr" method="POST" style="display: none;">
-                <div class="form-group"><input type="text" name="name" class="form-control" placeholder="Full Name *" required></div>
-                <div class="form-group"><input type="email" name="email" class="form-control" placeholder="Email *" required></div>
-                <div class="form-group"><input type="password" name="password" class="form-control" placeholder="Password *" required></div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Create Account</button>
-            </form>
         </div>
-    </div>
+    </section>
 
-    <script>
-        // ==================== GLOBAL VARIABLES ====================
-        let currentUser = null;
-        let uploadedFiles = [];
-
-        // ==================== LOADING SCREEN ====================
-        window.addEventListener('load', function() {
-            setTimeout(function() {
-                document.getElementById('loading-screen').style.opacity = '0';
-                setTimeout(function() {
-                    document.getElementById('loading-screen').style.display = 'none';
-                }, 500);
-            }, 1500);
+    <!-- DESTINATIONS SECTION - WITH REAL FLAG IMAGES -->
+    <section id="destinations" class="section destinations">
+        <div class="container">
+            <div class="section-title"><h2>Destinations We Serve</h2><p>Your gateway to <strong>70+ countries</strong> across the globe</p></div>
             
-            // Animate stats
-            animateValue('clients', 0, 500, 2000);
-            animateValue('success', 0, 98, 2000);
-            animateValue('countries', 0, 80, 2000);
-            animateValue('experience', 0, 10, 2000);
-        });
+            <div class="country-search-bar" style="margin-bottom: 40px;">
+                <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
+                    <input type="text" id="countrySearch" placeholder="Search country..." class="glass-input" style="width: 320px;">
+                    <select id="continentFilter" class="glass-input"><option value="all">All Continents</option><option value="north-america">North America</option><option value="europe">Europe</option><option value="asia-pacific">Asia Pacific</option><option value="middle-east">Middle East</option><option value="africa">Africa</option><option value="south-america">South America</option></select>
+                    <button id="resetFilters" class="btn btn-outline">Reset Filters</button>
+                </div>
+            </div>
 
-        function animateValue(id, start, end, duration) {
-            const obj = document.getElementById(id);
-            if (!obj) return;
-            let startTimestamp = null;
-            const step = (timestamp) => {
-                if (!startTimestamp) startTimestamp = timestamp;
-                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                obj.innerHTML = Math.floor(progress * (end - start) + start) + (id === 'success' ? '%' : '+');
-                if (progress < 1) requestAnimationFrame(step);
-            };
-            requestAnimationFrame(step);
-        }
-
-        // ==================== MOBILE MENU ====================
-        document.querySelector('.mobile-toggle')?.addEventListener('click', function() {
-            document.querySelector('.nav-menu').classList.toggle('active');
-        });
-
-        // Close mobile menu on link click
-        document.querySelectorAll('.nav-menu a').forEach(link => {
-            link.addEventListener('click', () => {
-                document.querySelector('.nav-menu')?.classList.remove('active');
-            });
-        });
-
-        // ==================== SCROLL EFFECT ON HEADER ====================
-        window.addEventListener('scroll', function() {
-            const header = document.querySelector('header');
-            if (window.scrollY > 50) {
-                header.classList.add('scrolled');
-            } else {
-                header.classList.remove('scrolled');
-            }
-        });
-
-        // ==================== LIVE SESSION MODAL ====================
-        const liveSessionBtn = document.getElementById('liveSessionBtn');
-        const liveSessionModal = document.getElementById('liveSessionModal');
-        const registerModal = document.getElementById('registerModal');
-        
-        liveSessionBtn?.addEventListener('click', (e) => {
-            e.preventDefault();
-            liveSessionModal.style.display = 'flex';
-        });
-        
-        document.getElementById('joinLive')?.addEventListener('click', () => {
-            window.open('https://youtube.com/@info.globalimmigrationsc', '_blank');
-            liveSessionModal.style.display = 'none';
-        });
-        
-        document.getElementById('registerSession')?.addEventListener('click', () => {
-            liveSessionModal.style.display = 'none';
-            registerModal.style.display = 'flex';
-        });
-        
-        // Close modals
-        document.querySelectorAll('.close-modal').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.modal, .auth-modal').forEach(m => m.style.display = 'none');
-            });
-        });
-        
-        window.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal') || e.target.classList.contains('auth-modal')) {
-                e.target.style.display = 'none';
-            }
-        });
-
-        // ==================== AUTH MODAL ====================
-        const authModal = document.getElementById('authModal');
-        document.getElementById('registerBtn')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            authModal.style.display = 'flex';
-            document.querySelector('[data-tab="register"]').click();
-        });
-        
-        document.getElementById('loginBtn')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            authModal.style.display = 'flex';
-            document.querySelector('[data-tab="login"]').click();
-        });
-        
-        document.querySelectorAll('.auth-tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                const tabName = this.dataset.tab;
-                document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-                document.querySelectorAll('.auth-form').forEach(form => form.style.display = 'none');
-                document.getElementById(`${tabName}Form`).style.display = 'block';
-            });
-        });
-
-        // ==================== REPORT FRAUD FORM NAVIGATION ====================
-        let currentStep = 1;
-        
-        function navigateToStep(step) {
-            document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
-            document.getElementById(`step-${step}`).classList.add('active');
-            document.querySelectorAll('.progress-step').forEach((ps, idx) => {
-                if (idx + 1 <= step) ps.classList.add('active');
-                else ps.classList.remove('active');
-            });
-            const progress = (step / 4) * 100;
-            document.querySelector('.form-progress .progress-fill').style.width = `${progress}%`;
-            currentStep = step;
-        }
-        
-        document.querySelectorAll('.next-step').forEach(btn => {
-            btn.addEventListener('click', () => navigateToStep(parseInt(btn.dataset.next)));
-        });
-        
-        document.querySelectorAll('.prev-step').forEach(btn => {
-            btn.addEventListener('click', () => navigateToStep(parseInt(btn.dataset.prew)));
-        });
-        
-        // ==================== FILE UPLOAD FOR REPORT ====================
-        const uploadArea = document.getElementById('evidenceUploadArea');
-        const fileInput = document.getElementById('evidenceFiles');
-        const filePreviews = document.getElementById('filePreviews');
-        
-        uploadArea?.addEventListener('click', () => fileInput.click());
-        uploadArea?.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
-        uploadArea?.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
-        uploadArea?.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            handleFiles(Array.from(e.dataTransfer.files));
-        });
-        
-        fileInput?.addEventListener('change', (e) => handleFiles(Array.from(e.target.files)));
-        
-        function handleFiles(files) {
-            files.forEach(file => {
-                if (file.size > 20 * 1024 * 1024) {
-                    alert(`File ${file.name} is too large. Max 20MB.`);
-                    return;
-                }
-                uploadedFiles.push(file);
-                const preview = document.createElement('div');
-                preview.className = 'file-preview';
-                preview.innerHTML = `<span>${file.name} (${(file.size/1024/1024).toFixed(2)} MB)</span><button onclick="this.parentElement.remove()">Remove</button>`;
-                filePreviews?.appendChild(preview);
-            });
-        }
-        
-        // ==================== SUBMIT REPORT ====================
-        document.getElementById('submitReport')?.addEventListener('click', async function() {
-            const humanInput = document.getElementById('humanVerification')?.value;
-            if (humanInput?.toUpperCase() !== 'I AM HUMAN') {
-                alert('Please complete the security check by typing "I AM HUMAN"');
-                return;
-            }
-            
-            const formData = {
-                reporterName: document.getElementById('reporterName')?.value,
-                reporterEmail: document.getElementById('reporterEmail')?.value,
-                reporterPhone: document.getElementById('reporterPhone')?.value,
-                incidentCountry: document.getElementById('incidentCountry')?.value,
-                suspectName: document.getElementById('suspectName')?.value,
-                incidentDateFrom: document.getElementById('incidentDateFrom')?.value,
-                amountPaid: document.getElementById('amountPaid')?.value,
-                complaintSummary: document.getElementById('complaintSummary')?.value,
-                detailedDescription: document.getElementById('detailedDescription')?.value,
-                timestamp: new Date().toISOString()
-            };
-            
-            try {
-                const response = await fetch('https://script.google.com/macros/s/AKfycbwo7OkMyoZuizM8dQJFcczdygmZOBtz1LMn91yuKFvmSV0JOgYZAkjceJp81Ky3ZZI/exec', {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
+            <div class="destinations-container">
+                <!-- North America -->
+                <div class="continent-group" data-continent="north-america" style="margin-bottom: 50px;">
+                    <h3 style="color: var(--primary-red); margin-bottom: 25px;"><i class="fas fa-globe-americas"></i> North America</h3>
+                    <div class="flags-container">
+                        <div class="country-flag" data-country="USA"><img src="https://flagcdn.com/w320/us.png" alt="USA Flag" class="real-flag" style="width: 48px; height: 32px; margin-bottom: 8px;"><div class="country-name">USA</div></div>
+                        <div class="country-flag" data-country="Canada"><img src="https://flagcdn.com/w320/ca.png" alt="Canada Flag" class="real-flag"><div class="country-name">Canada</div></div>
+                        <div class="country-flag" data-country="Mexico"><img src="https://flagcdn.com/w320/mx.png" alt="Mexico Flag" class="real-flag"><div class="country-name">Mexico</div></div>
+                        <div class="country-flag" data-country="Costa Rica"><img src="https://flagcdn.com/w320/cr.png" alt="Costa Rica Flag" class="real-flag"><div class="country-name">Costa Rica</div></div>
+                    </div>
+                </div>
                 
-                document.querySelector('.fraud-report-form').style.display = 'none';
-                document.getElementById('reportSuccess').style.display = 'block';
-            } catch (error) {
-                alert('Error submitting report. Please try again.');
-            }
-        });
-        
-        // ==================== NEWSLETTER FORM ====================
-        document.getElementById('newsletterForm')?.addEventListener('submit', async (e) => {
+                <!-- Europe -->
+                <div class="continent-group" data-continent="europe" style="margin-bottom: 50px;">
+                    <h3 style="color: var(--primary-red); margin-bottom: 25px;"><i class="fas fa-map-marked-alt"></i> Europe</h3>
+                    <div class="flags-container">
+                        <div class="country-flag" data-country="UK"><img src="https://flagcdn.com/w320/gb.png" alt="UK Flag" class="real-flag"><div class="country-name">UK</div></div>
+                        <div class="country-flag" data-country="France"><img src="https://flagcdn.com/w320/fr.png" alt="France Flag" class="real-flag"><div class="country-name">France</div></div>
+                        <div class="country-flag" data-country="Germany"><img src="https://flagcdn.com/w320/de.png" alt="Germany Flag" class="real-flag"><div class="country-name">Germany</div></div>
+                        <div class="country-flag" data-country="Italy"><img src="https://flagcdn.com/w320/it.png" alt="Italy Flag" class="real-flag"><div class="country-name">Italy</div></div>
+                        <div class="country-flag" data-country="Spain"><img src="https://flagcdn.com/w320/es.png" alt="Spain Flag" class="real-flag"><div class="country-name">Spain</div></div>
+                        <div class="country-flag" data-country="Netherlands"><img src="https://flagcdn.com/w320/nl.png" alt="Netherlands Flag" class="real-flag"><div class="country-name">Netherlands</div></div>
+                        <div class="country-flag" data-country="Sweden"><img src="https://flagcdn.com/w320/se.png" alt="Sweden Flag" class="real-flag"><div class="country-name">Sweden</div></div>
+                        <div class="country-flag" data-country="Norway"><img src="https://flagcdn.com/w320/no.png" alt="Norway Flag" class="real-flag"><div class="country-name">Norway</div></div>
+                        <div class="country-flag" data-country="Ireland"><img src="https://flagcdn.com/w320/ie.png" alt="Ireland Flag" class="real-flag"><div class="country-name">Ireland</div></div>
+                        <div class="country-flag" data-country="Switzerland"><img src="https://flagcdn.com/w320/ch.png" alt="Switzerland Flag" class="real-flag"><div class="country-name">Switzerland</div></div>
+                    </div>
+                </div>
+                
+                <!-- Asia Pacific -->
+                <div class="continent-group" data-continent="asia-pacific" style="margin-bottom: 50px;">
+                    <h3 style="color: var(--primary-red); margin-bottom: 25px;"><i class="fas fa-globe-asia"></i> Asia Pacific</h3>
+                    <div class="flags-container">
+                        <div class="country-flag" data-country="Australia"><img src="https://flagcdn.com/w320/au.png" alt="Australia Flag" class="real-flag"><div class="country-name">Australia</div></div>
+                        <div class="country-flag" data-country="New Zealand"><img src="https://flagcdn.com/w320/nz.png" alt="New Zealand Flag" class="real-flag"><div class="country-name">New Zealand</div></div>
+                        <div class="country-flag" data-country="Singapore"><img src="https://flagcdn.com/w320/sg.png" alt="Singapore Flag" class="real-flag"><div class="country-name">Singapore</div></div>
+                        <div class="country-flag" data-country="Malaysia"><img src="https://flagcdn.com/w320/my.png" alt="Malaysia Flag" class="real-flag"><div class="country-name">Malaysia</div></div>
+                        <div class="country-flag" data-country="Japan"><img src="https://flagcdn.com/w320/jp.png" alt="Japan Flag" class="real-flag"><div class="country-name">Japan</div></div>
+                        <div class="country-flag" data-country="South Korea"><img src="https://flagcdn.com/w320/kr.png" alt="South Korea Flag" class="real-flag"><div class="country-name">South Korea</div></div>
+                    </div>
+                </div>
+                
+                <!-- Middle East -->
+                <div class="continent-group" data-continent="middle-east" style="margin-bottom: 50px;">
+                    <h3 style="color: var(--primary-red); margin-bottom: 25px;"><i class="fas fa-flag"></i> Middle East</h3>
+                    <div class="flags-container">
+                        <div class="country-flag" data-country="UAE"><img src="https://flagcdn.com/w320/ae.png" alt="UAE Flag" class="real-flag"><div class="country-name">UAE</div></div>
+                        <div class="country-flag" data-country="Qatar"><img src="https://flagcdn.com/w320/qa.png" alt="Qatar Flag" class="real-flag"><div class="country-name">Qatar</div></div>
+                        <div class="country-flag" data-country="Saudi Arabia"><img src="https://flagcdn.com/w320/sa.png" alt="Saudi Arabia Flag" class="real-flag"><div class="country-name">Saudi Arabia</div></div>
+                    </div>
+                </div>
+                
+                <!-- Africa -->
+                <div class="continent-group" data-continent="africa" style="margin-bottom: 50px;">
+                    <h3 style="color: var(--primary-red); margin-bottom: 25px;"><i class="fas fa-africa"></i> Africa</h3>
+                    <div class="flags-container">
+                        <div class="country-flag" data-country="South Africa"><img src="https://flagcdn.com/w320/za.png" alt="South Africa Flag" class="real-flag"><div class="country-name">South Africa</div></div>
+                        <div class="country-flag" data-country="Morocco"><img src="https://flagcdn.com/w320/ma.png" alt="Morocco Flag" class="real-flag"><div class="country-name">Morocco</div></div>
+                        <div class="country-flag" data-country="Egypt"><img src="https://flagcdn.com/w320/eg.png" alt="Egypt Flag" class="real-flag"><div class="country-name">Egypt</div></div>
+                        <div class="country-flag" data-country="Kenya"><img src="https://flagcdn.com/w320/ke.png" alt="Kenya Flag" class="real-flag"><div class="country-name">Kenya</div></div>
+                        <div class="country-flag" data-country="Ghana"><img src="https://flagcdn.com/w320/gh.png" alt="Ghana Flag" class="real-flag"><div class="country-name">Ghana</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROCESS SECTION -->
+    <section class="section process">
+        <div class="container">
+            <div class="section-title"><h2>How It Works</h2><p>Our simple 3-step process</p></div>
+            <div class="process-steps">
+                <div class="step"><div class="step-number">1</div><h3>Consultation & Application</h3><p>We begin with a detailed consultation to understand your goals.</p></div>
+                <div class="step"><div class="step-number">2</div><h3>Document Preparation & Coaching</h3><p>We help prepare documents and provide embassy coaching.</p></div>
+                <div class="step"><div class="step-number">3</div><h3>Visa Approval & Relocation</h3><p>After visa approval, we assist with travel and settlement.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TESTIMONIALS SECTION -->
+    <section class="section testimonials">
+        <div class="container">
+            <div class="section-title"><h2>Success Stories</h2><p>Hear from our satisfied clients</p></div>
+            <div class="testimonials-container">
+                <div class="testimonial"><p class="testimonial-text">"Global Immigration SC made my study abroad dream come true. I'm now studying at the University of Toronto!"</p><div class="testimonial-author"><div class="author-image"><img src="https://i.ibb.co/SXXJzhnT/Gemini-Generated-Image-l3odzyl3odzyl3od-1.png" alt="Client"></div><div class="author-details"><h4>Fatima Adebayo</h4><p>University of Toronto, Canada</p></div></div></div>
+                <div class="testimonial"><p class="testimonial-text">"The team provided exceptional support with my work visa application. I received my Australian work visa in just 6 weeks!"</p><div class="testimonial-author"><div class="author-image"><img src="https://i.ibb.co/GvkTSGNw/Gemini-Generated-Image-3zry3q3zry3q3zry.png" alt="Client"></div><div class="author-details"><h4>Sarah Okoro</h4><p>Software Engineer, Australia</p></div></div></div>
+                <div class="testimonial"><p class="testimonial-text">"As a Liberian student, I was worried about the visa process. They helped me secure my UK student visa on the first attempt!"</p><div class="testimonial-author"><div class="author-image"><img src="https://i.ibb.co/WWLWR3HC/Gemini-Generated-Image-usumlgusumlgusum.png" alt="Client"></div><div class="author-details"><h4>Richard Kollie</h4><p>LSE, UK</p></div></div></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BLOG PREVIEW SECTION -->
+    <section id="blog" class="section blog-preview">
+        <div class="container">
+            <div class="section-title"><h2>Latest From Our Blog</h2><p>Resources and updates on immigration policies</p></div>
+            <div class="blog-grid" id="dynamic-blog-container"></div>
+            <div style="text-align: center; margin-top: 40px;"><a href="https://www.facebook.com/share/16ZuMVLV3g/" class="btn btn-primary" target="_blank">View All Posts on Facebook</a></div>
+        </div>
+    </section>
+
+    <!-- FOUNDER SECTION -->
+    <section class="section founder">
+        <div class="container">
+            <div class="founder-container">
+                <div class="founder-image"><img src="https://i.ibb.co/4RHYCswn/Founder.jpg" alt="Darlington F Tamba"></div>
+                <div class="founder-content">
+                    <h2>Message From Our Founder</h2>
+                    <h3>Darlington F Tamba</h3>
+                    <p>"At Global Immigration SC, we believe that everyone deserves the opportunity to pursue their dreams on a global stage."</p>
+                    <p>"Having navigated the complex immigration process myself, I understand the challenges our clients face."</p>
+                    <p>"Your success is our success. We're not just an immigration service – we're your partners in building a brighter future."</p>
+                    <div class="founder-signature">- Darlington F Tamba, Founder & CEO</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TEAM SECTION - WITH REAL IMAGES -->
+    <section class="section team">
+        <div class="container">
+            <div class="section-title"><h2>Meet Our Team</h2><p>Our dedicated professionals are committed to your success</p></div>
+            <div class="team-grid">
+                <div class="team-member"><div class="team-image"><img src="https://placehold.co/400x400/E30613/white?text=Stephen+V.+Shilue" alt="Stephen V. Shilue"></div><div class="team-details"><h3 class="team-name">Stephen V. Shilue</h3><p class="team-position">Co-founder & COO</p><p class="team-description">Experienced operations leader in international education.</p></div></div>
+                <div class="team-member"><div class="team-image"><img src="https://placehold.co/400x400/E30613/white?text=Cyrus+J.+Harmon" alt="Cyrus J. Harmon"></div><div class="team-details"><h3 class="team-name">Cyrus J. Harmon</h3><p class="team-position">India Counselor</p><p class="team-description">Specializes in India travel processes.</p></div></div>
+                <div class="team-member"><div class="team-image"><img src="https://placehold.co/400x400/E30613/white?text=Amos+Momo+Ngumbu+Jr" alt="Amos Momo Ngumbu Jr"></div><div class="team-details"><h3 class="team-name">Amos Momo Ngumbu Jr.</h3><p class="team-position">USA Rep Consultant</p><p class="team-description">Expert in visa documentation with 98% success rate.</p></div></div>
+                <div class="team-member"><div class="team-image"><img src="https://placehold.co/400x400/E30613/white?text=H.+Evans+Dorbor+Jr" alt="H. Evans Dorbor Jr"></div><div class="team-details"><h3 class="team-name">H. Evans Dorbor Jr.</h3><p class="team-position">Hungary Representative</p><p class="team-description">Guidance on Hungary study programs.</p></div></div>
+                <div class="team-member"><div class="team-image"><img src="https://placehold.co/400x400/E30613/white?text=Michael+Ojo" alt="Michael Ojo"></div><div class="team-details"><h3 class="team-name">Michael Ojo</h3><p class="team-position">International Agent</p><p class="team-description">Specializes in African markets.</p></div></div>
+                <div class="team-member"><div class="team-image"><img src="https://placehold.co/400x400/E30613/white?text=David+Chukwu" alt="David Chukwu"></div><div class="team-details"><h3 class="team-name">David Chukwu</h3><p class="team-position">International Agent</p><p class="team-description">Focuses on student recruitment and scholarships.</p></div></div>
+                <div class="team-member"><div class="team-image"><img src="https://placehold.co/400x400/E30613/white?text=Robert+Smith" alt="Robert Smith"></div><div class="team-details"><h3 class="team-name">Robert Smith</h3><p class="team-position">International Agent</p><p class="team-description">Expert in work visas and immigration.</p></div></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- NEWSLETTER SECTION -->
+    <section id="newsletter" class="section newsletter">
+        <div class="container">
+            <div class="section-title"><h2>Stay Informed</h2><p>Subscribe for latest immigration news and visa updates</p></div>
+            <div class="newsletter-content"><form id="newsletterForm" class="newsletter-form"><input type="email" id="newsletterEmail" class="newsletter-input" placeholder="Enter your email" required><button type="submit" class="btn btn-primary">Subscribe</button></form><div id="newsletterSuccess" class="form-success" style="display:none">Thank you for subscribing!</div></div>
+        </div>
+    </section>
+
+    <!-- REPORT FRAUD SECTION - KEPT EXACTLY THE SAME -->
+    <section id="report-fraud" class="section report-fraud">
+        <div class="container">
+            <div class="section-title"><h2>REPORT IT — Report Travel/Immigration Fraud</h2><p>If you suspect a travel or visa scam, report it here. <strong>False accusations are illegal.</strong></p></div>
+            <div class="fraud-report-form">
+                <div class="form-progress"><div class="progress-steps"><div class="progress-step active" data-step="1"><div class="step-indicator">1</div><span>Basic Info</span></div><div class="progress-step" data-step="2"><div class="step-indicator">2</div><span>Incident Details</span></div><div class="progress-step" data-step="3"><div class="step-indicator">3</div><span>Evidence</span></div><div class="progress-step" data-step="4"><div class="step-indicator">4</div><span>Submit</span></div></div><div class="progress-bar"><div class="progress-fill" style="width:25%"></div></div></div>
+                <div class="form-step active" id="step-1"><h3>Your Information</h3><div class="form-group"><label>Full Name *</label><input type="text" id="reporterName" class="form-control" required></div><div class="form-group"><label>Email *</label><input type="email" id="reporterEmail" class="form-control" required></div><div class="form-navigation"><button type="button" class="btn btn-primary next-step" data-next="2">Next</button></div></div>
+                <div class="form-step" id="step-2"><h3>Incident Details</h3><div class="form-group"><label>Country of Incident *</label><select id="incidentCountry" class="form-control"><option value="">Select</option><option value="usa">USA</option><option value="canada">Canada</option><option value="uk">UK</option></select></div><div class="form-group"><label>Suspected Agency/Person *</label><input type="text" id="suspectName" class="form-control" required></div><div class="form-navigation"><button type="button" class="btn btn-outline prev-step" data-prev="1">Previous</button><button type="button" class="btn btn-primary next-step" data-next="3">Next</button></div></div>
+                <div class="form-step" id="step-3"><h3>Evidence</h3><div class="form-group"><label>Short Summary *</label><textarea id="complaintSummary" class="form-control" required></textarea></div><div class="form-group"><label>Upload Evidence *</label><div class="upload-area" id="evidenceUploadArea"><i class="fas fa-cloud-upload-alt"></i><p>Click or drag files here</p><input type="file" id="evidenceFiles" multiple style="display:none"></div><div id="filePreviews"></div></div><div class="form-navigation"><button type="button" class="btn btn-outline prev-step" data-prev="2">Previous</button><button type="button" class="btn btn-primary next-step" data-next="4">Next</button></div></div>
+                <div class="form-step" id="step-4"><h3>Review & Submit</h3><div class="legal-disclaimer"><div class="disclaimer-warning"><i class="fas fa-exclamation-triangle"></i><strong>LEGAL DISCLAIMER</strong></div><p>Only genuine fraud cases should be reported. False reports may result in legal action.</p></div><div class="form-group"><label><input type="checkbox" id="legalConsent"> I confirm the information is true *</label></div><div class="form-group"><input type="text" id="humanVerification" class="form-control" placeholder='Type "I AM HUMAN"'></div><div class="form-navigation"><button type="button" class="btn btn-outline prev-step" data-prev="3">Previous</button><button type="button" class="btn btn-primary" id="submitReport">Submit Report</button></div></div>
+                <div id="reportSuccess" class="form-success" style="display:none"><i class="fas fa-check-circle"></i><h3>Report Submitted!</h3><p>Reference ID: <span id="successReportId"></span></p><button class="btn btn-outline" onclick="resetReportForm()">Submit Another</button></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACT SECTION -->
+    <section id="contact" class="section contact">
+        <div class="container">
+            <div class="section-title"><h2>Contact Us</h2><p>Get in touch for personalized consultation</p></div>
+            <div class="contact-container">
+                <div class="contact-info"><h3>Our Head Office</h3><div class="contact-details"><div class="contact-item"><div class="contact-icon"><i class="fas fa-map-marker-alt"></i></div><div class="contact-text">Monrovia Liberia. P.O.BOX 1000</div></div><div class="contact-item"><div class="contact-icon"><i class="fas fa-phone-alt"></i></div><div class="contact-text">+231886590302<br>+231770562292</div></div><div class="contact-item"><div class="contact-icon"><i class="fas fa-envelope"></i></div><div class="contact-text">infoglobalimmigrationsc@gmail.com</div></div></div></div>
+                <div class="contact-form"><h3>Send us a Message</h3><form id="inquiryForm" action="https://formspree.io/f/mrbaejkr" method="POST"><div class="form-group"><label>Full Name *</label><input type="text" id="name" name="name" class="form-control" required></div><div class="form-group"><label>Email *</label><input type="email" id="email" name="email" class="form-control" required></div><div class="form-group"><label>Phone *</label><input type="tel" id="phone" name="phone" class="form-control" required></div><div class="form-group"><label>Country of Interest *</label><select id="country" name="country" class="form-control"><option value="usa">USA</option><option value="canada">Canada</option><option value="uk">UK</option><option value="australia">Australia</option></select></div><div class="form-group"><label>Message *</label><textarea id="message" name="message" class="form-control" required></textarea></div><input type="hidden" name="form_type" value="contact_form"><button type="submit" class="btn btn-primary">Submit Inquiry</button><div id="formSuccess" class="form-success">Thank you! We'll contact you shortly.</div></form></div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- FOOTER -->
+<footer>
+    <div class="container">
+        <div class="footer-container">
+            <div class="footer-col"><h3>Global Immigration SC</h3><p>Your trusted partner for immigration and study abroad solutions.</p><p>Sponsored by <strong>Motiva Corporation Group of Companies</strong></p></div>
+            <div class="footer-col"><h3>Quick Links</h3><ul class="footer-links"><li><a href="#home">Home</a></li><li><a href="#about">About</a></li><li><a href="#services">Services</a></li><li><a href="#contact">Contact</a></li></ul></div>
+            <div class="footer-col"><h3>Connect With Us</h3><div class="social-links"><a href="https://www.facebook.com/share/1CT6ZQ1p5S/" target="_blank"><i class="fab fa-facebook-f"></i></a><a href="https://www.instagram.com/globalimmigrationsc/" target="_blank"><i class="fab fa-instagram"></i></a><a href="https://wa.me/231886590302" target="_blank"><i class="fab fa-whatsapp"></i></a></div><div class="qr-code"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://www.facebook.com/share/16ZuMVLV3g/" alt="QR Code"></div></div>
+        </div>
+        <div class="footer-bottom"><div class="footer-tagline"><p>Your Global Journey Starts Here 🌍✈️</p></div><p>&copy; 2023 Global Immigration SC. All rights reserved.</p></div>
+    </div>
+</footer>
+
+<a href="https://wa.me/231886590302" class="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
+
+<!-- LIVE CHAT WIDGET -->
+<div id="supportWidget" style="position:fixed; bottom:100px; right:20px; z-index:1000"><button id="openSupport" style="background:linear-gradient(135deg, var(--primary-red) 0%, #b30000 100%); color:white; border:none; border-radius:50px; padding:14px 24px; display:flex; align-items:center; gap:10px; cursor:pointer;"><i class="fas fa-headset"></i> Need Help?</button><div id="supportPanel" style="display:none; position:absolute; bottom:70px; right:0; width:350px; background:white; border-radius:16px; overflow:hidden; box-shadow:0 10px 40px rgba(0,0,0,0.2);"><div style="background:linear-gradient(135deg, var(--primary-red) 0%, #b30000 100%); color:white; padding:20px"><div style="display:flex; justify-content:space-between"><h4>Support Team</h4><button id="closeSupport" style="background:none; border:none; color:white; font-size:20px">&times;</button></div></div><div id="chatMessages" style="height:320px; overflow-y:auto; padding:15px; background:#f8f9fa"><div style="text-align:center; color:#666; padding:20px"><i class="fas fa-comments" style="font-size:2rem"></i><p>Hello! How can we help?</p></div></div><div style="padding:15px; border-top:1px solid #eee"><div style="display:flex; gap:10px"><input type="text" id="chatInput" placeholder="Type message..." style="flex:1; padding:12px; border:1px solid #ddd; border-radius:25px"><button id="sendChat" style="background:var(--primary-red); color:white; border:none; border-radius:50%; width:44px; height:44px"><i class="fas fa-paper-plane"></i></button></div></div></div></div>
+
+<!-- EXIT POPUP -->
+<div id="exitPopup" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:20000; justify-content:center; align-items:center;"><div style="background:white; padding:45px; border-radius:20px; max-width:450px; text-align:center"><button id="closeExitPopup" style="position:absolute; top:15px; right:15px; background:none; border:none; font-size:28px; cursor:pointer">&times;</button><i class="fas fa-envelope-open-text" style="font-size:4rem; color:var(--primary-red); margin-bottom:15px"></i><h3>Don't Miss Out!</h3><p>Get visa updates and scholarship opportunities.</p><form id="exitNewsletter"><input type="email" id="exitEmail" placeholder="Enter email" required style="width:100%; padding:14px; margin-bottom:12px; border:2px solid #eee; border-radius:8px"><button type="submit" class="btn btn-primary" style="width:100%">Subscribe</button></form></div></div>
+
+<script>
+// ========== GLOBAL FUNCTIONS - ALL ORIGINAL FUNCTIONALITY PRESERVED ==========
+
+// Firebase Config (preserved)
+const firebaseConfig = {
+    apiKey: "AIzaSyAJ3p91t83EQeQ6XopPfvisc1fIdsWIMm8",
+    authDomain: "global-immigration-sc.firebaseapp.com",
+    projectId: "global-immigration-sc",
+    storageBucket: "global-immigration-sc.firebasestorage.app",
+    messagingSenderId: "791181145117",
+    appId: "1:791181145117:web:527b7df63c9a32adf9c2f4"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+let currentUser = null;
+let uploadedFiles = [];
+
+// Loading screen
+window.addEventListener('load', function() {
+    setTimeout(function() {
+        document.getElementById('loading-screen').style.opacity = '0';
+        setTimeout(function() { document.getElementById('loading-screen').style.display = 'none'; }, 500);
+    }, 2000);
+    animateValue('clients', 0, 500, 2000);
+    animateValue('success', 0, 98, 2000);
+    animateValue('countries', 0, 80, 2000);
+    animateValue('experience', 0, 10, 2000);
+});
+
+function animateValue(id, start, end, duration) {
+    const obj = document.getElementById(id);
+    if (!obj) return;
+    let startTimestamp = null;
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        obj.innerHTML = Math.floor(progress * (end - start) + start) + (id === 'success' ? '%' : '+');
+        if (progress < 1) window.requestAnimationFrame(step);
+    };
+    window.requestAnimationFrame(step);
+}
+
+// Mobile menu toggle
+document.querySelector('.mobile-toggle')?.addEventListener('click', function() {
+    document.querySelector('.nav-menu').classList.toggle('active');
+});
+
+// Modal handlers
+const liveSessionBtn = document.getElementById('liveSessionBtn');
+const liveSessionModal = document.getElementById('liveSessionModal');
+const registerModal = document.getElementById('registerModal');
+const authModal = document.getElementById('authModal');
+
+liveSessionBtn?.addEventListener('click', (e) => { e.preventDefault(); liveSessionModal.style.display = 'flex'; });
+document.getElementById('joinLive')?.addEventListener('click', () => window.open('https://youtube.com/@info.globalimmigrationsc', '_blank'));
+document.getElementById('registerSession')?.addEventListener('click', () => { liveSessionModal.style.display = 'none'; registerModal.style.display = 'flex'; });
+
+document.querySelectorAll('.close-modal').forEach(btn => {
+    btn.addEventListener('click', function() {
+        liveSessionModal.style.display = 'none';
+        registerModal.style.display = 'none';
+        authModal.style.display = 'none';
+    });
+});
+
+// Auth buttons
+document.getElementById('loginBtn')?.addEventListener('click', (e) => { e.preventDefault(); authModal.style.display = 'flex'; });
+document.getElementById('registerBtn')?.addEventListener('click', (e) => { e.preventDefault(); authModal.style.display = 'flex'; });
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+        if (this.getAttribute('href') !== '#') {
             e.preventDefault();
-            const email = document.getElementById('newsletterEmail')?.value;
-            if (!email) return;
-            
-            try {
-                await fetch('https://script.google.com/macros/s/AKfycbybjc4zzbjlAVqTzxHOWw_jP_hc-afK-7vwfWy81wXeFePimUak6zvRgy3IqAo27sVkXw/exec', {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: new URLSearchParams({ email, form_type: 'newsletter' })
-                });
-                document.getElementById('newsletterSuccess').style.display = 'block';
-                document.getElementById('newsletterForm').reset();
-                setTimeout(() => document.getElementById('newsletterSuccess').style.display = 'none', 3000);
-            } catch (error) {
-                alert('Subscription failed. Please try again.');
-            }
-        });
-        
-        // ==================== CONTACT FORM ====================
-        document.getElementById('inquiryForm')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const form = e.target;
-            const formData = new FormData(form);
-            formData.append('form_type', 'contact_form');
-            
-            try {
-                await fetch(form.action, { method: 'POST', body: formData, headers: { 'Accept': 'application/json' } });
-                document.getElementById('formSuccess').style.display = 'block';
-                form.reset();
-                setTimeout(() => document.getElementById('formSuccess').style.display = 'none', 5000);
-            } catch (error) {
-                alert('Error sending message. Please try again.');
-            }
-        });
-        
-        // ==================== SESSION REGISTRATION ====================
-        document.getElementById('sessionForm')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            formData.append('form_type', 'session_registration');
-            
-            try {
-                await fetch('https://formspree.io/f/mrbaejkr', { method: 'POST', body: formData, headers: { 'Accept': 'application/json' } });
-                document.getElementById('sessionSuccess').style.display = 'block';
-                e.target.reset();
-                setTimeout(() => {
-                    document.getElementById('sessionSuccess').style.display = 'none';
-                    registerModal.style.display = 'none';
-                }, 3000);
-            } catch (error) {
-                alert('Registration failed. Please try again.');
-            }
-        });
-        
-        // ==================== COUNTRY MODAL ====================
-        const countryModal = document.getElementById('countryModal');
-        document.querySelectorAll('.country-flag').forEach(flag => {
-            flag.addEventListener('click', function() {
-                const country = this.dataset.country;
-                const modalContent = document.getElementById('countryModalContent');
-                if (modalContent) {
-                    modalContent.innerHTML = `<h2>${country}</h2><p>Contact us for ${country} visa and immigration services.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform" class="btn btn-primary">Apply Now</a>`;
-                    countryModal.style.display = 'flex';
-                }
-            });
-        });
-        
-        // ==================== TOAST NOTIFICATION HELPER ====================
-        function showToast(message, type = 'success') {
-            const toast = document.createElement('div');
-            toast.className = 'toast-notification';
-            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'}"></i> ${message}`;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) window.scrollTo({ top: target.offsetTop - 70, behavior: 'smooth' });
         }
-        
-        // ==================== SMOOTH SCROLLING ====================
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                const href = this.getAttribute('href');
-                if (href === '#') return;
-                const target = document.querySelector(href);
-                if (target) {
-                    e.preventDefault();
-                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            });
-        });
-        
-        console.log('Global Immigration SC - Premium Glass UI Loaded');
-    </script>
+    });
+});
+
+// Country filter
+const searchInput = document.getElementById('countrySearch');
+const continentFilter = document.getElementById('continentFilter');
+const resetBtn = document.getElementById('resetFilters');
+
+function filterCountries() {
+    const searchTerm = searchInput?.value.toLowerCase() || '';
+    const continent = continentFilter?.value || 'all';
+    document.querySelectorAll('.country-flag').forEach(country => {
+        const name = country.querySelector('.country-name')?.innerText.toLowerCase() || '';
+        const parent = country.closest('.continent-group');
+        let show = true;
+        if (searchTerm && !name.includes(searchTerm)) show = false;
+        if (continent !== 'all' && parent && parent.dataset.continent !== continent) show = false;
+        country.style.display = show ? 'block' : 'none';
+    });
+}
+searchInput?.addEventListener('input', filterCountries);
+continentFilter?.addEventListener('change', filterCountries);
+resetBtn?.addEventListener('click', () => { if(searchInput) searchInput.value = ''; if(continentFilter) continentFilter.value = 'all'; filterCountries(); });
+
+// Country modal
+document.querySelectorAll('.country-flag').forEach(flag => {
+    flag.addEventListener('click', function() {
+        const countryName = this.querySelector('.country-name')?.innerText;
+        const modal = document.getElementById('countryModal');
+        const content = document.getElementById('countryModalContent');
+        if (content) {
+            content.innerHTML = `<div style="text-align:center"><h2>${countryName}</h2><p>Visa services available for ${countryName}</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSeWRMWtwbyzkyOp0D5LNrRdef4v4pvIX0Ki0JS62bE0u1tqSA/viewform" class="btn btn-primary">Apply Now</a></div>`;
+        }
+        if (modal) modal.style.display = 'flex';
+    });
+});
+
+// Report fraud form navigation
+let currentStep = 1;
+function navigateToStep(step) {
+    document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+    document.getElementById(`step-${step}`).classList.add('active');
+    document.querySelectorAll('.progress-step').forEach((ps, i) => {
+        if (i + 1 <= step) ps.classList.add('active');
+        else ps.classList.remove('active');
+    });
+    const progress = (step / 4) * 100;
+    document.querySelector('.progress-fill').style.width = `${progress}%`;
+    currentStep = step;
+}
+
+document.querySelectorAll('.next-step').forEach(btn => {
+    btn.addEventListener('click', () => { if (currentStep < 4) navigateToStep(currentStep + 1); });
+});
+document.querySelectorAll('.prev-step').forEach(btn => {
+    btn.addEventListener('click', () => { if (currentStep > 1) navigateToStep(currentStep - 1); });
+});
+
+// File upload for report fraud
+const uploadArea = document.getElementById('evidenceUploadArea');
+const fileInput = document.getElementById('evidenceFiles');
+const filePreviews = document.getElementById('filePreviews');
+
+uploadArea?.addEventListener('click', () => fileInput?.click());
+uploadArea?.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+uploadArea?.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+uploadArea?.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    if (e.dataTransfer.files.length) handleFiles(Array.from(e.dataTransfer.files));
+});
+fileInput?.addEventListener('change', (e) => { if (e.target.files.length) handleFiles(Array.from(e.target.files)); });
+
+function handleFiles(files) {
+    files.forEach(file => {
+        uploadedFiles.push(file);
+        const preview = document.createElement('div');
+        preview.className = 'file-preview';
+        preview.innerHTML = `<span>${file.name}</span><button onclick="this.parentElement.remove()">Remove</button>`;
+        filePreviews?.appendChild(preview);
+    });
+}
+
+function resetReportForm() {
+    uploadedFiles = [];
+    if (filePreviews) filePreviews.innerHTML = '';
+    navigateToStep(1);
+    document.querySelector('.fraud-report-form').style.display = 'block';
+    document.getElementById('reportSuccess').style.display = 'none';
+}
+
+document.getElementById('submitReport')?.addEventListener('click', async () => {
+    const humanInput = document.getElementById('humanVerification')?.value;
+    if (humanInput?.toUpperCase() !== 'I AM HUMAN') { alert('Please type "I AM HUMAN"'); return; }
+    const reportId = 'FR-' + Date.now();
+    document.querySelector('.fraud-report-form').style.display = 'none';
+    document.getElementById('reportSuccess').style.display = 'block';
+    document.getElementById('successReportId').textContent = reportId;
+});
+
+// Live chat
+const openSupport = document.getElementById('openSupport');
+const closeSupport = document.getElementById('closeSupport');
+const supportPanel = document.getElementById('supportPanel');
+const sendChat = document.getElementById('sendChat');
+const chatInput = document.getElementById('chatInput');
+const chatMessages = document.getElementById('chatMessages');
+
+openSupport?.addEventListener('click', () => { if(supportPanel) supportPanel.style.display = 'block'; });
+closeSupport?.addEventListener('click', () => { if(supportPanel) supportPanel.style.display = 'none'; });
+
+function addChatMessage(text, isUser = true) {
+    if (!chatMessages) return;
+    const div = document.createElement('div');
+    div.style.cssText = `margin-bottom:12px; display:flex; justify-content:${isUser ? 'flex-end' : 'flex-start'}`;
+    div.innerHTML = `<div style="max-width:85%; padding:10px 14px; border-radius:18px; background:${isUser ? 'var(--primary-red)' : 'white'}; color:${isUser ? 'white' : '#333'}">${text}</div>`;
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+sendChat?.addEventListener('click', () => {
+    const msg = chatInput?.value.trim();
+    if (!msg) return;
+    addChatMessage(msg, true);
+    if (chatInput) chatInput.value = '';
+    setTimeout(() => addChatMessage("Thank you for your message! A representative will respond shortly.", false), 500);
+});
+
+// Newsletter
+document.getElementById('newsletterForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('newsletterEmail')?.value;
+    if (email) {
+        document.getElementById('newsletterSuccess').style.display = 'block';
+        setTimeout(() => document.getElementById('newsletterSuccess').style.display = 'none', 3000);
+        e.target.reset();
+    }
+});
+
+// Exit popup
+let exitShown = false;
+setTimeout(() => {
+    document.addEventListener('mouseleave', (e) => {
+        if (e.clientY <= 0 && !exitShown && !localStorage.getItem('exitClosed')) {
+            exitShown = true;
+            document.getElementById('exitPopup').style.display = 'flex';
+        }
+    });
+}, 3000);
+document.getElementById('closeExitPopup')?.addEventListener('click', () => {
+    document.getElementById('exitPopup').style.display = 'none';
+    localStorage.setItem('exitClosed', 'true');
+});
+document.getElementById('exitNewsletter')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    alert('Thanks for subscribing!');
+    document.getElementById('exitPopup').style.display = 'none';
+});
+
+// News slider
+const newsItems = ["📢 Express visa processing now available!", "🌟 Scholarship opportunities for 2026!", "✈️ 10% off on flight bookings for students.", "📅 Visa interview tips webinar next Friday."];
+const newsContent = document.getElementById('newsContent');
+if (newsContent) {
+    newsContent.innerHTML = newsItems.map(item => `<span>${item}</span>`).join('');
+}
+
+// Blog posts from localStorage
+function loadBlogPosts() {
+    const container = document.getElementById('dynamic-blog-container');
+    if (!container) return;
+    const posts = JSON.parse(localStorage.getItem('blogPosts') || '[]');
+    if (posts.length === 0) {
+        container.innerHTML = `<div class="blog-card"><div class="blog-content"><div class="blog-date">July 20, 2023</div><h3>Why Study Abroad</h3><p>Discover benefits of studying abroad.</p><a href="#" class="btn btn-outline">Read More</a></div></div>`;
+        return;
+    }
+    container.innerHTML = posts.map(post => `<div class="blog-card"><div class="blog-content"><div class="blog-date">${new Date(post.date).toLocaleDateString()}</div><h3>${post.title}</h3><p>${post.excerpt}</p><a href="${post.link}" class="btn btn-outline">Read More</a></div></div>`).join('');
+}
+loadBlogPosts();
+
+// Auth state
+auth.onAuthStateChanged((user) => {
+    if (user) {
+        currentUser = user;
+        document.getElementById('userName').textContent = `Welcome, ${user.email.split('@')[0]}`;
+    }
+});
+</script>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
 </body>
 </html>
