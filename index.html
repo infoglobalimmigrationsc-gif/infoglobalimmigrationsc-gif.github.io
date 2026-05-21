@@ -189,35 +189,108 @@
             margin: 0 auto;
         }
         
-                /* Loading Screen with Background Image */
+                /* Loading Screen with Animated World Map Background */
         #loading-screen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
+            z-index: 9999;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 9999;
             transition: opacity 0.5s ease;
-            position: relative;
         }
         
-        /* Dark overlay for better text visibility */
+        /* Canvas background for animated world map */
+        #world-map-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        
+        /* Flying planes animation */
+        .loading-plane {
+            position: absolute;
+            font-size: 28px;
+            color: rgba(255, 255, 255, 0.9);
+            z-index: 1;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+            pointer-events: none;
+        }
+        
+        @keyframes flyPlane1 {
+            0% {
+                left: -10%;
+                top: 20%;
+                transform: rotate(10deg);
+            }
+            100% {
+                left: 110%;
+                top: 20%;
+                transform: rotate(10deg);
+            }
+        }
+        
+        @keyframes flyPlane2 {
+            0% {
+                left: -10%;
+                top: 50%;
+                transform: rotate(-5deg);
+            }
+            100% {
+                left: 110%;
+                top: 50%;
+                transform: rotate(-5deg);
+            }
+        }
+        
+        @keyframes flyPlane3 {
+            0% {
+                left: -10%;
+                top: 75%;
+                transform: rotate(5deg);
+            }
+            100% {
+                left: 110%;
+                top: 75%;
+                transform: rotate(5deg);
+            }
+        }
+        
+        @keyframes flyPlane4 {
+            0% {
+                right: -10%;
+                top: 35%;
+                transform: rotate(-15deg);
+            }
+            100% {
+                right: 110%;
+                top: 35%;
+                transform: rotate(-15deg);
+            }
+        }
+        
+        .loading-plane:nth-child(1) { animation: flyPlane1 18s linear infinite; }
+        .loading-plane:nth-child(2) { animation: flyPlane2 22s linear infinite; animation-delay: 3s; }
+        .loading-plane:nth-child(3) { animation: flyPlane3 25s linear infinite; animation-delay: 8s; }
+        .loading-plane:nth-child(4) { animation: flyPlane4 20s linear infinite; animation-delay: 12s; }
+        
+        /* Dark overlay */
         .loading-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(3px);
+            background: linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 100%);
+            backdrop-filter: blur(2px);
             z-index: 1;
         }
         
@@ -225,13 +298,24 @@
             position: relative;
             z-index: 2;
             text-align: center;
-            padding: 40px;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(12px);
+            padding: 45px 55px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(15px);
             border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2);
-            animation: fadeInUp 0.6s ease-out;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+            animation: fadeInScale 0.6s ease-out;
+        }
+        
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
         
         .loading-logo {
@@ -245,25 +329,41 @@
         .loading-logo img {
             max-width: 100%;
             height: auto;
-            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
-            animation: pulseGlow 1.5s ease-in-out infinite;
+            filter: drop-shadow(0 4px 15px rgba(0, 0, 0, 0.4));
+            animation: pulseGlow 1.8s ease-in-out infinite;
+        }
+        
+        @keyframes pulseGlow {
+            0%, 100% {
+                filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+                transform: scale(1);
+            }
+            50% {
+                filter: drop-shadow(0 0 30px rgba(227, 6, 19, 0.6));
+                transform: scale(1.05);
+            }
         }
         
         .loading-text {
-            font-size: 1.8rem;
+            font-size: 2rem;
             color: white;
             font-weight: 700;
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
-            letter-spacing: 2px;
-            margin-bottom: 25px;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.4);
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #fff, #ffd4d4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: none;
         }
         
         /* Animated spinner rings */
         .loading-spinner-ring {
             position: relative;
-            width: 60px;
-            height: 60px;
-            margin: 0 auto;
+            width: 70px;
+            height: 70px;
+            margin: 15px auto 0;
         }
         
         .ring {
@@ -300,32 +400,29 @@
             100% { transform: rotate(360deg); }
         }
         
-        @keyframes pulseGlow {
-            0%, 100% {
-                filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
-                transform: scale(1);
-            }
-            50% {
-                filter: drop-shadow(0 0 25px rgba(227, 6, 19, 0.5));
-                transform: scale(1.05);
-            }
+        /* Loading message */
+        .loading-message {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.8);
+            letter-spacing: 1px;
         }
         
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .loading-dots {
+            display: inline-block;
         }
         
-        @keyframes rotateLogo {
-            0% { transform: rotate(0deg); }
-            50% { transform: rotate(180deg); }
-            100% { transform: rotate(360deg); }
+        .loading-dots span {
+            animation: blink 1.4s infinite;
+            animation-fill-mode: both;
+        }
+        
+        .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes blink {
+            0%, 80%, 100% { opacity: 0; }
+            40% { opacity: 1; }
         }
         
         /* Header Styles */
@@ -3089,9 +3186,18 @@
     
 </head>
 <body>
-       <!-- Loading Screen -->
+           <!-- Loading Screen with Animated World Map -->
     <div id="loading-screen">
+        <canvas id="world-map-canvas"></canvas>
+        
+        <!-- Flying Planes -->
+        <div class="loading-plane"><i class="fas fa-plane"></i></div>
+        <div class="loading-plane"><i class="fas fa-plane"></i></div>
+        <div class="loading-plane"><i class="fas fa-plane"></i></div>
+        <div class="loading-plane"><i class="fas fa-plane"></i></div>
+        
         <div class="loading-overlay"></div>
+        
         <div class="loading-content">
             <div class="loading-logo">
                 <picture>
@@ -3101,7 +3207,7 @@
                 </picture>
                 <div id="logo-fallback" class="image-fallback" style="display: none;">
                     <i class="fas fa-globe-americas"></i>
-                    <p>Global Immigration SC Logo</p>
+                    <p>Global Immigration SC</p>
                 </div>
             </div>
             <div class="loading-text">Direction to Your Destination</div>
@@ -3109,6 +3215,9 @@
                 <div class="ring"></div>
                 <div class="ring"></div>
                 <div class="ring"></div>
+            </div>
+            <div class="loading-message">
+                Preparing your journey<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span>
             </div>
         </div>
     </div>
@@ -5657,9 +5766,9 @@
             color: #2d3436 !important;
         }
         
-        /* Ensure the loading screen stays solid */
+        /* Ensure the loading screen canvas is visible */
         #loading-screen {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #0a0e27;
         }
         
         #loading-screen .loading-text {
@@ -11561,7 +11670,195 @@ document.addEventListener('DOMContentLoaded', function() {
             
             console.log('✅ Glass components initialized');
         });
-    </script>   
+    <script>
+// Animated World Map Canvas
+(function() {
+    const canvas = document.getElementById('world-map-canvas');
+    if (!canvas) return;
+    
+    function initWorldMap() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const ctx = canvas.getContext('2d');
+        
+        // World map coordinates (simplified paths for animation)
+        const glowPoints = [
+            { x: 0.15, y: 0.35, name: 'USA', pulse: 0 },
+            { x: 0.2, y: 0.45, name: 'Canada', pulse: 0 },
+            { x: 0.5, y: 0.3, name: 'UK', pulse: 0 },
+            { x: 0.55, y: 0.32, name: 'Germany', pulse: 0 },
+            { x: 0.52, y: 0.38, name: 'France', pulse: 0 },
+            { x: 0.48, y: 0.35, name: 'Netherlands', pulse: 0 },
+            { x: 0.65, y: 0.55, name: 'China', pulse: 0 },
+            { x: 0.7, y: 0.6, name: 'Japan', pulse: 0 },
+            { x: 0.75, y: 0.65, name: 'Australia', pulse: 0 },
+            { x: 0.4, y: 0.7, name: 'South Africa', pulse: 0 },
+            { x: 0.45, y: 0.6, name: 'UAE', pulse: 0 },
+            { x: 0.25, y: 0.55, name: 'Brazil', pulse: 0 },
+            { x: 0.3, y: 0.5, name: 'Mexico', pulse: 0 },
+            { x: 0.6, y: 0.28, name: 'Sweden', pulse: 0 },
+            { x: 0.58, y: 0.4, name: 'Italy', pulse: 0 },
+            { x: 0.63, y: 0.45, name: 'India', pulse: 0 },
+            { x: 0.35, y: 0.65, name: 'Nigeria', pulse: 0 },
+            { x: 0.22, y: 0.62, name: 'Argentina', pulse: 0 }
+        ];
+        
+        // Connection lines between countries
+        const connections = [
+            [0, 2], [0, 3], [1, 2], [2, 3], [2, 4], [3, 5],
+            [4, 6], [6, 7], [7, 8], [0, 11], [2, 12], [10, 11],
+            [12, 13], [4, 14], [5, 15], [9, 16], [15, 17]
+        ];
+        
+        let time = 0;
+        
+        function animate() {
+            if (!canvas.isConnected) return;
+            
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw world map outline (simplified continents)
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.fillStyle = 'rgba(30, 40, 60, 0.3)';
+            ctx.lineWidth = 1.5;
+            
+            // North America
+            ctx.moveTo(canvas.width * 0.1, canvas.height * 0.3);
+            ctx.lineTo(canvas.width * 0.25, canvas.height * 0.28);
+            ctx.lineTo(canvas.width * 0.28, canvas.height * 0.4);
+            ctx.lineTo(canvas.width * 0.22, canvas.height * 0.5);
+            ctx.lineTo(canvas.width * 0.12, canvas.height * 0.48);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // South America
+            ctx.beginPath();
+            ctx.moveTo(canvas.width * 0.22, canvas.height * 0.52);
+            ctx.lineTo(canvas.width * 0.28, canvas.height * 0.6);
+            ctx.lineTo(canvas.width * 0.24, canvas.height * 0.72);
+            ctx.lineTo(canvas.width * 0.18, canvas.height * 0.68);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Europe/Asia
+            ctx.beginPath();
+            ctx.moveTo(canvas.width * 0.45, canvas.height * 0.25);
+            ctx.lineTo(canvas.width * 0.75, canvas.height * 0.28);
+            ctx.lineTo(canvas.width * 0.78, canvas.height * 0.45);
+            ctx.lineTo(canvas.width * 0.7, canvas.height * 0.55);
+            ctx.lineTo(canvas.width * 0.55, canvas.height * 0.52);
+            ctx.lineTo(canvas.width * 0.48, canvas.height * 0.4);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Africa
+            ctx.beginPath();
+            ctx.moveTo(canvas.width * 0.42, canvas.height * 0.55);
+            ctx.lineTo(canvas.width * 0.5, canvas.height * 0.58);
+            ctx.lineTo(canvas.width * 0.48, canvas.height * 0.72);
+            ctx.lineTo(canvas.width * 0.4, canvas.height * 0.68);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Australia
+            ctx.beginPath();
+            ctx.moveTo(canvas.width * 0.72, canvas.height * 0.7);
+            ctx.lineTo(canvas.width * 0.78, canvas.height * 0.72);
+            ctx.lineTo(canvas.width * 0.76, canvas.height * 0.78);
+            ctx.lineTo(canvas.width * 0.7, canvas.height * 0.76);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Draw connection lines with flowing particles
+            time += 0.02;
+            
+            connections.forEach(conn => {
+                const p1 = glowPoints[conn[0]];
+                const p2 = glowPoints[conn[1]];
+                const x1 = p1.x * canvas.width;
+                const y1 = p1.y * canvas.height;
+                const x2 = p2.x * canvas.width;
+                const y2 = p2.y * canvas.height;
+                
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.strokeStyle = 'rgba(227, 6, 19, 0.15)';
+                ctx.stroke();
+                
+                // Flowing particle on the line
+                const t = (time + conn[0] * 0.2) % 1;
+                const particleX = x1 + (x2 - x1) * t;
+                const particleY = y1 + (y2 - y1) * t;
+                
+                ctx.beginPath();
+                ctx.arc(particleX, particleY, 3, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(227, 6, 19, ${0.5 + Math.sin(time * 5) * 0.3})`;
+                ctx.fill();
+            });
+            
+            // Draw glowing points
+            glowPoints.forEach((point, idx) => {
+                const x = point.x * canvas.width;
+                const y = point.y * canvas.height;
+                const pulse = Math.sin(time * 2 + idx) * 0.3 + 0.7;
+                
+                // Outer glow
+                ctx.beginPath();
+                ctx.arc(x, y, 12 * pulse, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(227, 6, 19, 0.2)`;
+                ctx.fill();
+                
+                // Inner glow
+                ctx.beginPath();
+                ctx.arc(x, y, 6 * pulse, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(227, 6, 19, 0.6)`;
+                ctx.fill();
+                
+                // Center dot
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 100, 100, 1)`;
+                ctx.fill();
+                
+                // Country name (optional, only for larger screens)
+                if (canvas.width > 768) {
+                    ctx.font = '10px Arial';
+                    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                    ctx.shadowBlur = 0;
+                    ctx.fillText(point.name, x + 8, y - 5);
+                }
+            });
+            
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+        
+        // Handle resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    }
+    
+    // Start animation when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initWorldMap);
+    } else {
+        initWorldMap();
+    }
+})();
+</script>
                     
 </body>
 </html> 
