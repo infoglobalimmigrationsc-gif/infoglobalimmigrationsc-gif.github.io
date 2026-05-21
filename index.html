@@ -11717,68 +11717,84 @@ document.addEventListener('DOMContentLoaded', function() {
         
         let time = 0;
         
-        // Draw a simple world map outline
-        function drawWorldMap(ctx, w, h) {
-            ctx.globalAlpha = 0.3;
-            ctx.fillStyle = 'rgba(50, 80, 120, 0.4)';
-            ctx.strokeStyle = 'rgba(100, 150, 200, 0.5)';
-            ctx.lineWidth = 1.5;
-            
-            // North America
-            ctx.beginPath();
-            ctx.moveTo(w * 0.1, h * 0.3);
-            ctx.lineTo(w * 0.25, h * 0.28);
-            ctx.lineTo(w * 0.28, h * 0.4);
-            ctx.lineTo(w * 0.22, h * 0.5);
-            ctx.lineTo(w * 0.12, h * 0.48);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-            
-            // South America
-            ctx.beginPath();
-            ctx.moveTo(w * 0.22, h * 0.52);
-            ctx.lineTo(w * 0.28, h * 0.6);
-            ctx.lineTo(w * 0.24, h * 0.72);
-            ctx.lineTo(w * 0.18, h * 0.68);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-            
-            // Europe/Asia
-            ctx.beginPath();
-            ctx.moveTo(w * 0.45, h * 0.25);
-            ctx.lineTo(w * 0.75, h * 0.28);
-            ctx.lineTo(w * 0.78, h * 0.45);
-            ctx.lineTo(w * 0.7, h * 0.55);
-            ctx.lineTo(w * 0.55, h * 0.52);
-            ctx.lineTo(w * 0.48, h * 0.4);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-            
-            // Africa
-            ctx.beginPath();
-            ctx.moveTo(w * 0.42, h * 0.55);
-            ctx.lineTo(w * 0.5, h * 0.58);
-            ctx.lineTo(w * 0.48, h * 0.72);
-            ctx.lineTo(w * 0.4, h * 0.68);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-            
-            // Australia
-            ctx.beginPath();
-            ctx.moveTo(w * 0.72, h * 0.7);
-            ctx.lineTo(w * 0.78, h * 0.72);
-            ctx.lineTo(w * 0.76, h * 0.78);
-            ctx.lineTo(w * 0.7, h * 0.76);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-            
-            ctx.globalAlpha = 1;
-        }
+        // Draw world map using an image
+let worldMapImage = new Image();
+worldMapImage.src = 'https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg';
+let mapImageLoaded = false;
+
+worldMapImage.onload = function() {
+    mapImageLoaded = true;
+    console.log('World map image loaded');
+};
+
+function drawWorldMap(ctx, w, h) {
+    if (mapImageLoaded && worldMapImage.complete) {
+        ctx.globalAlpha = 0.35;
+        ctx.drawImage(worldMapImage, 0, 0, w, h);
+        ctx.globalAlpha = 1;
+    } else {
+        // Fallback: Draw simple outlines if image not loaded
+        ctx.globalAlpha = 0.4;
+        ctx.fillStyle = 'rgba(80, 120, 160, 0.3)';
+        ctx.strokeStyle = 'rgba(150, 200, 255, 0.6)';
+        ctx.lineWidth = 2;
+        
+        // North America
+        ctx.beginPath();
+        ctx.moveTo(w * 0.1, h * 0.3);
+        ctx.lineTo(w * 0.25, h * 0.28);
+        ctx.lineTo(w * 0.28, h * 0.4);
+        ctx.lineTo(w * 0.22, h * 0.5);
+        ctx.lineTo(w * 0.12, h * 0.48);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        
+        // South America
+        ctx.beginPath();
+        ctx.moveTo(w * 0.22, h * 0.52);
+        ctx.lineTo(w * 0.28, h * 0.6);
+        ctx.lineTo(w * 0.24, h * 0.72);
+        ctx.lineTo(w * 0.18, h * 0.68);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        
+        // Europe/Asia
+        ctx.beginPath();
+        ctx.moveTo(w * 0.45, h * 0.25);
+        ctx.lineTo(w * 0.75, h * 0.28);
+        ctx.lineTo(w * 0.78, h * 0.45);
+        ctx.lineTo(w * 0.7, h * 0.55);
+        ctx.lineTo(w * 0.55, h * 0.52);
+        ctx.lineTo(w * 0.48, h * 0.4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        
+        // Africa
+        ctx.beginPath();
+        ctx.moveTo(w * 0.42, h * 0.55);
+        ctx.lineTo(w * 0.5, h * 0.58);
+        ctx.lineTo(w * 0.48, h * 0.72);
+        ctx.lineTo(w * 0.4, h * 0.68);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        
+        // Australia
+        ctx.beginPath();
+        ctx.moveTo(w * 0.72, h * 0.7);
+        ctx.lineTo(w * 0.78, h * 0.72);
+        ctx.lineTo(w * 0.76, h * 0.78);
+        ctx.lineTo(w * 0.7, h * 0.76);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        
+        ctx.globalAlpha = 1;
+    }
+}
         
         function animate() {
             if (!canvas.isConnected) return;
