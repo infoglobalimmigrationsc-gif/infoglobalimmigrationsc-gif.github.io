@@ -8193,6 +8193,7 @@ function resetReportForm() {
     console.log('Form reset successfully');
 }
 
+
 // === UPDATE YOUR SUBMIT REPORT FUNCTION ===
 async function submitReportForm() {
     const submitBtn = document.getElementById('submitReport');
@@ -8200,14 +8201,15 @@ async function submitReportForm() {
     const spinner = submitBtn.querySelector('.loading-spinner');
     
     try {
-        // Validate final step
-        if (!validateStep('step-4')) {
-            alert('Please complete all required fields before submitting.');
+        // Validate final step fields manually
+        const legalConsent = document.getElementById('legalConsent');
+        const humanInput = document.getElementById('humanVerification');
+        
+        if (!legalConsent.checked) {
+            alert('Please agree to the legal disclaimer.');
             return;
         }
         
-        // Validate CAPTCHA
-        const humanInput = document.getElementById('humanVerification');
         if (!humanInput || humanInput.value.trim().toUpperCase() !== 'I AM HUMAN') {
             alert('Please complete the security check by typing "I AM HUMAN" exactly as shown.');
             return;
@@ -8234,6 +8236,11 @@ async function submitReportForm() {
             document.getElementById('successReportId').textContent = reportId;
             
             console.log('Report submitted successfully with ID:', reportId);
+            
+            // Reset button state (form is hidden anyway)
+            btnText.textContent = 'Submit Report';
+            spinner.style.display = 'none';
+            submitBtn.disabled = false;
         } else {
             throw new Error(result.message);
         }
@@ -8248,6 +8255,7 @@ async function submitReportForm() {
         submitBtn.disabled = false;
     }
 }
+        
 
 // Application State Management
         let currentUser = null;
