@@ -5766,7 +5766,7 @@
             color: #2d3436 !important;
         }
         
-        /* Ensure the loading screen canvas is visible */
+         /* Ensure the loading screen canvas is visible */
         #loading-screen {
             background: #0a0e27;
         }
@@ -11670,18 +11670,35 @@ document.addEventListener('DOMContentLoaded', function() {
             
             console.log('✅ Glass components initialized');
         });
-    <script>
-// Animated World Map Canvas
+        <script>
+// Animated World Map with Real Background Image
 (function() {
     const canvas = document.getElementById('world-map-canvas');
     if (!canvas) return;
+    
+    let worldMapImage = new Image();
+    // High-quality world map image
+    worldMapImage.src = 'https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg';
+    
+    // Fallback image if the first one fails
+    let useFallback = false;
+    
+    worldMapImage.onerror = function() {
+        useFallback = true;
+        // Use a different world map image as fallback
+        worldMapImage.src = 'https://cdn.pixabay.com/photo/2012/04/10/16/14/world-26332_640.png';
+        worldMapImage.onerror = function() {
+            // If both fail, we'll draw a gradient background
+            useFallback = true;
+        };
+    };
     
     function initWorldMap() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         const ctx = canvas.getContext('2d');
         
-        // World map coordinates (simplified paths for animation)
+        // Glow points on major countries/cities
         const glowPoints = [
             { x: 0.15, y: 0.35, name: 'USA', pulse: 0 },
             { x: 0.2, y: 0.45, name: 'Canada', pulse: 0 },
@@ -11712,146 +11729,164 @@ document.addEventListener('DOMContentLoaded', function() {
         
         let time = 0;
         
+        function drawGradientBackground(ctx, w, h) {
+            const gradient = ctx.createLinearGradient(0, 0, w, h);
+            gradient.addColorStop(0, '#0a0e27');
+            gradient.addColorStop(0.5, '#1a1f3a');
+            gradient.addColorStop(1, '#0a0e27');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, w, h);
+            
+            // Add stars
+            ctx.fillStyle = 'white';
+            for (let i = 0; i < 200; i++) {
+                if (i % 2 === 0) continue; // Only draw some each frame for twinkling effect
+                const x = (i * 131) % w;
+                const y = (i * 253) % h;
+                const opacity = 0.3 + Math.sin(time * 3 + i) * 0.2;
+                ctx.globalAlpha = opacity;
+                ctx.fillRect(x, y, 1.5, 1.5);
+            }
+            ctx.globalAlpha = 1;
+        }
+        
         function animate() {
             if (!canvas.isConnected) return;
             
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
             
-            // Draw world map outline (simplified continents)
-            ctx.beginPath();
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-            ctx.fillStyle = 'rgba(30, 40, 60, 0.3)';
-            ctx.lineWidth = 1.5;
+            // Draw background
+            drawGradientBackground(ctx, w, h);
             
-            // North America
-            ctx.moveTo(canvas.width * 0.1, canvas.height * 0.3);
-            ctx.lineTo(canvas.width * 0.25, canvas.height * 0.28);
-            ctx.lineTo(canvas.width * 0.28, canvas.height * 0.4);
-            ctx.lineTo(canvas.width * 0.22, canvas.height * 0.5);
-            ctx.lineTo(canvas.width * 0.12, canvas.height * 0.48);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
+            // Draw world map image if loaded
+            if (worldMapImage.complete && worldMapImage.naturalWidth > 0 && !useFallback) {
+                ctx.globalAlpha = 0.4;
+                ctx.drawImage(worldMapImage, 0, 0, w, h);
+                ctx.globalAlpha = 1;
+            } else if (useFallback && worldMapImage.complete && worldMapImage.naturalWidth > 0) {
+                ctx.globalAlpha = 0.35;
+                ctx.drawImage(worldMapImage, 0, 0, w, h);
+                ctx.globalAlpha = 1;
+            }
             
-            // South America
-            ctx.beginPath();
-            ctx.moveTo(canvas.width * 0.22, canvas.height * 0.52);
-            ctx.lineTo(canvas.width * 0.28, canvas.height * 0.6);
-            ctx.lineTo(canvas.width * 0.24, canvas.height * 0.72);
-            ctx.lineTo(canvas.width * 0.18, canvas.height * 0.68);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-            
-            // Europe/Asia
-            ctx.beginPath();
-            ctx.moveTo(canvas.width * 0.45, canvas.height * 0.25);
-            ctx.lineTo(canvas.width * 0.75, canvas.height * 0.28);
-            ctx.lineTo(canvas.width * 0.78, canvas.height * 0.45);
-            ctx.lineTo(canvas.width * 0.7, canvas.height * 0.55);
-            ctx.lineTo(canvas.width * 0.55, canvas.height * 0.52);
-            ctx.lineTo(canvas.width * 0.48, canvas.height * 0.4);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-            
-            // Africa
-            ctx.beginPath();
-            ctx.moveTo(canvas.width * 0.42, canvas.height * 0.55);
-            ctx.lineTo(canvas.width * 0.5, canvas.height * 0.58);
-            ctx.lineTo(canvas.width * 0.48, canvas.height * 0.72);
-            ctx.lineTo(canvas.width * 0.4, canvas.height * 0.68);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-            
-            // Australia
-            ctx.beginPath();
-            ctx.moveTo(canvas.width * 0.72, canvas.height * 0.7);
-            ctx.lineTo(canvas.width * 0.78, canvas.height * 0.72);
-            ctx.lineTo(canvas.width * 0.76, canvas.height * 0.78);
-            ctx.lineTo(canvas.width * 0.7, canvas.height * 0.76);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-            
-            // Draw connection lines with flowing particles
+            // Draw connection lines
             time += 0.02;
             
             connections.forEach(conn => {
                 const p1 = glowPoints[conn[0]];
                 const p2 = glowPoints[conn[1]];
-                const x1 = p1.x * canvas.width;
-                const y1 = p1.y * canvas.height;
-                const x2 = p2.x * canvas.width;
-                const y2 = p2.y * canvas.height;
+                const x1 = p1.x * w;
+                const y1 = p1.y * h;
+                const x2 = p2.x * w;
+                const y2 = p2.y * h;
                 
+                // Draw line
                 ctx.beginPath();
                 ctx.moveTo(x1, y1);
                 ctx.lineTo(x2, y2);
-                ctx.strokeStyle = 'rgba(227, 6, 19, 0.15)';
+                ctx.strokeStyle = 'rgba(227, 6, 19, 0.25)';
+                ctx.lineWidth = 1.5;
                 ctx.stroke();
                 
-                // Flowing particle on the line
-                const t = (time + conn[0] * 0.2) % 1;
+                // Animated dashed effect
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.strokeStyle = `rgba(227, 6, 19, 0.6)`;
+                ctx.setLineDash([10, 15]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // Flowing particle
+                const t = (time + conn[0] * 0.15) % 1;
                 const particleX = x1 + (x2 - x1) * t;
                 const particleY = y1 + (y2 - y1) * t;
                 
                 ctx.beginPath();
-                ctx.arc(particleX, particleY, 3, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(227, 6, 19, ${0.5 + Math.sin(time * 5) * 0.3})`;
+                ctx.arc(particleX, particleY, 4, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(227, 6, 19, 0.9)`;
+                ctx.fill();
+                
+                // Trail effect
+                ctx.beginPath();
+                ctx.arc(particleX - (x2 - x1) * 0.03, particleY - (y2 - y1) * 0.03, 2, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 100, 100, 0.5)`;
                 ctx.fill();
             });
             
             // Draw glowing points
             glowPoints.forEach((point, idx) => {
-                const x = point.x * canvas.width;
-                const y = point.y * canvas.height;
-                const pulse = Math.sin(time * 2 + idx) * 0.3 + 0.7;
+                const x = point.x * w;
+                const y = point.y * h;
+                const pulse = Math.sin(time * 3 + idx) * 0.3 + 0.7;
                 
                 // Outer glow
                 ctx.beginPath();
-                ctx.arc(x, y, 12 * pulse, 0, Math.PI * 2);
+                ctx.arc(x, y, 15 * pulse, 0, Math.PI * 2);
                 ctx.fillStyle = `rgba(227, 6, 19, 0.2)`;
                 ctx.fill();
                 
-                // Inner glow
+                // Middle glow
                 ctx.beginPath();
-                ctx.arc(x, y, 6 * pulse, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(227, 6, 19, 0.6)`;
+                ctx.arc(x, y, 8 * pulse, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(227, 6, 19, 0.5)`;
                 ctx.fill();
                 
-                // Center dot
+                // Inner dot
                 ctx.beginPath();
-                ctx.arc(x, y, 3, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(255, 100, 100, 1)`;
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 80, 80, 1)`;
                 ctx.fill();
                 
-                // Country name (optional, only for larger screens)
-                if (canvas.width > 768) {
-                    ctx.font = '10px Arial';
-                    ctx.fillStyle = 'rgba(255,255,255,0.6)';
-                    ctx.shadowBlur = 0;
-                    ctx.fillText(point.name, x + 8, y - 5);
-                }
+                // White center
+                ctx.beginPath();
+                ctx.arc(x, y, 2, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, 0.9)`;
+                ctx.fill();
             });
             
             requestAnimationFrame(animate);
         }
         
-        animate();
+        // Start animation when image loads
+        worldMapImage.onload = function() {
+            console.log('World map loaded');
+            animate();
+        };
+        
+        // If image takes too long or fails, start animation anyway
+        setTimeout(() => {
+            if (!worldMapImage.complete) {
+                console.log('Using fallback - starting animation without map image');
+                useFallback = true;
+                animate();
+            }
+        }, 2000);
         
         // Handle resize
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         });
+        
+        // Start animation immediately if image is already cached
+        if (worldMapImage.complete && worldMapImage.naturalWidth > 0) {
+            animate();
+        } else if (!worldMapImage.complete) {
+            // Show loading indicator while image loads
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+            drawGradientBackground(ctx, w, h);
+        }
     }
     
-    // Start animation when DOM is ready
+    // Start when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initWorldMap);
     } else {
