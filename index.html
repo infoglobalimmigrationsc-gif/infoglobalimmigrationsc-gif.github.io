@@ -11743,68 +11743,68 @@ document.addEventListener('DOMContentLoaded', function() {
             
             let time = 0;
             
-            // Draw a simple world map outline (reliable, always works)
-            function drawWorldMap(ctx, w, h) {
-                ctx.globalAlpha = 0.45;
-                ctx.fillStyle = 'rgba(60, 100, 140, 0.35)';
-                ctx.strokeStyle = 'rgba(200, 220, 255, 0.7)';
-                ctx.lineWidth = 2;
-                
-                // North America
-                ctx.beginPath();
-                ctx.moveTo(w * 0.1, h * 0.3);
-                ctx.lineTo(w * 0.25, h * 0.28);
-                ctx.lineTo(w * 0.28, h * 0.4);
-                ctx.lineTo(w * 0.22, h * 0.5);
-                ctx.lineTo(w * 0.12, h * 0.48);
-                ctx.closePath();
-                ctx.fill();
-                ctx.stroke();
-                
-                // South America
-                ctx.beginPath();
-                ctx.moveTo(w * 0.22, h * 0.52);
-                ctx.lineTo(w * 0.28, h * 0.6);
-                ctx.lineTo(w * 0.24, h * 0.72);
-                ctx.lineTo(w * 0.18, h * 0.68);
-                ctx.closePath();
-                ctx.fill();
-                ctx.stroke();
-                
-                // Europe/Asia
-                ctx.beginPath();
-                ctx.moveTo(w * 0.45, h * 0.25);
-                ctx.lineTo(w * 0.75, h * 0.28);
-                ctx.lineTo(w * 0.78, h * 0.45);
-                ctx.lineTo(w * 0.7, h * 0.55);
-                ctx.lineTo(w * 0.55, h * 0.52);
-                ctx.lineTo(w * 0.48, h * 0.4);
-                ctx.closePath();
-                ctx.fill();
-                ctx.stroke();
-                
-                // Africa
-                ctx.beginPath();
-                ctx.moveTo(w * 0.42, h * 0.55);
-                ctx.lineTo(w * 0.5, h * 0.58);
-                ctx.lineTo(w * 0.48, h * 0.72);
-                ctx.lineTo(w * 0.4, h * 0.68);
-                ctx.closePath();
-                ctx.fill();
-                ctx.stroke();
-                
-                // Australia
-                ctx.beginPath();
-                ctx.moveTo(w * 0.72, h * 0.7);
-                ctx.lineTo(w * 0.78, h * 0.72);
-                ctx.lineTo(w * 0.76, h * 0.78);
-                ctx.lineTo(w * 0.7, h * 0.76);
-                ctx.closePath();
-                ctx.fill();
-                ctx.stroke();
-                
-                ctx.globalAlpha = 1;
-            }
+            // Draw a simple world map outline (BOLDER AND BRIGHTER)
+function drawWorldMap(ctx, w, h) {
+    ctx.globalAlpha = 0.8;  // Changed from 0.45 to 0.8 - MUCH BRIGHTER
+    ctx.fillStyle = 'rgba(100, 150, 200, 0.25)';  // Brighter fill color
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';  // Changed to WHITE for better visibility
+    ctx.lineWidth = 3;  // Thicker lines
+    
+    // North America
+    ctx.beginPath();
+    ctx.moveTo(w * 0.1, h * 0.3);
+    ctx.lineTo(w * 0.25, h * 0.28);
+    ctx.lineTo(w * 0.28, h * 0.4);
+    ctx.lineTo(w * 0.22, h * 0.5);
+    ctx.lineTo(w * 0.12, h * 0.48);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    
+    // South America
+    ctx.beginPath();
+    ctx.moveTo(w * 0.22, h * 0.52);
+    ctx.lineTo(w * 0.28, h * 0.6);
+    ctx.lineTo(w * 0.24, h * 0.72);
+    ctx.lineTo(w * 0.18, h * 0.68);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    
+    // Europe/Asia
+    ctx.beginPath();
+    ctx.moveTo(w * 0.45, h * 0.25);
+    ctx.lineTo(w * 0.75, h * 0.28);
+    ctx.lineTo(w * 0.78, h * 0.45);
+    ctx.lineTo(w * 0.7, h * 0.55);
+    ctx.lineTo(w * 0.55, h * 0.52);
+    ctx.lineTo(w * 0.48, h * 0.4);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    
+    // Africa
+    ctx.beginPath();
+    ctx.moveTo(w * 0.42, h * 0.55);
+    ctx.lineTo(w * 0.5, h * 0.58);
+    ctx.lineTo(w * 0.48, h * 0.72);
+    ctx.lineTo(w * 0.4, h * 0.68);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    
+    // Australia
+    ctx.beginPath();
+    ctx.moveTo(w * 0.72, h * 0.7);
+    ctx.lineTo(w * 0.78, h * 0.72);
+    ctx.lineTo(w * 0.76, h * 0.78);
+    ctx.lineTo(w * 0.7, h * 0.76);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    
+    ctx.globalAlpha = 1;
+}
             
             // Draw stars in background
             function drawStars(ctx, w, h, time) {
