@@ -7,6 +7,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/glass-system.css">
     <style>
+        :root {
+            --primary-red: #E30613;
+            --primary-red-dark: #b30000;
+            --primary-white: #FFFFFF;
+            --dark-gray: #333333;
+            --medium-gray: #777777;
+            --light-gray: #F5F5F5;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -15,7 +24,7 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
             background-attachment: fixed;
             min-height: 100vh;
         }
@@ -30,30 +39,38 @@
         .dashboard-sidebar {
             width: 280px;
             background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
             border-right: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 30px 20px;
+            padding: 25px 20px;
             position: fixed;
             height: 100vh;
             overflow-y: auto;
             z-index: 100;
+            transition: transform 0.3s ease;
         }
         
         .sidebar-logo {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             padding-bottom: 20px;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
+            border-bottom: 2px solid var(--primary-red);
         }
         
         .sidebar-logo img {
-            max-width: 120px;
+            max-width: 130px;
             margin-bottom: 10px;
         }
         
         .sidebar-logo h3 {
             color: var(--primary-red);
-            font-size: 1.2rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+        
+        .sidebar-logo p {
+            color: var(--medium-gray);
+            font-size: 0.7rem;
+            margin-top: 2px;
         }
         
         .sidebar-menu {
@@ -61,7 +78,7 @@
         }
         
         .sidebar-menu li {
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
         
         .sidebar-menu a {
@@ -73,17 +90,28 @@
             color: #333;
             text-decoration: none;
             transition: all 0.3s ease;
+            font-size: 0.9rem;
         }
         
         .sidebar-menu a i {
-            width: 24px;
+            width: 22px;
             color: var(--primary-red);
+            font-size: 1rem;
         }
         
         .sidebar-menu a:hover,
         .sidebar-menu a.active {
             background: rgba(227, 6, 19, 0.1);
             color: var(--primary-red);
+        }
+        
+        .sidebar-menu a .badge {
+            margin-left: auto;
+            background: var(--primary-red);
+            color: white;
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 20px;
         }
         
         .sidebar-footer {
@@ -99,7 +127,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         
         .user-avatar {
@@ -113,16 +141,39 @@
             color: white;
             font-weight: bold;
             font-size: 1.2rem;
+            flex-shrink: 0;
         }
         
         .user-details h4 {
-            font-size: 0.95rem;
-            margin-bottom: 3px;
+            font-size: 0.9rem;
+            margin-bottom: 2px;
+            color: var(--dark-gray);
         }
         
         .user-details p {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #666;
+        }
+        
+        .btn-logout {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--primary-red);
+            background: transparent;
+            color: var(--primary-red);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-logout:hover {
+            background: var(--primary-red);
+            color: white;
         }
         
         /* Main Content */
@@ -137,189 +188,31 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
             border-bottom: 1px solid rgba(255,255,255,0.2);
-        }
-        
-        .dashboard-header h1 {
-            color: white;
-            font-size: 1.8rem;
-        }
-        
-        .header-actions {
-            display: flex;
-            gap: 15px;
-        }
-        
-        /* Stats Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .stat-card {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 20px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .stat-card h3 {
-            font-size: 2rem;
-            color: white;
-            margin-bottom: 5px;
-        }
-        
-        .stat-card p {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.9rem;
-        }
-        
-        /* Sections */
-        .dashboard-section {
-            display: none;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            padding: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .dashboard-section.active {
-            display: block;
-        }
-        
-        .section-title {
-            color: white;
-            margin-bottom: 20px;
-            font-size: 1.5rem;
-        }
-        
-        /* Progress Bar */
-        .progress-container {
-            background: rgba(255,255,255,0.2);
-            border-radius: 10px;
-            height: 10px;
-            overflow: hidden;
-            margin: 20px 0;
-        }
-        
-        .progress-fill {
-            background: var(--primary-red);
-            height: 100%;
-            width: 0%;
-            transition: width 0.5s ease;
-            border-radius: 10px;
-        }
-        
-        /* Steps */
-        .steps-container {
-            display: flex;
-            justify-content: space-between;
-            margin: 30px 0;
             flex-wrap: wrap;
             gap: 15px;
         }
         
-        .step {
-            flex: 1;
-            text-align: center;
-            padding: 15px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 16px;
-            position: relative;
+        .dashboard-header h1 {
+            color: white;
+            font-size: 1.6rem;
+            font-weight: 700;
         }
         
-        .step-number {
-            width: 40px;
-            height: 40px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 50%;
+        .dashboard-header h1 small {
+            font-size: 0.8rem;
+            font-weight: 400;
+            opacity: 0.7;
+        }
+        
+        .header-actions {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 10px;
-            font-weight: bold;
-            color: white;
+            gap: 10px;
+            flex-wrap: wrap;
         }
         
-        .step.active .step-number {
-            background: var(--primary-red);
-        }
-        
-        .step.completed .step-number {
-            background: #4CAF50;
-        }
-        
-        .step.completed .step-number::after {
-            content: '✓';
-        }
-        
-        .step-title {
-            color: white;
-            font-size: 0.85rem;
-        }
-        
-        /* Documents Grid */
-        .documents-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-        
-        .document-card {
-            background: rgba(255,255,255,0.1);
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-            transition: transform 0.3s ease;
-        }
-        
-        .document-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .document-icon {
-            font-size: 2.5rem;
-            color: var(--primary-red);
-            margin-bottom: 10px;
-        }
-        
-        .document-status {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            margin-top: 10px;
-        }
-        
-        .status-pending { background: #fff3cd; color: #856404; }
-        .status-approved { background: #d4edda; color: #155724; }
-        .status-missing { background: #f8d7da; color: #721c24; }
-        
-        /* Upload Area */
-        .upload-area {
-            border: 2px dashed rgba(255,255,255,0.3);
-            border-radius: 16px;
-            padding: 30px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 20px 0;
-        }
-        
-        .upload-area:hover {
-            border-color: var(--primary-red);
-            background: rgba(255,255,255,0.05);
-        }
-        
-        /* Buttons */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -328,9 +221,10 @@
             border-radius: 8px;
             border: none;
             cursor: pointer;
-            font-weight: 500;
+            font-weight: 600;
             transition: all 0.3s ease;
             text-decoration: none;
+            font-size: 0.85rem;
         }
         
         .btn-primary {
@@ -339,19 +233,28 @@
         }
         
         .btn-primary:hover {
-            background: #b30000;
+            background: var(--primary-red-dark);
             transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(227, 6, 19, 0.3);
         }
         
         .btn-outline {
-            background: transparent;
-            border: 1px solid var(--primary-red);
-            color: var(--primary-red);
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
         }
         
         .btn-outline:hover {
-            background: var(--primary-red);
+            background: rgba(255,255,255,0.25);
+        }
+        
+        .btn-success {
+            background: #28a745;
             color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
         }
         
         .btn-danger {
@@ -359,97 +262,544 @@
             color: white;
         }
         
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 0.75rem;
+        }
+        
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 18px 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .stat-card h3 {
+            font-size: 1.8rem;
+            color: white;
+            margin-bottom: 3px;
+        }
+        
+        .stat-card p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.8rem;
+        }
+        
+        .stat-card .stat-icon {
+            font-size: 1.5rem;
+            color: var(--primary-red);
+            margin-bottom: 8px;
+        }
+        
+        /* Sections */
+        .dashboard-section {
+            display: none;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .dashboard-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .section-title {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            color: var(--primary-red);
+        }
+        
+        .section-subtitle {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+        
+        /* Progress Bar */
+        .progress-container {
+            background: rgba(255,255,255,0.15);
+            border-radius: 10px;
+            height: 10px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, var(--primary-red), var(--primary-red-dark));
+            height: 100%;
+            width: 0%;
+            transition: width 0.8s ease;
+            border-radius: 10px;
+        }
+        
+        /* Steps */
+        .steps-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0 25px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .step {
+            flex: 1;
+            text-align: center;
+            padding: 12px 10px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 12px;
+            position: relative;
+            min-width: 60px;
+            transition: all 0.3s ease;
+        }
+        
+        .step.active {
+            background: rgba(227, 6, 19, 0.2);
+            border: 1px solid rgba(227, 6, 19, 0.3);
+        }
+        
+        .step.completed {
+            background: rgba(40, 167, 69, 0.15);
+            border: 1px solid rgba(40, 167, 69, 0.2);
+        }
+        
+        .step-number {
+            width: 35px;
+            height: 35px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            font-weight: bold;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+        
+        .step.active .step-number {
+            background: var(--primary-red);
+            color: white;
+        }
+        
+        .step.completed .step-number {
+            background: #28a745;
+            color: white;
+        }
+        
+        .step.completed .step-number::after {
+            content: '✓';
+        }
+        
+        .step-title {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        
+        .step.active .step-title {
+            color: white;
+        }
+        
+        /* Documents Grid */
+        .documents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .document-card {
+            background: rgba(255,255,255,0.08);
+            border-radius: 14px;
+            padding: 18px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        
+        .document-card:hover {
+            transform: translateY(-3px);
+            background: rgba(255,255,255,0.12);
+        }
+        
+        .document-card .doc-icon {
+            font-size: 2rem;
+            color: var(--primary-red);
+            margin-bottom: 8px;
+        }
+        
+        .document-card h5 {
+            color: white;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+        
+        .document-card .doc-status {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+        
+        .status-pending { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+        .status-approved { background: rgba(40, 167, 69, 0.2); color: #28a745; }
+        .status-rejected { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
+        .status-missing { background: rgba(108, 117, 125, 0.2); color: #adb5bd; }
+        .status-review { background: rgba(23, 162, 184, 0.2); color: #17a2b8; }
+        
+        /* Upload Area */
+        .upload-area {
+            border: 2px dashed rgba(255,255,255,0.2);
+            border-radius: 14px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 15px 0;
+        }
+        
+        .upload-area:hover {
+            border-color: var(--primary-red);
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .upload-area.dragover {
+            border-color: var(--primary-red);
+            background: rgba(227, 6, 19, 0.1);
+        }
+        
+        .upload-area i {
+            font-size: 2.5rem;
+            color: var(--primary-red);
+            margin-bottom: 10px;
+        }
+        
+        .upload-area h4 {
+            color: white;
+            margin-bottom: 5px;
+        }
+        
+        .upload-area p {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.85rem;
+        }
+        
+        /* Upload Progress */
+        .upload-progress {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            margin: 10px 0;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .upload-progress-bar {
+            height: 100%;
+            background: var(--primary-red);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
         /* Form Styles */
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
         
         .form-group label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             color: white;
             font-weight: 500;
+            font-size: 0.85rem;
+        }
+        
+        .form-group label .required {
+            color: var(--primary-red);
         }
         
         .form-control {
             width: 100%;
-            padding: 12px 15px;
-            border: 1px solid rgba(255,255,255,0.2);
+            padding: 10px 14px;
+            border: 1px solid rgba(255,255,255,0.15);
             border-radius: 8px;
             background: rgba(255,255,255,0.9);
-            font-size: 1rem;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-red);
+            box-shadow: 0 0 0 3px rgba(227, 6, 19, 0.15);
+        }
+        
+        .form-control::placeholder {
+            color: #999;
+        }
+        
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 35px;
+        }
+        
+        textarea.form-control {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        /* Notifications */
+        .notifications-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .notification-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 3px solid var(--primary-red);
+            transition: all 0.3s ease;
+        }
+        
+        .notification-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .notification-item .notif-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(227, 6, 19, 0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-red);
+            flex-shrink: 0;
+        }
+        
+        .notification-item .notif-content {
+            flex: 1;
+        }
+        
+        .notification-item .notif-content h5 {
+            color: white;
+            font-size: 0.85rem;
+            margin-bottom: 3px;
+        }
+        
+        .notification-item .notif-content p {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.8rem;
+            margin-bottom: 3px;
+        }
+        
+        .notification-item .notif-content small {
+            color: rgba(255,255,255,0.4);
+            font-size: 0.7rem;
+        }
+        
+        .notification-item .notif-badge {
+            background: var(--primary-red);
+            color: white;
+            font-size: 0.6rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+            align-self: flex-start;
+        }
+        
+        .notification-item.read {
+            opacity: 0.6;
+            border-left-color: #666;
+        }
+        
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: rgba(255,255,255,0.15);
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-bottom: 25px;
+        }
+        
+        .timeline-item:last-child {
+            padding-bottom: 0;
+        }
+        
+        .timeline-item .timeline-dot {
+            position: absolute;
+            left: -26px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-red);
+            border: 3px solid rgba(255,255,255,0.1);
+        }
+        
+        .timeline-item.completed .timeline-dot {
+            background: #28a745;
+        }
+        
+        .timeline-item .timeline-content h5 {
+            color: white;
+            font-size: 0.9rem;
+            margin-bottom: 3px;
+        }
+        
+        .timeline-item .timeline-content p {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.8rem;
+        }
+        
+        .timeline-item .timeline-content small {
+            color: rgba(255,255,255,0.4);
+            font-size: 0.7rem;
         }
         
         /* Toast Notifications */
-        .toast-notification {
+        .toast-container {
             position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: #4CAF50;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 400px;
+        }
+        
+        .toast {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 14px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-left: 4px solid #28a745;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideInRight 0.4s ease;
+            min-width: 280px;
+        }
+        
+        .toast.error {
+            border-left-color: #dc3545;
+        }
+        
+        .toast.warning {
+            border-left-color: #ffc107;
+        }
+        
+        .toast.info {
+            border-left-color: #17a2b8;
+        }
+        
+        .toast i {
+            font-size: 1.2rem;
+        }
+        
+        .toast .toast-close {
+            margin-left: auto;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity 0.3s ease;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+        }
+        
+        .toast .toast-close:hover {
+            opacity: 1;
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: var(--primary-red);
             color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            z-index: 1000;
-            animation: slideIn 0.3s ease;
-        }
-        
-        .toast-error {
-            background: #dc3545;
-        }
-        
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .dashboard-sidebar {
-                transform: translateX(-100%);
-                transition: transform 0.3s ease;
-                z-index: 1000;
-            }
-            
-            .dashboard-sidebar.open {
-                transform: translateX(0);
-            }
-            
-            .dashboard-main {
-                margin-left: 0;
-            }
-            
-            .mobile-menu-toggle {
-                display: block;
-                position: fixed;
-                top: 20px;
-                left: 20px;
-                z-index: 1001;
-                background: var(--primary-red);
-                color: white;
-                border: none;
-                padding: 10px;
-                border-radius: 8px;
-                cursor: pointer;
-            }
-        }
-        
-        @media (min-width: 769px) {
-            .mobile-menu-toggle {
-                display: none;
-            }
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
         
         /* Loading Spinner */
-        .loading-spinner {
+        .spinner {
             display: inline-block;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border: 2px solid rgba(255,255,255,0.3);
             border-radius: 50%;
             border-top-color: white;
@@ -458,6 +808,135 @@
         
         @keyframes spin {
             to { transform: rotate(360deg); }
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.3;
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .dashboard-main {
+                padding: 20px;
+            }
+            
+            .documents-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            
+            .dashboard-sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .dashboard-main {
+                margin-left: 0;
+                padding: 15px;
+                padding-top: 70px;
+            }
+            
+            .mobile-menu-toggle {
+                display: block;
+            }
+            
+            .dashboard-header h1 {
+                font-size: 1.2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            
+            .stat-card h3 {
+                font-size: 1.3rem;
+            }
+            
+            .steps-container {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                gap: 8px;
+                padding-bottom: 10px;
+            }
+            
+            .step {
+                min-width: 70px;
+                padding: 10px 8px;
+            }
+            
+            .step-title {
+                font-size: 0.6rem;
+            }
+            
+            .documents-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .dashboard-section {
+                padding: 15px;
+            }
+            
+            .header-actions .btn span {
+                display: none;
+            }
+            
+            .toast {
+                min-width: 200px;
+                font-size: 0.85rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+            
+            .documents-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stat-card {
+                padding: 12px;
+            }
+            
+            .stat-card h3 {
+                font-size: 1.1rem;
+            }
+        }
+        
+        /* Scrollbar Styles */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-red);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-red-dark);
         }
     </style>
 </head>
@@ -470,16 +949,18 @@
         <!-- Sidebar -->
         <aside class="dashboard-sidebar" id="sidebar">
             <div class="sidebar-logo">
-                <img src="../GISC-LOGO.png" alt="Logo" onerror="this.src='https://placehold.co/120x120/E30613/white?text=GISC'">
+                <img src="../GISC-LOGO.png" alt="Global Immigration SC Logo" onerror="this.src='https://placehold.co/130x70/E30613/white?text=GISC'">
                 <h3>Global Immigration SC</h3>
+                <p>Your Global Journey Starts Here</p>
             </div>
             
             <ul class="sidebar-menu">
                 <li><a href="#" data-section="overview" class="active"><i class="fas fa-tachometer-alt"></i> Overview</a></li>
-                <li><a href="#" data-section="documents"><i class="fas fa-folder-open"></i> Documents</a></li>
+                <li><a href="#" data-section="documents"><i class="fas fa-folder-open"></i> Documents <span class="badge" id="docBadge">0</span></a></li>
+                <li><a href="#" data-section="notifications"><i class="fas fa-bell"></i> Notifications <span class="badge" id="notifBadge">0</span></a></li>
                 <li><a href="#" data-section="payments"><i class="fas fa-credit-card"></i> Payments</a></li>
                 <li><a href="#" data-section="profile"><i class="fas fa-user"></i> Profile</a></li>
-                <li><a href="#" data-section="status"><i class="fas fa-chart-line"></i> Application Status</a></li>
+                <li><a href="#" data-section="status"><i class="fas fa-chart-line"></i> Timeline</a></li>
             </ul>
             
             <div class="sidebar-footer">
@@ -490,7 +971,7 @@
                         <p id="userEmail">user@example.com</p>
                     </div>
                 </div>
-                <button id="logoutBtn" class="btn btn-outline" style="width: 100%;">
+                <button id="logoutBtn" class="btn-logout">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </button>
             </div>
@@ -499,35 +980,52 @@
         <!-- Main Content -->
         <main class="dashboard-main">
             <div class="dashboard-header">
-                <h1>My Application Portal</h1>
+                <h1>My Application <small>Portal</small></h1>
                 <div class="header-actions">
-                    <a href="../index.html" class="btn btn-outline">
-                        <i class="fas fa-home"></i> Back to Home
+                    <a href="../index.html" class="btn btn-outline btn-sm">
+                        <i class="fas fa-home"></i> <span>Home</span>
                     </a>
+                    <button class="btn btn-outline btn-sm" onclick="refreshData()">
+                        <i class="fas fa-sync-alt"></i> <span>Refresh</span>
+                    </button>
                 </div>
             </div>
             
             <!-- Overview Section -->
             <div id="overview-section" class="dashboard-section active">
-                <h2 class="section-title">Application Overview</h2>
+                <h2 class="section-title"><i class="fas fa-tachometer-alt"></i> Application Overview</h2>
                 
                 <div class="stats-grid">
                     <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-percentage"></i></div>
                         <h3 id="progressPercent">0%</h3>
                         <p>Application Complete</p>
                     </div>
                     <div class="stat-card">
-                        <h3 id="docsCompleted">0</h3>
+                        <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+                        <h3 id="docsCompleted">0/<span id="totalDocs">6</span></h3>
                         <p>Documents Uploaded</p>
                     </div>
                     <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-info-circle"></i></div>
                         <h3 id="appStatus">Draft</h3>
                         <p>Application Status</p>
                     </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-bell"></i></div>
+                        <h3 id="notifCount">0</h3>
+                        <p>Notifications</p>
+                    </div>
                 </div>
                 
-                <div class="progress-container">
-                    <div class="progress-fill" id="mainProgress"></div>
+                <div style="margin: 15px 0 10px;">
+                    <div style="display: flex; justify-content: space-between; color: rgba(255,255,255,0.7); font-size: 0.85rem;">
+                        <span>Progress</span>
+                        <span id="progressLabel">0%</span>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-fill" id="mainProgress"></div>
+                    </div>
                 </div>
                 
                 <div class="steps-container" id="stepsContainer">
@@ -553,9 +1051,9 @@
                     </div>
                 </div>
                 
-                <div id="nextSteps" style="margin-top: 30px;">
-                    <h3 style="color: white; margin-bottom: 15px;">Next Steps</h3>
-                    <ul id="nextStepsList" style="color: rgba(255,255,255,0.8); margin-left: 20px;">
+                <div id="nextSteps">
+                    <h4 style="color: white; margin-bottom: 10px; font-size: 0.95rem;"><i class="fas fa-list-check"></i> Next Steps</h4>
+                    <ul id="nextStepsList" style="color: rgba(255,255,255,0.7); margin-left: 20px; font-size: 0.9rem;">
                         <li>Complete your profile information</li>
                         <li>Upload required documents</li>
                         <li>Complete payment</li>
@@ -565,59 +1063,85 @@
             
             <!-- Documents Section -->
             <div id="documents-section" class="dashboard-section">
-                <h2 class="section-title">Document Management</h2>
-                <p style="color: rgba(255,255,255,0.8); margin-bottom: 20px;">Upload and manage your application documents</p>
+                <h2 class="section-title"><i class="fas fa-folder-open"></i> Document Management</h2>
+                <p class="section-subtitle">Upload and manage all required documents for your application</p>
                 
                 <div class="documents-grid" id="documentsGrid">
                     <!-- Documents loaded dynamically -->
                 </div>
                 
                 <div class="upload-area" id="bulkUploadArea">
-                    <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: var(--primary-red); margin-bottom: 10px;"></i>
+                    <i class="fas fa-cloud-upload-alt"></i>
                     <h4>Upload Documents</h4>
-                    <p>Click or drag files to upload</p>
-                    <input type="file" id="bulkFileUpload" multiple style="display: none;">
+                    <p>Click or drag files to upload (PDF, JPG, PNG, DOC)</p>
+                    <input type="file" id="bulkFileUpload" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="display: none;">
+                    <div class="upload-progress" id="bulkProgress">
+                        <div class="upload-progress-bar" id="bulkProgressBar"></div>
+                    </div>
                 </div>
                 
-                <div id="uploadHistory" style="margin-top: 30px;">
-                    <h3 style="color: white;">Upload History</h3>
+                <div id="uploadHistory" style="margin-top: 20px;">
+                    <h4 style="color: white; margin-bottom: 10px; font-size: 0.95rem;"><i class="fas fa-history"></i> Upload History</h4>
                     <div id="historyList" style="max-height: 200px; overflow-y: auto;"></div>
+                </div>
+            </div>
+            
+            <!-- Notifications Section -->
+            <div id="notifications-section" class="dashboard-section">
+                <h2 class="section-title"><i class="fas fa-bell"></i> Notifications</h2>
+                <p class="section-subtitle">Stay updated with messages from your immigration consultant</p>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                    <button class="btn btn-primary btn-sm" onclick="markAllRead()">
+                        <i class="fas fa-check-double"></i> Mark All Read
+                    </button>
+                    <button class="btn btn-outline btn-sm" onclick="loadNotifications()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+                
+                <div id="notificationsList" class="notifications-list">
+                    <!-- Notifications loaded dynamically -->
                 </div>
             </div>
             
             <!-- Payments Section -->
             <div id="payments-section" class="dashboard-section">
-                <h2 class="section-title">Payment Management</h2>
+                <h2 class="section-title"><i class="fas fa-credit-card"></i> Payment Management</h2>
+                <p class="section-subtitle">Manage your application fees and track payment status</p>
                 
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <h3>$<span id="paidAmount">0</span></h3>
+                        <div class="stat-icon"><i class="fas fa-check-circle" style="color: #28a745;"></i></div>
+                        <h3>$<span id="paidAmount">0.00</span></h3>
                         <p>Paid</p>
                     </div>
                     <div class="stat-card">
-                        <h3>$<span id="pendingAmount">0</span></h3>
+                        <div class="stat-icon"><i class="fas fa-clock" style="color: #ffc107;"></i></div>
+                        <h3>$<span id="pendingAmount">0.00</span></h3>
                         <p>Pending</p>
                     </div>
                     <div class="stat-card">
-                        <h3>$<span id="dueAmount">0</span></h3>
+                        <div class="stat-icon"><i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i></div>
+                        <h3>$<span id="dueAmount">0.00</span></h3>
                         <p>Due</p>
                     </div>
                 </div>
                 
-                <div style="background: rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; margin: 20px 0;">
-                    <h3 style="color: white;">Payment Methods</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 15px;">
-                        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px;">
-                            <i class="fas fa-mobile-alt"></i>
-                            <strong>Mobile Money</strong>
-                            <p>Orange Money: +231 770562292</p>
-                            <p>Lonestar Money: +231 886590302</p>
+                <div style="background: rgba(255,255,255,0.06); border-radius: 14px; padding: 20px; margin: 15px 0;">
+                    <h4 style="color: white; margin-bottom: 12px;"><i class="fas fa-info-circle"></i> Payment Instructions</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px;">
+                        <div style="background: rgba(255,255,255,0.06); padding: 15px; border-radius: 10px;">
+                            <i class="fas fa-mobile-alt" style="color: var(--primary-red); font-size: 1.5rem; margin-bottom: 8px;"></i>
+                            <h5 style="color: white; font-size: 0.85rem;">Mobile Money</h5>
+                            <p style="color: rgba(255,255,255,0.6); font-size: 0.75rem;">Orange: +231 770562292</p>
+                            <p style="color: rgba(255,255,255,0.6); font-size: 0.75rem;">Lonestar: +231 886590302</p>
                         </div>
-                        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px;">
-                            <i class="fas fa-university"></i>
-                            <strong>Bank Transfer</strong>
-                            <p>UBA Liberia</p>
-                            <p>A/C: 53080500327155</p>
+                        <div style="background: rgba(255,255,255,0.06); padding: 15px; border-radius: 10px;">
+                            <i class="fas fa-university" style="color: var(--primary-red); font-size: 1.5rem; margin-bottom: 8px;"></i>
+                            <h5 style="color: white; font-size: 0.85rem;">Bank Transfer</h5>
+                            <p style="color: rgba(255,255,255,0.6); font-size: 0.75rem;">UBA Liberia</p>
+                            <p style="color: rgba(255,255,255,0.6); font-size: 0.75rem;">A/C: 53080500327155</p>
                         </div>
                     </div>
                 </div>
@@ -629,34 +1153,44 @@
             
             <!-- Profile Section -->
             <div id="profile-section" class="dashboard-section">
-                <h2 class="section-title">Profile Management</h2>
+                <h2 class="section-title"><i class="fas fa-user"></i> Profile Management</h2>
+                <p class="section-subtitle">Update your personal details and account information</p>
                 
-                <form id="profileForm">
+                <form id="profileForm" style="max-width: 600px;">
                     <div class="form-group">
-                        <label>Full Name</label>
-                        <input type="text" id="profileName" class="form-control">
+                        <label>Full Name <span class="required">*</span></label>
+                        <input type="text" id="profileName" class="form-control" placeholder="Enter your full name">
                     </div>
                     <div class="form-group">
-                        <label>Email Address</label>
-                        <input type="email" id="profileEmail" class="form-control">
+                        <label>Email Address <span class="required">*</span></label>
+                        <input type="email" id="profileEmail" class="form-control" disabled>
                     </div>
                     <div class="form-group">
                         <label>Phone Number</label>
-                        <input type="tel" id="profilePhone" class="form-control">
+                        <input type="tel" id="profilePhone" class="form-control" placeholder="+231 770 562 292">
+                    </div>
+                    <div class="form-group">
+                        <label>WhatsApp Number</label>
+                        <input type="tel" id="profileWhatsApp" class="form-control" placeholder="+231 770 562 292">
                     </div>
                     <div class="form-group">
                         <label>Address</label>
-                        <textarea id="profileAddress" class="form-control" rows="3"></textarea>
+                        <textarea id="profileAddress" class="form-control" rows="2" placeholder="Enter your current address"></textarea>
                     </div>
                     <div class="form-group">
-                        <label>Country of Interest</label>
+                        <label>Country of Interest <span class="required">*</span></label>
                         <select id="profileCountry" class="form-control">
                             <option value="">Select Country</option>
-                            <option value="USA">United States</option>
-                            <option value="Canada">Canada</option>
-                            <option value="UK">United Kingdom</option>
-                            <option value="Australia">Australia</option>
-                            <option value="Germany">Germany</option>
+                            <option value="USA">🇺🇸 United States</option>
+                            <option value="Canada">🇨🇦 Canada</option>
+                            <option value="UK">🇬🇧 United Kingdom</option>
+                            <option value="Australia">🇦🇺 Australia</option>
+                            <option value="Germany">🇩🇪 Germany</option>
+                            <option value="France">🇫🇷 France</option>
+                            <option value="Netherlands">🇳🇱 Netherlands</option>
+                            <option value="Sweden">🇸🇪 Sweden</option>
+                            <option value="Ireland">🇮🇪 Ireland</option>
+                            <option value="UAE">🇦🇪 UAE</option>
                         </select>
                     </div>
                     <button type="submit" class="btn btn-primary">
@@ -665,10 +1199,12 @@
                 </form>
             </div>
             
-            <!-- Status Section -->
+            <!-- Timeline Section -->
             <div id="status-section" class="dashboard-section">
-                <h2 class="section-title">Application Timeline</h2>
-                <div id="timelineContainer">
+                <h2 class="section-title"><i class="fas fa-chart-line"></i> Application Timeline</h2>
+                <p class="section-subtitle">Track your application progress from start to finish</p>
+                
+                <div id="timelineContainer" class="timeline">
                     <!-- Timeline loaded dynamically -->
                 </div>
             </div>
@@ -682,7 +1218,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     
     <script>
-        // Firebase Config
+        // ============================================================
+        // FIREBASE CONFIGURATION
+        // ============================================================
         const firebaseConfig = {
             apiKey: "AIzaSyAJ3p91t83EQeQ6XopPfvisc1fIdsWIMm8",
             authDomain: "global-immigration-sc.firebaseapp.com",
@@ -697,10 +1235,29 @@
         const db = firebase.firestore();
         const storage = firebase.storage();
         
+        // ============================================================
+        // GLOBAL VARIABLES
+        // ============================================================
         let currentUser = null;
         let userData = null;
+        let appData = null;
+        let allDocuments = {};
+        let allNotifications = [];
+        let uploadHistory = [];
+        let isRealTimeListenerActive = false;
         
-        // Auth check
+        const requiredDocs = [
+            { id: 'passport', name: 'Passport Copy', icon: 'fa-passport', required: true },
+            { id: 'academic_transcripts', name: 'Academic Transcripts', icon: 'fa-graduation-cap', required: true },
+            { id: 'proof_of_funds', name: 'Proof of Funds', icon: 'fa-money-bill-wave', required: true },
+            { id: 'cv_resume', name: 'CV/Resume', icon: 'fa-file-alt', required: true },
+            { id: 'passport_photos', name: 'Passport Photos', icon: 'fa-camera', required: true },
+            { id: 'recommendation_letter', name: 'Recommendation Letter', icon: 'fa-envelope', required: false }
+        ];
+        
+        // ============================================================
+        // AUTHENTICATION
+        // ============================================================
         auth.onAuthStateChanged(async (user) => {
             if (!user) {
                 window.location.href = 'login.html';
@@ -709,39 +1266,82 @@
             
             currentUser = user;
             await loadUserData();
-            loadDashboardData();
+            await loadDashboardData();
+            setupRealTimeListeners();
         });
         
+        // ============================================================
+        // LOAD USER DATA
+        // ============================================================
         async function loadUserData() {
-            const userDoc = await db.collection('users').doc(currentUser.uid).get();
-            userData = userDoc.data();
-            
-            document.getElementById('userName').textContent = userData?.name || currentUser.email.split('@')[0];
-            document.getElementById('userEmail').textContent = currentUser.email;
-            document.getElementById('userAvatar').textContent = (userData?.name || 'U')[0].toUpperCase();
-            
-            // Populate profile form
-            document.getElementById('profileName').value = userData?.name || '';
-            document.getElementById('profileEmail').value = currentUser.email;
-            document.getElementById('profilePhone').value = userData?.phone || '';
-            document.getElementById('profileAddress').value = userData?.address || '';
-            document.getElementById('profileCountry').value = userData?.country || '';
+            try {
+                const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                userData = userDoc.data();
+                
+                if (userData) {
+                    document.getElementById('userName').textContent = userData.name || currentUser.email.split('@')[0];
+                    document.getElementById('userEmail').textContent = currentUser.email;
+                    document.getElementById('userAvatar').textContent = (userData.name || 'U')[0].toUpperCase();
+                    
+                    // Populate profile form
+                    document.getElementById('profileName').value = userData.name || '';
+                    document.getElementById('profileEmail').value = currentUser.email;
+                    document.getElementById('profilePhone').value = userData.phone || '';
+                    document.getElementById('profileWhatsApp').value = userData.whatsapp || '';
+                    document.getElementById('profileAddress').value = userData.address || '';
+                    document.getElementById('profileCountry').value = userData.countryOfInterest || '';
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                showToast('Error loading profile data', 'error');
+            }
         }
         
+        // ============================================================
+        // LOAD DASHBOARD DATA
+        // ============================================================
         async function loadDashboardData() {
-            const appDoc = await db.collection('applications').doc(currentUser.uid).get();
-            const appData = appDoc.data();
-            
-            if (!appData) {
-                // Create initial application
-                await db.collection('applications').doc(currentUser.uid).set({
+            try {
+                const appDoc = await db.collection('applications').doc(currentUser.uid).get();
+                
+                if (!appDoc.exists) {
+                    // Create initial application
+                    await createInitialApplication();
+                    return;
+                }
+                
+                appData = appDoc.data();
+                allDocuments = appData.documents || {};
+                allNotifications = appData.notifications || [];
+                uploadHistory = appData.uploadHistory || [];
+                
+                updateDashboardUI();
+                renderDocuments();
+                renderNotifications();
+                renderTimeline();
+                loadUploadHistory();
+                
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                showToast('Error loading dashboard data', 'error');
+            }
+        }
+        
+        // ============================================================
+        // CREATE INITIAL APPLICATION
+        // ============================================================
+        async function createInitialApplication() {
+            try {
+                const initialData = {
                     userId: currentUser.uid,
                     status: 'draft',
                     progress: 0,
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     documents: {},
                     payments: [],
+                    notifications: [],
+                    uploadHistory: [],
                     personalInfo: userData || {},
                     applicationStages: {
                         personal_info: { completed: !!userData?.name, status: !!userData?.name ? 'completed' : 'pending' },
@@ -750,106 +1350,181 @@
                         review: { completed: false, status: 'pending' },
                         approval: { completed: false, status: 'pending' }
                     }
-                });
-                loadDashboardData();
-                return;
+                };
+                
+                await db.collection('applications').doc(currentUser.uid).set(initialData);
+                await loadDashboardData();
+            } catch (error) {
+                console.error('Error creating application:', error);
+                showToast('Error creating application', 'error');
             }
-            
-            updateDashboardUI(appData);
-            loadDocuments(appData.documents || {});
-            loadUploadHistory();
         }
         
-        function updateDashboardUI(appData) {
+        // ============================================================
+        // REAL-TIME LISTENERS
+        // ============================================================
+        function setupRealTimeListeners() {
+            if (isRealTimeListenerActive) return;
+            
+            // Listen for application changes
+            db.collection('applications').doc(currentUser.uid)
+                .onSnapshot((doc) => {
+                    if (doc.exists) {
+                        appData = doc.data();
+                        allDocuments = appData.documents || {};
+                        allNotifications = appData.notifications || [];
+                        uploadHistory = appData.uploadHistory || [];
+                        
+                        updateDashboardUI();
+                        renderDocuments();
+                        renderNotifications();
+                        renderTimeline();
+                        loadUploadHistory();
+                    }
+                }, (error) => {
+                    console.error('Real-time update error:', error);
+                });
+            
+            isRealTimeListenerActive = true;
+        }
+        
+        // ============================================================
+        // UPDATE DASHBOARD UI
+        // ============================================================
+        function updateDashboardUI() {
+            if (!appData) return;
+            
             // Calculate progress
             const stages = appData.applicationStages || {};
             const totalStages = Object.keys(stages).length;
             const completedStages = Object.values(stages).filter(s => s.completed).length;
-            const progress = Math.round((completedStages / totalStages) * 100);
+            const progress = totalStages > 0 ? Math.round((completedStages / totalStages) * 100) : 0;
             
+            // Update stats
             document.getElementById('progressPercent').textContent = progress + '%';
+            document.getElementById('progressLabel').textContent = progress + '%';
             document.getElementById('mainProgress').style.width = progress + '%';
             document.getElementById('appStatus').textContent = appData.status.toUpperCase();
             
+            // Count documents
+            const uploadedDocs = Object.keys(allDocuments).filter(key => allDocuments[key] && allDocuments[key].status !== 'missing');
+            document.getElementById('docsCompleted').textContent = uploadedDocs.length;
+            document.getElementById('docBadge').textContent = uploadedDocs.length;
+            
+            // Count notifications
+            const unreadNotifs = allNotifications.filter(n => !n.read);
+            document.getElementById('notifCount').textContent = unreadNotifs.length;
+            document.getElementById('notifBadge').textContent = unreadNotifs.length;
+            
             // Update steps
-            const stepStatus = {
+            const stepMap = {
                 'draft': 1, 'submitted': 2, 'document_upload': 2,
-                'payment_pending': 3, 'under_review': 4, 'approved': 5
+                'payment_pending': 3, 'under_review': 4, 'approved': 5, 'rejected': 2
             };
-            const currentStep = stepStatus[appData.status] || 1;
+            const currentStep = stepMap[appData.status] || 1;
             
             document.querySelectorAll('.step').forEach((step, index) => {
+                const stepNum = index + 1;
                 step.classList.remove('active', 'completed');
-                if (index + 1 < currentStep) step.classList.add('completed');
-                if (index + 1 === currentStep) step.classList.add('active');
+                if (stepNum < currentStep) step.classList.add('completed');
+                if (stepNum === currentStep) step.classList.add('active');
             });
             
             // Update next steps
             const nextStepsMap = {
-                'draft': ['Complete your profile information', 'Upload required documents'],
-                'submitted': ['Wait for document verification', 'Complete payment'],
-                'document_upload': ['Complete payment', 'Wait for review'],
-                'payment_pending': ['Wait for payment verification', 'Application review'],
-                'under_review': ['Application under review', 'Wait for final decision'],
-                'approved': ['Visa approved!', 'Prepare for travel']
+                'draft': ['Complete your profile information', 'Upload required documents', 'Submit your application'],
+                'submitted': ['Wait for document verification', 'Complete payment', 'Prepare for interview'],
+                'document_upload': ['Complete payment', 'Wait for document review', 'Prepare for interview'],
+                'payment_pending': ['Wait for payment verification', 'Application review', 'Await decision'],
+                'under_review': ['Application under review', 'Wait for final decision', 'Check notifications'],
+                'approved': ['🎉 Visa approved!', 'Prepare for travel', 'Contact us for relocation support'],
+                'rejected': ['Application was not approved', 'Contact us for feedback', 'Consider reapplying']
             };
             
             const nextStepsList = document.getElementById('nextStepsList');
             const steps = nextStepsMap[appData.status] || nextStepsMap.draft;
             nextStepsList.innerHTML = steps.map(step => `<li>${step}</li>`).join('');
+            
+            // Update payment stats
+            updatePaymentStats();
         }
         
-        async function loadDocuments(documents) {
+        // ============================================================
+        // RENDER DOCUMENTS
+        // ============================================================
+        function renderDocuments() {
             const grid = document.getElementById('documentsGrid');
-            const requiredDocs = [
-                { id: 'passport', name: 'Passport Copy', icon: 'fas fa-passport', required: true },
-                { id: 'academic_transcripts', name: 'Academic Transcripts', icon: 'fas fa-graduation-cap', required: true },
-                { id: 'proof_of_funds', name: 'Proof of Funds', icon: 'fas fa-money-bill-wave', required: true },
-                { id: 'cv_resume', name: 'CV/Resume', icon: 'fas fa-file-alt', required: true },
-                { id: 'passport_photos', name: 'Passport Photos', icon: 'fas fa-camera', required: true },
-                { id: 'recommendation_letter', name: 'Recommendation Letter', icon: 'fas fa-envelope', required: false }
-            ];
-            
             let completedCount = 0;
             
             grid.innerHTML = requiredDocs.map(doc => {
-                const uploaded = documents[doc.id];
+                const uploaded = allDocuments[doc.id];
                 const status = uploaded?.status || 'missing';
-                if (status === 'approved') completedCount++;
+                const fileName = uploaded?.fileName || '';
+                const uploadedDate = uploaded?.uploadedAt ? new Date(uploaded.uploadedAt.seconds * 1000).toLocaleDateString() : '';
+                
+                if (status === 'approved' || status === 'pending_review') completedCount++;
                 
                 return `
                     <div class="document-card" data-doc="${doc.id}">
-                        <div class="document-icon"><i class="${doc.icon}"></i></div>
-                        <h4 style="color: white;">${doc.name} ${doc.required ? '<span style="color: red;">*</span>' : ''}</h4>
-                        <span class="document-status status-${status}">${status.toUpperCase()}</span>
-                        <div style="margin-top: 15px;">
-                            <button class="btn btn-primary btn-small" onclick="uploadDocument('${doc.id}')">
-                                <i class="fas fa-upload"></i> Upload
+                        <div class="doc-icon"><i class="fas ${doc.icon}"></i></div>
+                        <h5>${doc.name} ${doc.required ? '<span style="color: var(--primary-red);">*</span>' : ''}</h5>
+                        ${fileName ? `<p style="color: rgba(255,255,255,0.4); font-size: 0.65rem; margin: 3px 0;">${fileName}</p>` : ''}
+                        ${uploadedDate ? `<p style="color: rgba(255,255,255,0.3); font-size: 0.6rem;">${uploadedDate}</p>` : ''}
+                        <span class="doc-status status-${status}">${status.replace('_', ' ').toUpperCase()}</span>
+                        <div style="margin-top: 10px;">
+                            <button class="btn btn-primary btn-sm" onclick="uploadDocument('${doc.id}')">
+                                <i class="fas fa-upload"></i> ${uploaded ? 'Replace' : 'Upload'}
                             </button>
+                            ${uploaded ? `<button class="btn btn-outline btn-sm" onclick="viewDocument('${doc.id}')" style="margin-left: 5px;">
+                                <i class="fas fa-eye"></i>
+                            </button>` : ''}
                         </div>
                     </div>
                 `;
             }).join('');
             
             document.getElementById('docsCompleted').textContent = completedCount;
+            document.getElementById('docBadge').textContent = completedCount;
         }
         
+        // ============================================================
+        // UPLOAD DOCUMENT
+        // ============================================================
         async function uploadDocument(docType) {
+            if (!currentUser) {
+                showToast('Please log in first', 'error');
+                return;
+            }
+            
             const input = document.createElement('input');
             input.type = 'file';
-            input.accept = '.pdf,.jpg,.jpeg,.png';
+            input.accept = '.pdf,.jpg,.jpeg,.png,.doc,.docx';
             
             input.onchange = async (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
                 
-                showToast('Uploading document...', 'info');
+                // Validate file size (10MB max)
+                if (file.size > 10 * 1024 * 1024) {
+                    showToast('File size must be less than 10MB', 'error');
+                    return;
+                }
+                
+                showToast('Uploading ' + file.name + '...', 'info');
                 
                 try {
                     // Upload to Firebase Storage
                     const fileName = `${currentUser.uid}/${docType}_${Date.now()}_${file.name}`;
                     const storageRef = storage.ref().child(fileName);
-                    await storageRef.put(file);
+                    const uploadTask = storageRef.put(file);
+                    
+                    // Show progress
+                    uploadTask.on('state_changed', (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        showUploadProgress(docType, progress);
+                    });
+                    
+                    await uploadTask;
                     const downloadURL = await storageRef.getDownloadURL();
                     
                     // Save to Firestore
@@ -857,15 +1532,30 @@
                         [`documents.${docType}`]: {
                             url: downloadURL,
                             fileName: file.name,
-                            uploadedAt: new Date(),
-                            status: 'pending_review',
-                            fileSize: file.size
+                            fileSize: file.size,
+                            fileType: file.type,
+                            uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            status: 'pending_review'
                         },
-                        updatedAt: new Date()
+                        uploadHistory: firebase.firestore.FieldValue.arrayUnion({
+                            filename: file.name,
+                            docType: docType,
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                            status: 'submitted'
+                        }),
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    // Send notification to admin
+                    await sendAdminNotification('document_upload', {
+                        docType: docType,
+                        fileName: file.name,
+                        userEmail: currentUser.email,
+                        userName: userData?.name || 'Applicant'
                     });
                     
                     showToast('Document uploaded successfully!', 'success');
-                    loadDashboardData();
+                    await loadDashboardData();
                     
                 } catch (error) {
                     console.error('Upload error:', error);
@@ -876,121 +1566,405 @@
             input.click();
         }
         
-        async function loadUploadHistory() {
-            const appDoc = await db.collection('applications').doc(currentUser.uid).get();
-            const history = appDoc.data()?.uploadHistory || [];
-            
-            const historyList = document.getElementById('historyList');
-            if (history.length === 0) {
-                historyList.innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center;">No upload history yet.</p>';
-                return;
+        // ============================================================
+        // VIEW DOCUMENT
+        // ============================================================
+        function viewDocument(docType) {
+            const doc = allDocuments[docType];
+            if (doc && doc.url) {
+                window.open(doc.url, '_blank');
+            } else {
+                showToast('Document not found', 'error');
             }
-            
-            historyList.innerHTML = history.slice(-10).reverse().map(item => `
-                <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                    <div>
-                        <strong>${item.filename}</strong>
-                        <p style="font-size: 0.8rem;">${item.docType}</p>
-                    </div>
-                    <span style="color: ${item.status === 'submitted' ? '#4CAF50' : '#dc3545'}">${item.status}</span>
-                </div>
-            `).join('');
         }
         
-        // Bulk upload
+        // ============================================================
+        // SHOW UPLOAD PROGRESS
+        // ============================================================
+        function showUploadProgress(docType, progress) {
+            const progressBar = document.getElementById('bulkProgressBar');
+            const progressContainer = document.getElementById('bulkProgress');
+            
+            progressContainer.style.display = 'block';
+            progressBar.style.width = progress + '%';
+            
+            if (progress >= 100) {
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                    progressBar.style.width = '0%';
+                }, 1000);
+            }
+        }
+        
+        // ============================================================
+        // BULK UPLOAD
+        // ============================================================
         document.getElementById('bulkUploadArea').addEventListener('click', () => {
             document.getElementById('bulkFileUpload').click();
         });
         
-        document.getElementById('bulkFileUpload').addEventListener('change', async (e) => {
-            const files = Array.from(e.target.files);
-            showToast(`Uploading ${files.length} files...`, 'info');
-            
-            for (const file of files) {
-                const docType = detectDocumentType(file.name);
-                const fileName = `${currentUser.uid}/${docType}_${Date.now()}_${file.name}`;
-                const storageRef = storage.ref().child(fileName);
-                await storageRef.put(file);
-                const downloadURL = await storageRef.getDownloadURL();
-                
-                await db.collection('applications').doc(currentUser.uid).update({
-                    [`documents.${docType}`]: {
-                        url: downloadURL,
-                        fileName: file.name,
-                        uploadedAt: new Date(),
-                        status: 'pending_review',
-                        fileSize: file.size
-                    },
-                    uploadHistory: firebase.firestore.FieldValue.arrayUnion({
-                        filename: file.name,
-                        docType: docType,
-                        timestamp: new Date(),
-                        status: 'submitted'
-                    }),
-                    updatedAt: new Date()
-                });
-            }
-            
-            showToast('All files uploaded successfully!', 'success');
-            loadDashboardData();
-            loadUploadHistory();
+        document.getElementById('bulkUploadArea').addEventListener('dragover', (e) => {
+            e.preventDefault();
+            document.getElementById('bulkUploadArea').classList.add('dragover');
         });
         
+        document.getElementById('bulkUploadArea').addEventListener('dragleave', () => {
+            document.getElementById('bulkUploadArea').classList.remove('dragover');
+        });
+        
+        document.getElementById('bulkUploadArea').addEventListener('drop', (e) => {
+            e.preventDefault();
+            document.getElementById('bulkUploadArea').classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                handleBulkUpload(Array.from(e.dataTransfer.files));
+            }
+        });
+        
+        document.getElementById('bulkFileUpload').addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleBulkUpload(Array.from(e.target.files));
+            }
+            e.target.value = '';
+        });
+        
+        async function handleBulkUpload(files) {
+            if (!currentUser) {
+                showToast('Please log in first', 'error');
+                return;
+            }
+            
+            const validFiles = files.filter(file => {
+                const validTypes = ['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx'];
+                const ext = '.' + file.name.split('.').pop().toLowerCase();
+                if (!validTypes.includes(ext)) {
+                    showToast(file.name + ' - Unsupported file type', 'error');
+                    return false;
+                }
+                if (file.size > 10 * 1024 * 1024) {
+                    showToast(file.name + ' - File too large (max 10MB)', 'error');
+                    return false;
+                }
+                return true;
+            });
+            
+            if (validFiles.length === 0) {
+                showToast('No valid files to upload', 'error');
+                return;
+            }
+            
+            showToast(`Uploading ${validFiles.length} files...`, 'info');
+            
+            const progressBar = document.getElementById('bulkProgressBar');
+            const progressContainer = document.getElementById('bulkProgress');
+            progressContainer.style.display = 'block';
+            
+            let uploaded = 0;
+            
+            for (const file of validFiles) {
+                try {
+                    const docType = detectDocumentType(file.name);
+                    const fileName = `${currentUser.uid}/${docType}_${Date.now()}_${file.name}`;
+                    const storageRef = storage.ref().child(fileName);
+                    
+                    await storageRef.put(file);
+                    const downloadURL = await storageRef.getDownloadURL();
+                    
+                    await db.collection('applications').doc(currentUser.uid).update({
+                        [`documents.${docType}`]: {
+                            url: downloadURL,
+                            fileName: file.name,
+                            fileSize: file.size,
+                            fileType: file.type,
+                            uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            status: 'pending_review'
+                        },
+                        uploadHistory: firebase.firestore.FieldValue.arrayUnion({
+                            filename: file.name,
+                            docType: docType,
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                            status: 'submitted'
+                        }),
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    uploaded++;
+                    progressBar.style.width = (uploaded / validFiles.length) * 100 + '%';
+                    
+                } catch (error) {
+                    console.error('Upload error for ' + file.name, error);
+                    showToast('Failed to upload ' + file.name, 'error');
+                }
+            }
+            
+            setTimeout(() => {
+                progressContainer.style.display = 'none';
+                progressBar.style.width = '0%';
+            }, 1000);
+            
+            showToast(`${uploaded} of ${validFiles.length} files uploaded successfully!`, 'success');
+            await loadDashboardData();
+        }
+        
+        // ============================================================
+        // DETECT DOCUMENT TYPE
+        // ============================================================
         function detectDocumentType(filename) {
             const lower = filename.toLowerCase();
-            if (lower.includes('passport')) return 'passport';
-            if (lower.includes('transcript') || lower.includes('academic')) return 'academic_transcripts';
-            if (lower.includes('bank') || lower.includes('fund') || lower.includes('statement')) return 'proof_of_funds';
-            if (lower.includes('cv') || lower.includes('resume')) return 'cv_resume';
-            if (lower.includes('photo') || lower.includes('picture')) return 'passport_photos';
-            if (lower.includes('recommendation') || lower.includes('letter')) return 'recommendation_letter';
+            if (lower.includes('passport') || lower.includes('id')) return 'passport';
+            if (lower.includes('transcript') || lower.includes('academic') || lower.includes('diploma')) return 'academic_transcripts';
+            if (lower.includes('bank') || lower.includes('fund') || lower.includes('statement') || lower.includes('financial')) return 'proof_of_funds';
+            if (lower.includes('cv') || lower.includes('resume') || lower.includes('curriculum')) return 'cv_resume';
+            if (lower.includes('photo') || lower.includes('picture') || lower.includes('image')) return 'passport_photos';
+            if (lower.includes('recommendation') || lower.includes('reference') || lower.includes('letter')) return 'recommendation_letter';
             return 'other_documents';
         }
         
-        // Profile update
+        // ============================================================
+        // LOAD UPLOAD HISTORY
+        // ============================================================
+        function loadUploadHistory() {
+            const historyList = document.getElementById('historyList');
+            
+            if (!uploadHistory || uploadHistory.length === 0) {
+                historyList.innerHTML = '<div class="empty-state"><i class="fas fa-upload"></i><p>No upload history yet</p></div>';
+                return;
+            }
+            
+            historyList.innerHTML = uploadHistory.slice(-10).reverse().map(item => {
+                const date = item.timestamp?.seconds ? new Date(item.timestamp.seconds * 1000).toLocaleDateString() : 'Just now';
+                return `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                        <div>
+                            <strong style="color: white; font-size: 0.85rem;">${item.filename}</strong>
+                            <p style="color: rgba(255,255,255,0.4); font-size: 0.7rem;">${item.docType} • ${date}</p>
+                        </div>
+                        <span style="color: ${item.status === 'submitted' ? '#28a745' : '#dc3545'}; font-size: 0.7rem; font-weight: 600;">${item.status.toUpperCase()}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // ============================================================
+        // RENDER NOTIFICATIONS
+        // ============================================================
+        function renderNotifications() {
+            const list = document.getElementById('notificationsList');
+            
+            if (!allNotifications || allNotifications.length === 0) {
+                list.innerHTML = '<div class="empty-state"><i class="fas fa-bell-slash"></i><p>No notifications yet</p></div>';
+                return;
+            }
+            
+            list.innerHTML = allNotifications.slice().reverse().map(notif => {
+                const date = notif.timestamp?.seconds ? new Date(notif.timestamp.seconds * 1000).toLocaleString() : 'Just now';
+                const isRead = notif.read || false;
+                
+                return `
+                    <div class="notification-item ${isRead ? 'read' : ''}" data-notif-id="${notif.id || Date.now()}">
+                        <div class="notif-icon">
+                            <i class="fas ${notif.icon || 'fa-bell'}"></i>
+                        </div>
+                        <div class="notif-content">
+                            <h5>${notif.title || 'Update'}</h5>
+                            <p>${notif.message || ''}</p>
+                            <small>${date}</small>
+                            ${notif.fileUrl ? `<div style="margin-top: 8px;"><a href="${notif.fileUrl}" target="_blank" class="btn btn-primary btn-sm"><i class="fas fa-download"></i> Download File</a></div>` : ''}
+                        </div>
+                        ${!isRead ? '<span class="notif-badge">New</span>' : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // ============================================================
+        // MARK ALL NOTIFICATIONS READ
+        // ============================================================
+        async function markAllRead() {
+            if (!currentUser || !allNotifications || allNotifications.length === 0) {
+                showToast('No notifications to mark', 'info');
+                return;
+            }
+            
+            try {
+                const updatedNotifs = allNotifications.map(n => ({ ...n, read: true }));
+                await db.collection('applications').doc(currentUser.uid).update({
+                    notifications: updatedNotifs,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                showToast('All notifications marked as read', 'success');
+                await loadDashboardData();
+            } catch (error) {
+                console.error('Error marking notifications read:', error);
+                showToast('Error updating notifications', 'error');
+            }
+        }
+        
+        // ============================================================
+        // RENDER TIMELINE
+        // ============================================================
+        function renderTimeline() {
+            const container = document.getElementById('timelineContainer');
+            const stages = appData?.applicationStages || {};
+            
+            const timelineData = [
+                { key: 'personal_info', label: 'Personal Information Submitted', desc: 'Your personal details have been submitted' },
+                { key: 'document_upload', label: 'Documents Uploaded', desc: 'All required documents have been uploaded' },
+                { key: 'payment', label: 'Payment Completed', desc: 'Application fees have been processed' },
+                { key: 'review', label: 'Application Under Review', desc: 'Your application is being reviewed by our team' },
+                { key: 'approval', label: 'Visa Issued', desc: 'Your visa has been approved! 🎉' }
+            ];
+            
+            container.innerHTML = timelineData.map((item, index) => {
+                const stage = stages[item.key] || { completed: false, status: 'pending' };
+                const isCompleted = stage.completed || false;
+                const isActive = !isCompleted && index === 0;
+                const date = stage.completedAt?.seconds ? new Date(stage.completedAt.seconds * 1000).toLocaleDateString() : '';
+                
+                return `
+                    <div class="timeline-item ${isCompleted ? 'completed' : ''}">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <h5>${item.label}</h5>
+                            <p>${item.desc}</p>
+                            ${date ? `<small>${date}</small>` : ''}
+                            ${isCompleted ? '<small style="color: #28a745;">✓ Completed</small>' : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // ============================================================
+        // UPDATE PAYMENT STATS
+        // ============================================================
+        function updatePaymentStats() {
+            const payments = appData?.payments || [];
+            let paid = 0, pending = 0, due = 0;
+            
+            payments.forEach(p => {
+                if (p.status === 'completed') paid += p.amount || 0;
+                else if (p.status === 'pending') pending += p.amount || 0;
+                else if (p.status === 'due') due += p.amount || 0;
+            });
+            
+            document.getElementById('paidAmount').textContent = paid.toFixed(2);
+            document.getElementById('pendingAmount').textContent = pending.toFixed(2);
+            document.getElementById('dueAmount').textContent = due.toFixed(2);
+        }
+        
+        // ============================================================
+        // SEND ADMIN NOTIFICATION
+        // ============================================================
+        async function sendAdminNotification(type, data) {
+            try {
+                const formData = new FormData();
+                formData.append('form_type', 'applicant_notification');
+                formData.append('notification_type', type);
+                formData.append('user_id', currentUser.uid);
+                formData.append('user_email', currentUser.email);
+                formData.append('user_name', userData?.name || 'Applicant');
+                formData.append('data', JSON.stringify(data));
+                formData.append('_subject', `Notification from ${userData?.name || 'Applicant'}`);
+                
+                await fetch('https://formspree.io/f/mrbaejkr', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'Accept': 'application/json' }
+                }).catch(err => console.log('Admin notification error:', err));
+            } catch (error) {
+                console.log('Admin notification failed:', error);
+            }
+        }
+        
+        // ============================================================
+        // PROFILE UPDATE
+        // ============================================================
         document.getElementById('profileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            if (!currentUser) {
+                showToast('Please log in first', 'error');
+                return;
+            }
+            
             const updateData = {
-                name: document.getElementById('profileName').value,
-                phone: document.getElementById('profilePhone').value,
-                address: document.getElementById('profileAddress').value,
-                country: document.getElementById('profileCountry').value,
-                updatedAt: new Date()
+                name: document.getElementById('profileName').value.trim(),
+                phone: document.getElementById('profilePhone').value.trim(),
+                whatsapp: document.getElementById('profileWhatsApp').value.trim() || document.getElementById('profilePhone').value.trim(),
+                address: document.getElementById('profileAddress').value.trim(),
+                countryOfInterest: document.getElementById('profileCountry').value,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
             
-            await db.collection('users').doc(currentUser.uid).update(updateData);
-            await db.collection('applications').doc(currentUser.uid).update({
-                'personalInfo': updateData,
-                updatedAt: new Date(),
-                'applicationStages.personal_info': { completed: true, status: 'completed' }
-            });
+            if (!updateData.name) {
+                showToast('Please enter your full name', 'error');
+                return;
+            }
             
-            showToast('Profile updated successfully!', 'success');
-            loadUserData();
-            loadDashboardData();
+            if (!updateData.countryOfInterest) {
+                showToast('Please select your country of interest', 'error');
+                return;
+            }
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="spinner"></span> Saving...';
+            submitBtn.disabled = true;
+            
+            try {
+                await db.collection('users').doc(currentUser.uid).update(updateData);
+                await db.collection('applications').doc(currentUser.uid).update({
+                    'personalInfo': updateData,
+                    'applicationStages.personal_info': { completed: true, status: 'completed', completedAt: firebase.firestore.FieldValue.serverTimestamp() },
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                showToast('Profile updated successfully!', 'success');
+                await loadUserData();
+                await loadDashboardData();
+            } catch (error) {
+                console.error('Profile update error:', error);
+                showToast('Error updating profile: ' + error.message, 'error');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
         });
         
-        // Payment button
+        // ============================================================
+        // PAYMENT BUTTON
+        // ============================================================
         document.getElementById('makePaymentBtn').addEventListener('click', () => {
             const paymentInfo = `
-                Payment Details:
-                
-                Mobile Money:
-                Orange Money: +231 770562292
-                Lonestar Money: +231 886590302
-                
-                Bank Transfer:
-                UBA Liberia
-                Account: 53080500327155
-                Name: Darlington Tamba
-                
-                After payment, email receipt to: infoglobalimmigrationsc@gmail.com
+📋 PAYMENT INSTRUCTIONS
+
+💳 Mobile Money:
+   • Orange Money: +231 770562292
+   • Lonestar Money: +231 886590302
+   • Account Name: Darlington Tamba
+
+🏦 Bank Transfer (UBA Liberia):
+   • Account Name: Darlington Tamba
+   • Account Number: 53080500327155
+   • Bank: United Bank for Africa (UBA)
+
+✅ After payment, please:
+   1. Take a screenshot of the payment confirmation
+   2. Email to: infoglobalimmigrationsc@gmail.com
+   3. Or WhatsApp: +231 770562292
+
+📧 For questions: infoglobalimmigrationsc@gmail.com
+
+Thank you for choosing Global Immigration SC! 🌍
             `;
+            
             alert(paymentInfo);
         });
         
-        // Navigation
+        // ============================================================
+        // NAVIGATION
+        // ============================================================
         document.querySelectorAll('.sidebar-menu a').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -1000,33 +1974,130 @@
                 link.classList.add('active');
                 
                 document.querySelectorAll('.dashboard-section').forEach(s => s.classList.remove('active'));
-                document.getElementById(`${section}-section`).classList.add('active');
+                const targetSection = document.getElementById(`${section}-section`);
+                if (targetSection) targetSection.classList.add('active');
+                
+                // Close mobile sidebar
+                document.getElementById('sidebar').classList.remove('open');
             });
         });
         
-        // Mobile menu toggle
+        // ============================================================
+        // MOBILE MENU TOGGLE
+        // ============================================================
         document.getElementById('mobileMenuToggle').addEventListener('click', () => {
             document.getElementById('sidebar').classList.toggle('open');
         });
         
-        // Logout
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-            await auth.signOut();
-            window.location.href = 'login.html';
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', (e) => {
+            const sidebar = document.getElementById('sidebar');
+            const toggle = document.getElementById('mobileMenuToggle');
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(e.target) && !toggle.contains(e.target)) {
+                    sidebar.classList.remove('open');
+                }
+            }
         });
         
-        // Toast notification
-        function showToast(message, type = 'success') {
-            const toast = document.createElement('div');
-            toast.className = `toast-notification ${type === 'error' ? 'toast-error' : ''}`;
-            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
-            document.body.appendChild(toast);
-            
-            setTimeout(() => toast.remove(), 3000);
+        // ============================================================
+        // LOGOUT
+        // ============================================================
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            if (confirm('Are you sure you want to logout?')) {
+                await auth.signOut();
+                window.location.href = 'login.html';
+            }
+        });
+        
+        // ============================================================
+        // REFRESH DATA
+        // ============================================================
+        async function refreshData() {
+            showToast('Refreshing data...', 'info');
+            await loadDashboardData();
+            showToast('Data refreshed!', 'success');
         }
         
-        // Make functions global for onclick
+        // ============================================================
+        // TOAST NOTIFICATIONS
+        // ============================================================
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer') || createToastContainer();
+            
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                warning: 'fa-exclamation-triangle',
+                info: 'fa-info-circle'
+            };
+            
+            const colors = {
+                success: '#28a745',
+                error: '#dc3545',
+                warning: '#ffc107',
+                info: '#17a2b8'
+            };
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <i class="fas ${icons[type] || 'fa-info-circle'}" style="color: ${colors[type] || '#28a745'};"></i>
+                <span>${message}</span>
+                <button class="toast-close">&times;</button>
+            `;
+            
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                toast.style.animation = 'slideOutRight 0.3s ease forwards';
+                setTimeout(() => toast.remove(), 300);
+            });
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.style.animation = 'slideOutRight 0.3s ease forwards';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 4000);
+        }
+        
+        function createToastContainer() {
+            const container = document.createElement('div');
+            container.id = 'toastContainer';
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+            return container;
+        }
+        
+        // ============================================================
+        // KEYBOARD SHORTCUTS
+        // ============================================================
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+R or Cmd+R to refresh
+            if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+                e.preventDefault();
+                refreshData();
+            }
+            
+            // Escape to close sidebar on mobile
+            if (e.key === 'Escape') {
+                document.getElementById('sidebar').classList.remove('open');
+            }
+        });
+        
+        // ============================================================
+        // EXPOSE FUNCTIONS GLOBALLY
+        // ============================================================
         window.uploadDocument = uploadDocument;
+        window.viewDocument = viewDocument;
+        window.refreshData = refreshData;
+        window.markAllRead = markAllRead;
+        window.loadNotifications = loadDashboardData;
+        
+        console.log('✅ Dashboard loaded successfully');
+        console.log('👤 User:', currentUser?.email);
+        console.log('📋 Application:', appData?.status || 'Not loaded');
     </script>
 </body>
 </html>
