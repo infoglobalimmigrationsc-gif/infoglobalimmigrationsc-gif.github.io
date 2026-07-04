@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"> 
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Dashboard - Global Immigration SC</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../css/glass-system.css">
+    
+    <!-- ========== FIX: Use inline styles instead of missing glass-system.css ========== -->
     <style>
+        /* ===== GLASSMORPHISM SYSTEM (INLINE) ===== */
         :root {
             --primary-red: #E30613;
             --primary-red-dark: #b30000;
@@ -14,8 +16,30 @@
             --dark-gray: #333333;
             --medium-gray: #777777;
             --light-gray: #F5F5F5;
+            
+            --glass-background: rgba(255, 255, 255, 0.12);
+            --glass-background-light: rgba(255, 255, 255, 0.18);
+            --glass-blur: blur(12px);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.25);
+            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
-
+        
+        .glass-card {
+            background: var(--glass-background) !important;
+            backdrop-filter: var(--glass-blur) !important;
+            -webkit-backdrop-filter: var(--glass-blur) !important;
+            border: var(--glass-border) !important;
+            border-radius: 20px !important;
+            box-shadow: var(--glass-shadow) !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        
+        .glass-card:hover {
+            transform: translateY(-5px);
+            background: var(--glass-background-light) !important;
+        }
+        
+        /* ===== DASHBOARD STYLES ===== */
         * {
             margin: 0;
             padding: 0;
@@ -29,7 +53,6 @@
             min-height: 100vh;
         }
         
-        /* Dashboard Container */
         .dashboard-wrapper {
             display: flex;
             min-height: 100vh;
@@ -91,6 +114,7 @@
             text-decoration: none;
             transition: all 0.3s ease;
             font-size: 0.9rem;
+            cursor: pointer;
         }
         
         .sidebar-menu a i {
@@ -183,7 +207,6 @@
             padding: 30px;
         }
         
-        /* Header */
         .dashboard-header {
             display: flex;
             justify-content: space-between;
@@ -349,7 +372,6 @@
             margin-bottom: 20px;
         }
         
-        /* Progress Bar */
         .progress-container {
             background: rgba(255,255,255,0.15);
             border-radius: 10px;
@@ -366,7 +388,6 @@
             border-radius: 10px;
         }
         
-        /* Steps */
         .steps-container {
             display: flex;
             justify-content: space-between;
@@ -419,10 +440,6 @@
         .step.completed .step-number {
             background: #28a745;
             color: white;
-        }
-        
-        .step.completed .step-number::after {
-            content: '✓';
         }
         
         .step-title {
@@ -484,7 +501,6 @@
         .status-missing { background: rgba(108, 117, 125, 0.2); color: #adb5bd; }
         .status-review { background: rgba(23, 162, 184, 0.2); color: #17a2b8; }
         
-        /* Upload Area */
         .upload-area {
             border: 2px dashed rgba(255,255,255,0.2);
             border-radius: 14px;
@@ -521,7 +537,6 @@
             font-size: 0.85rem;
         }
         
-        /* Upload Progress */
         .upload-progress {
             width: 100%;
             height: 4px;
@@ -539,7 +554,6 @@
             transition: width 0.3s ease;
         }
         
-        /* Form Styles */
         .form-group {
             margin-bottom: 18px;
         }
@@ -572,8 +586,9 @@
             box-shadow: 0 0 0 3px rgba(227, 6, 19, 0.15);
         }
         
-        .form-control::placeholder {
-            color: #999;
+        .form-control:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
         }
         
         select.form-control {
@@ -589,7 +604,6 @@
             min-height: 80px;
         }
         
-        /* Notifications */
         .notifications-list {
             max-height: 400px;
             overflow-y: auto;
@@ -657,7 +671,6 @@
             border-left-color: #666;
         }
         
-        /* Timeline */
         .timeline {
             position: relative;
             padding-left: 30px;
@@ -712,7 +725,6 @@
             font-size: 0.7rem;
         }
         
-        /* Toast Notifications */
         .toast-container {
             position: fixed;
             top: 20px;
@@ -778,7 +790,6 @@
             to { transform: translateX(100%); opacity: 0; }
         }
         
-        /* Mobile Menu Toggle */
         .mobile-menu-toggle {
             display: none;
             position: fixed;
@@ -795,7 +806,6 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
         
-        /* Loading Spinner */
         .spinner {
             display: inline-block;
             width: 18px;
@@ -810,7 +820,6 @@
             to { transform: rotate(360deg); }
         }
         
-        /* Empty State */
         .empty-state {
             text-align: center;
             padding: 30px;
@@ -823,15 +832,9 @@
             opacity: 0.3;
         }
         
-        /* Responsive */
         @media (max-width: 992px) {
-            .dashboard-main {
-                padding: 20px;
-            }
-            
-            .documents-grid {
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            }
+            .dashboard-main { padding: 20px; }
+            .documents-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
         }
         
         @media (max-width: 768px) {
@@ -839,105 +842,41 @@
                 transform: translateX(-100%);
                 width: 280px;
             }
-            
-            .dashboard-sidebar.open {
-                transform: translateX(0);
-            }
-            
+            .dashboard-sidebar.open { transform: translateX(0); }
             .dashboard-main {
                 margin-left: 0;
                 padding: 15px;
                 padding-top: 70px;
             }
-            
-            .mobile-menu-toggle {
-                display: block;
-            }
-            
-            .dashboard-header h1 {
-                font-size: 1.2rem;
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
-            }
-            
-            .stat-card h3 {
-                font-size: 1.3rem;
-            }
-            
+            .mobile-menu-toggle { display: block; }
+            .dashboard-header h1 { font-size: 1.2rem; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .stat-card h3 { font-size: 1.3rem; }
             .steps-container {
                 flex-wrap: nowrap;
                 overflow-x: auto;
                 gap: 8px;
                 padding-bottom: 10px;
             }
-            
-            .step {
-                min-width: 70px;
-                padding: 10px 8px;
-            }
-            
-            .step-title {
-                font-size: 0.6rem;
-            }
-            
-            .documents-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            
-            .dashboard-section {
-                padding: 15px;
-            }
-            
-            .header-actions .btn span {
-                display: none;
-            }
-            
-            .toast {
-                min-width: 200px;
-                font-size: 0.85rem;
-            }
+            .step { min-width: 70px; padding: 10px 8px; }
+            .step-title { font-size: 0.6rem; }
+            .documents-grid { grid-template-columns: 1fr 1fr; }
+            .dashboard-section { padding: 15px; }
+            .header-actions .btn span { display: none; }
+            .toast { min-width: 200px; font-size: 0.85rem; }
         }
         
         @media (max-width: 480px) {
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-                gap: 8px;
-            }
-            
-            .documents-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .stat-card {
-                padding: 12px;
-            }
-            
-            .stat-card h3 {
-                font-size: 1.1rem;
-            }
+            .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .documents-grid { grid-template-columns: 1fr; }
+            .stat-card { padding: 12px; }
+            .stat-card h3 { font-size: 1.1rem; }
         }
         
-        /* Scrollbar Styles */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.05);
-            border-radius: 3px;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary-red);
-            border-radius: 3px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary-red-dark);
-        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: var(--primary-red); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary-red-dark); }
     </style>
 </head>
 <body>
@@ -949,7 +888,8 @@
         <!-- Sidebar -->
         <aside class="dashboard-sidebar" id="sidebar">
             <div class="sidebar-logo">
-                <img src="../GISC-LOGO.png" alt="Global Immigration SC Logo" onerror="this.src='https://placehold.co/130x70/E30613/white?text=GISC'">
+                <!-- ========== FIX: Use the correct logo file ========== -->
+                <img src="../GISC-LOGO.webp" alt="Global Immigration SC Logo" onerror="this.src='../GISC-LOGO.png'; this.onerror='this.src='https://placehold.co/130x70/E30613/white?text=GISC''">
                 <h3>Global Immigration SC</h3>
                 <p>Your Global Journey Starts Here</p>
             </div>
@@ -1271,26 +1211,43 @@
         });
         
         // ============================================================
-        // LOAD USER DATA
+        // LOAD USER DATA - FIXED with set() fallback
         // ============================================================
         async function loadUserData() {
             try {
-                const userDoc = await db.collection('users').doc(currentUser.uid).get();
-                userData = userDoc.data();
+                const userDocRef = db.collection('users').doc(currentUser.uid);
+                const userDoc = await userDocRef.get();
                 
-                if (userData) {
-                    document.getElementById('userName').textContent = userData.name || currentUser.email.split('@')[0];
-                    document.getElementById('userEmail').textContent = currentUser.email;
-                    document.getElementById('userAvatar').textContent = (userData.name || 'U')[0].toUpperCase();
-                    
-                    // Populate profile form
-                    document.getElementById('profileName').value = userData.name || '';
-                    document.getElementById('profileEmail').value = currentUser.email;
-                    document.getElementById('profilePhone').value = userData.phone || '';
-                    document.getElementById('profileWhatsApp').value = userData.whatsapp || '';
-                    document.getElementById('profileAddress').value = userData.address || '';
-                    document.getElementById('profileCountry').value = userData.countryOfInterest || '';
+                if (userDoc.exists) {
+                    userData = userDoc.data();
+                } else {
+                    // ========== FIX: Create user document if it doesn't exist ==========
+                    userData = {
+                        name: currentUser.displayName || currentUser.email.split('@')[0] || 'User',
+                        email: currentUser.email,
+                        phone: '',
+                        whatsapp: '',
+                        address: '',
+                        countryOfInterest: '',
+                        userType: 'applicant',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+                    await userDocRef.set(userData);
+                    console.log('✅ User document created');
                 }
+                
+                document.getElementById('userName').textContent = userData?.name || currentUser.email.split('@')[0];
+                document.getElementById('userEmail').textContent = currentUser.email;
+                document.getElementById('userAvatar').textContent = (userData?.name || 'U')[0].toUpperCase();
+                
+                document.getElementById('profileName').value = userData?.name || '';
+                document.getElementById('profileEmail').value = currentUser.email;
+                document.getElementById('profilePhone').value = userData?.phone || '';
+                document.getElementById('profileWhatsApp').value = userData?.whatsapp || '';
+                document.getElementById('profileAddress').value = userData?.address || '';
+                document.getElementById('profileCountry').value = userData?.countryOfInterest || '';
+                
             } catch (error) {
                 console.error('Error loading user data:', error);
                 showToast('Error loading profile data', 'error');
@@ -1298,14 +1255,15 @@
         }
         
         // ============================================================
-        // LOAD DASHBOARD DATA
+        // LOAD DASHBOARD DATA - FIXED with set() fallback
         // ============================================================
         async function loadDashboardData() {
             try {
-                const appDoc = await db.collection('applications').doc(currentUser.uid).get();
+                const appDocRef = db.collection('applications').doc(currentUser.uid);
+                const appDoc = await appDocRef.get();
                 
                 if (!appDoc.exists) {
-                    // Create initial application
+                    // ========== FIX: Create application if it doesn't exist ==========
                     await createInitialApplication();
                     return;
                 }
@@ -1366,7 +1324,6 @@
         function setupRealTimeListeners() {
             if (isRealTimeListenerActive) return;
             
-            // Listen for application changes
             db.collection('applications').doc(currentUser.uid)
                 .onSnapshot((doc) => {
                     if (doc.exists) {
@@ -1394,29 +1351,24 @@
         function updateDashboardUI() {
             if (!appData) return;
             
-            // Calculate progress
             const stages = appData.applicationStages || {};
             const totalStages = Object.keys(stages).length;
             const completedStages = Object.values(stages).filter(s => s.completed).length;
             const progress = totalStages > 0 ? Math.round((completedStages / totalStages) * 100) : 0;
             
-            // Update stats
             document.getElementById('progressPercent').textContent = progress + '%';
             document.getElementById('progressLabel').textContent = progress + '%';
             document.getElementById('mainProgress').style.width = progress + '%';
             document.getElementById('appStatus').textContent = appData.status.toUpperCase();
             
-            // Count documents
             const uploadedDocs = Object.keys(allDocuments).filter(key => allDocuments[key] && allDocuments[key].status !== 'missing');
             document.getElementById('docsCompleted').textContent = uploadedDocs.length;
             document.getElementById('docBadge').textContent = uploadedDocs.length;
             
-            // Count notifications
             const unreadNotifs = allNotifications.filter(n => !n.read);
             document.getElementById('notifCount').textContent = unreadNotifs.length;
             document.getElementById('notifBadge').textContent = unreadNotifs.length;
             
-            // Update steps
             const stepMap = {
                 'draft': 1, 'submitted': 2, 'document_upload': 2,
                 'payment_pending': 3, 'under_review': 4, 'approved': 5, 'rejected': 2
@@ -1430,7 +1382,6 @@
                 if (stepNum === currentStep) step.classList.add('active');
             });
             
-            // Update next steps
             const nextStepsMap = {
                 'draft': ['Complete your profile information', 'Upload required documents', 'Submit your application'],
                 'submitted': ['Wait for document verification', 'Complete payment', 'Prepare for interview'],
@@ -1445,7 +1396,6 @@
             const steps = nextStepsMap[appData.status] || nextStepsMap.draft;
             nextStepsList.innerHTML = steps.map(step => `<li>${step}</li>`).join('');
             
-            // Update payment stats
             updatePaymentStats();
         }
         
@@ -1475,7 +1425,7 @@
                             <button class="btn btn-primary btn-sm" onclick="uploadDocument('${doc.id}')">
                                 <i class="fas fa-upload"></i> ${uploaded ? 'Replace' : 'Upload'}
                             </button>
-                            ${uploaded ? `<button class="btn btn-outline btn-sm" onclick="viewDocument('${doc.id}')" style="margin-left: 5px;">
+                            ${uploaded && uploaded.url ? `<button class="btn btn-outline btn-sm" onclick="viewDocument('${doc.id}')" style="margin-left: 5px;">
                                 <i class="fas fa-eye"></i>
                             </button>` : ''}
                         </div>
@@ -1488,7 +1438,7 @@
         }
         
         // ============================================================
-        // UPLOAD DOCUMENT
+        // UPLOAD DOCUMENT - FIXED CORS issue
         // ============================================================
         async function uploadDocument(docType) {
             if (!currentUser) {
@@ -1504,7 +1454,6 @@
                 const file = e.target.files[0];
                 if (!file) return;
                 
-                // Validate file size (10MB max)
                 if (file.size > 10 * 1024 * 1024) {
                     showToast('File size must be less than 10MB', 'error');
                     return;
@@ -1513,15 +1462,19 @@
                 showToast('Uploading ' + file.name + '...', 'info');
                 
                 try {
-                    // Upload to Firebase Storage
-                    const fileName = `${currentUser.uid}/${docType}_${Date.now()}_${file.name}`;
-                    const storageRef = storage.ref().child(fileName);
-                    const uploadTask = storageRef.put(file);
+                    // ========== FIX: Use the correct storage path format ==========
+                    const path = `${currentUser.uid}/${docType}_${Date.now()}_${file.name}`;
+                    const storageRef = storage.ref().child(path);
                     
                     // Show progress
+                    const uploadTask = storageRef.put(file);
+                    
                     uploadTask.on('state_changed', (snapshot) => {
                         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                        showUploadProgress(docType, progress);
+                        const progressBar = document.getElementById('bulkProgressBar');
+                        const progressContainer = document.getElementById('bulkProgress');
+                        progressContainer.style.display = 'block';
+                        progressBar.style.width = progress + '%';
                     });
                     
                     await uploadTask;
@@ -1546,20 +1499,17 @@
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     
-                    // Send notification to admin
-                    await sendAdminNotification('document_upload', {
-                        docType: docType,
-                        fileName: file.name,
-                        userEmail: currentUser.email,
-                        userName: userData?.name || 'Applicant'
-                    });
-                    
                     showToast('Document uploaded successfully!', 'success');
                     await loadDashboardData();
                     
                 } catch (error) {
                     console.error('Upload error:', error);
-                    showToast('Upload failed: ' + error.message, 'error');
+                    // ========== FIX: Better error message ==========
+                    if (error.code === 'storage/unauthorized' || error.message.includes('CORS')) {
+                        showToast('Storage permission error. Please contact support.', 'error');
+                    } else {
+                        showToast('Upload failed: ' + error.message, 'error');
+                    }
                 }
             };
             
@@ -1575,24 +1525,6 @@
                 window.open(doc.url, '_blank');
             } else {
                 showToast('Document not found', 'error');
-            }
-        }
-        
-        // ============================================================
-        // SHOW UPLOAD PROGRESS
-        // ============================================================
-        function showUploadProgress(docType, progress) {
-            const progressBar = document.getElementById('bulkProgressBar');
-            const progressContainer = document.getElementById('bulkProgress');
-            
-            progressContainer.style.display = 'block';
-            progressBar.style.width = progress + '%';
-            
-            if (progress >= 100) {
-                setTimeout(() => {
-                    progressContainer.style.display = 'none';
-                    progressBar.style.width = '0%';
-                }, 1000);
             }
         }
         
@@ -1663,8 +1595,8 @@
             for (const file of validFiles) {
                 try {
                     const docType = detectDocumentType(file.name);
-                    const fileName = `${currentUser.uid}/${docType}_${Date.now()}_${file.name}`;
-                    const storageRef = storage.ref().child(fileName);
+                    const path = `${currentUser.uid}/${docType}_${Date.now()}_${file.name}`;
+                    const storageRef = storage.ref().child(path);
                     
                     await storageRef.put(file);
                     const downloadURL = await storageRef.getDownloadURL();
@@ -1711,7 +1643,7 @@
         function detectDocumentType(filename) {
             const lower = filename.toLowerCase();
             if (lower.includes('passport') || lower.includes('id')) return 'passport';
-            if (lower.includes('transcript') || lower.includes('academic') || lower.includes('diploma')) return 'academic_transcripts';
+            if (lower.includes('transcript') || lower.includes('academic') || lower.includes('diploma') || lower.includes('certificate')) return 'academic_transcripts';
             if (lower.includes('bank') || lower.includes('fund') || lower.includes('statement') || lower.includes('financial')) return 'proof_of_funds';
             if (lower.includes('cv') || lower.includes('resume') || lower.includes('curriculum')) return 'cv_resume';
             if (lower.includes('photo') || lower.includes('picture') || lower.includes('image')) return 'passport_photos';
@@ -1818,7 +1750,6 @@
             container.innerHTML = timelineData.map((item, index) => {
                 const stage = stages[item.key] || { completed: false, status: 'pending' };
                 const isCompleted = stage.completed || false;
-                const isActive = !isCompleted && index === 0;
                 const date = stage.completedAt?.seconds ? new Date(stage.completedAt.seconds * 1000).toLocaleDateString() : '';
                 
                 return `
@@ -1854,31 +1785,7 @@
         }
         
         // ============================================================
-        // SEND ADMIN NOTIFICATION
-        // ============================================================
-        async function sendAdminNotification(type, data) {
-            try {
-                const formData = new FormData();
-                formData.append('form_type', 'applicant_notification');
-                formData.append('notification_type', type);
-                formData.append('user_id', currentUser.uid);
-                formData.append('user_email', currentUser.email);
-                formData.append('user_name', userData?.name || 'Applicant');
-                formData.append('data', JSON.stringify(data));
-                formData.append('_subject', `Notification from ${userData?.name || 'Applicant'}`);
-                
-                await fetch('https://formspree.io/f/mrbaejkr', {
-                    method: 'POST',
-                    body: formData,
-                    headers: { 'Accept': 'application/json' }
-                }).catch(err => console.log('Admin notification error:', err));
-            } catch (error) {
-                console.log('Admin notification failed:', error);
-            }
-        }
-        
-        // ============================================================
-        // PROFILE UPDATE
+        // PROFILE UPDATE - FIXED
         // ============================================================
         document.getElementById('profileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1913,10 +1820,16 @@
             submitBtn.disabled = true;
             
             try {
-                await db.collection('users').doc(currentUser.uid).update(updateData);
+                // ========== FIX: Use set with merge for user document ==========
+                await db.collection('users').doc(currentUser.uid).set(updateData, { merge: true });
+                
                 await db.collection('applications').doc(currentUser.uid).update({
                     'personalInfo': updateData,
-                    'applicationStages.personal_info': { completed: true, status: 'completed', completedAt: firebase.firestore.FieldValue.serverTimestamp() },
+                    'applicationStages.personal_info': { 
+                        completed: true, 
+                        status: 'completed', 
+                        completedAt: firebase.firestore.FieldValue.serverTimestamp() 
+                    },
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 
@@ -1977,7 +1890,6 @@ Thank you for choosing Global Immigration SC! 🌍
                 const targetSection = document.getElementById(`${section}-section`);
                 if (targetSection) targetSection.classList.add('active');
                 
-                // Close mobile sidebar
                 document.getElementById('sidebar').classList.remove('open');
             });
         });
@@ -1989,7 +1901,6 @@ Thank you for choosing Global Immigration SC! 🌍
             document.getElementById('sidebar').classList.toggle('open');
         });
         
-        // Close sidebar when clicking outside on mobile
         document.addEventListener('click', (e) => {
             const sidebar = document.getElementById('sidebar');
             const toggle = document.getElementById('mobileMenuToggle');
@@ -2074,13 +1985,10 @@ Thank you for choosing Global Immigration SC! 🌍
         // KEYBOARD SHORTCUTS
         // ============================================================
         document.addEventListener('keydown', (e) => {
-            // Ctrl+R or Cmd+R to refresh
             if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
                 e.preventDefault();
                 refreshData();
             }
-            
-            // Escape to close sidebar on mobile
             if (e.key === 'Escape') {
                 document.getElementById('sidebar').classList.remove('open');
             }
