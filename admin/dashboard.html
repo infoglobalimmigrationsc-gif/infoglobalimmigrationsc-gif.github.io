@@ -22,11 +22,7 @@
             --danger-red: #dc3545;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -35,10 +31,7 @@
             min-height: 100vh;
         }
 
-        .admin-wrapper {
-            display: flex;
-            min-height: 100vh;
-        }
+        .admin-wrapper { display: flex; min-height: 100vh; }
 
         /* ========== SIDEBAR ========== */
         .admin-sidebar {
@@ -979,11 +972,10 @@
         const db = firebase.firestore();
 
         // ============================================================
-        // ADMIN AUTHENTICATION - FIXED WITH FIREBASE
+        // ADMIN AUTHENTICATION
         // ============================================================
         const API_URL = 'https://gisc-app-production.up.railway.app/api';
 
-        // Check JWT token first
         const adminToken = localStorage.getItem('adminToken');
         const adminData = localStorage.getItem('adminData');
 
@@ -994,11 +986,10 @@
         let adminUser = null;
 
         // ============================================================
-        // VERIFY ADMIN ACCESS IN FIRESTORE
+        // VERIFY ADMIN ACCESS
         // ============================================================
         async function verifyAdminAccess() {
             try {
-                // Wait for Firebase auth
                 const user = await new Promise((resolve) => {
                     const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
                         unsubscribe();
@@ -1007,18 +998,16 @@
                 });
 
                 if (!user) {
-                    console.log('❌ No Firebase user found - redirecting to login');
+                    console.log('❌ No Firebase user found');
                     window.location.href = 'login.html';
                     return false;
                 }
 
-                // Check if user has admin role in Firestore
-                const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+                const userDoc = await db.collection('users').doc(user.uid).get();
 
                 if (!userDoc.exists) {
-                    console.log('❌ User document not found - creating admin...');
-                    // Create user document with admin role
-                    await firebase.firestore().collection('users').doc(user.uid).set({
+                    console.log('❌ Creating admin document...');
+                    await db.collection('users').doc(user.uid).set({
                         name: 'Super Admin',
                         email: user.email || 'admin@globalimmigrationsc.com',
                         userType: 'admin',
@@ -1026,8 +1015,7 @@
                         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
-                    console.log('✅ Admin document created in Firestore!');
-                    // Refresh the page to load new data
+                    console.log('✅ Admin created! Refreshing...');
                     location.reload();
                     return true;
                 }
@@ -1035,33 +1023,28 @@
                 const userData = userDoc.data();
 
                 if (userData.userType !== 'admin') {
-                    console.log('❌ User is not an admin');
                     alert('You do not have admin access.');
                     firebase.auth().signOut();
                     window.location.href = 'login.html';
                     return false;
                 }
 
-                console.log('✅ Admin verified in Firestore:', userData.name);
-
-                // Update UI with admin info
+                adminUser = userData;
                 document.getElementById('adminName').textContent = userData.name || 'Admin';
                 document.getElementById('adminAvatar').textContent = (userData.name || 'A')[0].toUpperCase();
                 document.getElementById('adminRole').textContent = userData.role || 'Administrator';
 
-                // Store admin user for later use
-                adminUser = userData;
-
+                console.log('✅ Admin verified:', userData.name);
                 return true;
 
             } catch (error) {
-                console.error('❌ Admin verification error:', error);
+                console.error('Admin verification error:', error);
                 return false;
             }
         }
 
         // ============================================================
-        // LOGOUT - CLEARS BOTH TOKENS
+        // LOGOUT
         // ============================================================
         document.getElementById('logoutBtn').addEventListener('click', function() {
             if (confirm('Are you sure you want to logout?')) {
@@ -1661,16 +1644,14 @@ Submitted: ${appData?.createdAt?.toDate?.()?.toLocaleDateString() || 'N/A'}`);
         window.deleteBlogPost = deleteBlogPost;
 
         // ============================================================
-        // INITIALIZE - RUN ADMIN VERIFICATION
+        // INITIALIZE
         // ============================================================
         console.log('🔐 Verifying admin access...');
 
-        // Run admin verification and load data
         verifyAdminAccess().then((isAdmin) => {
             if (isAdmin) {
                 console.log('✅ Admin access granted! Loading dashboard...');
                 loadDashboardData();
-                // Setup real-time listeners after verification
                 db.collection('applications').onSnapshot(() => {
                     loadDashboardData();
                 }, (error) => console.error('Real-time update error:', error));
