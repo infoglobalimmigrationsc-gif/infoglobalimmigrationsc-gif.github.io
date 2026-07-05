@@ -307,6 +307,114 @@ app.use((err, req, res, next) => {
 });
 
 // ============================================================
+// ADMIN AUTHENTICATION
+// ============================================================
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+// Admin login endpoint
+app.post('/api/admin/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        console.log('🔐 Admin login attempt:', email);
+
+        if (!db) {
+            return res.status(500).json({ success: false, message: 'Database not connected' });
+        }
+
+        // Find admin in users collection
+        const admin = await db.collection('users').findOne({ 
+            email: email,
+            userType: 'admin'
+        });
+
+        if (!admin) {
+            console.log('❌ Admin not found:', email);
+            return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        }
+
+        // Compare password (using bcrypt)
+        const isValidPassword = await bcrypt.compare(password, admin.password);
+        if (!isValidPassword) {
+            console.log('❌ Invalid password for:', email);
+            return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        }
+
+        // Generate JWT token
+        const token = jwt.sign(
+            { 
+                id: admin._id, 
+                email: admin.email, 
+                role: admin.userType 
+            },
+            process.env.JWT_SECRET || 'your-secret-key',
+            { expiresIn: '8h' }
+        );
+
+        console.log('✅ Admin logged in:', email);
+
+        res.json({
+            success: true,
+            token: token,
+            admin: {
+                id: admin._id,
+                name: admin.name || 'Admin',
+                email: admin.email,
+                role: admin.userType
+            }
+        });
+
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
+
+// ============================================================
+// CREATE ADMIN USER (Run once)
+// ============================================================
+async function createAdminUser() {
+    try {
+        if (!db) return;
+        
+        const adminEmail = 'admin@globalimmigrationsc.com';
+        const adminPassword = '@Motiva6060';
+        
+        // Check if admin exists
+        const existingAdmin = await db.collection('users').findOne({ email: adminEmail });
+        if (existingAdmin) {
+            console.log('✅ Admin user already exists');
+            return;
+        }
+
+        // Hash password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(adminPassword, salt);
+
+        // Create admin user
+        await db.collection('users').insertOne({
+            name: 'Super Admin',
+            email: adminEmail,
+            password: hashedPassword,
+            userType: 'admin',
+            createdAt: new Date(),
+            updatedAt: new Date()
+        });
+
+        console.log('✅ Admin user created successfully!');
+        console.log(`📧 Email: ${adminEmail}`);
+        console.log(`🔑 Password: ${adminPassword}`);
+
+    } catch (error) {
+        console.error('❌ Error creating admin:', error);
+    }
+}
+
+// Call after DB connection
+connectDB().then(() => {
+    createAdminUser();
+});
+// ============================================================
 // START SERVER
 // ============================================================
 const PORT = process.env.PORT || 8080;
