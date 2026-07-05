@@ -1149,6 +1149,152 @@ app.post('/api/users/documents/upsert', async (req, res) => {
 
 
 // ============================================================
+// NOTIFICATIONS / ANNOUNCEMENTS
+// ============================================================
+
+// GET all notifications
+app.get('/api/admin/notifications', authenticateToken, async (req, res) => {
+    try {
+        const notifications = await db.collection('notifications').find({}).sort({ createdAt: -1 }).toArray();
+        console.log(`📋 GET /api/admin/notifications - Found ${notifications.length} notifications`);
+        res.json({ success: true, notifications });
+    } catch (error) {
+        console.error('Error fetching notifications:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// CREATE notification / announcement
+app.post('/api/admin/notifications', authenticateToken, async (req, res) => {
+    try {
+        const { title, message, recipientType, priority, sender, senderEmail, specificEmail } = req.body;
+
+        if (!title || !message) {
+            return res.status(400).json({ success: false, message: 'Title and message are required' });
+        }
+
+        const notification = {
+            title: title,
+            message: message,
+            recipientType: recipientType || 'all',
+            priority: priority || 'normal',
+            sender: sender || 'Admin',
+            senderEmail: senderEmail || 'admin@globalimmigrationsc.com',
+            read: false,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+
+        if (specificEmail) {
+            notification.specificEmail = specificEmail;
+        }
+
+        const result = await db.collection('notifications').insertOne(notification);
+        console.log(`✅ Notification created: ${title}`);
+
+        // Also add notification to each user's application
+        // This is where the user dashboard will read from
+        const users = await db.collection('users').find({}).toArray();
+        let recipientCount = 0;
+
+        for (const user of users) {
+            // Skip if specific email and doesn't match
+            if (specificEmail && user.email !== specificEmail) continue;
+            
+            // Skip if recipient type doesn't match
+            if (recipientType === 'applicants' && user.userType !== 'applicant') continue;
+            if (recipientType === 'students' && user.userType !== 'student') continue;
+
+            const userNotif = {
+                id: result.insertedId,
+                title: title,
+                message: message,
+                priority: priority || 'normal',
+                sender: sender || 'Admin',
+                read: false,
+                createdAt: new Date().toISOString()
+            };
+
+            // Update user's application with notification
+            await db.collection('applications').updateOne(
+                { uid: user.uid },
+                { 
+                    $push: { 
+                        notifications: userNotif 
+                    },
+                    $set: { updatedAt: new Date() }
+                }
+            );
+            recipientCount++;
+        }
+
+        res.json({ 
+            success: true, 
+            id: result.insertedId, 
+            notification: notification,
+            recipientCount: recipientCount 
+        });
+
+    } catch (error) {
+        console.error('Error creating notification:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// MARK notification as read
+app.put('/api/admin/notifications/:id/read', authenticateToken, async (req, res) => {
+    try {
+        const ObjectId = require('mongodb').ObjectId;
+        const { id } = req.params;
+
+        const result = await db.collection('notifications').updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { read: true, updatedAt: new Date() } }
+        );
+
+        // Also update in all user applications
+        await db.collection('applications').updateMany(
+            { 'notifications.id': id },
+            { $set: { 'notifications.$.read': true } }
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Notification not found' });
+        }
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error marking notification read:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// DELETE notification
+app.delete('/api/admin/notifications/:id', authenticateToken, async (req, res) => {
+    try {
+        const ObjectId = require('mongodb').ObjectId;
+        const { id } = req.params;
+
+        const result = await db.collection('notifications').deleteOne({ _id: new ObjectId(id) });
+
+        // Also remove from all user applications
+        await db.collection('applications').updateMany(
+            {},
+            { $pull: { notifications: { id: id } } }
+        );
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Notification not found' });
+        }
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error deleting notification:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
 // START SERVER
 // ============================================================
 const PORT = process.env.PORT || 8080;
