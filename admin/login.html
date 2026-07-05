@@ -6,16 +6,11 @@
     <title>Admin Login - Global Immigration SC</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* ========================================
-           ADMIN LOGIN STYLES (No external CSS needed)
-           ======================================== */
         :root {
             --primary-red: #E30613;
             --primary-red-dark: #b30000;
-            --primary-white: #FFFFFF;
             --dark-gray: #333333;
             --medium-gray: #777777;
-            --light-gray: #F5F5F5;
         }
 
         * {
@@ -29,10 +24,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-            background-attachment: fixed;
             padding: 20px;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
         }
 
         .login-container {
@@ -59,7 +54,6 @@
         .login-header h2 {
             color: white;
             margin-bottom: 5px;
-            font-size: 1.5rem;
         }
 
         .login-header p {
@@ -73,10 +67,10 @@
 
         .form-group label {
             display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
+            margin-bottom: 8px;
+            font-weight: 500;
             color: white;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
         }
 
         .form-group label i {
@@ -89,75 +83,66 @@
             padding: 12px 16px;
             border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 10px;
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(8px);
-            color: white;
             font-size: 1rem;
             transition: all 0.3s ease;
-        }
-
-        .glass-input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
+            color: var(--dark-gray);
         }
 
         .glass-input:focus {
             outline: none;
             border-color: var(--primary-red);
-            background: rgba(255, 255, 255, 0.25);
             box-shadow: 0 0 0 3px rgba(227, 6, 19, 0.15);
         }
 
-        .glass-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+        .glass-input::placeholder {
+            color: #999;
+        }
+
+        .btn-primary {
             width: 100%;
             padding: 14px;
             border: none;
             border-radius: 10px;
+            background: var(--primary-red);
+            color: white;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
-        .glass-btn-primary {
-            background: var(--primary-red);
-        }
-
-        .glass-btn-primary:hover {
+        .btn-primary:hover {
             background: var(--primary-red-dark);
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(227, 6, 19, 0.3);
         }
 
-        .glass-btn-primary:disabled {
+        .btn-primary:disabled {
             opacity: 0.7;
             cursor: not-allowed;
-            transform: none;
         }
 
         .error-message {
-            background: rgba(227, 6, 19, 0.2);
-            color: #ff6b6b;
-            padding: 12px 16px;
-            border-radius: 10px;
+            background: rgba(227, 6, 19, 0.15);
+            border-left: 3px solid var(--primary-red);
+            color: var(--primary-red);
+            padding: 12px 15px;
+            border-radius: 8px;
             margin-bottom: 20px;
             display: none;
             text-align: center;
-            font-size: 0.9rem;
-            border: 1px solid rgba(227, 6, 19, 0.3);
-        }
-
-        .error-message i {
-            margin-right: 8px;
+            font-size: 0.85rem;
         }
 
         .login-footer {
             text-align: center;
-            margin-top: 30px;
+            margin-top: 25px;
             padding-top: 20px;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
@@ -165,10 +150,6 @@
         .login-footer p {
             color: rgba(255, 255, 255, 0.5);
             font-size: 0.8rem;
-        }
-
-        .login-footer small {
-            color: rgba(255, 255, 255, 0.3);
         }
 
         .spinner {
@@ -185,17 +166,11 @@
             to { transform: rotate(360deg); }
         }
 
-        .back-link {
-            display: inline-block;
-            margin-top: 15px;
-            color: rgba(255, 255, 255, 0.5);
-            text-decoration: none;
-            font-size: 0.85rem;
-            transition: color 0.3s ease;
-        }
-
-        .back-link:hover {
-            color: white;
+        /* Responsive */
+        @media (max-width: 550px) {
+            .login-container {
+                padding: 25px;
+            }
         }
     </style>
 </head>
@@ -206,196 +181,100 @@
             <h2>Admin Login</h2>
             <p>Enter your credentials to access the dashboard</p>
         </div>
-
+        
         <div id="errorMessage" class="error-message">
-            <i class="fas fa-exclamation-circle"></i>
-            <span id="errorText">Invalid email or password</span>
+            <i class="fas fa-exclamation-circle"></i> <span id="errorText">Invalid email or password</span>
         </div>
-
+        
         <form id="loginForm">
             <div class="form-group">
                 <label><i class="fas fa-envelope"></i> Email Address</label>
-                <input type="email" id="email" class="glass-input" placeholder="admin@globalimmigrationsc.com" value="admin@globalimmigrationsc.com" required>
+                <input type="email" id="email" class="glass-input" placeholder="admin@globalimmigrationsc.com" required>
             </div>
-
+            
             <div class="form-group">
                 <label><i class="fas fa-lock"></i> Password</label>
                 <input type="password" id="password" class="glass-input" placeholder="••••••••" required>
             </div>
-
-            <button type="submit" class="glass-btn glass-btn-primary" id="loginBtn">
-                <span id="btnText"><i class="fas fa-sign-in-alt"></i> Login to Dashboard</span>
-                <span id="btnSpinner" style="display: none;" class="spinner"></span>
+            
+            <button type="submit" class="btn-primary" id="loginBtn">
+                <i class="fas fa-sign-in-alt"></i> Login to Dashboard
             </button>
         </form>
-
+        
         <div class="login-footer">
-            <p>Secure Admin Access Only</p>
-            <a href="../index.html" class="back-link">← Back to Homepage</a>
-            <p style="margin-top: 10px;"><small>© 2024 Global Immigration SC</small></p>
+            <p>🔒 Secure Admin Access Only</p>
+            <p><small>© 2024 Global Immigration SC</small></p>
         </div>
     </div>
-
-    <!-- Firebase SDK (for direct admin check) -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-
+    
     <script>
-        // ============================================================
-        // FIREBASE CONFIGURATION
-        // ============================================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyAJ3p91t83EQeQ6XopPfvisc1fIdsWIMm8",
-            authDomain: "global-immigration-sc.firebaseapp.com",
-            projectId: "global-immigration-sc",
-            storageBucket: "global-immigration-sc.firebasestorage.app",
-            messagingSenderId: "791181145117",
-            appId: "1:791181145117:web:527b7df63c9a32adf9c2f4"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-
-        // ============================================================
-        // DOM ELEMENTS
-        // ============================================================
-        const loginForm = document.getElementById('loginForm');
-        const emailInput = document.getElementById('email');
-        const passwordInput = document.getElementById('password');
-        const errorDiv = document.getElementById('errorMessage');
-        const errorText = document.getElementById('errorText');
-        const loginBtn = document.getElementById('loginBtn');
-        const btnText = document.getElementById('btnText');
-        const btnSpinner = document.getElementById('btnSpinner');
-
-        // ============================================================
-        // CHECK IF ALREADY LOGGED IN
-        // ============================================================
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                try {
-                    const userDoc = await db.collection('users').doc(user.uid).get();
-                    if (userDoc.exists && userDoc.data().userType === 'admin') {
-                        window.location.href = 'dashboard.html';
-                    }
-                } catch (error) {
-                    console.error('Error checking user:', error);
-                }
-            }
-        });
-
-        // ============================================================
-        // LOGIN HANDLER
-        // ============================================================
-        loginForm.addEventListener('submit', async (e) => {
+        const API_URL = 'https://gisc-app-production.up.railway.app/api';
+        
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-
-            const email = emailInput.value.trim();
-            const password = passwordInput.value.trim();
-
-            // Reset error
+            
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const errorDiv = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            const submitBtn = document.getElementById('loginBtn');
+            
             errorDiv.style.display = 'none';
-
-            // Validate
+            
             if (!email || !password) {
-                showError('Please enter both email and password');
+                errorText.textContent = 'Please enter both email and password';
+                errorDiv.style.display = 'block';
                 return;
             }
-
-            // Show loading state
-            btnText.style.display = 'none';
-            btnSpinner.style.display = 'inline-block';
-            loginBtn.disabled = true;
-
+            
+            // Show loading
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="spinner"></span> Logging in...';
+            submitBtn.disabled = true;
+            
             try {
-                console.log('🔐 Attempting login for:', email);
-
-                // Try Firebase Authentication first
-                const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                const user = userCredential.user;
-
-                console.log('✅ Firebase auth successful');
-
-                // Check if user is admin
-                const userDoc = await db.collection('users').doc(user.uid).get();
-
-                if (!userDoc.exists) {
-                    // Create admin user if doesn't exist
-                    await db.collection('users').doc(user.uid).set({
-                        name: 'Admin',
-                        email: email,
-                        userType: 'admin',
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    console.log('✅ Admin user created');
-                } else if (userDoc.data().userType !== 'admin') {
-                    // User exists but not admin
-                    await auth.signOut();
-                    showError('Access denied. You do not have admin privileges.');
-                    resetButton();
-                    return;
+                const response = await fetch(`${API_URL}/admin/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Server returned non-JSON response');
                 }
-
-                // Store session
-                localStorage.setItem('adminLoggedIn', 'true');
-                localStorage.setItem('adminEmail', email);
-
-                console.log('✅ Login successful, redirecting...');
-                window.location.href = 'dashboard.html';
-
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    localStorage.setItem('adminToken', data.token);
+                    localStorage.setItem('adminData', JSON.stringify(data.admin));
+                    window.location.href = 'dashboard.html';
+                } else {
+                    errorText.textContent = data.message || 'Invalid credentials';
+                    errorDiv.style.display = 'block';
+                }
             } catch (error) {
-                console.error('❌ Login error:', error);
-
-                let message = 'Connection error. Please try again.';
-
-                switch (error.code) {
-                    case 'auth/user-not-found':
-                        message = 'No admin account found with this email. Please contact support.';
-                        break;
-                    case 'auth/wrong-password':
-                        message = 'Incorrect password. Please try again.';
-                        break;
-                    case 'auth/invalid-email':
-                        message = 'Please enter a valid email address.';
-                        break;
-                    case 'auth/too-many-requests':
-                        message = 'Too many failed attempts. Please wait a few minutes.';
-                        break;
-                    case 'auth/network-request-failed':
-                        message = 'Network error. Please check your connection.';
-                        break;
-                    default:
-                        message = error.message || 'Login failed. Please try again.';
-                }
-
-                showError(message);
-                resetButton();
-
-                // Sign out if any error
-                try { await auth.signOut(); } catch (e) {}
+                console.error('Login error:', error);
+                errorText.textContent = error.message || 'Connection error. Please try again.';
+                errorDiv.style.display = 'block';
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
             }
         });
-
-        // ============================================================
-        // HELPER FUNCTIONS
-        // ============================================================
-        function showError(message) {
-            errorText.textContent = message;
-            errorDiv.style.display = 'block';
-        }
-
-        function resetButton() {
-            btnText.style.display = 'inline-flex';
-            btnSpinner.style.display = 'none';
-            loginBtn.disabled = false;
-        }
-
-        // Auto-login for testing (remove in production)
-        // If you want to pre-fill the password for testing:
-        // passwordInput.value = '@Motiva6060';
+        
+        // Enter key support
+        document.getElementById('password').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+            }
+        });
     </script>
 </body>
 </html>
