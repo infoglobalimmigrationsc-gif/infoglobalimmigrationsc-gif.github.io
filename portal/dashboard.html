@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8"> 
@@ -726,7 +726,6 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     
     <script>
         // ============================================================
@@ -743,9 +742,10 @@
         
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-        const db = firebase.firestore();
         
-        // API URL for backend uploads
+        // ============================================================
+        // API URL
+        // ============================================================
         const API_URL = 'https://gisc-app-production.up.railway.app/api';
         
         // ============================================================
@@ -757,7 +757,7 @@
         let allDocuments = {};
         let allNotifications = [];
         let uploadHistory = [];
-        let isRealTimeListenerActive = false;
+        let isPollingActive = false;
         
         const requiredDocs = [
             { id: 'passport', name: 'Passport Copy', icon: 'fa-passport', required: true },
@@ -774,42 +774,50 @@
         auth.onAuthStateChanged(async (user) => {
             if (!user) { window.location.href = 'login.html'; return; }
             currentUser = user;
+            
+            // Load user data from MongoDB
             await loadUserData();
             await loadDashboardData();
-            setupRealTimeListeners();
+            
+            // Start polling for updates (since we're not using Firestore)
+            startPolling();
         });
         
         // ============================================================
-        // LOAD USER DATA
+        // LOAD USER DATA FROM MONGODB
         // ============================================================
         async function loadUserData() {
             try {
-                const userDoc = await db.collection('users').doc(currentUser.uid).get();
-                if (!userDoc.exists) {
-                    const newUserData = {
-                        name: currentUser.displayName || currentUser.email.split('@')[0],
-                        email: currentUser.email,
-                        phone: '', whatsapp: '', address: '', countryOfInterest: '',
-                        userType: 'applicant',
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    };
-                    await db.collection('users').doc(currentUser.uid).set(newUserData);
-                    userData = newUserData;
+                // Try to get user from MongoDB
+                const response = await fetch(`${API_URL}/users/${currentUser.uid}`);
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success && result.user) {
+                        userData = result.user;
+                        console.log('✅ User data loaded from MongoDB:', userData);
+                    } else {
+                        // User not found in MongoDB, create one
+                        console.log('⚠️ User not found in MongoDB, creating...');
+                        await createUserInMongoDB();
+                    }
                 } else {
-                    userData = userDoc.data();
+                    // User not found, create one
+                    console.log('⚠️ User not found in MongoDB, creating...');
+                    await createUserInMongoDB();
                 }
                 
-                document.getElementById('userName').textContent = userData.name || currentUser.email.split('@')[0];
+                // Update UI
+                document.getElementById('userName').textContent = userData?.name || currentUser.displayName || currentUser.email.split('@')[0];
                 document.getElementById('userEmail').textContent = currentUser.email;
-                document.getElementById('userAvatar').textContent = (userData.name || 'U')[0].toUpperCase();
+                document.getElementById('userAvatar').textContent = (userData?.name || 'U')[0].toUpperCase();
                 
-                document.getElementById('profileName').value = userData.name || '';
+                document.getElementById('profileName').value = userData?.name || '';
                 document.getElementById('profileEmail').value = currentUser.email;
-                document.getElementById('profilePhone').value = userData.phone || '';
-                document.getElementById('profileWhatsApp').value = userData.whatsapp || '';
-                document.getElementById('profileAddress').value = userData.address || '';
-                document.getElementById('profileCountry').value = userData.countryOfInterest || '';
+                document.getElementById('profilePhone').value = userData?.phone || '';
+                document.getElementById('profileWhatsApp').value = userData?.whatsapp || '';
+                document.getElementById('profileAddress').value = userData?.address || '';
+                document.getElementById('profileCountry').value = userData?.countryOfInterest || '';
+                
             } catch (error) {
                 console.error('Error loading user data:', error);
                 showToast('Error loading profile data', 'error');
@@ -817,26 +825,74 @@
         }
         
         // ============================================================
-        // LOAD DASHBOARD DATA
+        // CREATE USER IN MONGODB
+        // ============================================================
+        async function createUserInMongoDB() {
+            try {
+                const userData = {
+                    uid: currentUser.uid,
+                    name: currentUser.displayName || currentUser.email.split('@')[0],
+                    email: currentUser.email,
+                    phone: '',
+                    whatsapp: '',
+                    countryOfInterest: '',
+                    userType: 'applicant',
+                    accountStatus: 'active'
+                };
+                
+                const response = await fetch(`${API_URL}/users/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    userData._id = result.user?._id;
+                    console.log('✅ User created in MongoDB');
+                } else {
+                    console.error('Failed to create user in MongoDB');
+                }
+            } catch (error) {
+                console.error('Error creating user:', error);
+            }
+        }
+        
+        // ============================================================
+        // LOAD DASHBOARD DATA FROM MONGODB
         // ============================================================
         async function loadDashboardData() {
             try {
-                const appDoc = await db.collection('applications').doc(currentUser.uid).get();
-                if (!appDoc.exists) {
+                if (!currentUser) return;
+                
+                // Get application from MongoDB
+                const response = await fetch(`${API_URL}/users/${currentUser.uid}/full`);
+                if (!response.ok) {
+                    console.log('⚠️ No application found, creating one...');
                     await createInitialApplication();
                     return;
                 }
                 
-                appData = appDoc.data();
+                const result = await response.json();
+                if (!result.success) {
+                    console.log('⚠️ No application found, creating one...');
+                    await createInitialApplication();
+                    return;
+                }
+                
+                appData = result.application || {};
                 allDocuments = appData.documents || {};
                 allNotifications = appData.notifications || [];
                 uploadHistory = appData.uploadHistory || [];
+                
+                console.log('✅ Application data loaded from MongoDB:', appData);
                 
                 updateDashboardUI();
                 renderDocuments();
                 renderNotifications();
                 renderTimeline();
                 loadUploadHistory();
+                
             } catch (error) {
                 console.error('Error loading dashboard:', error);
                 showToast('Error loading dashboard data', 'error');
@@ -844,31 +900,48 @@
         }
         
         // ============================================================
-        // CREATE INITIAL APPLICATION
+        // CREATE INITIAL APPLICATION IN MONGODB
         // ============================================================
         async function createInitialApplication() {
             try {
                 const initialData = {
+                    uid: currentUser.uid,
                     userId: currentUser.uid,
                     status: 'draft',
                     progress: 0,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    currentStep: 'personal_info',
+                    personalInfo: {
+                        name: userData?.name || currentUser.displayName || currentUser.email.split('@')[0],
+                        email: currentUser.email,
+                        phone: userData?.phone || '',
+                        countryOfInterest: userData?.countryOfInterest || ''
+                    },
                     documents: {},
                     payments: [],
                     notifications: [],
                     uploadHistory: [],
-                    personalInfo: userData || {},
                     applicationStages: {
-                        personal_info: { completed: !!userData?.name, status: !!userData?.name ? 'completed' : 'pending' },
+                        personal_info: { completed: true, status: 'completed', completedAt: new Date().toISOString() },
                         document_upload: { completed: false, status: 'pending' },
                         payment: { completed: false, status: 'pending' },
                         review: { completed: false, status: 'pending' },
                         approval: { completed: false, status: 'pending' }
                     }
                 };
-                await db.collection('applications').doc(currentUser.uid).set(initialData);
-                await loadDashboardData();
+                
+                // Save to MongoDB
+                const response = await fetch(`${API_URL}/users/application`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(initialData)
+                });
+                
+                if (response.ok) {
+                    console.log('✅ Application created in MongoDB');
+                    await loadDashboardData();
+                } else {
+                    console.error('Failed to create application');
+                }
             } catch (error) {
                 console.error('Error creating application:', error);
                 showToast('Error creating application', 'error');
@@ -876,24 +949,18 @@
         }
         
         // ============================================================
-        // REAL-TIME LISTENERS
+        // START POLLING FOR UPDATES
         // ============================================================
-        function setupRealTimeListeners() {
-            if (isRealTimeListenerActive) return;
-            db.collection('applications').doc(currentUser.uid).onSnapshot((doc) => {
-                if (doc.exists) {
-                    appData = doc.data();
-                    allDocuments = appData.documents || {};
-                    allNotifications = appData.notifications || [];
-                    uploadHistory = appData.uploadHistory || [];
-                    updateDashboardUI();
-                    renderDocuments();
-                    renderNotifications();
-                    renderTimeline();
-                    loadUploadHistory();
+        function startPolling() {
+            if (isPollingActive) return;
+            isPollingActive = true;
+            
+            // Poll every 10 seconds for updates
+            setInterval(async () => {
+                if (currentUser) {
+                    await loadDashboardData();
                 }
-            }, (error) => console.error('Real-time update error:', error));
-            isRealTimeListenerActive = true;
+            }, 10000);
         }
         
         // ============================================================
@@ -910,7 +977,7 @@
             document.getElementById('progressPercent').textContent = progress + '%';
             document.getElementById('progressLabel').textContent = progress + '%';
             document.getElementById('mainProgress').style.width = progress + '%';
-            document.getElementById('appStatus').textContent = appData.status.toUpperCase();
+            document.getElementById('appStatus').textContent = (appData.status || 'draft').toUpperCase();
             
             const uploadedDocs = Object.keys(allDocuments).filter(key => allDocuments[key] && allDocuments[key].status !== 'missing');
             document.getElementById('docsCompleted').textContent = uploadedDocs.length + '/6';
@@ -957,7 +1024,7 @@
                 const uploaded = allDocuments[doc.id];
                 const status = uploaded?.status || 'missing';
                 const fileName = uploaded?.fileName || '';
-                const uploadedDate = uploaded?.uploadedAt ? new Date(uploaded.uploadedAt.seconds * 1000).toLocaleDateString() : '';
+                const uploadedDate = uploaded?.uploadedAt ? new Date(uploaded.uploadedAt).toLocaleDateString() : '';
                 
                 if (status === 'approved' || status === 'pending_review') completedCount++;
                 
@@ -970,9 +1037,9 @@
                         <span class="doc-status status-${status}">${status.replace('_', ' ').toUpperCase()}</span>
                         <div style="margin-top: 10px;">
                             <button class="btn btn-primary btn-sm" onclick="uploadDocument('${doc.id}')">
-                                <i class="fas fa-upload"></i> ${uploaded ? 'Replace' : 'Upload'}
+                                <i class="fas fa-upload"></i> ${uploaded && status !== 'missing' ? 'Replace' : 'Upload'}
                             </button>
-                            ${uploaded ? `<button class="btn btn-outline btn-sm" onclick="viewDocument('${doc.id}')" style="margin-left: 5px;">
+                            ${uploaded && uploaded.fileUrl ? `<button class="btn btn-outline btn-sm" onclick="viewDocument('${doc.id}')" style="margin-left: 5px;">
                                 <i class="fas fa-eye"></i>
                             </button>` : ''}
                         </div>
@@ -984,148 +1051,137 @@
             document.getElementById('docBadge').textContent = completedCount;
         }
         
-
-
         // ============================================================
-// UPLOAD DOCUMENT - MongoDB GridFS + Metadata in MongoDB
-// ============================================================
-async function uploadDocument(docType) {
-    if (!currentUser) { showToast('Please log in first', 'error'); return; }
-    
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.pdf,.jpg,.jpeg,.png,.doc,.docx';
-    
-    input.onchange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        if (file.size > 10 * 1024 * 1024) {
-            showToast('File size must be less than 10MB', 'error');
-            return;
-        }
-        
-        showToast('Uploading ' + file.name + '...', 'info');
-        
-        try {
-            // 1. Upload file to GridFS
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('userId', currentUser.uid);
-            formData.append('docType', docType);
+        // UPLOAD DOCUMENT - MongoDB GridFS + Metadata in MongoDB
+        // ============================================================
+        async function uploadDocument(docType) {
+            if (!currentUser) { showToast('Please log in first', 'error'); return; }
             
-            const response = await fetch(`${API_URL}/upload`, {
-                method: 'POST',
-                body: formData
-            });
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.pdf,.jpg,.jpeg,.png,.doc,.docx';
             
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Upload failed: ${response.status} - ${errorText}`);
-            }
-            
-            const result = await response.json();
-            if (!result.success) throw new Error(result.message || 'Upload failed');
-            
-            console.log('✅ File uploaded to GridFS:', result);
-            
-            // 2. === CRITICAL FIX: Store metadata in MongoDB ===
-            const metadata = {
-                uid: currentUser.uid,
-                docType: docType,
-                fileId: result.fileId,
-                fileName: result.fileName || file.name,
-                fileSize: result.fileSize || file.size,
-                fileType: result.fileType || file.type,
-                fileUrl: result.url,
-                status: 'pending_review',
-                uploadedAt: new Date().toISOString()
-            };
-            
-            console.log('📤 Saving document metadata to MongoDB:', metadata);
-            
-            const metaResponse = await fetch(`${API_URL}/users/documents`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(metadata)
-            });
-            
-            if (!metaResponse.ok) {
-                const errorText = await metaResponse.text();
-                // If user not found, try to create the user first
-                if (metaResponse.status === 404) {
-                    console.log('⚠️ User not found in MongoDB. Attempting to create user...');
-                    // Create user in MongoDB
-                    const userData = {
-                        uid: currentUser.uid,
-                        name: currentUser.displayName || currentUser.email.split('@')[0],
-                        email: currentUser.email,
-                        phone: '',
-                        whatsapp: '',
-                        countryOfInterest: '',
-                        userType: 'applicant',
-                        accountStatus: 'active'
-                    };
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                if (file.size > 10 * 1024 * 1024) {
+                    showToast('File size must be less than 10MB', 'error');
+                    return;
+                }
+                
+                showToast('Uploading ' + file.name + '...', 'info');
+                
+                try {
+                    // 1. Upload file to GridFS
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('userId', currentUser.uid);
+                    formData.append('docType', docType);
                     
-                    const registerResponse = await fetch(`${API_URL}/users/register`, {
+                    const response = await fetch(`${API_URL}/upload`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(userData)
+                        body: formData
                     });
                     
-                    if (registerResponse.ok) {
-                        console.log('✅ User created in MongoDB, retrying document save...');
-                        // Retry saving document metadata
-                        const retryResponse = await fetch(`${API_URL}/users/documents`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(metadata)
-                        });
-                        
-                        if (!retryResponse.ok) {
-                            const retryError = await retryResponse.text();
-                            throw new Error(`Metadata save failed after user creation: ${retryError}`);
-                        }
-                        
-                        const metaResult = await retryResponse.json();
-                        console.log('✅ Document metadata saved to MongoDB:', metaResult);
-                    } else {
-                        throw new Error('Failed to create user in MongoDB');
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`Upload failed: ${response.status} - ${errorText}`);
                     }
-                } else {
-                    throw new Error(`Metadata save failed: ${metaResponse.status} - ${errorText}`);
+                    
+                    const result = await response.json();
+                    if (!result.success) throw new Error(result.message || 'Upload failed');
+                    
+                    console.log('✅ File uploaded to GridFS:', result);
+                    
+                    // 2. Store metadata in MongoDB
+                    const metadata = {
+                        uid: currentUser.uid,
+                        docType: docType,
+                        fileId: result.fileId,
+                        fileName: result.fileName || file.name,
+                        fileSize: result.fileSize || file.size,
+                        fileType: result.fileType || file.type,
+                        fileUrl: result.url,
+                        status: 'pending_review',
+                        uploadedAt: new Date().toISOString()
+                    };
+                    
+                    console.log('📤 Saving document metadata to MongoDB:', metadata);
+                    
+                    const metaResponse = await fetch(`${API_URL}/users/documents`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(metadata)
+                    });
+                    
+                    if (!metaResponse.ok) {
+                        const errorText = await metaResponse.text();
+                        if (metaResponse.status === 404) {
+                            console.log('⚠️ User not found in MongoDB. Attempting to create user...');
+                            const userData = {
+                                uid: currentUser.uid,
+                                name: currentUser.displayName || currentUser.email.split('@')[0],
+                                email: currentUser.email,
+                                phone: '',
+                                whatsapp: '',
+                                countryOfInterest: '',
+                                userType: 'applicant',
+                                accountStatus: 'active'
+                            };
+                            
+                            const registerResponse = await fetch(`${API_URL}/users/register`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(userData)
+                            });
+                            
+                            if (registerResponse.ok) {
+                                console.log('✅ User created in MongoDB, retrying document save...');
+                                const retryResponse = await fetch(`${API_URL}/users/documents`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(metadata)
+                                });
+                                
+                                if (!retryResponse.ok) {
+                                    throw new Error(`Metadata save failed after user creation`);
+                                }
+                            } else {
+                                throw new Error('Failed to create user in MongoDB');
+                            }
+                        } else {
+                            throw new Error(`Metadata save failed: ${metaResponse.status} - ${errorText}`);
+                        }
+                    }
+                    
+                    showToast('Document uploaded successfully!', 'success');
+                    
+                    // 3. Reload dashboard to show new document
+                    await loadDashboardData();
+                    
+                } catch (error) {
+                    console.error('Upload error:', error);
+                    showToast('Upload failed: ' + error.message, 'error');
                 }
-            } else {
-                const metaResult = await metaResponse.json();
-                console.log('✅ Document metadata saved to MongoDB:', metaResult);
-            }
+            };
             
-            showToast('Document uploaded successfully!', 'success');
-            
-            // 3. Reload dashboard to show new document
-            await loadDashboardData();
-            
-        } catch (error) {
-            console.error('Upload error:', error);
-            showToast('Upload failed: ' + error.message, 'error');
+            input.click();
         }
-    };
-    
-    input.click();
-}
-
-        
         
         // ============================================================
         // VIEW DOCUMENT
         // ============================================================
         function viewDocument(docType) {
             const doc = allDocuments[docType];
-            if (doc && doc.url) { window.open(doc.url, '_blank'); } 
-            else { showToast('Document not found', 'error'); }
+            if (doc && doc.fileUrl) { 
+                window.open(doc.fileUrl, '_blank'); 
+            } else { 
+                showToast('Document not found', 'error'); 
+            }
         }
         
         // ============================================================
-        // BULK UPLOAD - FIXED CORS
+        // BULK UPLOAD
         // ============================================================
         document.getElementById('bulkUploadArea').addEventListener('click', () => {
             document.getElementById('bulkFileUpload').click();
@@ -1182,23 +1238,24 @@ async function uploadDocument(docType) {
                     const result = await response.json();
                     if (!result.success) throw new Error(result.message || 'Upload failed');
                     
-                    await db.collection('applications').doc(currentUser.uid).update({
-                        [`documents.${docType}`]: {
-                            url: result.url || result.tempUrl || '',
-                            fileName: result.fileName || file.name,
-                            fileSize: result.fileSize || file.size,
-                            fileType: result.fileType || file.type,
-                            uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            status: 'pending_review'
-                        },
-                        uploadHistory: firebase.firestore.FieldValue.arrayUnion({
-                            filename: result.fileName || file.name,
-                            docType: docType,
-                            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                            status: 'submitted'
-                        }),
-                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    const metadata = {
+                        uid: currentUser.uid,
+                        docType: docType,
+                        fileId: result.fileId,
+                        fileName: result.fileName || file.name,
+                        fileSize: result.fileSize || file.size,
+                        fileType: result.fileType || file.type,
+                        fileUrl: result.url,
+                        status: 'pending_review',
+                        uploadedAt: new Date().toISOString()
+                    };
+                    
+                    await fetch(`${API_URL}/users/documents`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(metadata)
                     });
+                    
                     uploaded++;
                     progressBar.style.width = (uploaded / validFiles.length) * 100 + '%';
                 } catch (error) {
@@ -1232,7 +1289,7 @@ async function uploadDocument(docType) {
                 return;
             }
             historyList.innerHTML = uploadHistory.slice(-10).reverse().map(item => {
-                const date = item.timestamp?.seconds ? new Date(item.timestamp.seconds * 1000).toLocaleDateString() : 'Just now';
+                const date = item.timestamp ? new Date(item.timestamp).toLocaleDateString() : 'Just now';
                 return `
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.06);">
                         <div><strong style="color: white; font-size: 0.85rem;">${item.filename}</strong>
@@ -1253,7 +1310,7 @@ async function uploadDocument(docType) {
                 return;
             }
             list.innerHTML = allNotifications.slice().reverse().map(notif => {
-                const date = notif.timestamp?.seconds ? new Date(notif.timestamp.seconds * 1000).toLocaleString() : 'Just now';
+                const date = notif.timestamp ? new Date(notif.timestamp).toLocaleString() : 'Just now';
                 const isRead = notif.read || false;
                 return `
                     <div class="notification-item ${isRead ? 'read' : ''}">
@@ -1280,10 +1337,13 @@ async function uploadDocument(docType) {
             }
             try {
                 const updatedNotifs = allNotifications.map(n => ({ ...n, read: true }));
-                await db.collection('applications').doc(currentUser.uid).update({
-                    notifications: updatedNotifs,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                
+                await fetch(`${API_URL}/users/notifications`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uid: currentUser.uid, notifications: updatedNotifs })
                 });
+                
                 showToast('All notifications marked as read', 'success');
                 await loadDashboardData();
             } catch (error) {
@@ -1308,7 +1368,7 @@ async function uploadDocument(docType) {
             container.innerHTML = timelineData.map((item) => {
                 const stage = stages[item.key] || { completed: false };
                 const isCompleted = stage.completed || false;
-                const date = stage.completedAt?.seconds ? new Date(stage.completedAt.seconds * 1000).toLocaleDateString() : '';
+                const date = stage.completedAt ? new Date(stage.completedAt).toLocaleDateString() : '';
                 return `
                     <div class="timeline-item ${isCompleted ? 'completed' : ''}">
                         <div class="timeline-dot"></div>
@@ -1351,8 +1411,7 @@ async function uploadDocument(docType) {
                 phone: document.getElementById('profilePhone').value.trim(),
                 whatsapp: document.getElementById('profileWhatsApp').value.trim() || document.getElementById('profilePhone').value.trim(),
                 address: document.getElementById('profileAddress').value.trim(),
-                countryOfInterest: document.getElementById('profileCountry').value,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                countryOfInterest: document.getElementById('profileCountry').value
             };
             
             if (!updateData.name) { showToast('Please enter your full name', 'error'); return; }
@@ -1364,15 +1423,19 @@ async function uploadDocument(docType) {
             submitBtn.disabled = true;
             
             try {
-                await db.collection('users').doc(currentUser.uid).set(updateData, { merge: true });
-                await db.collection('applications').doc(currentUser.uid).set({
-                    'personalInfo': updateData,
-                    'applicationStages.personal_info': { completed: true, status: 'completed', completedAt: firebase.firestore.FieldValue.serverTimestamp() },
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
-                showToast('Profile updated successfully!', 'success');
-                await loadUserData();
-                await loadDashboardData();
+                const response = await fetch(`${API_URL}/users/${currentUser.uid}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updateData)
+                });
+                
+                if (response.ok) {
+                    showToast('Profile updated successfully!', 'success');
+                    await loadUserData();
+                    await loadDashboardData();
+                } else {
+                    throw new Error('Failed to update profile');
+                }
             } catch (error) {
                 console.error('Profile update error:', error);
                 showToast('Error updating profile: ' + error.message, 'error');
