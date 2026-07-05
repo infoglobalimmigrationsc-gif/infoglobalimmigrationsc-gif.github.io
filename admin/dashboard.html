@@ -979,10 +979,11 @@
         const db = firebase.firestore();
 
         // ============================================================
-        // ADMIN AUTHENTICATION - JWT TOKEN
+        // ADMIN AUTHENTICATION - FIXED WITH FIREBASE
         // ============================================================
         const API_URL = 'https://gisc-app-production.up.railway.app/api';
 
+        // Check JWT token first
         const adminToken = localStorage.getItem('adminToken');
         const adminData = localStorage.getItem('adminData');
 
@@ -991,23 +992,82 @@
         }
 
         let adminUser = null;
-        try {
-            adminUser = JSON.parse(adminData);
-            document.getElementById('adminName').textContent = adminUser.name || 'Admin';
-            document.getElementById('adminAvatar').textContent = (adminUser.name || 'A')[0].toUpperCase();
-            document.getElementById('adminRole').textContent = adminUser.role || 'Administrator';
-        } catch (e) {
-            console.error('Error parsing admin data:', e);
-            window.location.href = 'login.html';
+
+        // ============================================================
+        // VERIFY ADMIN ACCESS IN FIRESTORE
+        // ============================================================
+        async function verifyAdminAccess() {
+            try {
+                // Wait for Firebase auth
+                const user = await new Promise((resolve) => {
+                    const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
+                        unsubscribe();
+                        resolve(user);
+                    });
+                });
+
+                if (!user) {
+                    console.log('❌ No Firebase user found - redirecting to login');
+                    window.location.href = 'login.html';
+                    return false;
+                }
+
+                // Check if user has admin role in Firestore
+                const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+
+                if (!userDoc.exists) {
+                    console.log('❌ User document not found - creating admin...');
+                    // Create user document with admin role
+                    await firebase.firestore().collection('users').doc(user.uid).set({
+                        name: 'Super Admin',
+                        email: user.email || 'admin@globalimmigrationsc.com',
+                        userType: 'admin',
+                        role: 'super_admin',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    console.log('✅ Admin document created in Firestore!');
+                    // Refresh the page to load new data
+                    location.reload();
+                    return true;
+                }
+
+                const userData = userDoc.data();
+
+                if (userData.userType !== 'admin') {
+                    console.log('❌ User is not an admin');
+                    alert('You do not have admin access.');
+                    firebase.auth().signOut();
+                    window.location.href = 'login.html';
+                    return false;
+                }
+
+                console.log('✅ Admin verified in Firestore:', userData.name);
+
+                // Update UI with admin info
+                document.getElementById('adminName').textContent = userData.name || 'Admin';
+                document.getElementById('adminAvatar').textContent = (userData.name || 'A')[0].toUpperCase();
+                document.getElementById('adminRole').textContent = userData.role || 'Administrator';
+
+                // Store admin user for later use
+                adminUser = userData;
+
+                return true;
+
+            } catch (error) {
+                console.error('❌ Admin verification error:', error);
+                return false;
+            }
         }
 
         // ============================================================
-        // LOGOUT
+        // LOGOUT - CLEARS BOTH TOKENS
         // ============================================================
         document.getElementById('logoutBtn').addEventListener('click', function() {
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.removeItem('adminToken');
                 localStorage.removeItem('adminData');
+                firebase.auth().signOut();
                 window.location.href = 'login.html';
             }
         });
@@ -1601,10 +1661,24 @@ Submitted: ${appData?.createdAt?.toDate?.()?.toLocaleDateString() || 'N/A'}`);
         window.deleteBlogPost = deleteBlogPost;
 
         // ============================================================
-        // LOAD INITIAL DATA
+        // INITIALIZE - RUN ADMIN VERIFICATION
         // ============================================================
-        console.log('✅ Admin Dashboard loaded successfully');
-        loadDashboardData();
+        console.log('🔐 Verifying admin access...');
+
+        // Run admin verification and load data
+        verifyAdminAccess().then((isAdmin) => {
+            if (isAdmin) {
+                console.log('✅ Admin access granted! Loading dashboard...');
+                loadDashboardData();
+                // Setup real-time listeners after verification
+                db.collection('applications').onSnapshot(() => {
+                    loadDashboardData();
+                }, (error) => console.error('Real-time update error:', error));
+            } else {
+                console.log('❌ Admin access denied');
+                window.location.href = 'login.html';
+            }
+        });
     </script>
 </body>
 </html>
