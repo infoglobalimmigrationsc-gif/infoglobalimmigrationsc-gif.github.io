@@ -986,8 +986,8 @@
         
 
 
-        // ============================================================
-// UPLOAD DOCUMENT - MongoDB GridFS
+// ============================================================
+// UPLOAD DOCUMENT - MongoDB GridFS + Metadata in MongoDB
 // ============================================================
 async function uploadDocument(docType) {
     if (!currentUser) { showToast('Please log in first', 'error'); return; }
@@ -1007,6 +1007,7 @@ async function uploadDocument(docType) {
         showToast('Uploading ' + file.name + '...', 'info');
         
         try {
+            // 1. Upload file to GridFS
             const formData = new FormData();
             formData.append('file', file);
             formData.append('userId', currentUser.uid);
@@ -1025,41 +1026,42 @@ async function uploadDocument(docType) {
             const result = await response.json();
             if (!result.success) throw new Error(result.message || 'Upload failed');
             
-            // Store document reference in Firestore
-            const docRef = db.collection('applications').doc(currentUser.uid);
+            console.log('✅ File uploaded to GridFS:', result);
             
-            // Fix: Use regular object instead of FieldValue.arrayUnion with serverTimestamp
-            const uploadHistoryItem = {
-                filename: result.fileName || file.name,
+            // 2. === CRITICAL FIX: Store metadata in MongoDB ===
+            const metadata = {
+                uid: currentUser.uid,
                 docType: docType,
-                timestamp: new Date().toISOString(),
-                status: 'submitted',
                 fileId: result.fileId,
-                fileUrl: result.url
+                fileName: result.fileName || file.name,
+                fileSize: result.fileSize || file.size,
+                fileType: result.fileType || file.type,
+                fileUrl: result.url,
+                status: 'pending_review',
+                uploadedAt: new Date().toISOString()
             };
             
-            // Get current data first
-            const docSnapshot = await docRef.get();
-            const currentData = docSnapshot.data() || {};
-            const currentHistory = currentData.uploadHistory || [];
+            console.log('📤 Saving document metadata to MongoDB:', metadata);
             
-            // Update with new history
-            await docRef.update({
-                [`documents.${docType}`]: {
-                    url: result.url,
-                    fileId: result.fileId,
-                    fileName: result.fileName || file.name,
-                    fileSize: result.fileSize || file.size,
-                    fileType: result.fileType || file.type,
-                    uploadedAt: new Date().toISOString(),
-                    status: 'pending_review'
-                },
-                uploadHistory: [...currentHistory, uploadHistoryItem],
-                updatedAt: new Date().toISOString()
+            const metaResponse = await fetch(`${API_URL}/users/documents`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(metadata)
             });
             
+            if (!metaResponse.ok) {
+                const errorText = await metaResponse.text();
+                throw new Error(`Metadata save failed: ${metaResponse.status} - ${errorText}`);
+            }
+            
+            const metaResult = await metaResponse.json();
+            console.log('✅ Document metadata saved to MongoDB:', metaResult);
+            
             showToast('Document uploaded successfully!', 'success');
+            
+            // 3. Reload dashboard to show new document
             await loadDashboardData();
+            
         } catch (error) {
             console.error('Upload error:', error);
             showToast('Upload failed: ' + error.message, 'error');
