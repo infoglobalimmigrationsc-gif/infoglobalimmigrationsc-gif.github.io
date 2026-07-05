@@ -941,6 +941,82 @@ app.get('/api/users/:uid/exists', async (req, res) => {
 });
 
 // ============================================================
+// CREATE/UPDATE APPLICATION
+// ============================================================
+app.post('/api/users/application', async (req, res) => {
+    try {
+        const appData = req.body;
+        if (!appData.uid) {
+            return res.status(400).json({ success: false, message: 'uid is required' });
+        }
+        
+        // Check if application exists
+        const existing = await db.collection('applications').findOne({ uid: appData.uid });
+        if (existing) {
+            await db.collection('applications').updateOne(
+                { uid: appData.uid },
+                { $set: { ...appData, updatedAt: new Date() } }
+            );
+        } else {
+            appData.createdAt = new Date();
+            appData.updatedAt = new Date();
+            await db.collection('applications').insertOne(appData);
+        }
+        
+        res.json({ success: true, message: 'Application saved' });
+    } catch (error) {
+        console.error('Error saving application:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
+// UPDATE USER
+// ============================================================
+app.put('/api/users/:uid', async (req, res) => {
+    try {
+        const { uid } = req.params;
+        const updateData = { ...req.body, updatedAt: new Date() };
+        
+        const result = await db.collection('users').updateOne(
+            { uid: uid },
+            { $set: updateData }
+        );
+        
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        
+        res.json({ success: true, message: 'User updated' });
+    } catch (error) {
+        console.error('Error updating user:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
+// UPDATE NOTIFICATIONS
+// ============================================================
+app.put('/api/users/notifications', async (req, res) => {
+    try {
+        const { uid, notifications } = req.body;
+        if (!uid) {
+            return res.status(400).json({ success: false, message: 'uid is required' });
+        }
+        
+        await db.collection('applications').updateOne(
+            { uid: uid },
+            { $set: { notifications: notifications, updatedAt: new Date() } }
+        );
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error updating notifications:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
 // START SERVER
 // ============================================================
 const PORT = process.env.PORT || 8080;
