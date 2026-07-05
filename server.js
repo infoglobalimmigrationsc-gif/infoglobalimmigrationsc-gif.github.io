@@ -1,4 +1,4 @@
-// server.js - COMPLETE WORKING FIXED VERSION1
+// server.js - COMPLETE WORKING FIXED VERSION
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
@@ -298,7 +298,8 @@ app.get('/api/admin/users', authenticateToken, async (req, res) => {
                 application: app,
                 documentCount: app && app.documents ? Object.keys(app.documents).length : 0,
                 applicationStatus: app ? app.status : 'no_application',
-                uploadHistory: app ? app.uploadHistory || [] : []
+                uploadHistory: app ? app.uploadHistory || [] : [],
+                paymentReceipt: app ? app.paymentReceipt || null : null
             };
         });
         res.json({ success: true, users: enrichedUsers });
@@ -525,6 +526,7 @@ app.post('/api/users/register', async (req, res) => {
             payments: [],
             notifications: [],
             uploadHistory: [],
+            paymentReceipt: null,
             applicationStages: {
                 personal_info: { completed: true, status: 'completed', completedAt: new Date() },
                 document_upload: { completed: false, status: 'pending' },
@@ -596,6 +598,7 @@ app.post('/api/users/documents', async (req, res) => {
                 payments: [],
                 notifications: [],
                 uploadHistory: [],
+                paymentReceipt: null,
                 createdAt: new Date(),
                 updatedAt: new Date(),
                 applicationStages: {
@@ -706,7 +709,7 @@ app.put('/api/users/:uid', async (req, res) => {
 });
 
 // ============================================================
-// NOTIFICATIONS - SINGLE UNIFIED ENDPOINT
+// NOTIFICATIONS - UNIFIED ENDPOINT
 // ============================================================
 app.put('/api/users/notifications', async (req, res) => {
     try {
@@ -714,18 +717,56 @@ app.put('/api/users/notifications', async (req, res) => {
         if (!uid) {
             return res.status(400).json({ success: false, message: 'uid is required' });
         }
+        
+        // Check if application exists first
+        const application = await db.collection('applications').findOne({ uid: uid });
+        if (!application) {
+            // Create application if it doesn't exist
+            const user = await db.collection('users').findOne({ uid: uid });
+            if (!user) {
+                return res.status(404).json({ success: false, message: 'User not found' });
+            }
+            
+            const newApp = {
+                uid: uid,
+                userId: uid,
+                status: 'draft',
+                progress: 0,
+                currentStep: 'personal_info',
+                personalInfo: {
+                    name: user.name || 'Unknown',
+                    email: user.email || '',
+                    phone: user.phone || '',
+                    countryOfInterest: user.countryOfInterest || ''
+                },
+                documents: {},
+                payments: [],
+                notifications: notifications || [],
+                uploadHistory: [],
+                paymentReceipt: null,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                applicationStages: {
+                    personal_info: { completed: true, status: 'completed', completedAt: new Date() },
+                    document_upload: { completed: false, status: 'pending' },
+                    payment: { completed: false, status: 'pending' },
+                    review: { completed: false, status: 'pending' },
+                    approval: { completed: false, status: 'pending' }
+                }
+            };
+            await db.collection('applications').insertOne(newApp);
+            return res.json({ success: true, message: 'Application created and notifications updated' });
+        }
+        
         const result = await db.collection('applications').updateOne(
             { uid: uid },
             {
                 $set: {
-                    notifications: notifications,
+                    notifications: notifications || [],
                     updatedAt: new Date()
                 }
             }
         );
-        if (result.matchedCount === 0) {
-            return res.status(404).json({ success: false, message: 'Application not found' });
-        }
         res.json({ success: true, message: 'Notifications updated' });
     } catch (error) {
         console.error('Error updating notifications:', error);
@@ -800,6 +841,45 @@ app.post('/api/users/payment-receipt', async (req, res) => {
         if (!uid || !receiptUrl) {
             return res.status(400).json({ success: false, message: 'uid and receiptUrl are required' });
         }
+        
+        // Check if application exists
+        let application = await db.collection('applications').findOne({ uid: uid });
+        if (!application) {
+            const user = await db.collection('users').findOne({ uid: uid });
+            if (!user) {
+                return res.status(404).json({ success: false, message: 'User not found' });
+            }
+            const newApp = {
+                uid: uid,
+                userId: uid,
+                status: 'draft',
+                progress: 0,
+                currentStep: 'payment',
+                personalInfo: {
+                    name: user.name || 'Unknown',
+                    email: user.email || '',
+                    phone: user.phone || '',
+                    countryOfInterest: user.countryOfInterest || ''
+                },
+                documents: {},
+                payments: [],
+                notifications: [],
+                uploadHistory: [],
+                paymentReceipt: null,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                applicationStages: {
+                    personal_info: { completed: true, status: 'completed', completedAt: new Date() },
+                    document_upload: { completed: false, status: 'pending' },
+                    payment: { completed: false, status: 'pending' },
+                    review: { completed: false, status: 'pending' },
+                    approval: { completed: false, status: 'pending' }
+                }
+            };
+            await db.collection('applications').insertOne(newApp);
+            application = newApp;
+        }
+        
         const receiptData = {
             receiptUrl: receiptUrl,
             receiptFileId: receiptFileId,
@@ -807,10 +887,14 @@ app.post('/api/users/payment-receipt', async (req, res) => {
             uploadedAt: uploadedAt || new Date().toISOString(),
             status: status || 'pending_verification'
         };
+        
         await db.collection('applications').updateOne(
             { uid: uid },
             {
-                $set: { 'paymentReceipt': receiptData, updatedAt: new Date() },
+                $set: { 
+                    paymentReceipt: receiptData, 
+                    updatedAt: new Date() 
+                },
                 $push: {
                     payments: {
                         amount: 0,
@@ -822,7 +906,7 @@ app.post('/api/users/payment-receipt', async (req, res) => {
                 }
             }
         );
-        res.json({ success: true, message: 'Receipt saved successfully' });
+        res.json({ success: true, message: 'Receipt saved successfully', receipt: receiptData });
     } catch (error) {
         console.error('Error saving receipt:', error);
         res.status(500).json({ success: false, message: error.message });
