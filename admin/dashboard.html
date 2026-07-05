@@ -5,187 +5,929 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Global Immigration SC</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../css/variables.css">
-    <link rel="stylesheet" href="../css/glass-system.css">
-    <link rel="stylesheet" href="css/admin-glass.css">
-</head>
-<body class="admin-dashboard">
-    <!-- Sidebar -->
-    <aside class="glass-sidebar admin-sidebar">
-        <div class="sidebar-header">
-            <img src="../assets/images/logo-small.png" alt="Logo" class="sidebar-logo">
-            <h3>Admin Panel</h3>
-        </div>
-        
-        <nav class="sidebar-nav">
-            <a href="#dashboard" class="sidebar-link active" data-section="dashboard">
-                <i class="fas fa-tachometer-alt"></i> Dashboard
-            </a>
-            <a href="#applications" class="sidebar-link" data-section="applications">
-                <i class="fas fa-file-alt"></i> Applications
-                <span class="badge" id="pendingAppsCount">0</span>
-            </a>
-            <a href="#users" class="sidebar-link" data-section="users">
-                <i class="fas fa-users"></i> Users
-            </a>
-            <a href="#documents" class="sidebar-link" data-section="documents">
-                <i class="fas fa-folder-open"></i> Documents
-            </a>
-            <a href="#payments" class="sidebar-link" data-section="payments">
-                <i class="fas fa-credit-card"></i> Payments
-            </a>
-            <a href="#blog" class="sidebar-link" data-section="blog">
-                <i class="fas fa-blog"></i> Blog Manager
-            </a>
-            <a href="#contacts" class="sidebar-link" data-section="contacts">
-                <i class="fas fa-envelope"></i> Contact Submissions
-            </a>
-            <a href="#appointments" class="sidebar-link" data-section="appointments">
-                <i class="fas fa-calendar-check"></i> Appointments
-            </a>
-            <a href="#settings" class="sidebar-link" data-section="settings">
-                <i class="fas fa-cog"></i> Settings
-            </a>
-        </nav>
-        
-        <div class="sidebar-footer">
-            <div class="admin-info">
-                <img src="" alt="Admin" id="adminAvatar" class="admin-avatar">
-                <div>
-                    <p id="adminName">Loading...</p>
-                    <small id="adminRole">Admin</small>
-                </div>
-            </div>
-            <button id="logoutBtn" class="glass-btn glass-btn-danger">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </button>
-        </div>
-    </aside>
+    <style>
+        /* ========================================
+           ADMIN DASHBOARD STYLES
+           ======================================== */
+        :root {
+            --primary-red: #E30613;
+            --primary-red-dark: #b30000;
+            --primary-white: #FFFFFF;
+            --dark-gray: #333333;
+            --medium-gray: #777777;
+            --light-gray: #F5F5F5;
+            --success-green: #28a745;
+            --warning-yellow: #ffc107;
+            --danger-red: #dc3545;
+        }
 
-    <!-- Main Content -->
-    <main class="admin-main">
-        <!-- Dashboard Section -->
-        <section id="dashboard-section" class="admin-section active">
-            <div class="section-header">
-                <h1><i class="fas fa-tachometer-alt"></i> Dashboard Overview</h1>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        .admin-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ============================================
+           SIDEBAR
+           ============================================ */
+        .admin-sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-right: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 25px 20px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--primary-red);
+            flex-shrink: 0;
+        }
+
+        .sidebar-header .sidebar-logo {
+            max-width: 140px;
+            margin-bottom: 10px;
+        }
+
+        .sidebar-header h3 {
+            color: var(--primary-red);
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .sidebar-header .subtitle {
+            color: var(--medium-gray);
+            font-size: 0.7rem;
+            margin-top: 2px;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            list-style: none;
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            border-radius: 12px;
+            color: var(--dark-gray);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-bottom: 3px;
+        }
+
+        .sidebar-nav a i {
+            width: 22px;
+            color: var(--primary-red);
+            font-size: 1rem;
+        }
+
+        .sidebar-nav a:hover,
+        .sidebar-nav a.active {
+            background: rgba(227, 6, 19, 0.1);
+            color: var(--primary-red);
+        }
+
+        .sidebar-nav a .badge {
+            margin-left: auto;
+            background: var(--primary-red);
+            color: white;
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        /* Sidebar Footer */
+        .sidebar-footer {
+            flex-shrink: 0;
+            padding-top: 20px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            margin-top: auto;
+        }
+
+        .admin-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .admin-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--primary-red);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .admin-info h4 {
+            font-size: 0.9rem;
+            color: var(--dark-gray);
+            margin-bottom: 2px;
+        }
+
+        .admin-info small {
+            font-size: 0.7rem;
+            color: #666;
+        }
+
+        .btn-logout {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--primary-red);
+            background: transparent;
+            color: var(--primary-red);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-logout:hover {
+            background: var(--primary-red);
+            color: white;
+        }
+
+        /* ============================================
+           MAIN CONTENT
+           ============================================ */
+        .admin-main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 30px;
+        }
+
+        /* Header */
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .admin-header h1 {
+            color: white;
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+
+        .admin-header h1 i {
+            color: var(--primary-red);
+            margin-right: 10px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-red);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-red-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(227,6,19,0.3);
+        }
+
+        .btn-outline {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+        }
+
+        .btn-outline:hover {
+            background: rgba(255,255,255,0.25);
+        }
+
+        .btn-success {
+            background: var(--success-green);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger-red);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 0.75rem;
+        }
+
+        /* ============================================
+           SECTIONS
+           ============================================ */
+        .admin-section {
+            display: none;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .admin-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .section-header h1 {
+            color: white;
+            font-size: 1.4rem;
+        }
+
+        .section-header h1 i {
+            color: var(--primary-red);
+            margin-right: 10px;
+        }
+
+        /* ============================================
+           STATS CARDS
+           ============================================ */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stats-grid.small {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-card .stat-icon {
+            font-size: 1.8rem;
+            color: var(--primary-red);
+            margin-bottom: 8px;
+        }
+
+        .stat-card h3 {
+            font-size: 1.8rem;
+            color: white;
+            margin-bottom: 3px;
+        }
+
+        .stat-card p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.8rem;
+        }
+
+        /* ============================================
+           GLASS CONTAINER
+           ============================================ */
+        .glass-container {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-container h3 {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        /* ============================================
+           GLASS INPUT
+           ============================================ */
+        .glass-input {
+            background: rgba(255, 255, 255, 0.85) !important;
+            backdrop-filter: blur(8px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.4) !important;
+            border-radius: 10px !important;
+            padding: 10px 14px !important;
+            font-size: 0.9rem !important;
+            transition: all 0.3s ease !important;
+            width: 100%;
+            color: var(--dark-gray);
+        }
+
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border-color: var(--primary-red) !important;
+            box-shadow: 0 0 0 3px rgba(227, 6, 19, 0.1) !important;
+            outline: none;
+        }
+
+        /* ============================================
+           BLOG LIST
+           ============================================ */
+        .search-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-bar input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .search-bar select {
+            min-width: 150px;
+        }
+
+        .posts-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .blog-item {
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .blog-item:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .blog-item .blog-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .blog-item .blog-title {
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .blog-item .blog-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.5);
+            flex-wrap: wrap;
+        }
+
+        .blog-item .blog-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .status-badge {
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+
+        .status-published {
+            background: rgba(40, 167, 69, 0.2);
+            color: var(--success-green);
+        }
+
+        .status-draft {
+            background: rgba(255, 193, 7, 0.2);
+            color: var(--warning-yellow);
+        }
+
+        .status-scheduled {
+            background: rgba(23, 162, 184, 0.2);
+            color: #17a2b8;
+        }
+
+        /* ============================================
+           MODAL
+           ============================================ */
+        .glass-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .glass-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 30px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--primary-red);
+        }
+
+        .modal-header h2 {
+            color: var(--dark-gray);
+            font-size: 1.3rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--medium-gray);
+            transition: color 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--primary-red);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+        }
+
+        /* Modal Form */
+        .modal-content .form-group {
+            margin-bottom: 18px;
+        }
+
+        .modal-content .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: var(--dark-gray);
+            font-size: 0.85rem;
+        }
+
+        .modal-content .form-group label .required {
+            color: var(--primary-red);
+        }
+
+        .modal-content textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Upload Area in Modal */
+        .glass-upload {
+            border: 2px dashed rgba(0,0,0,0.15);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.5);
+        }
+
+        .glass-upload:hover {
+            border-color: var(--primary-red);
+            background: rgba(227,6,19,0.05);
+        }
+
+        .glass-upload i {
+            font-size: 2.5rem;
+            color: var(--primary-red);
+            margin-bottom: 10px;
+        }
+
+        .glass-upload p {
+            color: var(--medium-gray);
+            font-size: 0.9rem;
+        }
+
+        /* ============================================
+           TOAST NOTIFICATIONS
+           ============================================ */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 400px;
+        }
+
+        .toast {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 14px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-left: 4px solid var(--success-green);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideInRight 0.4s ease;
+            min-width: 280px;
+        }
+
+        .toast.error { border-left-color: var(--danger-red); }
+        .toast.warning { border-left-color: var(--warning-yellow); }
+        .toast.info { border-left-color: #17a2b8; }
+
+        .toast .toast-close {
+            margin-left: auto;
+            cursor: pointer;
+            opacity: 0.5;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* ============================================
+           MOBILE
+           ============================================ */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: var(--primary-red);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.3;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-red);
+            border-radius: 3px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            .admin-sidebar.open {
+                transform: translateX(0);
+            }
+            .admin-main {
+                margin-left: 0;
+                padding: 15px;
+                padding-top: 70px;
+            }
+            .mobile-menu-toggle {
+                display: block;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            .stat-card h3 {
+                font-size: 1.3rem;
+            }
+            .admin-section {
+                padding: 15px;
+            }
+            .section-header h1 {
+                font-size: 1.1rem;
+            }
+            .search-bar {
+                flex-direction: column;
+            }
+            .search-bar select {
+                min-width: 100%;
+            }
+            .modal-content {
+                padding: 20px;
+                margin: 10px;
+            }
+            .blog-item .blog-header {
+                flex-direction: column;
+            }
+            .blog-item .blog-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .stat-card {
+                padding: 12px;
+            }
+            .stat-card h3 {
+                font-size: 1.1rem;
+            }
+            .admin-main {
+                padding: 10px;
+                padding-top: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="../GISC-LOGO.webp" alt="Global Immigration SC Logo" class="sidebar-logo" onerror="this.src='https://placehold.co/140x70/E30613/white?text=GISC'">
+                <h3>Admin Panel</h3>
+                <div class="subtitle">Global Immigration SC</div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="#" data-section="dashboard" class="active">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="#" data-section="applications">
+                    <i class="fas fa-file-alt"></i> Applications
+                    <span class="badge" id="pendingAppsCount">0</span>
+                </a>
+                <a href="#" data-section="users">
+                    <i class="fas fa-users"></i> Users
+                </a>
+                <a href="#" data-section="documents">
+                    <i class="fas fa-folder-open"></i> Documents
+                    <span class="badge" id="documentsCount">0</span>
+                </a>
+                <a href="#" data-section="payments">
+                    <i class="fas fa-credit-card"></i> Payments
+                </a>
+                <a href="#" data-section="blog">
+                    <i class="fas fa-blog"></i> Blog Manager
+                    <span class="badge" id="blogCount">0</span>
+                </a>
+                <a href="#" data-section="contacts">
+                    <i class="fas fa-envelope"></i> Contact Submissions
+                    <span class="badge" id="contactCount">0</span>
+                </a>
+                <a href="#" data-section="appointments">
+                    <i class="fas fa-calendar-check"></i> Appointments
+                </a>
+                <a href="#" data-section="settings">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="admin-info">
+                    <div class="admin-avatar" id="adminAvatar">A</div>
+                    <div>
+                        <h4 id="adminName">Loading...</h4>
+                        <small id="adminRole">Administrator</small>
+                    </div>
+                </div>
+                <button id="logoutBtn" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <div class="admin-header">
+                <h1><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
                 <div class="header-actions">
-                    <button class="glass-btn" id="refreshData">
+                    <button class="btn btn-outline btn-sm" onclick="refreshData()">
                         <i class="fas fa-sync-alt"></i> Refresh
                     </button>
                 </div>
             </div>
-            
-            <!-- Analytics Cards -->
-            <div class="stats-grid">
-                <div class="glass-stats stat-card">
-                    <div class="stat-icon"><i class="fas fa-users"></i></div>
-                    <div class="stat-info">
+
+            <!-- Dashboard Section -->
+            <section id="dashboard-section" class="admin-section active">
+                <div class="section-header">
+                    <h1><i class="fas fa-tachometer-alt"></i> Overview</h1>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
                         <h3 id="totalUsers">0</h3>
                         <p>Total Users</p>
                     </div>
-                </div>
-                <div class="glass-stats stat-card">
-                    <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
-                    <div class="stat-info">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
                         <h3 id="totalApps">0</h3>
                         <p>Applications</p>
                     </div>
-                </div>
-                <div class="glass-stats stat-card">
-                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
-                    <div class="stat-info">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-clock"></i></div>
                         <h3 id="pendingApps">0</h3>
                         <p>Pending Review</p>
                     </div>
-                </div>
-                <div class="glass-stats stat-card">
-                    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
-                    <div class="stat-info">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
                         <h3 id="approvedApps">0</h3>
                         <p>Approved</p>
                     </div>
-                </div>
-                <div class="glass-stats stat-card">
-                    <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
-                    <div class="stat-info">
-                        <h3 id="totalRevenue">$0</h3>
-                        <p>Revenue</p>
-                    </div>
-                </div>
-                <div class="glass-stats stat-card">
-                    <div class="stat-icon"><i class="fas fa-newspaper"></i></div>
-                    <div class="stat-info">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-newspaper"></i></div>
                         <h3 id="totalBlogs">0</h3>
                         <p>Blog Posts</p>
                     </div>
-                </div>
-            </div>
-            
-            <!-- Recent Activity -->
-            <div class="glass-container" style="margin-top: 30px;">
-                <h3>Recent Activity</h3>
-                <div id="recentActivityList" class="activity-list">
-                    <!-- Loaded dynamically -->
-                </div>
-            </div>
-        </section>
-
-        <!-- Blog Manager Section -->
-        <section id="blog-section" class="admin-section">
-            <div class="section-header">
-                <h1><i class="fas fa-blog"></i> Blog Manager</h1>
-                <button class="glass-btn glass-btn-primary" id="newPostBtn">
-                    <i class="fas fa-plus"></i> New Post
-                </button>
-            </div>
-            
-            <!-- Blog Stats -->
-            <div class="stats-grid small">
-                <div class="glass-stats">
-                    <h3 id="totalPostsCount">0</h3>
-                    <p>Total Posts</p>
-                </div>
-                <div class="glass-stats">
-                    <h3 id="publishedPostsCount">0</h3>
-                    <p>Published</p>
-                </div>
-                <div class="glass-stats">
-                    <h3 id="draftPostsCount">0</h3>
-                    <p>Drafts</p>
-                </div>
-            </div>
-            
-            <!-- Posts List -->
-            <div class="glass-container">
-                <div class="search-bar">
-                    <input type="text" id="searchPosts" placeholder="Search posts..." class="glass-input">
-                    <select id="filterCategory" class="glass-input">
-                        <option value="all">All Categories</option>
-                    </select>
-                </div>
-                <div id="blogPostsList" class="posts-list">
-                    <!-- Posts loaded dynamically -->
-                </div>
-            </div>
-        </section>
-
-        <!-- Blog Editor Modal -->
-        <div id="blogEditorModal" class="glass-modal" style="display: none;">
-            <div class="modal-header">
-                <h2 id="modalTitle">Create New Blog Post</h2>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="blogForm">
-                    <div class="form-group">
-                        <label>Title *</label>
-                        <input type="text" id="blogTitle" class="glass-input" required>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-envelope"></i></div>
+                        <h3 id="totalContacts">0</h3>
+                        <p>Contact Submissions</p>
                     </div>
-                    
-                    <div class="form-group">
-                        <label>Category *</label>
-                        <select id="blogCategory" class="glass-input" required>
-                            <option value="">Select Category</option>
+                </div>
+
+                <div class="glass-container">
+                    <h3><i class="fas fa-clock"></i> Recent Activity</h3>
+                    <div id="recentActivityList" style="max-height: 300px; overflow-y: auto;">
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>No recent activity</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Blog Manager Section -->
+            <section id="blog-section" class="admin-section">
+                <div class="section-header">
+                    <h1><i class="fas fa-blog"></i> Blog Manager</h1>
+                    <button class="btn btn-primary" id="newPostBtn">
+                        <i class="fas fa-plus"></i> New Post
+                    </button>
+                </div>
+
+                <div class="stats-grid small">
+                    <div class="stat-card">
+                        <h3 id="totalPostsCount">0</h3>
+                        <p>Total Posts</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="publishedPostsCount">0</h3>
+                        <p>Published</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="draftPostsCount">0</h3>
+                        <p>Drafts</p>
+                    </div>
+                </div>
+
+                <div class="glass-container">
+                    <div class="search-bar">
+                        <input type="text" id="searchPosts" class="glass-input" placeholder="Search posts...">
+                        <select id="filterCategory" class="glass-input">
+                            <option value="all">All Categories</option>
                             <option value="Study Abroad">Study Abroad</option>
                             <option value="Visa Tips">Visa Tips</option>
                             <option value="Scholarships">Scholarships</option>
@@ -194,61 +936,731 @@
                             <option value="Travel Guides">Travel Guides</option>
                         </select>
                     </div>
-                    
-                    <div class="form-group">
-                        <label>Featured Image</label>
-                        <div class="glass-upload" id="imageUploadArea">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <p>Click or drag image to upload</p>
-                            <input type="file" id="blogImage" accept="image/*" style="display: none;">
-                        </div>
-                        <div id="imagePreview" style="display: none; margin-top: 15px;">
-                            <img id="previewImg" style="max-width: 200px; border-radius: 8px;">
-                            <button type="button" id="removeImage" class="glass-btn-small">Remove</button>
+                    <div id="blogPostsList" class="posts-list">
+                        <div class="empty-state">
+                            <i class="fas fa-newspaper"></i>
+                            <p>No blog posts yet. Create your first post!</p>
                         </div>
                     </div>
-                    
-                    <div class="form-group">
-                        <label>Excerpt (Short Description)</label>
-                        <textarea id="blogExcerpt" class="glass-input" rows="3" placeholder="Brief summary of the post..."></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Content *</label>
-                        <textarea id="blogContent" class="glass-input" rows="15"></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Status</label>
-                        <select id="blogStatus" class="glass-input">
-                            <option value="draft">Draft</option>
-                            <option value="published">Publish Now</option>
-                            <option value="scheduled">Schedule</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group" id="scheduleDateGroup" style="display: none;">
-                        <label>Schedule Date</label>
-                        <input type="datetime-local" id="scheduleDate" class="glass-input">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="glass-btn" id="cancelPostBtn">Cancel</button>
-                <button class="glass-btn glass-btn-primary" id="savePostBtn">Save Post</button>
-            </div>
-        </div>
-    </main>
+                </div>
+            </section>
 
-    <script src="https://cdn.tiny.cloud/1/YOUR_API_KEY/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
-    <script src="../config/firebase-config.js"></script>
-    <script src="js/admin-auth.js"></script>
-    <script src="js/admin-applications.js"></script>
-    <script src="js/admin-documents.js"></script>
-    <script src="js/admin-users.js"></script>
-    <script src="js/admin-blogs.js"></script>
-    <script src="js/admin-notifications.js"></script>
-    <script src="js/admin-analytics.js"></script>
-    <script src="js/admin-main.js"></script>
+            <!-- Blog Editor Modal -->
+            <div id="blogEditorModal" class="glass-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 id="modalTitle">Create New Blog Post</h2>
+                        <button class="modal-close" id="closeModalBtn">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="blogForm">
+                            <div class="form-group">
+                                <label>Title <span class="required">*</span></label>
+                                <input type="text" id="blogTitle" class="glass-input" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Category <span class="required">*</span></label>
+                                <select id="blogCategory" class="glass-input" required>
+                                    <option value="">Select Category</option>
+                                    <option value="Study Abroad">Study Abroad</option>
+                                    <option value="Visa Tips">Visa Tips</option>
+                                    <option value="Scholarships">Scholarships</option>
+                                    <option value="Immigration News">Immigration News</option>
+                                    <option value="Student Stories">Student Stories</option>
+                                    <option value="Travel Guides">Travel Guides</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Featured Image</label>
+                                <div class="glass-upload" id="imageUploadArea">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p>Click or drag image to upload</p>
+                                    <input type="file" id="blogImage" accept="image/*" style="display: none;">
+                                </div>
+                                <div id="imagePreview" style="display: none; margin-top: 15px;">
+                                    <img id="previewImg" style="max-width: 200px; border-radius: 8px;">
+                                    <button type="button" id="removeImage" class="btn btn-danger btn-sm" style="margin-top: 10px;">Remove</button>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Excerpt (Short Description)</label>
+                                <textarea id="blogExcerpt" class="glass-input" rows="3" placeholder="Brief summary of the post..."></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Content <span class="required">*</span></label>
+                                <textarea id="blogContent" class="glass-input" rows="10" placeholder="Write your blog content here..."></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Status</label>
+                                <select id="blogStatus" class="glass-input">
+                                    <option value="draft">Draft</option>
+                                    <option value="published">Publish Now</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline" id="cancelPostBtn">Cancel</button>
+                        <button class="btn btn-primary" id="savePostBtn">Save Post</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
+    <script>
+        // ============================================================
+        // FIREBASE CONFIGURATION
+        // ============================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyAJ3p91t83EQeQ6XopPfvisc1fIdsWIMm8",
+            authDomain: "global-immigration-sc.firebaseapp.com",
+            projectId: "global-immigration-sc",
+            storageBucket: "global-immigration-sc.firebasestorage.app",
+            messagingSenderId: "791181145117",
+            appId: "1:791181145117:web:527b7df63c9a32adf9c2f4"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        // ============================================================
+        // GLOBAL VARIABLES
+        // ============================================================
+        let currentUser = null;
+        let allUsers = [];
+        let allApplications = [];
+        let allBlogs = [];
+        let editingPostId = null;
+
+        // ============================================================
+        // AUTHENTICATION
+        // ============================================================
+        auth.onAuthStateChanged(async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            currentUser = user;
+
+            // Check if user is admin
+            const userDoc = await db.collection('users').doc(user.uid).get();
+            if (userDoc.exists && userDoc.data().userType === 'admin') {
+                document.getElementById('adminName').textContent = userDoc.data().name || 'Admin';
+                document.getElementById('adminAvatar').textContent = (userDoc.data().name || 'A')[0].toUpperCase();
+                document.getElementById('adminRole').textContent = 'Administrator';
+                await loadDashboardData();
+                setupRealTimeListeners();
+            } else {
+                alert('You do not have admin access.');
+                auth.signOut();
+                window.location.href = 'login.html';
+            }
+        });
+
+        // ============================================================
+        // LOGOUT
+        // ============================================================
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            if (confirm('Are you sure you want to logout?')) {
+                await auth.signOut();
+                window.location.href = 'login.html';
+            }
+        });
+
+        // ============================================================
+        // NAVIGATION
+        // ============================================================
+        document.querySelectorAll('.sidebar-nav a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const section = link.dataset.section;
+
+                document.querySelectorAll('.sidebar-nav a').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+
+                document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+                const targetSection = document.getElementById(`${section}-section`);
+                if (targetSection) targetSection.classList.add('active');
+
+                // Load section data
+                if (section === 'blog') loadBlogPosts();
+                if (section === 'users') loadUsers();
+                if (section === 'applications') loadApplications();
+
+                // Close mobile sidebar
+                document.getElementById('sidebar').classList.remove('open');
+            });
+        });
+
+        // ============================================================
+        // MOBILE MENU
+        // ============================================================
+        document.getElementById('mobileMenuToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
+
+        document.addEventListener('click', (e) => {
+            const sidebar = document.getElementById('sidebar');
+            const toggle = document.getElementById('mobileMenuToggle');
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(e.target) && !toggle.contains(e.target)) {
+                    sidebar.classList.remove('open');
+                }
+            }
+        });
+
+        // ============================================================
+        // LOAD DASHBOARD DATA
+        // ============================================================
+        async function loadDashboardData() {
+            try {
+                // Count users
+                const usersSnapshot = await db.collection('users').get();
+                const totalUsers = usersSnapshot.size;
+
+                // Count applications
+                const appsSnapshot = await db.collection('applications').get();
+                const totalApps = appsSnapshot.size;
+                const pendingApps = appsSnapshot.docs.filter(d => d.data().status === 'pending' || d.data().status === 'draft').length;
+                const approvedApps = appsSnapshot.docs.filter(d => d.data().status === 'approved').length;
+
+                // Count blogs
+                const blogsSnapshot = await db.collection('blogs').get();
+                const totalBlogs = blogsSnapshot.size;
+
+                // Count contacts
+                const contactsSnapshot = await db.collection('contacts').get();
+                const totalContacts = contactsSnapshot.size;
+
+                document.getElementById('totalUsers').textContent = totalUsers;
+                document.getElementById('totalApps').textContent = totalApps;
+                document.getElementById('pendingApps').textContent = pendingApps;
+                document.getElementById('pendingAppsCount').textContent = pendingApps;
+                document.getElementById('approvedApps').textContent = approvedApps;
+                document.getElementById('totalBlogs').textContent = totalBlogs;
+                document.getElementById('blogCount').textContent = totalBlogs;
+                document.getElementById('totalContacts').textContent = totalContacts;
+                document.getElementById('contactCount').textContent = totalContacts;
+
+                // Recent activity
+                const recentActivity = document.getElementById('recentActivityList');
+                const allDocs = await db.collection('applications')
+                    .orderBy('updatedAt', 'desc')
+                    .limit(10)
+                    .get();
+
+                if (allDocs.empty) {
+                    recentActivity.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>No recent activity</p></div>';
+                } else {
+                    recentActivity.innerHTML = allDocs.docs.map(doc => {
+                        const data = doc.data();
+                        const name = data.personalInfo?.name || 'Unknown User';
+                        const status = data.status || 'draft';
+                        const date = data.updatedAt?.toDate?.()?.toLocaleDateString() || 'Just now';
+                        return `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                                <div>
+                                    <strong style="color: white;">${name}</strong>
+                                    <span style="color: rgba(255,255,255,0.5); font-size: 0.8rem;">updated application</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span class="status-badge status-${status}">${status.toUpperCase()}</span>
+                                    <span style="color: rgba(255,255,255,0.3); font-size: 0.7rem;">${date}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                showToast('Error loading dashboard data', 'error');
+            }
+        }
+
+        // ============================================================
+        // REAL-TIME LISTENERS
+        // ============================================================
+        function setupRealTimeListeners() {
+            db.collection('applications').onSnapshot(() => {
+                loadDashboardData();
+            }, (error) => console.error('Real-time update error:', error));
+        }
+
+        // ============================================================
+        // LOAD USERS
+        // ============================================================
+        async function loadUsers() {
+            const container = document.getElementById('users-section');
+            if (!container) return;
+
+            try {
+                const snapshot = await db.collection('users').get();
+                allUsers = [];
+                snapshot.forEach(doc => allUsers.push({ id: doc.id, ...doc.data() }));
+
+                // Create users section if not exists
+                let usersSection = document.getElementById('users-section');
+                if (!usersSection) {
+                    usersSection = document.createElement('section');
+                    usersSection.id = 'users-section';
+                    usersSection.className = 'admin-section';
+                    document.querySelector('.admin-main').appendChild(usersSection);
+                }
+
+                usersSection.innerHTML = `
+                    <div class="section-header">
+                        <h1><i class="fas fa-users"></i> User Management</h1>
+                        <button class="btn btn-primary" onclick="refreshData()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                    <div class="glass-container">
+                        <div style="overflow-x: auto;">
+                            <table style="width: 100%; border-collapse: collapse; color: white;">
+                                <thead>
+                                    <tr style="border-bottom: 2px solid rgba(255,255,255,0.1);">
+                                        <th style="padding: 12px; text-align: left;">Name</th>
+                                        <th style="padding: 12px; text-align: left;">Email</th>
+                                        <th style="padding: 12px; text-align: left;">Phone</th>
+                                        <th style="padding: 12px; text-align: left;">Country</th>
+                                        <th style="padding: 12px; text-align: left;">Type</th>
+                                        <th style="padding: 12px; text-align: left;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${allUsers.map(user => `
+                                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                            <td style="padding: 12px;">${user.name || 'Unknown'}</td>
+                                            <td style="padding: 12px;">${user.email || 'No email'}</td>
+                                            <td style="padding: 12px;">${user.phone || 'N/A'}</td>
+                                            <td style="padding: 12px;">${user.countryOfInterest || 'N/A'}</td>
+                                            <td style="padding: 12px;">
+                                                <span class="status-badge ${user.userType === 'admin' ? 'status-published' : 'status-draft'}">
+                                                    ${user.userType || 'applicant'}
+                                                </span>
+                                            </td>
+                                            <td style="padding: 12px;">
+                                                <button class="btn btn-sm btn-outline" onclick="viewUser('${user.id}')">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error('Error loading users:', error);
+                showToast('Error loading users', 'error');
+            }
+        }
+
+        // ============================================================
+        // LOAD APPLICATIONS
+        // ============================================================
+        async function loadApplications() {
+            try {
+                const snapshot = await db.collection('applications').get();
+                allApplications = [];
+                snapshot.forEach(doc => allApplications.push({ id: doc.id, ...doc.data() }));
+
+                let appsSection = document.getElementById('applications-section');
+                if (!appsSection) {
+                    appsSection = document.createElement('section');
+                    appsSection.id = 'applications-section';
+                    appsSection.className = 'admin-section';
+                    document.querySelector('.admin-main').appendChild(appsSection);
+                }
+
+                appsSection.innerHTML = `
+                    <div class="section-header">
+                        <h1><i class="fas fa-file-alt"></i> Applications</h1>
+                        <span style="color: rgba(255,255,255,0.5);">${allApplications.length} total</span>
+                    </div>
+                    <div class="glass-container">
+                        ${allApplications.length === 0 ? `
+                            <div class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <p>No applications yet</p>
+                            </div>
+                        ` : `
+                            <div style="overflow-x: auto;">
+                                <table style="width: 100%; border-collapse: collapse; color: white;">
+                                    <thead>
+                                        <tr style="border-bottom: 2px solid rgba(255,255,255,0.1);">
+                                            <th style="padding: 12px; text-align: left;">Applicant</th>
+                                            <th style="padding: 12px; text-align: left;">Email</th>
+                                            <th style="padding: 12px; text-align: left;">Country</th>
+                                            <th style="padding: 12px; text-align: left;">Status</th>
+                                            <th style="padding: 12px; text-align: left;">Date</th>
+                                            <th style="padding: 12px; text-align: left;">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${await Promise.all(allApplications.map(async (app) => {
+                                            const userDoc = await db.collection('users').doc(app.userId).get();
+                                            const userData = userDoc.data();
+                                            return `
+                                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                                    <td style="padding: 12px;">${app.personalInfo?.name || 'Unknown'}</td>
+                                                    <td style="padding: 12px;">${app.personalInfo?.email || 'N/A'}</td>
+                                                    <td style="padding: 12px;">${app.personalInfo?.countryOfInterest || 'N/A'}</td>
+                                                    <td style="padding: 12px;">
+                                                        <span class="status-badge status-${app.status || 'draft'}">${(app.status || 'draft').toUpperCase()}</span>
+                                                    </td>
+                                                    <td style="padding: 12px;">${app.createdAt?.toDate?.()?.toLocaleDateString() || 'N/A'}</td>
+                                                    <td style="padding: 12px;">
+                                                        <button class="btn btn-sm btn-outline" onclick="viewApplication('${app.userId}')">
+                                                            <i class="fas fa-eye"></i>
+                                                        </button>
+                                                        <select onchange="updateApplicationStatus('${app.userId}', this.value)" class="glass-input" style="width: auto; padding: 4px 8px; font-size: 0.7rem;">
+                                                            <option value="draft" ${app.status === 'draft' ? 'selected' : ''}>Draft</option>
+                                                            <option value="submitted" ${app.status === 'submitted' ? 'selected' : ''}>Submitted</option>
+                                                            <option value="under_review" ${app.status === 'under_review' ? 'selected' : ''}>Under Review</option>
+                                                            <option value="approved" ${app.status === 'approved' ? 'selected' : ''}>Approved</option>
+                                                            <option value="rejected" ${app.status === 'rejected' ? 'selected' : ''}>Rejected</option>
+                                                        </select>
+                                                    </td>
+                                                </tr>
+                                            `;
+                                        })).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        `}
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error('Error loading applications:', error);
+                showToast('Error loading applications', 'error');
+            }
+        }
+
+        // ============================================================
+        // UPDATE APPLICATION STATUS
+        // ============================================================
+        async function updateApplicationStatus(userId, status) {
+            try {
+                await db.collection('applications').doc(userId).update({
+                    status: status,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                showToast('Application status updated successfully!', 'success');
+                loadApplications();
+                loadDashboardData();
+            } catch (error) {
+                console.error('Error updating status:', error);
+                showToast('Error updating status', 'error');
+            }
+        }
+
+        // ============================================================
+        // VIEW APPLICATION
+        // ============================================================
+        async function viewApplication(userId) {
+            const appDoc = await db.collection('applications').doc(userId).get();
+            const userDoc = await db.collection('users').doc(userId).get();
+            const appData = appDoc.data();
+            const userData = userDoc.data();
+
+            alert(`📋 Application Details
+
+Applicant: ${userData?.name || 'Unknown'}
+Email: ${userData?.email || 'N/A'}
+Phone: ${userData?.phone || 'N/A'}
+Country: ${appData?.personalInfo?.countryOfInterest || 'N/A'}
+Status: ${appData?.status || 'draft'}
+Documents: ${Object.keys(appData?.documents || {}).length}
+Submitted: ${appData?.createdAt?.toDate?.()?.toLocaleDateString() || 'N/A'}`);
+        }
+
+        // ============================================================
+        // LOAD BLOG POSTS
+        // ============================================================
+        async function loadBlogPosts() {
+            try {
+                const snapshot = await db.collection('blogs').orderBy('createdAt', 'desc').get();
+                allBlogs = [];
+                snapshot.forEach(doc => allBlogs.push({ id: doc.id, ...doc.data() }));
+
+                const container = document.getElementById('blogPostsList');
+                const total = allBlogs.length;
+                const published = allBlogs.filter(b => b.status === 'published').length;
+                const drafts = allBlogs.filter(b => b.status === 'draft').length;
+
+                document.getElementById('totalPostsCount').textContent = total;
+                document.getElementById('publishedPostsCount').textContent = published;
+                document.getElementById('draftPostsCount').textContent = drafts;
+                document.getElementById('blogCount').textContent = total;
+
+                if (total === 0) {
+                    container.innerHTML = `<div class="empty-state"><i class="fas fa-newspaper"></i><p>No blog posts yet. Create your first post!</p></div>`;
+                    return;
+                }
+
+                container.innerHTML = allBlogs.map(post => `
+                    <div class="blog-item">
+                        <div class="blog-header">
+                            <div>
+                                <div class="blog-title">${post.title || 'Untitled'}</div>
+                                <div class="blog-meta">
+                                    <span>${post.category || 'Uncategorized'}</span>
+                                    <span>${post.createdAt?.toDate?.()?.toLocaleDateString() || 'Just now'}</span>
+                                    <span class="status-badge status-${post.status || 'draft'}">${(post.status || 'draft').toUpperCase()}</span>
+                                    ${post.author ? `<span>✍️ ${post.author}</span>` : ''}
+                                </div>
+                            </div>
+                            <div class="blog-actions">
+                                <button class="btn btn-sm btn-outline" onclick="editBlogPost('${post.id}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteBlogPost('${post.id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        ${post.excerpt ? `<p style="color: rgba(255,255,255,0.5); font-size: 0.85rem; margin-top: 8px;">${post.excerpt}</p>` : ''}
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading blog posts:', error);
+                showToast('Error loading blog posts', 'error');
+            }
+        }
+
+        // ============================================================
+        // SAVE BLOG POST
+        // ============================================================
+        async function saveBlogPost() {
+            const title = document.getElementById('blogTitle').value.trim();
+            const category = document.getElementById('blogCategory').value;
+            const excerpt = document.getElementById('blogExcerpt').value.trim();
+            const content = document.getElementById('blogContent').value.trim();
+            const status = document.getElementById('blogStatus').value;
+
+            if (!title) {
+                showToast('Please enter a title', 'error');
+                return;
+            }
+            if (!content) {
+                showToast('Please enter content', 'error');
+                return;
+            }
+
+            const submitBtn = document.getElementById('savePostBtn');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="spinner"></span> Saving...';
+            submitBtn.disabled = true;
+
+            try {
+                const postData = {
+                    title: title,
+                    category: category,
+                    excerpt: excerpt || title.substring(0, 150),
+                    content: content,
+                    status: status,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    author: currentUser.displayName || 'Admin'
+                };
+
+                if (editingPostId) {
+                    await db.collection('blogs').doc(editingPostId).update(postData);
+                    showToast('Post updated successfully!', 'success');
+                } else {
+                    postData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                    await db.collection('blogs').add(postData);
+                    showToast('Post created successfully!', 'success');
+                }
+
+                closeBlogModal();
+                loadBlogPosts();
+                loadDashboardData();
+
+            } catch (error) {
+                console.error('Error saving post:', error);
+                showToast('Error saving post: ' + error.message, 'error');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        // ============================================================
+        // EDIT BLOG POST
+        // ============================================================
+        async function editBlogPost(postId) {
+            const post = allBlogs.find(b => b.id === postId);
+            if (!post) return;
+
+            editingPostId = postId;
+            document.getElementById('modalTitle').textContent = 'Edit Blog Post';
+            document.getElementById('blogTitle').value = post.title || '';
+            document.getElementById('blogCategory').value = post.category || '';
+            document.getElementById('blogExcerpt').value = post.excerpt || '';
+            document.getElementById('blogContent').value = post.content || '';
+            document.getElementById('blogStatus').value = post.status || 'draft';
+
+            document.getElementById('blogEditorModal').classList.add('active');
+        }
+
+        // ============================================================
+        // DELETE BLOG POST
+        // ============================================================
+        async function deleteBlogPost(postId) {
+            if (!confirm('Are you sure you want to delete this post?')) return;
+
+            try {
+                await db.collection('blogs').doc(postId).delete();
+                showToast('Post deleted successfully!', 'success');
+                loadBlogPosts();
+                loadDashboardData();
+            } catch (error) {
+                console.error('Error deleting post:', error);
+                showToast('Error deleting post', 'error');
+            }
+        }
+
+        // ============================================================
+        // BLOG MODAL
+        // ============================================================
+        document.getElementById('newPostBtn').addEventListener('click', () => {
+            editingPostId = null;
+            document.getElementById('modalTitle').textContent = 'Create New Blog Post';
+            document.getElementById('blogForm').reset();
+            document.getElementById('blogContent').value = '';
+            document.getElementById('blogEditorModal').classList.add('active');
+        });
+
+        document.getElementById('closeModalBtn').addEventListener('click', closeBlogModal);
+        document.getElementById('cancelPostBtn').addEventListener('click', closeBlogModal);
+        document.getElementById('savePostBtn').addEventListener('click', saveBlogPost);
+
+        function closeBlogModal() {
+            document.getElementById('blogEditorModal').classList.remove('active');
+            editingPostId = null;
+        }
+
+        // ============================================================
+        // IMAGE UPLOAD FOR BLOG
+        // ============================================================
+        document.getElementById('imageUploadArea').addEventListener('click', () => {
+            document.getElementById('blogImage').click();
+        });
+
+        document.getElementById('blogImage').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('Image must be less than 5MB', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                document.getElementById('previewImg').src = event.target.result;
+                document.getElementById('imagePreview').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        document.getElementById('removeImage').addEventListener('click', () => {
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('blogImage').value = '';
+        });
+
+        // ============================================================
+        // REFRESH DATA
+        // ============================================================
+        async function refreshData() {
+            showToast('Refreshing data...', 'info');
+            await loadDashboardData();
+            showToast('Data refreshed!', 'success');
+        }
+
+        // ============================================================
+        // TOAST NOTIFICATIONS
+        // ============================================================
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer') || (() => {
+                const c = document.createElement('div');
+                c.id = 'toastContainer';
+                c.className = 'toast-container';
+                document.body.appendChild(c);
+                return c;
+            })();
+
+            const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
+            const colors = { success: '#28a745', error: '#dc3545', warning: '#ffc107', info: '#17a2b8' };
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <i class="fas ${icons[type] || 'fa-info-circle'}" style="color: ${colors[type] || '#28a745'};"></i>
+                <span>${message}</span>
+                <button class="toast-close">&times;</button>
+            `;
+
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                toast.style.animation = 'slideOutRight 0.3s ease forwards';
+                setTimeout(() => toast.remove(), 300);
+            });
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.style.animation = 'slideOutRight 0.3s ease forwards';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 4000);
+        }
+
+        // ============================================================
+        // KEYBOARD SHORTCUTS
+        // ============================================================
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'r') { e.preventDefault(); refreshData(); }
+            if (e.key === 'Escape') { closeBlogModal(); document.getElementById('sidebar').classList.remove('open'); }
+        });
+
+        // ============================================================
+        // EXPOSE GLOBALLY
+        // ============================================================
+        window.refreshData = refreshData;
+        window.loadUsers = loadUsers;
+        window.loadApplications = loadApplications;
+        window.viewApplication = viewApplication;
+        window.updateApplicationStatus = updateApplicationStatus;
+        window.editBlogPost = editBlogPost;
+        window.deleteBlogPost = deleteBlogPost;
+        window.viewUser = (userId) => {
+            const user = allUsers.find(u => u.id === userId);
+            alert(`👤 User Details\n\nName: ${user?.name || 'Unknown'}\nEmail: ${user?.email || 'N/A'}\nPhone: ${user?.phone || 'N/A'}\nCountry: ${user?.countryOfInterest || 'N/A'}\nType: ${user?.userType || 'applicant'}`);
+        };
+
+        console.log('✅ Admin Dashboard loaded successfully');
+    </script>
 </body>
 </html>
