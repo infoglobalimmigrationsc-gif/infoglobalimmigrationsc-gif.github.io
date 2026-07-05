@@ -1,7 +1,7 @@
 // server.js - COMPLETE FIXED VERSION
 const express = require('express');
 const multer = require('multer');
-const cors = require('cors');
+const cors = require('cors'); 
 const { MongoClient, GridFSBucket } = require('mongodb');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
