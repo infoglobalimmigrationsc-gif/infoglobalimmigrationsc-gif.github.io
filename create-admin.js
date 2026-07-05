@@ -1,3 +1,4 @@
+// create-admin.js
 const bcrypt = require('bcryptjs');
 const { MongoClient } = require('mongodb');
 
@@ -8,9 +9,13 @@ async function createAdmin() {
     
     try {
         await client.connect();
+        console.log('✅ Connected to MongoDB');
+        
         const db = client.db('gisc-app');
         
+        // Hash the password: @Motiva6060
         const hashedPassword = await bcrypt.hash('@Motiva6060', 10);
+        console.log('✅ Password hashed');
         
         const admin = {
             name: 'Super Admin',
@@ -21,8 +26,10 @@ async function createAdmin() {
             updatedAt: new Date()
         };
         
+        // Check if admin already exists
         const existing = await db.collection('admins').findOne({ email: admin.email });
         if (existing) {
+            console.log('🔄 Admin exists, updating password...');
             await db.collection('admins').updateOne(
                 { email: admin.email },
                 { $set: { password: hashedPassword, updatedAt: new Date() } }
@@ -30,16 +37,21 @@ async function createAdmin() {
             console.log('✅ Admin password updated');
         } else {
             await db.collection('admins').insertOne(admin);
-            console.log('✅ Admin created');
+            console.log('✅ Admin user created successfully!');
         }
         
-        console.log('📧 Email: admin@globalimmigrationsc.com');
+        console.log('\n📧 Email: admin@globalimmigrationsc.com');
         console.log('🔑 Password: @Motiva6060');
+        console.log('📁 Database: gisc-app');
+        console.log('📁 Collection: admins');
+        
     } catch (error) {
-        console.error('Error:', error);
+        console.error('❌ Error:', error);
     } finally {
         await client.close();
+        console.log('✅ Connection closed');
     }
 }
 
+// Run the function
 createAdmin();
