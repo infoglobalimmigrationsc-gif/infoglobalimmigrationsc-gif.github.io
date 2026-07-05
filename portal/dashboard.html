@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"> 
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Dashboard - Global Immigration SC</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* ========================================
-           COMPLETE DASHBOARD STYLES
+           COMPLETE DASHBOARD STYLES - FIXED
            ======================================== */
         :root {
             --primary-red: #E30613;
@@ -17,6 +17,7 @@
             --medium-gray: #777777;
             --light-gray: #F5F5F5;
         }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -26,7 +27,7 @@
         }
         .dashboard-wrapper { display: flex; min-height: 100vh; }
         
-        /* Sidebar */
+        /* Sidebar - FIXED ORDER */
         .dashboard-sidebar {
             width: 280px;
             background: rgba(255, 255, 255, 0.95);
@@ -38,18 +39,27 @@
             overflow-y: auto;
             z-index: 100;
             transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
         }
+        
         .sidebar-logo {
             text-align: center;
             margin-bottom: 25px;
             padding-bottom: 20px;
             border-bottom: 2px solid var(--primary-red);
+            flex-shrink: 0;
         }
         .sidebar-logo img { max-width: 130px; margin-bottom: 10px; }
         .sidebar-logo h3 { color: var(--primary-red); font-size: 1.1rem; font-weight: 700; }
         .sidebar-logo p { color: var(--medium-gray); font-size: 0.7rem; }
         
-        .sidebar-menu { list-style: none; }
+        /* Sidebar Menu - PROPER ORDER */
+        .sidebar-menu {
+            list-style: none;
+            flex: 1;
+            overflow-y: auto;
+        }
         .sidebar-menu li { margin-bottom: 3px; }
         .sidebar-menu a {
             display: flex;
@@ -64,7 +74,8 @@
             cursor: pointer;
         }
         .sidebar-menu a i { width: 22px; color: var(--primary-red); }
-        .sidebar-menu a:hover, .sidebar-menu a.active {
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
             background: rgba(227, 6, 19, 0.1);
             color: var(--primary-red);
         }
@@ -77,13 +88,12 @@
             border-radius: 20px;
         }
         
+        /* Sidebar Footer - FIXED POSITION */
         .sidebar-footer {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
+            flex-shrink: 0;
             padding-top: 20px;
             border-top: 1px solid rgba(0,0,0,0.1);
+            margin-top: auto;
         }
         .user-info {
             display: flex;
@@ -104,8 +114,16 @@
             font-size: 1.2rem;
             flex-shrink: 0;
         }
-        .user-details h4 { font-size: 0.9rem; color: var(--dark-gray); }
-        .user-details p { font-size: 0.7rem; color: #666; }
+        .user-details h4 { 
+            font-size: 0.9rem; 
+            color: var(--dark-gray); 
+            margin-bottom: 2px;
+        }
+        .user-details p { 
+            font-size: 0.7rem; 
+            color: #666;
+            word-break: break-all;
+        }
         .btn-logout {
             width: 100%;
             padding: 10px;
@@ -125,6 +143,7 @@
         
         /* Main Content */
         .dashboard-main { flex: 1; margin-left: 280px; padding: 30px; }
+        
         .dashboard-header {
             display: flex;
             justify-content: space-between;
@@ -156,7 +175,6 @@
         .btn-primary:hover { background: var(--primary-red-dark); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(227,6,19,0.3); }
         .btn-outline { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; }
         .btn-outline:hover { background: rgba(255,255,255,0.25); }
-        .btn-success { background: #28a745; color: white; }
         .btn-sm { padding: 6px 14px; font-size: 0.75rem; }
         
         /* Stats */
@@ -334,6 +352,7 @@
             transition: all 0.3s ease;
         }
         .form-control:focus { outline: none; border-color: var(--primary-red); box-shadow: 0 0 0 3px rgba(227,6,19,0.15); }
+        .form-control:disabled { opacity: 0.6; cursor: not-allowed; }
         
         /* Notifications */
         .notifications-list { max-height: 400px; overflow-y: auto; }
@@ -894,7 +913,7 @@
             document.getElementById('appStatus').textContent = appData.status.toUpperCase();
             
             const uploadedDocs = Object.keys(allDocuments).filter(key => allDocuments[key] && allDocuments[key].status !== 'missing');
-            document.getElementById('docsCompleted').textContent = uploadedDocs.length;
+            document.getElementById('docsCompleted').textContent = uploadedDocs.length + '/6';
             document.getElementById('docBadge').textContent = uploadedDocs.length;
             
             const unreadNotifs = allNotifications.filter(n => !n.read);
@@ -961,12 +980,12 @@
                 `;
             }).join('');
             
-            document.getElementById('docsCompleted').textContent = completedCount;
+            document.getElementById('docsCompleted').textContent = completedCount + '/6';
             document.getElementById('docBadge').textContent = completedCount;
         }
         
         // ============================================================
-        // UPLOAD DOCUMENT - USING BACKEND API
+        // UPLOAD DOCUMENT - FIXED CORS
         // ============================================================
         async function uploadDocument(docType) {
             if (!currentUser) { showToast('Please log in first', 'error'); return; }
@@ -986,6 +1005,7 @@
                 showToast('Uploading ' + file.name + '...', 'info');
                 
                 try {
+                    // Use FormData for file upload
                     const formData = new FormData();
                     formData.append('file', file);
                     formData.append('userId', currentUser.uid);
@@ -996,21 +1016,26 @@
                         body: formData
                     });
                     
-                    if (!response.ok) throw new Error(`Upload failed: ${response.status}`);
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+                    }
+                    
                     const result = await response.json();
                     if (!result.success) throw new Error(result.message || 'Upload failed');
                     
+                    // Store document URL in Firestore
                     await db.collection('applications').doc(currentUser.uid).update({
                         [`documents.${docType}`]: {
-                            url: result.url,
-                            fileName: result.fileName,
-                            fileSize: result.fileSize,
-                            fileType: result.fileType,
+                            url: result.url || result.tempUrl || '',
+                            fileName: result.fileName || file.name,
+                            fileSize: result.fileSize || file.size,
+                            fileType: result.fileType || file.type,
                             uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
                             status: 'pending_review'
                         },
                         uploadHistory: firebase.firestore.FieldValue.arrayUnion({
-                            filename: result.fileName,
+                            filename: result.fileName || file.name,
                             docType: docType,
                             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                             status: 'submitted'
@@ -1038,7 +1063,7 @@
         }
         
         // ============================================================
-        // BULK UPLOAD
+        // BULK UPLOAD - FIXED CORS
         // ============================================================
         document.getElementById('bulkUploadArea').addEventListener('click', () => {
             document.getElementById('bulkFileUpload').click();
@@ -1097,15 +1122,15 @@
                     
                     await db.collection('applications').doc(currentUser.uid).update({
                         [`documents.${docType}`]: {
-                            url: result.url,
-                            fileName: result.fileName,
-                            fileSize: result.fileSize,
-                            fileType: result.fileType,
+                            url: result.url || result.tempUrl || '',
+                            fileName: result.fileName || file.name,
+                            fileSize: result.fileSize || file.size,
+                            fileType: result.fileType || file.type,
                             uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
                             status: 'pending_review'
                         },
                         uploadHistory: firebase.firestore.FieldValue.arrayUnion({
-                            filename: result.fileName,
+                            filename: result.fileName || file.name,
                             docType: docType,
                             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                             status: 'submitted'
@@ -1412,6 +1437,7 @@
         window.loadNotifications = loadDashboardData;
         
         console.log('✅ Dashboard loaded successfully');
+        console.log('👤 User:', currentUser?.email);
     </script>
 </body>
 </html>
