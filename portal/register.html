@@ -342,10 +342,11 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     
     <script>
-        // Firebase Configuration
+        // ============================================================
+        // FIREBASE CONFIGURATION
+        // ============================================================
         const firebaseConfig = {
             apiKey: "AIzaSyAJ3p91t83EQeQ6XopPfvisc1fIdsWIMm8",
             authDomain: "global-immigration-sc.firebaseapp.com",
@@ -355,12 +356,17 @@
             appId: "1:791181145117:web:527b7df63c9a32adf9c2f4"
         };
         
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-        const db = firebase.firestore();
         
-        // Password strength checker
+        // ============================================================
+        // API URL
+        // ============================================================
+        const API_URL = 'https://gisc-app-production.up.railway.app/api';
+        
+        // ============================================================
+        // PASSWORD STRENGTH CHECKER
+        // ============================================================
         const passwordInput = document.getElementById('password');
         const strengthDiv = document.getElementById('passwordStrength');
         
@@ -372,17 +378,12 @@
             }
             
             let strength = 0;
-            
-            // Length check
             if (password.length >= 8) strength++;
             if (password.length >= 12) strength++;
-            
-            // Character variety
             if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
             if (/\d/.test(password)) strength++;
             if (/[^a-zA-Z\d]/.test(password)) strength++;
             
-            // Determine strength level
             strengthDiv.classList.remove('strength-weak', 'strength-medium', 'strength-strong');
             
             if (strength <= 2) {
@@ -404,13 +405,14 @@
             checkPasswordStrength(e.target.value);
         });
         
-        // Real-time password match validation
+        // ============================================================
+        // PASSWORD MATCH VALIDATION
+        // ============================================================
         const confirmInput = document.getElementById('confirmPassword');
         
         function validatePasswordMatch() {
             const password = passwordInput.value;
             const confirm = confirmInput.value;
-            
             if (confirm && password !== confirm) {
                 confirmInput.style.borderColor = '#dc3545';
                 return false;
@@ -423,7 +425,9 @@
         confirmInput.addEventListener('input', validatePasswordMatch);
         passwordInput.addEventListener('input', validatePasswordMatch);
         
-        // Form submission
+        // ============================================================
+        // FORM SUBMISSION - FIXED: Creates MongoDB user after Firebase Auth
+        // ============================================================
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -470,13 +474,7 @@
                 return;
             }
             
-            if (!password) {
-                errorDiv.textContent = 'Please create a password';
-                errorDiv.style.display = 'block';
-                return;
-            }
-            
-            if (password.length < 6) {
+            if (!password || password.length < 6) {
                 errorDiv.textContent = 'Password must be at least 6 characters';
                 errorDiv.style.display = 'block';
                 return;
@@ -507,23 +505,26 @@
             submitBtn.classList.add('btn-loading');
             
             try {
-                // Check if email already exists
+                // 1. Check if email already exists in Firebase
                 const existingUser = await auth.fetchSignInMethodsForEmail(email);
                 if (existingUser.length > 0) {
                     throw new Error('An account already exists with this email address');
                 }
                 
-                // Create user account
+                // 2. Create user in Firebase Authentication
                 const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                 const user = userCredential.user;
+                const uid = user.uid;
                 
-                // Update profile with display name
-                await user.updateProfile({
-                    displayName: fullName
-                });
+                // 3. Update Firebase profile
+                await user.updateProfile({ displayName: fullName });
                 
-                // Create user document in Firestore
+                // 4. Send verification email
+                await user.sendEmailVerification();
+                
+                // 5. === CRITICAL FIX: Create user in MongoDB ===
                 const userData = {
+                    uid: uid,
                     name: fullName,
                     email: email,
                     phone: phone || '',
@@ -534,75 +535,71 @@
                     referral: referral || '',
                     receiveUpdates: receiveUpdates,
                     userType: 'applicant',
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    emailVerified: false,
                     accountStatus: 'active'
                 };
                 
-                await db.collection('users').doc(user.uid).set(userData);
+                console.log('📤 Creating MongoDB user:', userData);
                 
-                // Create application document
-                const applicationData = {
-                    userId: user.uid,
-                    status: 'draft',
-                    progress: 0,
-                    currentStep: 'personal_info',
-                    personalInfo: {
-                        name: fullName,
-                        email: email,
-                        phone: phone || '',
-                        countryOfInterest: country
-                    },
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    documents: {},
-                    payments: [],
-                    notifications: [],
-                    applicationStages: {
-                        personal_info: { completed: true, status: 'completed', completedAt: new Date() },
-                        document_upload: { completed: false, status: 'pending' },
-                        payment: { completed: false, status: 'pending' },
-                        review: { completed: false, status: 'pending' },
-                        approval: { completed: false, status: 'pending' }
-                    }
-                };
-                
-                await db.collection('applications').doc(user.uid).set(applicationData);
-                
-                // Send welcome email via Formspree notification
-                const formData = new FormData();
-                formData.append('form_type', 'user_registration');
-                formData.append('user_name', fullName);
-                formData.append('user_email', email);
-                formData.append('user_phone', phone);
-                formData.append('country_interest', country);
-                formData.append('registration_date', new Date().toISOString());
-                formData.append('_subject', `New User Registration: ${fullName}`);
-                
-                await fetch('https://formspree.io/f/mrbaejkr', {
+                const response = await fetch(`${API_URL}/users/register`, {
                     method: 'POST',
-                    body: formData,
-                    headers: { 'Accept': 'application/json' }
-                }).catch(err => console.log('Formspree notification error:', err));
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData)
+                });
                 
-                // Show success message
+                const result = await response.json();
+                console.log('📥 MongoDB response:', result);
+                
+                if (!response.ok || !result.success) {
+                    // If MongoDB creation fails, we should still log the user in
+                    // but alert the admin to sync the user
+                    console.warn('⚠️ MongoDB user creation failed:', result.message);
+                    console.warn('⚠️ User exists in Firebase but not MongoDB. Admin must sync manually.');
+                    
+                    // Continue with login but show a warning
+                    successDiv.innerHTML = `
+                        <i class="fas fa-check-circle"></i> 
+                        Account created in Firebase but MongoDB sync failed. 
+                        Please contact support if you don't see your account.
+                    `;
+                    successDiv.style.display = 'block';
+                } else {
+                    console.log('✅ MongoDB user created successfully:', result.user);
+                }
+                
+                // 6. Send welcome email via Formspree notification
+                try {
+                    const formData = new FormData();
+                    formData.append('form_type', 'user_registration');
+                    formData.append('user_name', fullName);
+                    formData.append('user_email', email);
+                    formData.append('user_phone', phone);
+                    formData.append('country_interest', country);
+                    formData.append('registration_date', new Date().toISOString());
+                    formData.append('_subject', `New User Registration: ${fullName}`);
+                    
+                    await fetch('https://formspree.io/f/mrbaejkr', {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'Accept': 'application/json' }
+                    }).catch(err => console.log('Formspree notification error:', err));
+                } catch (notifError) {
+                    console.log('Notification error (non-critical):', notifError);
+                }
+                
+                // 7. Show success message
                 successDiv.innerHTML = `
                     <i class="fas fa-check-circle"></i> 
                     Account created successfully! Redirecting to dashboard...
                 `;
                 successDiv.style.display = 'block';
                 
-                // Send verification email
-                await user.sendEmailVerification();
-                
-                // Redirect to dashboard after 2 seconds
+                // 8. Redirect to dashboard after 2 seconds
                 setTimeout(() => {
                     window.location.href = 'dashboard.html';
                 }, 2000);
                 
             } catch (error) {
-                console.error('Registration error:', error);
+                console.error('❌ Registration error:', error);
                 
                 let errorMessage = 'Registration failed. Please try again.';
                 
@@ -629,7 +626,6 @@
                 errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${errorMessage}`;
                 errorDiv.style.display = 'block';
                 
-                // If email exists, show login link
                 if (error.code === 'auth/email-already-in-use') {
                     errorDiv.innerHTML += `<p style="margin-top: 10px;"><a href="login.html" style="color: var(--primary-red);">Click here to login</a></p>`;
                 }
@@ -643,10 +639,11 @@
             }
         });
         
-        // Check if user is already logged in
+        // ============================================================
+        // CHECK IF USER IS ALREADY LOGGED IN
+        // ============================================================
         auth.onAuthStateChanged((user) => {
             if (user) {
-                // User is already logged in, redirect to dashboard
                 window.location.href = 'dashboard.html';
             }
         });
