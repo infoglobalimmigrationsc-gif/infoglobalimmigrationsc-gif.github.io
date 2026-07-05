@@ -986,7 +986,7 @@
         
 
 
-// ============================================================
+        // ============================================================
 // UPLOAD DOCUMENT - MongoDB GridFS + Metadata in MongoDB
 // ============================================================
 async function uploadDocument(docType) {
@@ -1051,11 +1051,53 @@ async function uploadDocument(docType) {
             
             if (!metaResponse.ok) {
                 const errorText = await metaResponse.text();
-                throw new Error(`Metadata save failed: ${metaResponse.status} - ${errorText}`);
+                // If user not found, try to create the user first
+                if (metaResponse.status === 404) {
+                    console.log('⚠️ User not found in MongoDB. Attempting to create user...');
+                    // Create user in MongoDB
+                    const userData = {
+                        uid: currentUser.uid,
+                        name: currentUser.displayName || currentUser.email.split('@')[0],
+                        email: currentUser.email,
+                        phone: '',
+                        whatsapp: '',
+                        countryOfInterest: '',
+                        userType: 'applicant',
+                        accountStatus: 'active'
+                    };
+                    
+                    const registerResponse = await fetch(`${API_URL}/users/register`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(userData)
+                    });
+                    
+                    if (registerResponse.ok) {
+                        console.log('✅ User created in MongoDB, retrying document save...');
+                        // Retry saving document metadata
+                        const retryResponse = await fetch(`${API_URL}/users/documents`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(metadata)
+                        });
+                        
+                        if (!retryResponse.ok) {
+                            const retryError = await retryResponse.text();
+                            throw new Error(`Metadata save failed after user creation: ${retryError}`);
+                        }
+                        
+                        const metaResult = await retryResponse.json();
+                        console.log('✅ Document metadata saved to MongoDB:', metaResult);
+                    } else {
+                        throw new Error('Failed to create user in MongoDB');
+                    }
+                } else {
+                    throw new Error(`Metadata save failed: ${metaResponse.status} - ${errorText}`);
+                }
+            } else {
+                const metaResult = await metaResponse.json();
+                console.log('✅ Document metadata saved to MongoDB:', metaResult);
             }
-            
-            const metaResult = await metaResponse.json();
-            console.log('✅ Document metadata saved to MongoDB:', metaResult);
             
             showToast('Document uploaded successfully!', 'success');
             
