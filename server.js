@@ -264,7 +264,7 @@ app.get('/api/file/:id', async (req, res) => {
 });
 
 // ============================================================
-// GET USER DOCUMENTS
+// GET USER DOCUMENTS (GridFS)
 // ============================================================
 app.get('/api/documents/:userId', async (req, res) => {
     try {
@@ -321,7 +321,10 @@ app.get('/', (req, res) => {
             admin_users: '/api/admin/users (GET, POST)',
             admin_applications: '/api/admin/applications (GET, PUT)',
             admin_blogs: '/api/admin/blogs (GET, POST, PUT, DELETE)',
-            admin_contacts: '/api/admin/contacts (GET, DELETE)'
+            admin_contacts: '/api/admin/contacts (GET, DELETE)',
+            user_register: '/api/users/register (POST)',
+            user_documents: '/api/users/documents (POST)',
+            user_documents_get: '/api/users/:uid/documents (GET)'
         }
     });
 });
@@ -333,13 +336,38 @@ app.get('/', (req, res) => {
 // ============================================================
 
 // ============================================================
-// USERS - GET all
+// ADMIN - GET all users with their applications
 // ============================================================
 app.get('/api/admin/users', authenticateToken, async (req, res) => {
     try {
         const users = await db.collection('users').find({}).toArray();
-        console.log(`📋 GET /api/admin/users - Found ${users.length} users`);
-        res.json({ success: true, users });
+        
+        // Get applications for all users
+        const applications = await db.collection('applications').find({}).toArray();
+        const appMap = {};
+        applications.forEach(app => {
+            if (app.uid) {
+                appMap[app.uid] = app;
+            }
+            if (app.userId) {
+                appMap[app.userId] = app;
+            }
+        });
+        
+        // Enrich users with application data
+        const enrichedUsers = users.map(user => {
+            const app = appMap[user.uid] || appMap[user.userId] || null;
+            return {
+                ...user,
+                application: app,
+                documentCount: app && app.documents ? Object.keys(app.documents).length : 0,
+                applicationStatus: app ? app.status : 'no_application',
+                uploadHistory: app ? app.uploadHistory || [] : []
+            };
+        });
+        
+        console.log(`📋 GET /api/admin/users - Found ${enrichedUsers.length} users with applications`);
+        res.json({ success: true, users: enrichedUsers });
     } catch (error) {
         console.error('Error fetching users:', error);
         res.status(500).json({ success: false, message: error.message });
@@ -347,7 +375,7 @@ app.get('/api/admin/users', authenticateToken, async (req, res) => {
 });
 
 // ============================================================
-// USERS - CREATE new user
+// USERS - CREATE new user (Admin)
 // ============================================================
 app.post('/api/admin/users', authenticateToken, async (req, res) => {
     try {
@@ -407,8 +435,6 @@ app.delete('/api/admin/users/:id', authenticateToken, async (req, res) => {
 // ============================================================
 app.post('/api/admin/sync-users', authenticateToken, async (req, res) => {
     try {
-        // This would normally call Firebase Admin SDK to list users
-        // For now, just return a message
         res.json({ 
             success: true, 
             synced: 0, 
@@ -605,6 +631,12 @@ app.get('/api/admin/firebase-token', authenticateToken, async (req, res) => {
 });
 
 // ============================================================
+// ============================================================
+// USER API ENDPOINTS
+// ============================================================
+// ============================================================
+
+// ============================================================
 // USER REGISTRATION - Create user from Firebase Auth
 // ============================================================
 app.post('/api/users/register', async (req, res) => {
@@ -757,6 +789,138 @@ app.get('/api/users/:uid/full', async (req, res) => {
     }
 });
 
+// ============================================================
+// SAVE DOCUMENT METADATA IN MONGODB
+// ============================================================
+app.post('/api/users/documents', async (req, res) => {
+    try {
+        const { 
+            uid, docType, fileId, fileName, fileSize, 
+            fileType, fileUrl, status, uploadedAt 
+        } = req.body;
+
+        if (!uid || !fileId || !docType) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'uid, fileId, and docType are required' 
+            });
+        }
+
+        // Verify user exists
+        const user = await db.collection('users').findOne({ uid: uid });
+        if (!user) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'User not found' 
+            });
+        }
+
+        // Get or create application
+        let application = await db.collection('applications').findOne({ uid: uid });
+        if (!application) {
+            // Create application if it doesn't exist
+            const newApp = {
+                uid: uid,
+                userId: uid,
+                status: 'draft',
+                progress: 0,
+                currentStep: 'document_upload',
+                personalInfo: {
+                    name: user.name || 'Unknown',
+                    email: user.email || '',
+                    phone: user.phone || '',
+                    countryOfInterest: user.countryOfInterest || ''
+                },
+                documents: {},
+                payments: [],
+                notifications: [],
+                uploadHistory: [],
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                applicationStages: {
+                    personal_info: { completed: true, status: 'completed', completedAt: new Date() },
+                    document_upload: { completed: false, status: 'pending' },
+                    payment: { completed: false, status: 'pending' },
+                    review: { completed: false, status: 'pending' },
+                    approval: { completed: false, status: 'pending' }
+                }
+            };
+            await db.collection('applications').insertOne(newApp);
+            application = newApp;
+        }
+
+        // Prepare document metadata
+        const docData = {
+            fileId: fileId,
+            fileName: fileName || 'Unknown',
+            fileSize: fileSize || 0,
+            fileType: fileType || 'application/octet-stream',
+            fileUrl: fileUrl || '',
+            status: status || 'pending_review',
+            uploadedAt: uploadedAt || new Date().toISOString()
+        };
+
+        // Update application with document metadata
+        const updatePath = `documents.${docType}`;
+        await db.collection('applications').updateOne(
+            { uid: uid },
+            { 
+                $set: { 
+                    [updatePath]: docData,
+                    updatedAt: new Date()
+                },
+                $push: {
+                    uploadHistory: {
+                        filename: fileName || 'Unknown',
+                        docType: docType,
+                        timestamp: new Date().toISOString(),
+                        status: 'submitted',
+                        fileId: fileId,
+                        fileUrl: fileUrl
+                    }
+                }
+            }
+        );
+
+        console.log(`✅ Document metadata saved: ${docType} for user ${uid}`);
+        
+        res.json({ 
+            success: true, 
+            message: 'Document metadata saved successfully',
+            document: docData
+        });
+
+    } catch (error) {
+        console.error('❌ Error saving document metadata:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+});
+
+// ============================================================
+// GET USER DOCUMENTS FROM MONGODB
+// ============================================================
+app.get('/api/users/:uid/documents', async (req, res) => {
+    try {
+        const { uid } = req.params;
+        
+        const application = await db.collection('applications').findOne({ uid: uid });
+        if (!application) {
+            return res.json({ success: true, documents: {} });
+        }
+        
+        res.json({ 
+            success: true, 
+            documents: application.documents || {},
+            uploadHistory: application.uploadHistory || []
+        });
+    } catch (error) {
+        console.error('Error fetching documents:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
 
 // ============================================================
 // START SERVER
@@ -779,4 +943,9 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`   DELETE /api/admin/blogs/:id`);
     console.log(`   GET  /api/admin/contacts`);
     console.log(`   DELETE /api/admin/contacts/:id`);
+    console.log(`   POST /api/users/register`);
+    console.log(`   GET  /api/users/:uid`);
+    console.log(`   GET  /api/users/:uid/full`);
+    console.log(`   POST /api/users/documents`);
+    console.log(`   GET  /api/users/:uid/documents`);
 });
