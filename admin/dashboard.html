@@ -461,6 +461,8 @@
         .status-submitted { background: rgba(23, 162, 184, 0.2); color: #17a2b8; }
         .status-under_review { background: rgba(0, 123, 255, 0.2); color: #007bff; }
         .status-pending_review { background: rgba(255, 193, 7, 0.2); color: var(--warning-yellow); }
+        .status-read { background: rgba(108, 117, 125, 0.2); color: #6c757d; }
+        .status-unread { background: rgba(227, 6, 19, 0.2); color: var(--primary-red); }
 
         /* ========== MODAL ========== */
         .glass-modal {
@@ -545,26 +547,6 @@
             word-break: break-all;
         }
 
-        .modal-body .document-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 15px;
-            background: rgba(0,0,0,0.03);
-            border-radius: 8px;
-            margin-bottom: 8px;
-        }
-
-        .modal-body .document-item .doc-name {
-            font-weight: 500;
-        }
-
-        .modal-body .document-item .doc-status {
-            font-size: 0.7rem;
-            padding: 2px 10px;
-            border-radius: 20px;
-        }
-
         .modal-footer {
             display: flex;
             justify-content: flex-end;
@@ -606,6 +588,51 @@
             padding: 2px 10px;
             border-radius: 20px;
             margin-top: 5px;
+        }
+
+        /* Notification List */
+        .notification-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 3px solid var(--primary-red);
+            transition: all 0.3s ease;
+        }
+
+        .notification-list-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .notification-list-item .notif-content {
+            flex: 1;
+        }
+
+        .notification-list-item .notif-content .notif-title {
+            font-weight: 600;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .notification-list-item .notif-content .notif-message {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.8rem;
+            margin-top: 3px;
+        }
+
+        .notification-list-item .notif-content .notif-meta {
+            color: rgba(255,255,255,0.3);
+            font-size: 0.65rem;
+            margin-top: 5px;
+        }
+
+        .notification-list-item .notif-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
         }
 
         /* ========== TOAST ========== */
@@ -799,6 +826,15 @@
                 width: 100%;
                 margin-bottom: 3px;
             }
+            .notification-list-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .notification-list-item .notif-actions {
+                margin-top: 8px;
+                width: 100%;
+                justify-content: flex-start;
+            }
         }
 
         @media (max-width: 480px) {
@@ -843,6 +879,10 @@
                 <a href="#" data-section="applications">
                     <i class="fas fa-file-alt"></i> Applications
                     <span class="badge" id="pendingAppsCount">0</span>
+                </a>
+                <a href="#" data-section="notifications">
+                    <i class="fas fa-bell"></i> Notifications
+                    <span class="badge" id="notificationCount">0</span>
                 </a>
                 <a href="#" data-section="blog">
                     <i class="fas fa-blog"></i> Blog Manager
@@ -990,6 +1030,43 @@
                 </div>
             </section>
 
+            <!-- Notifications Section -->
+            <section id="notifications-section" class="admin-section">
+                <div class="section-header">
+                    <h1><i class="fas fa-bell"></i> Announcements & Notifications</h1>
+                    <button class="btn btn-primary" id="newNotificationBtn">
+                        <i class="fas fa-plus"></i> New Announcement
+                    </button>
+                </div>
+
+                <div class="stats-grid small">
+                    <div class="stat-card">
+                        <h3 id="totalNotifications">0</h3>
+                        <p>Total Sent</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="unreadNotifications">0</h3>
+                        <p>Unread</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="readNotifications">0</h3>
+                        <p>Read</p>
+                    </div>
+                </div>
+
+                <div class="glass-container">
+                    <div class="debug-info" id="notifDebugInfo">
+                        <span style="color: #ff0;">🔍 Debug: Loading notifications...</span>
+                    </div>
+                    <div id="notificationsList">
+                        <div class="empty-state">
+                            <i class="fas fa-bell-slash"></i>
+                            <p>No notifications sent yet. Create your first announcement!</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- Blog Manager Section -->
             <section id="blog-section" class="admin-section">
                 <div class="section-header">
@@ -1067,6 +1144,53 @@
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-outline" id="closeUserModalBtn">Close</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notification Editor Modal -->
+            <div id="notificationModal" class="glass-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 id="notificationModalTitle">Send Announcement</h2>
+                        <button class="modal-close" id="closeNotifModal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="notificationForm">
+                            <div class="form-group">
+                                <label>Title <span class="required">*</span></label>
+                                <input type="text" id="notifTitle" class="glass-input" placeholder="e.g., Important Update" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Message <span class="required">*</span></label>
+                                <textarea id="notifMessage" class="glass-input" rows="5" placeholder="Write your announcement message here..." required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Recipients <span class="required">*</span></label>
+                                <select id="notifRecipients" class="glass-input" required>
+                                    <option value="all">All Users</option>
+                                    <option value="applicants">All Applicants</option>
+                                    <option value="students">All Students</option>
+                                    <option value="specific">Specific User (by email)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="specificUserGroup" style="display: none;">
+                                <label>User Email <span class="required">*</span></label>
+                                <input type="email" id="notifSpecificEmail" class="glass-input" placeholder="user@example.com">
+                            </div>
+                            <div class="form-group">
+                                <label>Priority</label>
+                                <select id="notifPriority" class="glass-input">
+                                    <option value="normal">Normal</option>
+                                    <option value="high">High Priority</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline" id="cancelNotifBtn">Cancel</button>
+                        <button class="btn btn-primary" id="sendNotifBtn">Send Announcement</button>
                     </div>
                 </div>
             </div>
@@ -1199,6 +1323,7 @@
                 if (section === 'users') loadUsers();
                 if (section === 'applications') loadApplications();
                 if (section === 'contacts') loadContacts();
+                if (section === 'notifications') loadNotifications();
 
                 document.getElementById('sidebar').classList.remove('open');
             });
@@ -1222,21 +1347,35 @@
         });
 
         // ============================================================
+        // RECIPIENT TOGGLE
+        // ============================================================
+        document.getElementById('notifRecipients').addEventListener('change', function() {
+            const specificGroup = document.getElementById('specificUserGroup');
+            if (this.value === 'specific') {
+                specificGroup.style.display = 'block';
+            } else {
+                specificGroup.style.display = 'none';
+            }
+        });
+
+        // ============================================================
         // LOAD DASHBOARD DATA
         // ============================================================
         async function loadDashboardData() {
             try {
-                const [users, apps, blogs, contacts] = await Promise.all([
+                const [users, apps, blogs, contacts, notifications] = await Promise.all([
                     apiFetch('users'),
                     apiFetch('applications'),
                     apiFetch('blogs'),
-                    apiFetch('contacts')
+                    apiFetch('contacts'),
+                    apiFetch('notifications')
                 ]);
 
                 const usersList = users.users || [];
                 const appsList = apps.applications || [];
                 const blogsList = blogs.blogs || [];
                 const contactsList = contacts.contacts || [];
+                const notifsList = notifications.notifications || [];
 
                 const totalUsers = usersList.length;
                 const totalApps = appsList.length;
@@ -1258,6 +1397,7 @@
                 document.getElementById('totalContacts').textContent = totalContacts;
                 document.getElementById('contactCount').textContent = totalContacts;
                 document.getElementById('userCountBadge').textContent = totalUsers;
+                document.getElementById('notificationCount').textContent = notifsList.length;
 
                 // Recent activity
                 const recentActivity = document.getElementById('recentActivityList');
@@ -1265,14 +1405,33 @@
                     .sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0))
                     .slice(0, 10);
 
-                if (sortedApps.length === 0) {
+                if (sortedApps.length === 0 && notifsList.length === 0) {
                     recentActivity.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>No recent activity</p></div>';
                 } else {
-                    recentActivity.innerHTML = sortedApps.map(app => {
+                    let items = [];
+                    
+                    // Add notifications to recent activity
+                    notifsList.slice(0, 5).forEach(notif => {
+                        items.push(`
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                                <div>
+                                    <strong style="color: white;">📢 ${notif.title}</strong>
+                                    <span style="color: rgba(255,255,255,0.5); font-size: 0.8rem;">announcement sent</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span class="status-badge status-${notif.priority || 'normal'}">${(notif.priority || 'normal').toUpperCase()}</span>
+                                    <span style="color: rgba(255,255,255,0.3); font-size: 0.7rem;">${notif.createdAt ? new Date(notif.createdAt).toLocaleDateString() : 'Just now'}</span>
+                                </div>
+                            </div>
+                        `);
+                    });
+                    
+                    // Add applications to recent activity
+                    sortedApps.forEach(app => {
                         const name = app.personalInfo?.name || app.name || 'Unknown User';
                         const status = app.status || 'draft';
                         const date = app.updatedAt ? new Date(app.updatedAt).toLocaleDateString() : 'Just now';
-                        return `
+                        items.push(`
                             <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">
                                 <div>
                                     <strong style="color: white;">${name}</strong>
@@ -1283,8 +1442,10 @@
                                     <span style="color: rgba(255,255,255,0.3); font-size: 0.7rem;">${date}</span>
                                 </div>
                             </div>
-                        `;
-                    }).join('');
+                        `);
+                    });
+                    
+                    recentActivity.innerHTML = items.slice(0, 10).join('');
                 }
 
             } catch (error) {
@@ -1292,6 +1453,190 @@
                 showToast('Error loading dashboard data', 'error');
             }
         }
+
+        // ============================================================
+        // LOAD NOTIFICATIONS
+        // ============================================================
+        let allNotifications = [];
+
+        async function loadNotifications() {
+            const debugEl = document.getElementById('notifDebugInfo');
+            const container = document.getElementById('notificationsList');
+            
+            try {
+                debugEl.innerHTML = '<span style="color: #ff0;">🔄 Fetching notifications...</span>';
+                
+                const result = await apiFetch('notifications');
+                allNotifications = result.notifications || [];
+                
+                const total = allNotifications.length;
+                const unread = allNotifications.filter(n => !n.read).length;
+                const read = allNotifications.filter(n => n.read).length;
+                
+                document.getElementById('totalNotifications').textContent = total;
+                document.getElementById('unreadNotifications').textContent = unread;
+                document.getElementById('readNotifications').textContent = read;
+                document.getElementById('notificationCount').textContent = total;
+                
+                debugEl.innerHTML = `
+                    <span style="color: #0f0;">✅ Found ${total} notifications</span>
+                    <span style="color: #ff0; margin-left: 15px;">📋 Unread: ${unread}, Read: ${read}</span>
+                `;
+
+                if (total === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-bell-slash"></i>
+                            <p>No notifications sent yet. Create your first announcement!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = allNotifications.map(notif => `
+                    <div class="notification-list-item" style="border-left-color: ${notif.priority === 'urgent' ? '#dc3545' : notif.priority === 'high' ? '#ffc107' : '#17a2b8'};">
+                        <div class="notif-content">
+                            <div class="notif-title">
+                                ${notif.read ? '' : '<span style="color: var(--primary-red);">●</span> '}
+                                ${notif.title}
+                                ${notif.priority === 'urgent' ? '<span class="status-badge status-published" style="font-size: 0.5rem;">URGENT</span>' : ''}
+                                ${notif.priority === 'high' ? '<span class="status-badge status-pending" style="font-size: 0.5rem;">HIGH</span>' : ''}
+                            </div>
+                            <div class="notif-message">${notif.message}</div>
+                            <div class="notif-meta">
+                                <span>📨 ${notif.recipientType || 'All Users'}</span>
+                                <span style="margin-left: 15px;">📅 ${notif.createdAt ? new Date(notif.createdAt).toLocaleString() : 'Just now'}</span>
+                                <span style="margin-left: 15px; color: ${notif.read ? '#6c757d' : '#28a745'};">
+                                    ${notif.read ? '✓ Read' : '○ Unread'}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="notif-actions">
+                            ${!notif.read ? `<button class="btn btn-sm btn-success" onclick="markNotificationRead('${notif._id || notif.id}')" title="Mark as Read"><i class="fas fa-check"></i></button>` : ''}
+                            <button class="btn btn-sm btn-danger" onclick="deleteNotification('${notif._id || notif.id}')" title="Delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+                debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading notifications: ${error.message}</p></div>`;
+                showToast('Error loading notifications', 'error');
+            }
+        }
+
+        // ============================================================
+        // SEND NOTIFICATION / ANNOUNCEMENT
+        // ============================================================
+        async function sendNotification() {
+            const title = document.getElementById('notifTitle').value.trim();
+            const message = document.getElementById('notifMessage').value.trim();
+            const recipientType = document.getElementById('notifRecipients').value;
+            const priority = document.getElementById('notifPriority').value;
+            const specificEmail = document.getElementById('notifSpecificEmail').value.trim();
+
+            if (!title) { showToast('Please enter a title', 'error'); return; }
+            if (!message) { showToast('Please enter a message', 'error'); return; }
+            if (recipientType === 'specific' && !specificEmail) {
+                showToast('Please enter a user email', 'error');
+                return;
+            }
+
+            const submitBtn = document.getElementById('sendNotifBtn');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="spinner"></span> Sending...';
+            submitBtn.disabled = true;
+
+            try {
+                const payload = {
+                    title: title,
+                    message: message,
+                    recipientType: recipientType,
+                    priority: priority,
+                    sender: adminUser?.name || 'Admin',
+                    senderEmail: adminUser?.email || 'admin@globalimmigrationsc.com'
+                };
+
+                if (recipientType === 'specific') {
+                    payload.specificEmail = specificEmail;
+                }
+
+                const result = await apiFetch('notifications', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+
+                showToast(`Announcement sent successfully to ${result.recipientCount || 0} users!`, 'success');
+                
+                // Close modal and refresh
+                closeNotificationModal();
+                await loadNotifications();
+                await loadDashboardData();
+
+            } catch (error) {
+                console.error('Error sending notification:', error);
+                showToast('Failed to send announcement: ' + error.message, 'error');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        // ============================================================
+        // MARK NOTIFICATION AS READ
+        // ============================================================
+        window.markNotificationRead = async (notifId) => {
+            try {
+                await apiFetch(`notifications/${notifId}/read`, { method: 'PUT' });
+                showToast('Marked as read', 'success');
+                await loadNotifications();
+            } catch (error) {
+                console.error('Error marking notification read:', error);
+                showToast('Error marking as read', 'error');
+            }
+        };
+
+        // ============================================================
+        // DELETE NOTIFICATION
+        // ============================================================
+        window.deleteNotification = async (notifId) => {
+            if (!confirm('Are you sure you want to delete this announcement?')) return;
+            try {
+                await apiFetch(`notifications/${notifId}`, { method: 'DELETE' });
+                showToast('Announcement deleted', 'success');
+                await loadNotifications();
+                await loadDashboardData();
+            } catch (error) {
+                console.error('Error deleting notification:', error);
+                showToast('Error deleting announcement', 'error');
+            }
+        };
+
+        // ============================================================
+        // NOTIFICATION MODAL
+        // ============================================================
+        document.getElementById('newNotificationBtn').addEventListener('click', function() {
+            document.getElementById('notificationModalTitle').textContent = 'Send New Announcement';
+            document.getElementById('notificationForm').reset();
+            document.getElementById('specificUserGroup').style.display = 'none';
+            document.getElementById('notificationModal').classList.add('active');
+        });
+
+        document.getElementById('closeNotifModal').addEventListener('click', closeNotificationModal);
+        document.getElementById('cancelNotifBtn').addEventListener('click', closeNotificationModal);
+        document.getElementById('sendNotifBtn').addEventListener('click', sendNotification);
+
+        function closeNotificationModal() {
+            document.getElementById('notificationModal').classList.remove('active');
+        }
+
+        // Close modal on backdrop click
+        document.getElementById('notificationModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+            }
+        });
 
         // ============================================================
         // LOAD USERS - WITH FULL DETAILS
@@ -2002,6 +2347,7 @@
                 else if (id === 'applications-section') await loadApplications();
                 else if (id === 'contacts-section') await loadContacts();
                 else if (id === 'blog-section') await loadBlogPosts();
+                else if (id === 'notifications-section') await loadNotifications();
             }
             showToast('Data refreshed!', 'success');
         }
@@ -2050,7 +2396,8 @@
         document.addEventListener('keydown', function(e) {
             if ((e.ctrlKey || e.metaKey) && e.key === 'r') { e.preventDefault(); refreshData(); }
             if (e.key === 'Escape') { 
-                closeBlogModal(); 
+                closeBlogModal();
+                closeNotificationModal();
                 document.getElementById('userDetailModal').classList.remove('active');
                 document.getElementById('sidebar').classList.remove('open'); 
             }
@@ -2064,6 +2411,7 @@
         window.loadApplications = loadApplications;
         window.loadContacts = loadContacts;
         window.loadBlogPosts = loadBlogPosts;
+        window.loadNotifications = loadNotifications;
         window.viewApplication = viewApplication;
         window.viewApplicationDetail = viewApplicationDetail;
         window.updateApplicationStatus = updateApplicationStatus;
@@ -2076,6 +2424,9 @@
         window.deleteContact = deleteContact;
         window.syncUsers = syncUsers;
         window.createTestUser = createTestUser;
+        window.sendNotification = sendNotification;
+        window.markNotificationRead = markNotificationRead;
+        window.deleteNotification = deleteNotification;
 
         // ============================================================
         // INITIALIZE
@@ -2086,11 +2437,11 @@
         
         // Load all data
         loadDashboardData();
-        // Load users by default (since it's the most important)
+        // Load users by default
         setTimeout(() => loadUsers(), 500);
         
         console.log('✅ Admin Dashboard ready');
-        console.log('💡 Click the 👤 icon on any user to view full details with documents');
+        console.log('💡 Click the bell icon in sidebar to manage announcements');
     </script>
 </body>
 </html>
