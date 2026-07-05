@@ -42,15 +42,12 @@ async function connectDB() {
         db = client.db('gisc-app');
         console.log('✅ Using database: gisc-app');
         
-        // Test the connection
         const collections = await db.listCollections().toArray();
         console.log('📁 Collections:', collections.map(c => c.name).join(', '));
         
-        // Check admin
         const admin = await db.collection('admins').findOne({ email: 'admin@globalimmigrationsc.com' });
         if (admin) {
             console.log('✅ Admin found!');
-            console.log(`📧 Email: ${admin.email}`);
         } else {
             console.log('❌ Admin NOT found - creating one...');
             const hashedPassword = await bcrypt.hash('@Motiva6060', 12);
@@ -74,7 +71,6 @@ async function connectDB() {
     }
 }
 
-// Connect NOW
 connectDB().catch(console.error);
 
 // ============================================================
@@ -102,50 +98,24 @@ function authenticateToken(req, res, next) {
 // ============================================================
 app.post('/api/admin/login', async (req, res) => {
     console.log('🔐 Admin login attempt');
-    
     try {
         const { email, password } = req.body;
-        console.log(`📧 Email: ${email}`);
-
         if (!db) {
-            console.log('❌ Database not connected');
-            return res.status(503).json({
-                success: false,
-                message: 'Database not connected'
-            });
+            return res.status(503).json({ success: false, message: 'Database not connected' });
         }
-
         const admin = await db.collection('admins').findOne({ email: email });
-        
         if (!admin) {
-            console.log(`❌ Admin not found: ${email}`);
-            return res.status(401).json({
-                success: false,
-                message: 'Invalid credentials'
-            });
+            return res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
-
-        console.log(`✅ Admin found: ${admin.name}`);
-
         const isValid = await bcrypt.compare(password, admin.password);
-        console.log(`🔑 Password valid: ${isValid}`);
-        
         if (!isValid) {
-            console.log(`❌ Invalid password`);
-            return res.status(401).json({
-                success: false,
-                message: 'Invalid credentials'
-            });
+            return res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
-
         const token = jwt.sign(
             { id: admin._id, email: admin.email, role: admin.role || 'admin' },
             process.env.JWT_SECRET || 'your-secret-key',
             { expiresIn: '24h' }
         );
-
-        console.log(`✅ Login successful: ${email}`);
-        
         res.json({
             success: true,
             token: token,
@@ -156,13 +126,9 @@ app.post('/api/admin/login', async (req, res) => {
                 role: admin.role || 'admin'
             }
         });
-
     } catch (error) {
         console.error('❌ Login error:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message || 'Server error'
-        });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -172,14 +138,10 @@ app.post('/api/admin/login', async (req, res) => {
 app.get('/api/admin/test', async (req, res) => {
     try {
         if (!db) {
-            return res.json({ connected: false, message: 'Database not connected' });
+            return res.json({ connected: false });
         }
         const admins = await db.collection('admins').find({}).toArray();
-        res.json({
-            connected: true,
-            adminCount: admins.length,
-            admins: admins.map(a => ({ email: a.email, name: a.name }))
-        });
+        res.json({ connected: true, adminCount: admins.length });
     } catch (error) {
         res.json({ error: error.message });
     }
@@ -210,13 +172,11 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
         if (!db || !bucket) {
             return res.status(500).json({ success: false, message: 'Database not connected' });
         }
-
         const file = req.file;
         const userId = req.body.userId || 'unknown';
         const docType = req.body.docType || 'other';
         const fileId = Date.now().toString(36) + '_' + uuidv4();
         const fileName = `${userId}_${docType}_${fileId}_${file.originalname}`;
-
         const uploadStream = bucket.openUploadStream(fileName, {
             contentType: file.mimetype,
             metadata: {
@@ -227,14 +187,12 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
                 fileId
             }
         });
-
         await new Promise((resolve, reject) => {
             uploadStream.write(file.buffer, (err) => { if (err) reject(err); else resolve(); });
         });
         await new Promise((resolve, reject) => {
             uploadStream.end((err) => { if (err) reject(err); else resolve(); });
         });
-
         res.json({
             success: true,
             url: `https://gisc-app-production.up.railway.app/api/file/${uploadStream.id}`,
@@ -243,7 +201,6 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
             fileSize: file.size,
             fileType: file.mimetype
         });
-
     } catch (error) {
         console.error('Upload error:', error);
         res.status(500).json({ success: false, message: error.message });
@@ -272,7 +229,6 @@ app.get('/api/documents/:userId', async (req, res) => {
             .find({ 'metadata.userId': req.params.userId })
             .sort({ uploadDate: -1 })
             .toArray();
-
         res.json({
             success: true,
             documents: files.map(file => ({
@@ -313,18 +269,9 @@ app.get('/', (req, res) => {
         status: 'running',
         endpoints: {
             admin_login: '/api/admin/login (POST)',
-            admin_test: '/api/admin/test (GET)',
             upload: '/api/upload (POST)',
             download: '/api/file/:id (GET)',
-            documents: '/api/documents/:userId (GET)',
-            health: '/api/health (GET)',
-            admin_users: '/api/admin/users (GET, POST)',
-            admin_applications: '/api/admin/applications (GET, PUT)',
-            admin_blogs: '/api/admin/blogs (GET, POST, PUT, DELETE)',
-            admin_contacts: '/api/admin/contacts (GET, DELETE)',
-            user_register: '/api/users/register (POST)',
-            user_documents: '/api/users/documents (POST)',
-            user_documents_get: '/api/users/:uid/documents (GET)'
+            health: '/api/health (GET)'
         }
     });
 });
@@ -335,26 +282,15 @@ app.get('/', (req, res) => {
 // ============================================================
 // ============================================================
 
-// ============================================================
-// ADMIN - GET all users with their applications
-// ============================================================
 app.get('/api/admin/users', authenticateToken, async (req, res) => {
     try {
         const users = await db.collection('users').find({}).toArray();
-        
-        // Get applications for all users
         const applications = await db.collection('applications').find({}).toArray();
         const appMap = {};
         applications.forEach(app => {
-            if (app.uid) {
-                appMap[app.uid] = app;
-            }
-            if (app.userId) {
-                appMap[app.userId] = app;
-            }
+            if (app.uid) appMap[app.uid] = app;
+            if (app.userId) appMap[app.userId] = app;
         });
-        
-        // Enrich users with application data
         const enrichedUsers = users.map(user => {
             const app = appMap[user.uid] || appMap[user.userId] || null;
             return {
@@ -365,31 +301,19 @@ app.get('/api/admin/users', authenticateToken, async (req, res) => {
                 uploadHistory: app ? app.uploadHistory || [] : []
             };
         });
-        
-        console.log(`📋 GET /api/admin/users - Found ${enrichedUsers.length} users with applications`);
         res.json({ success: true, users: enrichedUsers });
     } catch (error) {
-        console.error('Error fetching users:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// ============================================================
-// USERS - CREATE new user (Admin)
-// ============================================================
 app.post('/api/admin/users', authenticateToken, async (req, res) => {
     try {
         const { email, name, phone, countryOfInterest, userType } = req.body;
-        
-        // Check if user already exists
         const existingUser = await db.collection('users').findOne({ email });
         if (existingUser) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'User with this email already exists' 
-            });
+            return res.status(400).json({ success: false, message: 'User with this email already exists' });
         }
-        
         const userData = {
             email,
             name: name || 'Unknown',
@@ -399,70 +323,42 @@ app.post('/api/admin/users', authenticateToken, async (req, res) => {
             createdAt: new Date(),
             updatedAt: new Date()
         };
-        
         const result = await db.collection('users').insertOne(userData);
-        console.log(`✅ Created user: ${email}`);
-        res.json({ 
-            success: true, 
-            id: result.insertedId, 
-            user: { ...userData, _id: result.insertedId } 
-        });
+        res.json({ success: true, id: result.insertedId, user: { ...userData, _id: result.insertedId } });
     } catch (error) {
-        console.error('Error creating user:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// ============================================================
-// USERS - DELETE user
-// ============================================================
 app.delete('/api/admin/users/:id', authenticateToken, async (req, res) => {
     try {
         const result = await db.collection('users').deleteOne({ _id: new ObjectId(req.params.id) });
         if (result.deletedCount === 0) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
-        console.log(`✅ Deleted user: ${req.params.id}`);
         res.json({ success: true });
     } catch (error) {
-        console.error('Error deleting user:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// ============================================================
-// USERS - SYNC from Firebase (placeholder)
-// ============================================================
 app.post('/api/admin/sync-users', authenticateToken, async (req, res) => {
     try {
-        res.json({ 
-            success: true, 
-            synced: 0, 
-            message: 'Sync functionality requires Firebase Admin SDK setup. Users are added via registration or manually.' 
-        });
+        res.json({ success: true, synced: 0, message: 'Sync requires Firebase Admin SDK' });
     } catch (error) {
-        console.error('Sync error:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// ============================================================
-// APPLICATIONS - GET all
-// ============================================================
 app.get('/api/admin/applications', authenticateToken, async (req, res) => {
     try {
         const applications = await db.collection('applications').find({}).toArray();
-        console.log(`📋 GET /api/admin/applications - Found ${applications.length} applications`);
         res.json({ success: true, applications });
     } catch (error) {
-        console.error('Error fetching applications:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// ============================================================
-// APPLICATIONS - GET single
-// ============================================================
 app.get('/api/admin/applications/:id', authenticateToken, async (req, res) => {
     try {
         const application = await db.collection('applications').findOne({ _id: new ObjectId(req.params.id) });
@@ -471,14 +367,10 @@ app.get('/api/admin/applications/:id', authenticateToken, async (req, res) => {
         }
         res.json({ success: true, application });
     } catch (error) {
-        console.error('Error fetching application:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// ============================================================
-// APPLICATIONS - UPDATE status
-// ============================================================
 app.put('/api/admin/applications/:id', authenticateToken, async (req, res) => {
     try {
         const { status } = req.body;
@@ -489,31 +381,21 @@ app.put('/api/admin/applications/:id', authenticateToken, async (req, res) => {
         if (result.matchedCount === 0) {
             return res.status(404).json({ success: false, message: 'Application not found' });
         }
-        console.log(`✅ Updated application ${req.params.id} status to ${status}`);
         res.json({ success: true });
     } catch (error) {
-        console.error('Error updating application:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// ============================================================
-// BLOGS - GET all
-// ============================================================
 app.get('/api/admin/blogs', authenticateToken, async (req, res) => {
     try {
         const blogs = await db.collection('blogs').find({}).sort({ createdAt: -1 }).toArray();
-        console.log(`📋 GET /api/admin/blogs - Found ${blogs.length} blogs`);
         res.json({ success: true, blogs });
     } catch (error) {
-        console.error('Error fetching blogs:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// ============================================================
-// BLOGS - GET single
-// ============================================================
 app.get('/api/admin/blogs/:id', authenticateToken, async (req, res) => {
     try {
         const blog = await db.collection('blogs').findOne({ _id: new ObjectId(req.params.id) });
@@ -522,40 +404,26 @@ app.get('/api/admin/blogs/:id', authenticateToken, async (req, res) => {
         }
         res.json({ success: true, blog });
     } catch (error) {
-        console.error('Error fetching blog:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// ============================================================
-// BLOGS - CREATE
-// ============================================================
 app.post('/api/admin/blogs', authenticateToken, async (req, res) => {
     try {
-        const blogData = {
-            ...req.body,
-            createdAt: new Date(),
-            updatedAt: new Date()
-        };
+        const blogData = { ...req.body, createdAt: new Date(), updatedAt: new Date() };
         const result = await db.collection('blogs').insertOne(blogData);
-        console.log(`✅ Created blog: ${blogData.title}`);
         res.json({ success: true, id: result.insertedId, blog: blogData });
     } catch (error) {
-        console.error('Error creating blog:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// ============================================================
-// BLOGS - UPDATE
-// ============================================================
 app.put('/api/admin/blogs/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
         const updateData = { ...req.body, updatedAt: new Date() };
         delete updateData._id;
         delete updateData.createdAt;
-        
         const result = await db.collection('blogs').updateOne(
             { _id: new ObjectId(id) },
             { $set: updateData }
@@ -563,68 +431,40 @@ app.put('/api/admin/blogs/:id', authenticateToken, async (req, res) => {
         if (result.matchedCount === 0) {
             return res.status(404).json({ success: false, message: 'Blog not found' });
         }
-        console.log(`✅ Updated blog: ${id}`);
         res.json({ success: true });
     } catch (error) {
-        console.error('Error updating blog:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// ============================================================
-// BLOGS - DELETE
-// ============================================================
 app.delete('/api/admin/blogs/:id', authenticateToken, async (req, res) => {
     try {
         const result = await db.collection('blogs').deleteOne({ _id: new ObjectId(req.params.id) });
         if (result.deletedCount === 0) {
             return res.status(404).json({ success: false, message: 'Blog not found' });
         }
-        console.log(`✅ Deleted blog: ${req.params.id}`);
         res.json({ success: true });
     } catch (error) {
-        console.error('Error deleting blog:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// ============================================================
-// CONTACTS - GET all
-// ============================================================
 app.get('/api/admin/contacts', authenticateToken, async (req, res) => {
     try {
         const contacts = await db.collection('contacts').find({}).sort({ createdAt: -1 }).toArray();
-        console.log(`📋 GET /api/admin/contacts - Found ${contacts.length} contacts`);
         res.json({ success: true, contacts });
     } catch (error) {
-        console.error('Error fetching contacts:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// ============================================================
-// CONTACTS - DELETE
-// ============================================================
 app.delete('/api/admin/contacts/:id', authenticateToken, async (req, res) => {
     try {
         const result = await db.collection('contacts').deleteOne({ _id: new ObjectId(req.params.id) });
         if (result.deletedCount === 0) {
             return res.status(404).json({ success: false, message: 'Contact not found' });
         }
-        console.log(`✅ Deleted contact: ${req.params.id}`);
         res.json({ success: true });
-    } catch (error) {
-        console.error('Error deleting contact:', error);
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-// ============================================================
-// FIREBASE TOKEN (placeholder)
-// ============================================================
-app.get('/api/admin/firebase-token', authenticateToken, async (req, res) => {
-    try {
-        res.json({ success: false, message: 'Firebase Admin SDK not configured' });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -636,45 +476,20 @@ app.get('/api/admin/firebase-token', authenticateToken, async (req, res) => {
 // ============================================================
 // ============================================================
 
-// ============================================================
-// USER REGISTRATION - Create user from Firebase Auth
-// ============================================================
 app.post('/api/users/register', async (req, res) => {
     try {
-        const { 
-            uid, name, email, phone, whatsapp, dob, 
-            citizenship, countryOfInterest, referral, 
-            receiveUpdates, userType, accountStatus 
-        } = req.body;
-
+        const { uid, name, email, phone, whatsapp, dob, citizenship, countryOfInterest, referral, receiveUpdates, userType, accountStatus } = req.body;
         if (!uid || !email) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'uid and email are required' 
-            });
+            return res.status(400).json({ success: false, message: 'uid and email are required' });
         }
-
-        // Check if user already exists in MongoDB
         const existingUser = await db.collection('users').findOne({ uid: uid });
         if (existingUser) {
-            console.log(`⚠️ User already exists in MongoDB: ${email}`);
-            return res.status(200).json({ 
-                success: true, 
-                message: 'User already exists',
-                user: existingUser 
-            });
+            return res.status(200).json({ success: true, message: 'User already exists', user: existingUser });
         }
-
-        // Check if email already exists
         const existingEmail = await db.collection('users').findOne({ email: email });
         if (existingEmail) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Email already registered' 
-            });
+            return res.status(400).json({ success: false, message: 'Email already registered' });
         }
-
-        // Create user in MongoDB
         const userData = {
             uid: uid,
             name: name || 'Unknown',
@@ -691,11 +506,7 @@ app.post('/api/users/register', async (req, res) => {
             createdAt: new Date(),
             updatedAt: new Date()
         };
-
         const result = await db.collection('users').insertOne(userData);
-        console.log(`✅ MongoDB user created: ${email} (UID: ${uid})`);
-
-        // Create initial application document
         const applicationData = {
             userId: uid,
             uid: uid,
@@ -722,109 +533,53 @@ app.post('/api/users/register', async (req, res) => {
                 approval: { completed: false, status: 'pending' }
             }
         };
-
         await db.collection('applications').insertOne(applicationData);
-        console.log(`✅ Application created for user: ${email}`);
-
-        res.json({ 
-            success: true, 
-            message: 'User registered successfully',
-            user: { ...userData, _id: result.insertedId }
-        });
-
+        res.json({ success: true, message: 'User registered successfully', user: { ...userData, _id: result.insertedId } });
     } catch (error) {
         console.error('❌ User registration error:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: error.message 
-        });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// ============================================================
-// GET USER BY UID
-// ============================================================
 app.get('/api/users/:uid', async (req, res) => {
     try {
         const { uid } = req.params;
         const user = await db.collection('users').findOne({ uid: uid });
         if (!user) {
-            return res.status(404).json({ 
-                success: false, 
-                message: 'User not found' 
-            });
+            return res.status(404).json({ success: false, message: 'User not found' });
         }
         res.json({ success: true, user });
     } catch (error) {
-        console.error('Error fetching user:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// ============================================================
-// GET USER WITH APPLICATION
-// ============================================================
 app.get('/api/users/:uid/full', async (req, res) => {
     try {
         const { uid } = req.params;
-        
         const user = await db.collection('users').findOne({ uid: uid });
         if (!user) {
-            return res.status(404).json({ 
-                success: false, 
-                message: 'User not found' 
-            });
+            return res.status(404).json({ success: false, message: 'User not found' });
         }
-        
         const application = await db.collection('applications').findOne({ uid: uid });
-        
-        res.json({ 
-            success: true, 
-            user: user,
-            application: application || null
-        });
+        res.json({ success: true, user: user, application: application || null });
     } catch (error) {
-        console.error('Error fetching user data:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-
-// ============================================================
-// SAVE DOCUMENT METADATA IN MONGODB - FIXED
-// ============================================================
 app.post('/api/users/documents', async (req, res) => {
     try {
-        const { 
-            uid, docType, fileId, fileName, fileSize, 
-            fileType, fileUrl, status, uploadedAt 
-        } = req.body;
-
+        const { uid, docType, fileId, fileName, fileSize, fileType, fileUrl, status, uploadedAt } = req.body;
         if (!uid || !fileId || !docType) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'uid, fileId, and docType are required' 
-            });
+            return res.status(400).json({ success: false, message: 'uid, fileId, and docType are required' });
         }
-
-        console.log(`📤 Saving document for user: ${uid}, docType: ${docType}`);
-
-        // Verify user exists
         const user = await db.collection('users').findOne({ uid: uid });
         if (!user) {
-            console.log(`❌ User not found: ${uid}`);
-            return res.status(404).json({ 
-                success: false, 
-                message: 'User not found' 
-            });
+            return res.status(404).json({ success: false, message: 'User not found' });
         }
-
-        // Get or create application - WITHOUT using applicationId
         let application = await db.collection('applications').findOne({ uid: uid });
-        
         if (!application) {
-            console.log(`📝 Creating new application for user: ${uid}`);
-            // Create application if it doesn't exist
             const newApp = {
                 uid: uid,
                 userId: uid,
@@ -851,23 +606,9 @@ app.post('/api/users/documents', async (req, res) => {
                     approval: { completed: false, status: 'pending' }
                 }
             };
-            
-            try {
-                const result = await db.collection('applications').insertOne(newApp);
-                console.log(`✅ New application created with _id: ${result.insertedId}`);
-                application = newApp;
-            } catch (insertError) {
-                // If insert fails due to duplicate key, try to find the application again
-                console.log('⚠️ Insert failed, checking if application was created by another request...');
-                application = await db.collection('applications').findOne({ uid: uid });
-                if (!application) {
-                    throw insertError;
-                }
-                console.log('✅ Found application created by another request');
-            }
+            await db.collection('applications').insertOne(newApp);
+            application = newApp;
         }
-
-        // Prepare document metadata
         const docData = {
             fileId: fileId,
             fileName: fileName || 'Unknown',
@@ -877,18 +618,11 @@ app.post('/api/users/documents', async (req, res) => {
             status: status || 'pending_review',
             uploadedAt: uploadedAt || new Date().toISOString()
         };
-
-        // Update application with document metadata
         const updatePath = `documents.${docType}`;
-        
-        // Use updateOne with upsert to avoid race conditions
         await db.collection('applications').updateOne(
             { uid: uid },
-            { 
-                $set: { 
-                    [updatePath]: docData,
-                    updatedAt: new Date()
-                },
+            {
+                $set: { [updatePath]: docData, updatedAt: new Date() },
                 $push: {
                     uploadHistory: {
                         filename: fileName || 'Unknown',
@@ -901,77 +635,42 @@ app.post('/api/users/documents', async (req, res) => {
                 }
             }
         );
-
-        console.log(`✅ Document metadata saved: ${docType} for user ${uid}`);
-        
-        res.json({ 
-            success: true, 
-            message: 'Document metadata saved successfully',
-            document: docData
-        });
-
+        res.json({ success: true, message: 'Document metadata saved successfully', document: docData });
     } catch (error) {
         console.error('❌ Error saving document metadata:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: error.message 
-        });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
-
-// ============================================================
-// GET USER DOCUMENTS FROM MONGODB
-// ============================================================
 app.get('/api/users/:uid/documents', async (req, res) => {
     try {
         const { uid } = req.params;
-        
         const application = await db.collection('applications').findOne({ uid: uid });
         if (!application) {
             return res.json({ success: true, documents: {} });
         }
-        
-        res.json({ 
-            success: true, 
-            documents: application.documents || {},
-            uploadHistory: application.uploadHistory || []
-        });
+        res.json({ success: true, documents: application.documents || {}, uploadHistory: application.uploadHistory || [] });
     } catch (error) {
-        console.error('Error fetching documents:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// ============================================================
-// CHECK IF USER EXISTS IN MONGODB
-// ============================================================
 app.get('/api/users/:uid/exists', async (req, res) => {
     try {
         const { uid } = req.params;
         const user = await db.collection('users').findOne({ uid: uid });
-        res.json({ 
-            success: true, 
-            exists: !!user,
-            user: user || null
-        });
+        res.json({ success: true, exists: !!user, user: user || null });
     } catch (error) {
-        console.error('Error checking user:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// ============================================================
-// CREATE/UPDATE APPLICATION
-// ============================================================
 app.post('/api/users/application', async (req, res) => {
     try {
         const appData = req.body;
         if (!appData.uid) {
             return res.status(400).json({ success: false, message: 'uid is required' });
         }
-        
-        // Check if application exists
         const existing = await db.collection('applications').findOne({ uid: appData.uid });
         if (existing) {
             await db.collection('applications').updateOne(
@@ -983,40 +682,31 @@ app.post('/api/users/application', async (req, res) => {
             appData.updatedAt = new Date();
             await db.collection('applications').insertOne(appData);
         }
-        
         res.json({ success: true, message: 'Application saved' });
     } catch (error) {
-        console.error('Error saving application:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// ============================================================
-// UPDATE USER
-// ============================================================
 app.put('/api/users/:uid', async (req, res) => {
     try {
         const { uid } = req.params;
         const updateData = { ...req.body, updatedAt: new Date() };
-        
         const result = await db.collection('users').updateOne(
             { uid: uid },
             { $set: updateData }
         );
-        
         if (result.matchedCount === 0) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
-        
         res.json({ success: true, message: 'User updated' });
     } catch (error) {
-        console.error('Error updating user:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
 // ============================================================
-// UPDATE NOTIFICATIONS
+// NOTIFICATIONS - SINGLE UNIFIED ENDPOINT
 // ============================================================
 app.put('/api/users/notifications', async (req, res) => {
     try {
@@ -1024,77 +714,31 @@ app.put('/api/users/notifications', async (req, res) => {
         if (!uid) {
             return res.status(400).json({ success: false, message: 'uid is required' });
         }
-        
-        await db.collection('applications').updateOne(
+        const result = await db.collection('applications').updateOne(
             { uid: uid },
-            { $set: { notifications: notifications, updatedAt: new Date() } }
+            {
+                $set: {
+                    notifications: notifications,
+                    updatedAt: new Date()
+                }
+            }
         );
-        
-        res.json({ success: true });
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Application not found' });
+        }
+        res.json({ success: true, message: 'Notifications updated' });
     } catch (error) {
         console.error('Error updating notifications:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// ============================================================
-// FIX: Remove duplicate applicationId index (RUN ONCE)
-// ============================================================
-app.get('/api/fix-indexes', async (req, res) => {
-    try {
-        const indexes = await db.collection('applications').getIndexes();
-        console.log('📋 Current indexes:', indexes);
-        
-        // Drop applicationId index if it exists
-        try {
-            await db.collection('applications').dropIndex('applicationId_1');
-            console.log('✅ Dropped applicationId_1 index');
-        } catch (dropError) {
-            console.log('⚠️ Index applicationId_1 may not exist:', dropError.message);
-        }
-        
-        // Create unique index on uid instead
-        try {
-            await db.collection('applications').createIndex(
-                { uid: 1 }, 
-                { unique: true, name: 'uid_1' }
-            );
-            console.log('✅ Created unique index on uid');
-        } catch (createError) {
-            console.log('⚠️ Could not create uid index:', createError.message);
-        }
-        
-        res.json({ 
-            success: true, 
-            message: 'Indexes fixed',
-            indexes: await db.collection('applications').getIndexes()
-        });
-    } catch (error) {
-        console.error('Error fixing indexes:', error);
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-// ============================================================
-// SAVE DOCUMENT METADATA - UPSERT VERSION (Fixes duplicate key)
-// ============================================================
 app.post('/api/users/documents/upsert', async (req, res) => {
     try {
-        const { 
-            uid, docType, fileId, fileName, fileSize, 
-            fileType, fileUrl, status, uploadedAt 
-        } = req.body;
-
+        const { uid, docType, fileId, fileName, fileSize, fileType, fileUrl, status, uploadedAt } = req.body;
         if (!uid || !fileId || !docType) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'uid, fileId, and docType are required' 
-            });
+            return res.status(400).json({ success: false, message: 'uid, fileId, and docType are required' });
         }
-
-        console.log(`📤 UPSERT document for user: ${uid}, docType: ${docType}`);
-
-        // Prepare document metadata
         const docData = {
             fileId: fileId,
             fileName: fileName || 'Unknown',
@@ -1104,17 +748,11 @@ app.post('/api/users/documents/upsert', async (req, res) => {
             status: status || 'pending_review',
             uploadedAt: uploadedAt || new Date().toISOString()
         };
-
         const updatePath = `documents.${docType}`;
-
-        // Use updateOne with upsert
         const result = await db.collection('applications').updateOne(
             { uid: uid },
-            { 
-                $set: { 
-                    [updatePath]: docData,
-                    updatedAt: new Date()
-                },
+            {
+                $set: { [updatePath]: docData, updatedAt: new Date() },
                 $push: {
                     uploadHistory: {
                         filename: fileName || 'Unknown',
@@ -1128,193 +766,27 @@ app.post('/api/users/documents/upsert', async (req, res) => {
             },
             { upsert: true }
         );
-
-        console.log(`✅ Document metadata upserted: ${docType} for user ${uid}`);
-        
-        res.json({ 
-            success: true, 
-            message: 'Document metadata saved successfully',
-            document: docData,
-            upserted: result.upsertedId ? true : false
-        });
-
+        res.json({ success: true, message: 'Document metadata saved successfully', document: docData, upserted: !!result.upsertedId });
     } catch (error) {
         console.error('❌ Error in upsert:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: error.message 
-        });
-    }
-});
-
-
-// ============================================================
-// NOTIFICATIONS / ANNOUNCEMENTS
-// ============================================================
-
-// GET all notifications
-app.get('/api/admin/notifications', authenticateToken, async (req, res) => {
-    try {
-        const notifications = await db.collection('notifications').find({}).sort({ createdAt: -1 }).toArray();
-        console.log(`📋 GET /api/admin/notifications - Found ${notifications.length} notifications`);
-        res.json({ success: true, notifications });
-    } catch (error) {
-        console.error('Error fetching notifications:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// CREATE notification / announcement
-app.post('/api/admin/notifications', authenticateToken, async (req, res) => {
-    try {
-        const { title, message, recipientType, priority, sender, senderEmail, specificEmail } = req.body;
-
-        if (!title || !message) {
-            return res.status(400).json({ success: false, message: 'Title and message are required' });
-        }
-
-        const notification = {
-            title: title,
-            message: message,
-            recipientType: recipientType || 'all',
-            priority: priority || 'normal',
-            sender: sender || 'Admin',
-            senderEmail: senderEmail || 'admin@globalimmigrationsc.com',
-            read: false,
-            createdAt: new Date(),
-            updatedAt: new Date()
-        };
-
-        if (specificEmail) {
-            notification.specificEmail = specificEmail;
-        }
-
-        const result = await db.collection('notifications').insertOne(notification);
-        console.log(`✅ Notification created: ${title}`);
-
-        // Also add notification to each user's application
-        // This is where the user dashboard will read from
-        const users = await db.collection('users').find({}).toArray();
-        let recipientCount = 0;
-
-        for (const user of users) {
-            // Skip if specific email and doesn't match
-            if (specificEmail && user.email !== specificEmail) continue;
-            
-            // Skip if recipient type doesn't match
-            if (recipientType === 'applicants' && user.userType !== 'applicant') continue;
-            if (recipientType === 'students' && user.userType !== 'student') continue;
-
-            const userNotif = {
-                id: result.insertedId,
-                title: title,
-                message: message,
-                priority: priority || 'normal',
-                sender: sender || 'Admin',
-                read: false,
-                createdAt: new Date().toISOString()
-            };
-
-            // Update user's application with notification
-            await db.collection('applications').updateOne(
-                { uid: user.uid },
-                { 
-                    $push: { 
-                        notifications: userNotif 
-                    },
-                    $set: { updatedAt: new Date() }
-                }
-            );
-            recipientCount++;
-        }
-
-        res.json({ 
-            success: true, 
-            id: result.insertedId, 
-            notification: notification,
-            recipientCount: recipientCount 
-        });
-
-    } catch (error) {
-        console.error('Error creating notification:', error);
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-// MARK notification as read
-app.put('/api/admin/notifications/:id/read', authenticateToken, async (req, res) => {
-    try {
-        const ObjectId = require('mongodb').ObjectId;
-        const { id } = req.params;
-
-        const result = await db.collection('notifications').updateOne(
-            { _id: new ObjectId(id) },
-            { $set: { read: true, updatedAt: new Date() } }
-        );
-
-        // Also update in all user applications
-        await db.collection('applications').updateMany(
-            { 'notifications.id': id },
-            { $set: { 'notifications.$.read': true } }
-        );
-
-        if (result.matchedCount === 0) {
-            return res.status(404).json({ success: false, message: 'Notification not found' });
-        }
-
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error marking notification read:', error);
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-// DELETE notification
-app.delete('/api/admin/notifications/:id', authenticateToken, async (req, res) => {
-    try {
-        const ObjectId = require('mongodb').ObjectId;
-        const { id } = req.params;
-
-        const result = await db.collection('notifications').deleteOne({ _id: new ObjectId(id) });
-
-        // Also remove from all user applications
-        await db.collection('applications').updateMany(
-            {},
-            { $pull: { notifications: { id: id } } }
-        );
-
-        if (result.deletedCount === 0) {
-            return res.status(404).json({ success: false, message: 'Notification not found' });
-        }
-
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error deleting notification:', error);
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-
-// ============================================================
-// UPDATE APPLICATION STAGE
-// ============================================================
 app.put('/api/users/application/update', async (req, res) => {
     try {
         const { uid, applicationStages, updatedAt } = req.body;
         if (!uid) {
             return res.status(400).json({ success: false, message: 'uid is required' });
         }
-        
         const updateData = { updatedAt: new Date() };
         if (applicationStages) {
             updateData.applicationStages = applicationStages;
         }
-        
         await db.collection('applications').updateOne(
             { uid: uid },
             { $set: updateData }
         );
-        
         res.json({ success: true });
     } catch (error) {
         console.error('Error updating application stage:', error);
@@ -1322,17 +794,12 @@ app.put('/api/users/application/update', async (req, res) => {
     }
 });
 
-// ============================================================
-// SAVE PAYMENT RECEIPT
-// ============================================================
 app.post('/api/users/payment-receipt', async (req, res) => {
     try {
         const { uid, receiptUrl, receiptFileId, receiptFileName, uploadedAt, status } = req.body;
-        
         if (!uid || !receiptUrl) {
             return res.status(400).json({ success: false, message: 'uid and receiptUrl are required' });
         }
-        
         const receiptData = {
             receiptUrl: receiptUrl,
             receiptFileId: receiptFileId,
@@ -1340,14 +807,10 @@ app.post('/api/users/payment-receipt', async (req, res) => {
             uploadedAt: uploadedAt || new Date().toISOString(),
             status: status || 'pending_verification'
         };
-        
         await db.collection('applications').updateOne(
             { uid: uid },
-            { 
-                $set: { 
-                    'paymentReceipt': receiptData,
-                    updatedAt: new Date()
-                },
+            {
+                $set: { 'paymentReceipt': receiptData, updatedAt: new Date() },
                 $push: {
                     payments: {
                         amount: 0,
@@ -1359,7 +822,6 @@ app.post('/api/users/payment-receipt', async (req, res) => {
                 }
             }
         );
-        
         res.json({ success: true, message: 'Receipt saved successfully' });
     } catch (error) {
         console.error('Error saving receipt:', error);
@@ -1368,33 +830,99 @@ app.post('/api/users/payment-receipt', async (req, res) => {
 });
 
 // ============================================================
-// UPDATE NOTIFICATIONS - Mark all as read
+// ADMIN NOTIFICATIONS
 // ============================================================
-app.put('/api/users/notifications', async (req, res) => {
+app.get('/api/admin/notifications', authenticateToken, async (req, res) => {
     try {
-        const { uid, notifications } = req.body;
-        if (!uid) {
-            return res.status(400).json({ success: false, message: 'uid is required' });
-        }
-        
-        // Update the notifications array in the user's application
-        const result = await db.collection('applications').updateOne(
-            { uid: uid },
-            { 
-                $set: { 
-                    notifications: notifications,
-                    updatedAt: new Date()
-                }
-            }
-        );
-        
-        if (result.matchedCount === 0) {
-            return res.status(404).json({ success: false, message: 'Application not found' });
-        }
-        
-        res.json({ success: true, message: 'Notifications updated' });
+        const notifications = await db.collection('notifications').find({}).sort({ createdAt: -1 }).toArray();
+        res.json({ success: true, notifications });
     } catch (error) {
-        console.error('Error updating notifications:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.post('/api/admin/notifications', authenticateToken, async (req, res) => {
+    try {
+        const { title, message, recipientType, priority, sender, senderEmail, specificEmail } = req.body;
+        if (!title || !message) {
+            return res.status(400).json({ success: false, message: 'Title and message are required' });
+        }
+        const notification = {
+            title: title,
+            message: message,
+            recipientType: recipientType || 'all',
+            priority: priority || 'normal',
+            sender: sender || 'Admin',
+            senderEmail: senderEmail || 'admin@globalimmigrationsc.com',
+            read: false,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+        if (specificEmail) {
+            notification.specificEmail = specificEmail;
+        }
+        const result = await db.collection('notifications').insertOne(notification);
+        const users = await db.collection('users').find({}).toArray();
+        let recipientCount = 0;
+        for (const user of users) {
+            if (specificEmail && user.email !== specificEmail) continue;
+            if (recipientType === 'applicants' && user.userType !== 'applicant') continue;
+            if (recipientType === 'students' && user.userType !== 'student') continue;
+            const userNotif = {
+                id: result.insertedId,
+                title: title,
+                message: message,
+                priority: priority || 'normal',
+                sender: sender || 'Admin',
+                read: false,
+                createdAt: new Date().toISOString()
+            };
+            await db.collection('applications').updateOne(
+                { uid: user.uid },
+                { $push: { notifications: userNotif }, $set: { updatedAt: new Date() } }
+            );
+            recipientCount++;
+        }
+        res.json({ success: true, id: result.insertedId, notification: notification, recipientCount: recipientCount });
+    } catch (error) {
+        console.error('Error creating notification:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.put('/api/admin/notifications/:id/read', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await db.collection('notifications').updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { read: true, updatedAt: new Date() } }
+        );
+        await db.collection('applications').updateMany(
+            { 'notifications.id': id },
+            { $set: { 'notifications.$.read': true } }
+        );
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Notification not found' });
+        }
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.delete('/api/admin/notifications/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await db.collection('notifications').deleteOne({ _id: new ObjectId(id) });
+        await db.collection('applications').updateMany(
+            {},
+            { $pull: { notifications: { id: id } } }
+        );
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Notification not found' });
+        }
+        res.json({ success: true });
+    } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 });
@@ -1406,23 +934,4 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Server running on port ${PORT}`);
     console.log(`📍 URL: https://gisc-app-production.up.railway.app`);
-    console.log(`📋 Available endpoints:`);
-    console.log(`   POST /api/admin/login`);
-    console.log(`   GET  /api/admin/users`);
-    console.log(`   POST /api/admin/users`);
-    console.log(`   DELETE /api/admin/users/:id`);
-    console.log(`   GET  /api/admin/applications`);
-    console.log(`   GET  /api/admin/applications/:id`);
-    console.log(`   PUT  /api/admin/applications/:id`);
-    console.log(`   GET  /api/admin/blogs`);
-    console.log(`   POST /api/admin/blogs`);
-    console.log(`   PUT  /api/admin/blogs/:id`);
-    console.log(`   DELETE /api/admin/blogs/:id`);
-    console.log(`   GET  /api/admin/contacts`);
-    console.log(`   DELETE /api/admin/contacts/:id`);
-    console.log(`   POST /api/users/register`);
-    console.log(`   GET  /api/users/:uid`);
-    console.log(`   GET  /api/users/:uid/full`);
-    console.log(`   POST /api/users/documents`);
-    console.log(`   GET  /api/users/:uid/documents`);
 });
