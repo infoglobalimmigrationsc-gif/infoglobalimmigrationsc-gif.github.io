@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Dashboard - Global Immigration SC</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- ========== FIX: Use inline styles instead of missing glass-system.css ========== -->
     <style>
-        /* ===== GLASSMORPHISM SYSTEM (INLINE) ===== */
+        /* ========================================
+           CUSTOM DASHBOARD STYLES (No external CSS needed)
+           ======================================== */
         :root {
             --primary-red: #E30613;
             --primary-red-dark: #b30000;
@@ -16,30 +16,8 @@
             --dark-gray: #333333;
             --medium-gray: #777777;
             --light-gray: #F5F5F5;
-            
-            --glass-background: rgba(255, 255, 255, 0.12);
-            --glass-background-light: rgba(255, 255, 255, 0.18);
-            --glass-blur: blur(12px);
-            --glass-border: 1px solid rgba(255, 255, 255, 0.25);
-            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
-        
-        .glass-card {
-            background: var(--glass-background) !important;
-            backdrop-filter: var(--glass-blur) !important;
-            -webkit-backdrop-filter: var(--glass-blur) !important;
-            border: var(--glass-border) !important;
-            border-radius: 20px !important;
-            box-shadow: var(--glass-shadow) !important;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        }
-        
-        .glass-card:hover {
-            transform: translateY(-5px);
-            background: var(--glass-background-light) !important;
-        }
-        
-        /* ===== DASHBOARD STYLES ===== */
+
         * {
             margin: 0;
             padding: 0;
@@ -276,19 +254,6 @@
             color: white;
         }
         
-        .btn-success:hover {
-            background: #218838;
-        }
-        
-        .btn-danger {
-            background: #dc3545;
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background: #c82333;
-        }
-        
         .btn-sm {
             padding: 6px 14px;
             font-size: 0.75rem;
@@ -297,7 +262,7 @@
         /* Stats Cards */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 15px;
             margin-bottom: 25px;
         }
@@ -372,6 +337,7 @@
             margin-bottom: 20px;
         }
         
+        /* Progress Bar */
         .progress-container {
             background: rgba(255,255,255,0.15);
             border-radius: 10px;
@@ -388,6 +354,7 @@
             border-radius: 10px;
         }
         
+        /* Steps */
         .steps-container {
             display: flex;
             justify-content: space-between;
@@ -442,6 +409,10 @@
             color: white;
         }
         
+        .step.completed .step-number::after {
+            content: '✓';
+        }
+        
         .step-title {
             color: rgba(255,255,255,0.7);
             font-size: 0.7rem;
@@ -455,7 +426,7 @@
         /* Documents Grid */
         .documents-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             gap: 15px;
             margin-top: 15px;
         }
@@ -501,6 +472,7 @@
         .status-missing { background: rgba(108, 117, 125, 0.2); color: #adb5bd; }
         .status-review { background: rgba(23, 162, 184, 0.2); color: #17a2b8; }
         
+        /* Upload Area */
         .upload-area {
             border: 2px dashed rgba(255,255,255,0.2);
             border-radius: 14px;
@@ -537,6 +509,7 @@
             font-size: 0.85rem;
         }
         
+        /* Upload Progress */
         .upload-progress {
             width: 100%;
             height: 4px;
@@ -554,6 +527,7 @@
             transition: width 0.3s ease;
         }
         
+        /* Form Styles */
         .form-group {
             margin-bottom: 18px;
         }
@@ -586,24 +560,7 @@
             box-shadow: 0 0 0 3px rgba(227, 6, 19, 0.15);
         }
         
-        .form-control:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-        
-        select.form-control {
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            padding-right: 35px;
-        }
-        
-        textarea.form-control {
-            resize: vertical;
-            min-height: 80px;
-        }
-        
+        /* Notifications */
         .notifications-list {
             max-height: 400px;
             overflow-y: auto;
@@ -671,6 +628,7 @@
             border-left-color: #666;
         }
         
+        /* Timeline */
         .timeline {
             position: relative;
             padding-left: 30px;
@@ -725,6 +683,7 @@
             font-size: 0.7rem;
         }
         
+        /* Toast */
         .toast-container {
             position: fixed;
             top: 20px;
@@ -750,34 +709,17 @@
             min-width: 280px;
         }
         
-        .toast.error {
-            border-left-color: #dc3545;
-        }
-        
-        .toast.warning {
-            border-left-color: #ffc107;
-        }
-        
-        .toast.info {
-            border-left-color: #17a2b8;
-        }
-        
-        .toast i {
-            font-size: 1.2rem;
-        }
+        .toast.error { border-left-color: #dc3545; }
+        .toast.warning { border-left-color: #ffc107; }
+        .toast.info { border-left-color: #17a2b8; }
         
         .toast .toast-close {
             margin-left: auto;
             cursor: pointer;
             opacity: 0.5;
-            transition: opacity 0.3s ease;
             background: none;
             border: none;
             font-size: 1.2rem;
-        }
-        
-        .toast .toast-close:hover {
-            opacity: 1;
         }
         
         @keyframes slideInRight {
@@ -785,11 +727,7 @@
             to { transform: translateX(0); opacity: 1; }
         }
         
-        @keyframes slideOutRight {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
-        
+        /* Mobile */
         .mobile-menu-toggle {
             display: none;
             position: fixed;
@@ -832,51 +770,66 @@
             opacity: 0.3;
         }
         
-        @media (max-width: 992px) {
-            .dashboard-main { padding: 20px; }
-            .documents-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
-        }
-        
         @media (max-width: 768px) {
             .dashboard-sidebar {
                 transform: translateX(-100%);
                 width: 280px;
             }
-            .dashboard-sidebar.open { transform: translateX(0); }
+            .dashboard-sidebar.open {
+                transform: translateX(0);
+            }
             .dashboard-main {
                 margin-left: 0;
                 padding: 15px;
                 padding-top: 70px;
             }
-            .mobile-menu-toggle { display: block; }
-            .dashboard-header h1 { font-size: 1.2rem; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .stat-card h3 { font-size: 1.3rem; }
-            .steps-container {
-                flex-wrap: nowrap;
-                overflow-x: auto;
-                gap: 8px;
-                padding-bottom: 10px;
+            .mobile-menu-toggle {
+                display: block;
             }
-            .step { min-width: 70px; padding: 10px 8px; }
-            .step-title { font-size: 0.6rem; }
-            .documents-grid { grid-template-columns: 1fr 1fr; }
-            .dashboard-section { padding: 15px; }
-            .header-actions .btn span { display: none; }
-            .toast { min-width: 200px; font-size: 0.85rem; }
+            .dashboard-header h1 {
+                font-size: 1.2rem;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            .stat-card h3 {
+                font-size: 1.3rem;
+            }
+            .documents-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .dashboard-section {
+                padding: 15px;
+            }
         }
         
         @media (max-width: 480px) {
-            .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
-            .documents-grid { grid-template-columns: 1fr; }
-            .stat-card { padding: 12px; }
-            .stat-card h3 { font-size: 1.1rem; }
+            .documents-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .stat-card {
+                padding: 12px;
+            }
+            .stat-card h3 {
+                font-size: 1.1rem;
+            }
         }
         
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb { background: var(--primary-red); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--primary-red-dark); }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-red);
+            border-radius: 3px;
+        }
     </style>
 </head>
 <body>
@@ -888,8 +841,7 @@
         <!-- Sidebar -->
         <aside class="dashboard-sidebar" id="sidebar">
             <div class="sidebar-logo">
-                <!-- ========== FIX: Use the correct logo file ========== -->
-                <img src="../GISC-LOGO.webp" alt="Global Immigration SC Logo" onerror="this.src='../GISC-LOGO.png'; this.onerror='this.src='https://placehold.co/130x70/E30613/white?text=GISC''">
+                <img src="../GISC-LOGO.webp" alt="Global Immigration SC Logo" onerror="this.src='https://placehold.co/130x70/E30613/white?text=GISC'">
                 <h3>Global Immigration SC</h3>
                 <p>Your Global Journey Starts Here</p>
             </div>
@@ -1215,15 +1167,12 @@
         // ============================================================
         async function loadUserData() {
             try {
-                const userDocRef = db.collection('users').doc(currentUser.uid);
-                const userDoc = await userDocRef.get();
+                const userDoc = await db.collection('users').doc(currentUser.uid).get();
                 
-                if (userDoc.exists) {
-                    userData = userDoc.data();
-                } else {
-                    // ========== FIX: Create user document if it doesn't exist ==========
-                    userData = {
-                        name: currentUser.displayName || currentUser.email.split('@')[0] || 'User',
+                if (!userDoc.exists) {
+                    // Create user document if it doesn't exist
+                    const newUserData = {
+                        name: currentUser.displayName || currentUser.email.split('@')[0],
                         email: currentUser.email,
                         phone: '',
                         whatsapp: '',
@@ -1233,20 +1182,25 @@
                         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     };
-                    await userDocRef.set(userData);
-                    console.log('✅ User document created');
+                    
+                    await db.collection('users').doc(currentUser.uid).set(newUserData);
+                    userData = newUserData;
+                } else {
+                    userData = userDoc.data();
                 }
                 
-                document.getElementById('userName').textContent = userData?.name || currentUser.email.split('@')[0];
+                // Update UI
+                document.getElementById('userName').textContent = userData.name || currentUser.email.split('@')[0];
                 document.getElementById('userEmail').textContent = currentUser.email;
-                document.getElementById('userAvatar').textContent = (userData?.name || 'U')[0].toUpperCase();
+                document.getElementById('userAvatar').textContent = (userData.name || 'U')[0].toUpperCase();
                 
-                document.getElementById('profileName').value = userData?.name || '';
+                // Populate profile form
+                document.getElementById('profileName').value = userData.name || '';
                 document.getElementById('profileEmail').value = currentUser.email;
-                document.getElementById('profilePhone').value = userData?.phone || '';
-                document.getElementById('profileWhatsApp').value = userData?.whatsapp || '';
-                document.getElementById('profileAddress').value = userData?.address || '';
-                document.getElementById('profileCountry').value = userData?.countryOfInterest || '';
+                document.getElementById('profilePhone').value = userData.phone || '';
+                document.getElementById('profileWhatsApp').value = userData.whatsapp || '';
+                document.getElementById('profileAddress').value = userData.address || '';
+                document.getElementById('profileCountry').value = userData.countryOfInterest || '';
                 
             } catch (error) {
                 console.error('Error loading user data:', error);
@@ -1259,11 +1213,9 @@
         // ============================================================
         async function loadDashboardData() {
             try {
-                const appDocRef = db.collection('applications').doc(currentUser.uid);
-                const appDoc = await appDocRef.get();
+                const appDoc = await db.collection('applications').doc(currentUser.uid).get();
                 
                 if (!appDoc.exists) {
-                    // ========== FIX: Create application if it doesn't exist ==========
                     await createInitialApplication();
                     return;
                 }
@@ -1425,7 +1377,7 @@
                             <button class="btn btn-primary btn-sm" onclick="uploadDocument('${doc.id}')">
                                 <i class="fas fa-upload"></i> ${uploaded ? 'Replace' : 'Upload'}
                             </button>
-                            ${uploaded && uploaded.url ? `<button class="btn btn-outline btn-sm" onclick="viewDocument('${doc.id}')" style="margin-left: 5px;">
+                            ${uploaded ? `<button class="btn btn-outline btn-sm" onclick="viewDocument('${doc.id}')" style="margin-left: 5px;">
                                 <i class="fas fa-eye"></i>
                             </button>` : ''}
                         </div>
@@ -1438,7 +1390,7 @@
         }
         
         // ============================================================
-        // UPLOAD DOCUMENT - FIXED CORS issue
+        // UPLOAD DOCUMENT - FIXED CORS
         // ============================================================
         async function uploadDocument(docType) {
             if (!currentUser) {
@@ -1462,25 +1414,20 @@
                 showToast('Uploading ' + file.name + '...', 'info');
                 
                 try {
-                    // ========== FIX: Use the correct storage path format ==========
-                    const path = `${currentUser.uid}/${docType}_${Date.now()}_${file.name}`;
-                    const storageRef = storage.ref().child(path);
+                    const fileName = `${currentUser.uid}/${docType}_${Date.now()}_${file.name}`;
+                    const storageRef = storage.ref().child(fileName);
                     
-                    // Show progress
+                    // Use uploadBytesResumable with proper CORS handling
                     const uploadTask = storageRef.put(file);
                     
                     uploadTask.on('state_changed', (snapshot) => {
                         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                        const progressBar = document.getElementById('bulkProgressBar');
-                        const progressContainer = document.getElementById('bulkProgress');
-                        progressContainer.style.display = 'block';
-                        progressBar.style.width = progress + '%';
+                        showUploadProgress(docType, progress);
                     });
                     
                     await uploadTask;
                     const downloadURL = await storageRef.getDownloadURL();
                     
-                    // Save to Firestore
                     await db.collection('applications').doc(currentUser.uid).update({
                         [`documents.${docType}`]: {
                             url: downloadURL,
@@ -1504,9 +1451,8 @@
                     
                 } catch (error) {
                     console.error('Upload error:', error);
-                    // ========== FIX: Better error message ==========
-                    if (error.code === 'storage/unauthorized' || error.message.includes('CORS')) {
-                        showToast('Storage permission error. Please contact support.', 'error');
+                    if (error.code === 'storage/unauthorized') {
+                        showToast('Storage permission error. Please check Firebase Storage rules.', 'error');
                     } else {
                         showToast('Upload failed: ' + error.message, 'error');
                     }
@@ -1525,6 +1471,24 @@
                 window.open(doc.url, '_blank');
             } else {
                 showToast('Document not found', 'error');
+            }
+        }
+        
+        // ============================================================
+        // SHOW UPLOAD PROGRESS
+        // ============================================================
+        function showUploadProgress(docType, progress) {
+            const progressBar = document.getElementById('bulkProgressBar');
+            const progressContainer = document.getElementById('bulkProgress');
+            
+            progressContainer.style.display = 'block';
+            progressBar.style.width = progress + '%';
+            
+            if (progress >= 100) {
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                    progressBar.style.width = '0%';
+                }, 1000);
             }
         }
         
@@ -1595,8 +1559,8 @@
             for (const file of validFiles) {
                 try {
                     const docType = detectDocumentType(file.name);
-                    const path = `${currentUser.uid}/${docType}_${Date.now()}_${file.name}`;
-                    const storageRef = storage.ref().child(path);
+                    const fileName = `${currentUser.uid}/${docType}_${Date.now()}_${file.name}`;
+                    const storageRef = storage.ref().child(fileName);
                     
                     await storageRef.put(file);
                     const downloadURL = await storageRef.getDownloadURL();
@@ -1643,7 +1607,7 @@
         function detectDocumentType(filename) {
             const lower = filename.toLowerCase();
             if (lower.includes('passport') || lower.includes('id')) return 'passport';
-            if (lower.includes('transcript') || lower.includes('academic') || lower.includes('diploma') || lower.includes('certificate')) return 'academic_transcripts';
+            if (lower.includes('transcript') || lower.includes('academic') || lower.includes('diploma')) return 'academic_transcripts';
             if (lower.includes('bank') || lower.includes('fund') || lower.includes('statement') || lower.includes('financial')) return 'proof_of_funds';
             if (lower.includes('cv') || lower.includes('resume') || lower.includes('curriculum')) return 'cv_resume';
             if (lower.includes('photo') || lower.includes('picture') || lower.includes('image')) return 'passport_photos';
@@ -1785,7 +1749,7 @@
         }
         
         // ============================================================
-        // PROFILE UPDATE - FIXED
+        // PROFILE UPDATE - FIXED with set() fallback
         // ============================================================
         document.getElementById('profileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1820,18 +1784,14 @@
             submitBtn.disabled = true;
             
             try {
-                // ========== FIX: Use set with merge for user document ==========
+                // Use set() with merge to handle existing/non-existing documents
                 await db.collection('users').doc(currentUser.uid).set(updateData, { merge: true });
                 
-                await db.collection('applications').doc(currentUser.uid).update({
+                await db.collection('applications').doc(currentUser.uid).set({
                     'personalInfo': updateData,
-                    'applicationStages.personal_info': { 
-                        completed: true, 
-                        status: 'completed', 
-                        completedAt: firebase.firestore.FieldValue.serverTimestamp() 
-                    },
+                    'applicationStages.personal_info': { completed: true, status: 'completed', completedAt: firebase.firestore.FieldValue.serverTimestamp() },
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                }, { merge: true });
                 
                 showToast('Profile updated successfully!', 'success');
                 await loadUserData();
