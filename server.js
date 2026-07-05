@@ -543,6 +543,83 @@ app.post('/api/users/register', async (req, res) => {
     }
 });
 
+// ============================================================
+// NOTIFICATIONS - MUST COME BEFORE /api/users/:uid ROUTES
+// ============================================================
+app.put('/api/users/notifications', async (req, res) => {
+    try {
+        const { uid, notifications } = req.body;
+        console.log(`📝 Updating notifications for user: ${uid}`);
+        console.log(`📋 Notifications count: ${notifications ? notifications.length : 0}`);
+        
+        if (!uid) {
+            return res.status(400).json({ success: false, message: 'uid is required' });
+        }
+        
+        // Check if application exists first
+        let application = await db.collection('applications').findOne({ uid: uid });
+        
+        if (!application) {
+            // Create application if it doesn't exist
+            const user = await db.collection('users').findOne({ uid: uid });
+            if (!user) {
+                return res.status(404).json({ success: false, message: 'User not found' });
+            }
+            
+            const newApp = {
+                uid: uid,
+                userId: uid,
+                status: 'draft',
+                progress: 0,
+                currentStep: 'personal_info',
+                personalInfo: {
+                    name: user.name || 'Unknown',
+                    email: user.email || '',
+                    phone: user.phone || '',
+                    countryOfInterest: user.countryOfInterest || ''
+                },
+                documents: {},
+                payments: [],
+                notifications: notifications || [],
+                uploadHistory: [],
+                paymentReceipt: null,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                applicationStages: {
+                    personal_info: { completed: true, status: 'completed', completedAt: new Date() },
+                    document_upload: { completed: false, status: 'pending' },
+                    payment: { completed: false, status: 'pending' },
+                    review: { completed: false, status: 'pending' },
+                    approval: { completed: false, status: 'pending' }
+                }
+            };
+            await db.collection('applications').insertOne(newApp);
+            console.log(`✅ Created new application for user: ${uid}`);
+            return res.json({ success: true, message: 'Application created and notifications updated' });
+        }
+        
+        // Update existing application
+        const result = await db.collection('applications').updateOne(
+            { uid: uid },
+            {
+                $set: {
+                    notifications: notifications || [],
+                    updatedAt: new Date()
+                }
+            }
+        );
+        
+        console.log(`✅ Notifications updated for user: ${uid}, matched: ${result.matchedCount}, modified: ${result.modifiedCount}`);
+        res.json({ success: true, message: 'Notifications updated' });
+    } catch (error) {
+        console.error('Error updating notifications:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
+// USER ROUTES - MUST COME AFTER /api/users/notifications
+// ============================================================
 app.get('/api/users/:uid', async (req, res) => {
     try {
         const { uid } = req.params;
@@ -570,6 +647,49 @@ app.get('/api/users/:uid/full', async (req, res) => {
     }
 });
 
+app.get('/api/users/:uid/documents', async (req, res) => {
+    try {
+        const { uid } = req.params;
+        const application = await db.collection('applications').findOne({ uid: uid });
+        if (!application) {
+            return res.json({ success: true, documents: {} });
+        }
+        res.json({ success: true, documents: application.documents || {}, uploadHistory: application.uploadHistory || [] });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.get('/api/users/:uid/exists', async (req, res) => {
+    try {
+        const { uid } = req.params;
+        const user = await db.collection('users').findOne({ uid: uid });
+        res.json({ success: true, exists: !!user, user: user || null });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.put('/api/users/:uid', async (req, res) => {
+    try {
+        const { uid } = req.params;
+        const updateData = { ...req.body, updatedAt: new Date() };
+        const result = await db.collection('users').updateOne(
+            { uid: uid },
+            { $set: updateData }
+        );
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        res.json({ success: true, message: 'User updated' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
+// OTHER USER API ENDPOINTS
+// ============================================================
 app.post('/api/users/documents', async (req, res) => {
     try {
         const { uid, docType, fileId, fileName, fileSize, fileType, fileUrl, status, uploadedAt } = req.body;
@@ -645,143 +765,6 @@ app.post('/api/users/documents', async (req, res) => {
     }
 });
 
-app.get('/api/users/:uid/documents', async (req, res) => {
-    try {
-        const { uid } = req.params;
-        const application = await db.collection('applications').findOne({ uid: uid });
-        if (!application) {
-            return res.json({ success: true, documents: {} });
-        }
-        res.json({ success: true, documents: application.documents || {}, uploadHistory: application.uploadHistory || [] });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-app.get('/api/users/:uid/exists', async (req, res) => {
-    try {
-        const { uid } = req.params;
-        const user = await db.collection('users').findOne({ uid: uid });
-        res.json({ success: true, exists: !!user, user: user || null });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-app.post('/api/users/application', async (req, res) => {
-    try {
-        const appData = req.body;
-        if (!appData.uid) {
-            return res.status(400).json({ success: false, message: 'uid is required' });
-        }
-        const existing = await db.collection('applications').findOne({ uid: appData.uid });
-        if (existing) {
-            await db.collection('applications').updateOne(
-                { uid: appData.uid },
-                { $set: { ...appData, updatedAt: new Date() } }
-            );
-        } else {
-            appData.createdAt = new Date();
-            appData.updatedAt = new Date();
-            await db.collection('applications').insertOne(appData);
-        }
-        res.json({ success: true, message: 'Application saved' });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-app.put('/api/users/:uid', async (req, res) => {
-    try {
-        const { uid } = req.params;
-        const updateData = { ...req.body, updatedAt: new Date() };
-        const result = await db.collection('users').updateOne(
-            { uid: uid },
-            { $set: updateData }
-        );
-        if (result.matchedCount === 0) {
-            return res.status(404).json({ success: false, message: 'User not found' });
-        }
-        res.json({ success: true, message: 'User updated' });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-// ============================================================
-// NOTIFICATIONS - MOVED TO TOP LEVEL (NO ROUTE CONFLICT)
-// ============================================================
-app.put('/api/users/notifications', async (req, res) => {
-    try {
-        const { uid, notifications } = req.body;
-        console.log(`📝 Updating notifications for user: ${uid}`);
-        console.log(`📋 Notifications count: ${notifications ? notifications.length : 0}`);
-        
-        if (!uid) {
-            return res.status(400).json({ success: false, message: 'uid is required' });
-        }
-        
-        // Check if application exists first
-        let application = await db.collection('applications').findOne({ uid: uid });
-        
-        if (!application) {
-            // Create application if it doesn't exist
-            const user = await db.collection('users').findOne({ uid: uid });
-            if (!user) {
-                return res.status(404).json({ success: false, message: 'User not found' });
-            }
-            
-            const newApp = {
-                uid: uid,
-                userId: uid,
-                status: 'draft',
-                progress: 0,
-                currentStep: 'personal_info',
-                personalInfo: {
-                    name: user.name || 'Unknown',
-                    email: user.email || '',
-                    phone: user.phone || '',
-                    countryOfInterest: user.countryOfInterest || ''
-                },
-                documents: {},
-                payments: [],
-                notifications: notifications || [],
-                uploadHistory: [],
-                paymentReceipt: null,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-                applicationStages: {
-                    personal_info: { completed: true, status: 'completed', completedAt: new Date() },
-                    document_upload: { completed: false, status: 'pending' },
-                    payment: { completed: false, status: 'pending' },
-                    review: { completed: false, status: 'pending' },
-                    approval: { completed: false, status: 'pending' }
-                }
-            };
-            await db.collection('applications').insertOne(newApp);
-            console.log(`✅ Created new application for user: ${uid}`);
-            return res.json({ success: true, message: 'Application created and notifications updated' });
-        }
-        
-        // Update existing application
-        const result = await db.collection('applications').updateOne(
-            { uid: uid },
-            {
-                $set: {
-                    notifications: notifications || [],
-                    updatedAt: new Date()
-                }
-            }
-        );
-        
-        console.log(`✅ Notifications updated for user: ${uid}, matched: ${result.matchedCount}, modified: ${result.modifiedCount}`);
-        res.json({ success: true, message: 'Notifications updated' });
-    } catch (error) {
-        console.error('Error updating notifications:', error);
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
 app.post('/api/users/documents/upsert', async (req, res) => {
     try {
         const { uid, docType, fileId, fileName, fileSize, fileType, fileUrl, status, uploadedAt } = req.body;
@@ -822,6 +805,29 @@ app.post('/api/users/documents/upsert', async (req, res) => {
     }
 });
 
+app.post('/api/users/application', async (req, res) => {
+    try {
+        const appData = req.body;
+        if (!appData.uid) {
+            return res.status(400).json({ success: false, message: 'uid is required' });
+        }
+        const existing = await db.collection('applications').findOne({ uid: appData.uid });
+        if (existing) {
+            await db.collection('applications').updateOne(
+                { uid: appData.uid },
+                { $set: { ...appData, updatedAt: new Date() } }
+            );
+        } else {
+            appData.createdAt = new Date();
+            appData.updatedAt = new Date();
+            await db.collection('applications').insertOne(appData);
+        }
+        res.json({ success: true, message: 'Application saved' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 app.put('/api/users/application/update', async (req, res) => {
     try {
         const { uid, applicationStages, updatedAt } = req.body;
@@ -850,7 +856,6 @@ app.post('/api/users/payment-receipt', async (req, res) => {
             return res.status(400).json({ success: false, message: 'uid and receiptUrl are required' });
         }
         
-        // Check if application exists
         let application = await db.collection('applications').findOne({ uid: uid });
         if (!application) {
             const user = await db.collection('users').findOne({ uid: uid });
