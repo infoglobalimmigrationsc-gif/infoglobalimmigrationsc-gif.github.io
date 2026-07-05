@@ -308,6 +308,172 @@ app.get('/', (req, res) => {
 });
 
 // ============================================================
+// ADMIN API ENDPOINTS - Add to server.js
+// ============================================================
+
+// Middleware to verify JWT token
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    if (!token) {
+        return res.status(401).json({ success: false, message: 'No token provided' });
+    }
+    
+    jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key', (err, user) => {
+        if (err) {
+            return res.status(403).json({ success: false, message: 'Invalid token' });
+        }
+        req.user = user;
+        next();
+    });
+}
+
+// GET all users
+app.get('/api/admin/users', authenticateToken, async (req, res) => {
+    try {
+        const users = await db.collection('users').find({}).toArray();
+        res.json({ success: true, users });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// GET all applications
+app.get('/api/admin/applications', authenticateToken, async (req, res) => {
+    try {
+        const applications = await db.collection('applications').find({}).toArray();
+        res.json({ success: true, applications });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// GET single application
+app.get('/api/admin/applications/:id', authenticateToken, async (req, res) => {
+    try {
+        const ObjectId = require('mongodb').ObjectId;
+        const application = await db.collection('applications').findOne({ _id: new ObjectId(req.params.id) });
+        res.json({ success: true, application });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// UPDATE application status
+app.put('/api/admin/applications/:id', authenticateToken, async (req, res) => {
+    try {
+        const ObjectId = require('mongodb').ObjectId;
+        const { status } = req.body;
+        await db.collection('applications').updateOne(
+            { _id: new ObjectId(req.params.id) },
+            { $set: { status, updatedAt: new Date() } }
+        );
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// GET all blogs
+app.get('/api/admin/blogs', authenticateToken, async (req, res) => {
+    try {
+        const blogs = await db.collection('blogs').find({}).sort({ createdAt: -1 }).toArray();
+        res.json({ success: true, blogs });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// GET single blog
+app.get('/api/admin/blogs/:id', authenticateToken, async (req, res) => {
+    try {
+        const ObjectId = require('mongodb').ObjectId;
+        const blog = await db.collection('blogs').findOne({ _id: new ObjectId(req.params.id) });
+        res.json({ success: true, blog });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// CREATE blog post
+app.post('/api/admin/blogs', authenticateToken, async (req, res) => {
+    try {
+        const blogData = {
+            ...req.body,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+        const result = await db.collection('blogs').insertOne(blogData);
+        res.json({ success: true, id: result.insertedId });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// UPDATE blog post
+app.put('/api/admin/blogs/:id', authenticateToken, async (req, res) => {
+    try {
+        const ObjectId = require('mongodb').ObjectId;
+        const { id } = req.params;
+        const updateData = { ...req.body, updatedAt: new Date() };
+        delete updateData._id;
+        delete updateData.createdAt;
+        await db.collection('blogs').updateOne(
+            { _id: new ObjectId(id) },
+            { $set: updateData }
+        );
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// DELETE blog post
+app.delete('/api/admin/blogs/:id', authenticateToken, async (req, res) => {
+    try {
+        const ObjectId = require('mongodb').ObjectId;
+        await db.collection('blogs').deleteOne({ _id: new ObjectId(req.params.id) });
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// GET all contacts
+app.get('/api/admin/contacts', authenticateToken, async (req, res) => {
+    try {
+        const contacts = await db.collection('contacts').find({}).sort({ createdAt: -1 }).toArray();
+        res.json({ success: true, contacts });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// DELETE contact
+app.delete('/api/admin/contacts/:id', authenticateToken, async (req, res) => {
+    try {
+        const ObjectId = require('mongodb').ObjectId;
+        await db.collection('contacts').deleteOne({ _id: new ObjectId(req.params.id) });
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Generate Firebase custom token (optional - for Firestore access)
+app.get('/api/admin/firebase-token', authenticateToken, async (req, res) => {
+    try {
+        // This requires Firebase Admin SDK
+        // const customToken = await admin.auth().createCustomToken(req.user.email);
+        // res.json({ success: true, customToken });
+        res.json({ success: false, message: 'Firebase Admin SDK not configured' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
 // START
 // ============================================================
 const PORT = process.env.PORT || 8080;
