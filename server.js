@@ -1294,6 +1294,80 @@ app.delete('/api/admin/notifications/:id', authenticateToken, async (req, res) =
     }
 });
 
+
+// ============================================================
+// UPDATE APPLICATION STAGE
+// ============================================================
+app.put('/api/users/application/update', async (req, res) => {
+    try {
+        const { uid, applicationStages, updatedAt } = req.body;
+        if (!uid) {
+            return res.status(400).json({ success: false, message: 'uid is required' });
+        }
+        
+        const updateData = { updatedAt: new Date() };
+        if (applicationStages) {
+            updateData.applicationStages = applicationStages;
+        }
+        
+        await db.collection('applications').updateOne(
+            { uid: uid },
+            { $set: updateData }
+        );
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error updating application stage:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
+// SAVE PAYMENT RECEIPT
+// ============================================================
+app.post('/api/users/payment-receipt', async (req, res) => {
+    try {
+        const { uid, receiptUrl, receiptFileId, receiptFileName, uploadedAt, status } = req.body;
+        
+        if (!uid || !receiptUrl) {
+            return res.status(400).json({ success: false, message: 'uid and receiptUrl are required' });
+        }
+        
+        const receiptData = {
+            receiptUrl: receiptUrl,
+            receiptFileId: receiptFileId,
+            receiptFileName: receiptFileName || 'receipt',
+            uploadedAt: uploadedAt || new Date().toISOString(),
+            status: status || 'pending_verification'
+        };
+        
+        await db.collection('applications').updateOne(
+            { uid: uid },
+            { 
+                $set: { 
+                    'paymentReceipt': receiptData,
+                    updatedAt: new Date()
+                },
+                $push: {
+                    payments: {
+                        amount: 0,
+                        status: 'pending',
+                        description: 'Payment receipt uploaded',
+                        receiptUrl: receiptUrl,
+                        uploadedAt: new Date().toISOString()
+                    }
+                }
+            }
+        );
+        
+        res.json({ success: true, message: 'Receipt saved successfully' });
+    } catch (error) {
+        console.error('Error saving receipt:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+
 // ============================================================
 // START SERVER
 // ============================================================
