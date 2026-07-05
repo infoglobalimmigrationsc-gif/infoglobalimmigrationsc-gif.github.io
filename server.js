@@ -1076,6 +1076,79 @@ app.get('/api/fix-indexes', async (req, res) => {
 });
 
 // ============================================================
+// SAVE DOCUMENT METADATA - UPSERT VERSION (Fixes duplicate key)
+// ============================================================
+app.post('/api/users/documents/upsert', async (req, res) => {
+    try {
+        const { 
+            uid, docType, fileId, fileName, fileSize, 
+            fileType, fileUrl, status, uploadedAt 
+        } = req.body;
+
+        if (!uid || !fileId || !docType) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'uid, fileId, and docType are required' 
+            });
+        }
+
+        console.log(`📤 UPSERT document for user: ${uid}, docType: ${docType}`);
+
+        // Prepare document metadata
+        const docData = {
+            fileId: fileId,
+            fileName: fileName || 'Unknown',
+            fileSize: fileSize || 0,
+            fileType: fileType || 'application/octet-stream',
+            fileUrl: fileUrl || '',
+            status: status || 'pending_review',
+            uploadedAt: uploadedAt || new Date().toISOString()
+        };
+
+        const updatePath = `documents.${docType}`;
+
+        // Use updateOne with upsert
+        const result = await db.collection('applications').updateOne(
+            { uid: uid },
+            { 
+                $set: { 
+                    [updatePath]: docData,
+                    updatedAt: new Date()
+                },
+                $push: {
+                    uploadHistory: {
+                        filename: fileName || 'Unknown',
+                        docType: docType,
+                        timestamp: new Date().toISOString(),
+                        status: 'submitted',
+                        fileId: fileId,
+                        fileUrl: fileUrl
+                    }
+                }
+            },
+            { upsert: true }
+        );
+
+        console.log(`✅ Document metadata upserted: ${docType} for user ${uid}`);
+        
+        res.json({ 
+            success: true, 
+            message: 'Document metadata saved successfully',
+            document: docData,
+            upserted: result.upsertedId ? true : false
+        });
+
+    } catch (error) {
+        console.error('❌ Error in upsert:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+});
+
+
+// ============================================================
 // START SERVER
 // ============================================================
 const PORT = process.env.PORT || 8080;
