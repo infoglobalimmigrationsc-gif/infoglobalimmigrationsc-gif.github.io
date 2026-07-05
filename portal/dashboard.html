@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* ========================================
-           COMPLETE DASHBOARD STYLES - FIXED
+           COMPLETE DASHBOARD STYLES - UPDATED
            ======================================== */
         :root {
             --primary-red: #E30613;
@@ -176,6 +176,8 @@
         .btn-outline { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; }
         .btn-outline:hover { background: rgba(255,255,255,0.25); }
         .btn-sm { padding: 6px 14px; font-size: 0.75rem; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-success:hover { background: #1e7e34; }
         
         /* Stats */
         .stats-grid {
@@ -311,6 +313,7 @@
         .status-approved { background: rgba(40,167,69,0.2); color: #28a745; }
         .status-rejected { background: rgba(220,53,69,0.2); color: #dc3545; }
         .status-missing { background: rgba(108,117,125,0.2); color: #adb5bd; }
+        .status-pending_review { background: rgba(255,193,7,0.2); color: #ffc107; }
         
         /* Upload */
         .upload-area {
@@ -392,6 +395,20 @@
         }
         .notification-item.read { opacity: 0.6; border-left-color: #666; }
         
+        /* Payment Receipt Upload */
+        .receipt-upload-area {
+            border: 2px dashed rgba(255,255,255,0.2);
+            border-radius: 14px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 0;
+        }
+        .receipt-upload-area:hover { border-color: var(--primary-red); background: rgba(255,255,255,0.05); }
+        .receipt-upload-area i { font-size: 2rem; color: var(--primary-red); margin-bottom: 8px; }
+        .receipt-upload-area p { color: rgba(255,255,255,0.5); font-size: 0.8rem; }
+        
         /* Timeline */
         .timeline { position: relative; padding-left: 30px; }
         .timeline::before {
@@ -411,13 +428,26 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: var(--primary-red);
+            background: var(--medium-gray);
             border: 3px solid rgba(255,255,255,0.1);
+            transition: background 0.3s ease;
         }
         .timeline-item.completed .timeline-dot { background: #28a745; }
+        .timeline-item.active .timeline-dot { background: var(--primary-red); }
         .timeline-item .timeline-content h5 { color: white; font-size: 0.9rem; margin-bottom: 3px; }
         .timeline-item .timeline-content p { color: rgba(255,255,255,0.6); font-size: 0.8rem; }
         .timeline-item .timeline-content small { color: rgba(255,255,255,0.4); font-size: 0.7rem; }
+        .timeline-item .timeline-content .status-label {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 0.6rem;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+        .timeline-item .timeline-content .status-label.completed { background: rgba(40,167,69,0.2); color: #28a745; }
+        .timeline-item .timeline-content .status-label.pending { background: rgba(255,193,7,0.2); color: #ffc107; }
+        .timeline-item .timeline-content .status-label.active { background: rgba(227,6,19,0.2); color: #E30613; }
         
         /* Toast */
         .toast-container {
@@ -628,7 +658,12 @@
                     </button>
                 </div>
                 
-                <div id="notificationsList" class="notifications-list"></div>
+                <div id="notificationsList" class="notifications-list">
+                    <div class="empty-state">
+                        <i class="fas fa-bell-slash"></i>
+                        <p>No notifications yet</p>
+                    </div>
+                </div>
             </div>
             
             <!-- Payments Section -->
@@ -663,6 +698,17 @@
                 <button class="btn btn-primary" id="makePaymentBtn">
                     <i class="fas fa-credit-card"></i> Make a Payment
                 </button>
+                
+                <!-- Receipt Upload Section -->
+                <div style="margin-top: 15px;">
+                    <h4 style="color: white; margin-bottom: 10px; font-size: 0.95rem;"><i class="fas fa-receipt"></i> Upload Payment Receipt</h4>
+                    <div class="receipt-upload-area" id="receiptUploadArea">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Click to upload payment receipt (JPG, PNG, PDF)</p>
+                        <input type="file" id="receiptUpload" accept=".jpg,.jpeg,.png,.pdf" style="display: none;">
+                    </div>
+                    <div id="receiptStatus" style="margin-top: 10px;"></div>
+                </div>
             </div>
             
             <!-- Profile Section -->
@@ -758,6 +804,7 @@
         let allNotifications = [];
         let uploadHistory = [];
         let isPollingActive = false;
+        let unreadCount = 0;
         
         const requiredDocs = [
             { id: 'passport', name: 'Passport Copy', icon: 'fa-passport', required: true },
@@ -775,11 +822,8 @@
             if (!user) { window.location.href = 'login.html'; return; }
             currentUser = user;
             
-            // Load user data from MongoDB
             await loadUserData();
             await loadDashboardData();
-            
-            // Start polling for updates (since we're not using Firestore)
             startPolling();
         });
         
@@ -788,7 +832,6 @@
         // ============================================================
         async function loadUserData() {
             try {
-                // Try to get user from MongoDB
                 const response = await fetch(`${API_URL}/users/${currentUser.uid}`);
                 if (response.ok) {
                     const result = await response.json();
@@ -796,17 +839,14 @@
                         userData = result.user;
                         console.log('✅ User data loaded from MongoDB:', userData);
                     } else {
-                        // User not found in MongoDB, create one
                         console.log('⚠️ User not found in MongoDB, creating...');
                         await createUserInMongoDB();
                     }
                 } else {
-                    // User not found, create one
                     console.log('⚠️ User not found in MongoDB, creating...');
                     await createUserInMongoDB();
                 }
                 
-                // Update UI
                 document.getElementById('userName').textContent = userData?.name || currentUser.displayName || currentUser.email.split('@')[0];
                 document.getElementById('userEmail').textContent = currentUser.email;
                 document.getElementById('userAvatar').textContent = (userData?.name || 'U')[0].toUpperCase();
@@ -865,7 +905,6 @@
             try {
                 if (!currentUser) return;
                 
-                // Get application from MongoDB
                 const response = await fetch(`${API_URL}/users/${currentUser.uid}/full`);
                 if (!response.ok) {
                     console.log('⚠️ No application found, creating one...');
@@ -885,6 +924,9 @@
                 allNotifications = appData.notifications || [];
                 uploadHistory = appData.uploadHistory || [];
                 
+                // Calculate unread count
+                unreadCount = allNotifications.filter(n => !n.read).length;
+                
                 console.log('✅ Application data loaded from MongoDB:', appData);
                 
                 updateDashboardUI();
@@ -892,6 +934,7 @@
                 renderNotifications();
                 renderTimeline();
                 loadUploadHistory();
+                updatePaymentStats();
                 
             } catch (error) {
                 console.error('Error loading dashboard:', error);
@@ -929,7 +972,6 @@
                     }
                 };
                 
-                // Save to MongoDB
                 const response = await fetch(`${API_URL}/users/application`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -955,7 +997,6 @@
             if (isPollingActive) return;
             isPollingActive = true;
             
-            // Poll every 10 seconds for updates
             setInterval(async () => {
                 if (currentUser) {
                     await loadDashboardData();
@@ -964,30 +1005,80 @@
         }
         
         // ============================================================
-        // UPDATE DASHBOARD UI
+        // UPDATE DASHBOARD UI - WITH SMART TIMELINE UPDATES
         // ============================================================
         function updateDashboardUI() {
             if (!appData) return;
             
+            // Calculate progress based on actual completed stages
             const stages = appData.applicationStages || {};
             const totalStages = Object.keys(stages).length;
             const completedStages = Object.values(stages).filter(s => s.completed).length;
-            const progress = totalStages > 0 ? Math.round((completedStages / totalStages) * 100) : 0;
+            
+            // Document upload completion - only if ALL required docs are uploaded
+            const uploadedDocs = Object.keys(allDocuments).filter(key => 
+                allDocuments[key] && allDocuments[key].status !== 'missing'
+            );
+            const requiredDocsCount = requiredDocs.filter(d => d.required).length;
+            const allRequiredUploaded = uploadedDocs.length >= requiredDocsCount;
+            
+            // Update document_upload stage based on actual document count
+            if (allRequiredUploaded && !stages.document_upload?.completed) {
+                stages.document_upload = { 
+                    completed: true, 
+                    status: 'completed', 
+                    completedAt: new Date().toISOString() 
+                };
+                // Save to MongoDB
+                updateApplicationStage('document_upload', true);
+            } else if (!allRequiredUploaded && stages.document_upload?.completed) {
+                // If documents were removed, un-complete the stage
+                stages.document_upload = { 
+                    completed: false, 
+                    status: 'pending' 
+                };
+                updateApplicationStage('document_upload', false);
+            }
+            
+            // Update payment stage based on payment status
+            const payments = appData.payments || [];
+            const hasCompletedPayment = payments.some(p => p.status === 'completed');
+            if (hasCompletedPayment && !stages.payment?.completed) {
+                stages.payment = { 
+                    completed: true, 
+                    status: 'completed', 
+                    completedAt: new Date().toISOString() 
+                };
+                updateApplicationStage('payment', true);
+            }
+            
+            // Recalculate completed stages
+            const updatedCompletedStages = Object.values(stages).filter(s => s.completed).length;
+            const progress = totalStages > 0 ? Math.round((updatedCompletedStages / totalStages) * 100) : 0;
             
             document.getElementById('progressPercent').textContent = progress + '%';
             document.getElementById('progressLabel').textContent = progress + '%';
             document.getElementById('mainProgress').style.width = progress + '%';
             document.getElementById('appStatus').textContent = (appData.status || 'draft').toUpperCase();
             
-            const uploadedDocs = Object.keys(allDocuments).filter(key => allDocuments[key] && allDocuments[key].status !== 'missing');
             document.getElementById('docsCompleted').textContent = uploadedDocs.length + '/6';
             document.getElementById('docBadge').textContent = uploadedDocs.length;
             
+            // Update notification badge - only show unread count
             const unreadNotifs = allNotifications.filter(n => !n.read);
             document.getElementById('notifCount').textContent = unreadNotifs.length;
             document.getElementById('notifBadge').textContent = unreadNotifs.length;
             
-            const stepMap = { 'draft': 1, 'submitted': 2, 'document_upload': 2, 'payment_pending': 3, 'under_review': 4, 'approved': 5, 'rejected': 2 };
+            // Update steps based on application status
+            const stepMap = { 
+                'draft': 1, 
+                'submitted': 2, 
+                'document_upload': 2, 
+                'payment_pending': 3, 
+                'under_review': 4, 
+                'approved': 5, 
+                'rejected': 2 
+            };
             const currentStep = stepMap[appData.status] || 1;
             
             document.querySelectorAll('.step').forEach((step, index) => {
@@ -1011,6 +1102,32 @@
             nextStepsList.innerHTML = steps.map(step => `<li>${step}</li>`).join('');
             
             updatePaymentStats();
+        }
+        
+        // ============================================================
+        // UPDATE APPLICATION STAGE IN MONGODB
+        // ============================================================
+        async function updateApplicationStage(stageKey, completed) {
+            try {
+                const updatePath = `applicationStages.${stageKey}`;
+                const updateData = {
+                    [updatePath]: { 
+                        completed: completed, 
+                        status: completed ? 'completed' : 'pending',
+                        completedAt: completed ? new Date().toISOString() : null
+                    },
+                    updatedAt: new Date().toISOString()
+                };
+                
+                await fetch(`${API_URL}/users/application/update`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uid: currentUser.uid, ...updateData })
+                });
+                console.log(`✅ Stage ${stageKey} updated to ${completed ? 'completed' : 'pending'}`);
+            } catch (error) {
+                console.error('Error updating stage:', error);
+            }
         }
         
         // ============================================================
@@ -1051,141 +1168,127 @@
             document.getElementById('docBadge').textContent = completedCount;
         }
         
-
         // ============================================================
-// UPLOAD DOCUMENT - With better error handling
-// ============================================================
-async function uploadDocument(docType) {
-    if (!currentUser) { showToast('Please log in first', 'error'); return; }
-    
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.pdf,.jpg,.jpeg,.png,.doc,.docx';
-    
-    input.onchange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        if (file.size > 10 * 1024 * 1024) {
-            showToast('File size must be less than 10MB', 'error');
-            return;
-        }
-        
-        showToast('Uploading ' + file.name + '...', 'info');
-        const loadingToast = document.querySelector('.toast.info');
-        
-        try {
-            // 1. Upload file to GridFS
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('userId', currentUser.uid);
-            formData.append('docType', docType);
+        // UPLOAD DOCUMENT
+        // ============================================================
+        async function uploadDocument(docType) {
+            if (!currentUser) { showToast('Please log in first', 'error'); return; }
             
-            const response = await fetch(`${API_URL}/upload`, {
-                method: 'POST',
-                body: formData
-            });
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.pdf,.jpg,.jpeg,.png,.doc,.docx';
             
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Upload failed: ${response.status} - ${errorText}`);
-            }
-            
-            const result = await response.json();
-            if (!result.success) throw new Error(result.message || 'Upload failed');
-            
-            console.log('✅ File uploaded to GridFS:', result);
-            
-            // 2. Store metadata in MongoDB
-            const metadata = {
-                uid: currentUser.uid,
-                docType: docType,
-                fileId: result.fileId,
-                fileName: result.fileName || file.name,
-                fileSize: result.fileSize || file.size,
-                fileType: result.fileType || file.type,
-                fileUrl: result.url,
-                status: 'pending_review',
-                uploadedAt: new Date().toISOString()
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                if (file.size > 10 * 1024 * 1024) {
+                    showToast('File size must be less than 10MB', 'error');
+                    return;
+                }
+                
+                showToast('Uploading ' + file.name + '...', 'info');
+                
+                try {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('userId', currentUser.uid);
+                    formData.append('docType', docType);
+                    
+                    const response = await fetch(`${API_URL}/upload`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+                    }
+                    
+                    const result = await response.json();
+                    if (!result.success) throw new Error(result.message || 'Upload failed');
+                    
+                    console.log('✅ File uploaded to GridFS:', result);
+                    
+                    const metadata = {
+                        uid: currentUser.uid,
+                        docType: docType,
+                        fileId: result.fileId,
+                        fileName: result.fileName || file.name,
+                        fileSize: result.fileSize || file.size,
+                        fileType: result.fileType || file.type,
+                        fileUrl: result.url,
+                        status: 'pending_review',
+                        uploadedAt: new Date().toISOString()
+                    };
+                    
+                    let metaResponse = await fetch(`${API_URL}/users/documents`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(metadata)
+                    });
+                    
+                    if (metaResponse.status === 404) {
+                        console.log('⚠️ User not found in MongoDB. Creating user...');
+                        const userData = {
+                            uid: currentUser.uid,
+                            name: currentUser.displayName || currentUser.email.split('@')[0],
+                            email: currentUser.email,
+                            phone: '',
+                            whatsapp: '',
+                            countryOfInterest: '',
+                            userType: 'applicant',
+                            accountStatus: 'active'
+                        };
+                        
+                        const registerResponse = await fetch(`${API_URL}/users/register`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(userData)
+                        });
+                        
+                        if (registerResponse.ok) {
+                            console.log('✅ User created, retrying document save...');
+                            metaResponse = await fetch(`${API_URL}/users/documents`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(metadata)
+                            });
+                        } else {
+                            throw new Error('Failed to create user in MongoDB');
+                        }
+                    }
+                    
+                    if (metaResponse.status === 500) {
+                        const errorData = await metaResponse.json();
+                        if (errorData.message && errorData.message.includes('duplicate key')) {
+                            const retryResponse = await fetch(`${API_URL}/users/documents/upsert`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(metadata)
+                            });
+                            
+                            if (!retryResponse.ok) {
+                                throw new Error('Failed to save document metadata after retry');
+                            }
+                        } else {
+                            throw new Error(`Metadata save failed: ${errorData.message}`);
+                        }
+                    } else if (!metaResponse.ok) {
+                        const errorText = await metaResponse.text();
+                        throw new Error(`Metadata save failed: ${metaResponse.status} - ${errorText}`);
+                    }
+                    
+                    showToast('Document uploaded successfully!', 'success');
+                    await loadDashboardData();
+                    
+                } catch (error) {
+                    console.error('Upload error:', error);
+                    showToast('Upload failed: ' + error.message, 'error');
+                }
             };
             
-            console.log('📤 Saving document metadata to MongoDB:', metadata);
-            
-            let metaResponse = await fetch(`${API_URL}/users/documents`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(metadata)
-            });
-            
-            // If user not found, create user and retry
-            if (metaResponse.status === 404) {
-                console.log('⚠️ User not found in MongoDB. Creating user...');
-                
-                const userData = {
-                    uid: currentUser.uid,
-                    name: currentUser.displayName || currentUser.email.split('@')[0],
-                    email: currentUser.email,
-                    phone: '',
-                    whatsapp: '',
-                    countryOfInterest: '',
-                    userType: 'applicant',
-                    accountStatus: 'active'
-                };
-                
-                const registerResponse = await fetch(`${API_URL}/users/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(userData)
-                });
-                
-                if (registerResponse.ok) {
-                    console.log('✅ User created, retrying document save...');
-                    metaResponse = await fetch(`${API_URL}/users/documents`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(metadata)
-                    });
-                } else {
-                    throw new Error('Failed to create user in MongoDB');
-                }
-            }
-            
-            // If duplicate key error, retry with upsert
-            if (metaResponse.status === 500) {
-                const errorData = await metaResponse.json();
-                if (errorData.message && errorData.message.includes('duplicate key')) {
-                    console.log('⚠️ Duplicate key error, retrying with upsert...');
-                    
-                    // Try a different approach - update with upsert directly
-                    const retryResponse = await fetch(`${API_URL}/users/documents/upsert`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(metadata)
-                    });
-                    
-                    if (!retryResponse.ok) {
-                        throw new Error('Failed to save document metadata after retry');
-                    }
-                } else {
-                    throw new Error(`Metadata save failed: ${errorData.message}`);
-                }
-            } else if (!metaResponse.ok) {
-                const errorText = await metaResponse.text();
-                throw new Error(`Metadata save failed: ${metaResponse.status} - ${errorText}`);
-            }
-            
-            showToast('Document uploaded successfully!', 'success');
-            
-            // 3. Reload dashboard
-            await loadDashboardData();
-            
-        } catch (error) {
-            console.error('Upload error:', error);
-            showToast('Upload failed: ' + error.message, 'error');
+            input.click();
         }
-    };
-    
-    input.click();
-}
         
         // ============================================================
         // VIEW DOCUMENT
@@ -1320,16 +1423,26 @@ async function uploadDocument(docType) {
         }
         
         // ============================================================
-        // RENDER NOTIFICATIONS
+        // RENDER NOTIFICATIONS - WITH UNREAD COUNT
         // ============================================================
         function renderNotifications() {
             const list = document.getElementById('notificationsList');
             if (!allNotifications || allNotifications.length === 0) {
                 list.innerHTML = '<div class="empty-state"><i class="fas fa-bell-slash"></i><p>No notifications yet</p></div>';
+                document.getElementById('notifBadge').textContent = '0';
                 return;
             }
-            list.innerHTML = allNotifications.slice().reverse().map(notif => {
-                const date = notif.timestamp ? new Date(notif.timestamp).toLocaleString() : 'Just now';
+            
+            // Sort by date (newest first)
+            const sortedNotifs = [...allNotifications].reverse();
+            const unreadCount = sortedNotifs.filter(n => !n.read).length;
+            
+            // Update badge with unread count only
+            document.getElementById('notifBadge').textContent = unreadCount;
+            document.getElementById('notifCount').textContent = unreadCount;
+            
+            list.innerHTML = sortedNotifs.map(notif => {
+                const date = notif.createdAt ? new Date(notif.createdAt).toLocaleString() : 'Just now';
                 const isRead = notif.read || false;
                 return `
                     <div class="notification-item ${isRead ? 'read' : ''}">
@@ -1347,24 +1460,44 @@ async function uploadDocument(docType) {
         }
         
         // ============================================================
-        // MARK ALL NOTIFICATIONS READ
+        // MARK ALL NOTIFICATIONS READ - FIXED
         // ============================================================
         async function markAllRead() {
             if (!currentUser || !allNotifications || allNotifications.length === 0) {
                 showToast('No notifications to mark', 'info');
                 return;
             }
+            
+            // Check if all are already read
+            const hasUnread = allNotifications.some(n => !n.read);
+            if (!hasUnread) {
+                showToast('All notifications already read', 'info');
+                return;
+            }
+            
             try {
                 const updatedNotifs = allNotifications.map(n => ({ ...n, read: true }));
                 
-                await fetch(`${API_URL}/users/notifications`, {
+                const response = await fetch(`${API_URL}/users/notifications`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ uid: currentUser.uid, notifications: updatedNotifs })
                 });
                 
-                showToast('All notifications marked as read', 'success');
-                await loadDashboardData();
+                if (response.ok) {
+                    // Update local state
+                    allNotifications = updatedNotifs;
+                    unreadCount = 0;
+                    
+                    // Update UI
+                    renderNotifications();
+                    document.getElementById('notifBadge').textContent = '0';
+                    document.getElementById('notifCount').textContent = '0';
+                    
+                    showToast('All notifications marked as read', 'success');
+                } else {
+                    throw new Error('Failed to update notifications');
+                }
             } catch (error) {
                 console.error('Error marking notifications read:', error);
                 showToast('Error updating notifications', 'error');
@@ -1372,30 +1505,96 @@ async function uploadDocument(docType) {
         }
         
         // ============================================================
-        // RENDER TIMELINE
+        // RENDER TIMELINE - WITH SMART STATUS UPDATES
         // ============================================================
         function renderTimeline() {
             const container = document.getElementById('timelineContainer');
             const stages = appData?.applicationStages || {};
+            
+            // Check document upload completion - ALL required docs must be uploaded
+            const uploadedDocs = Object.keys(allDocuments).filter(key => 
+                allDocuments[key] && allDocuments[key].status !== 'missing'
+            );
+            const requiredDocsCount = requiredDocs.filter(d => d.required).length;
+            const allRequiredUploaded = uploadedDocs.length >= requiredDocsCount;
+            
+            // Check payment completion
+            const payments = appData?.payments || [];
+            const hasCompletedPayment = payments.some(p => p.status === 'completed');
+            
+            // Determine status for each stage
+            const stagesStatus = {
+                personal_info: {
+                    completed: stages.personal_info?.completed || false,
+                    active: true, // Always true as it's the first step
+                    label: 'Personal Information Submitted',
+                    desc: 'Your personal details have been submitted',
+                    status: stages.personal_info?.completed ? 'completed' : 'active'
+                },
+                document_upload: {
+                    completed: allRequiredUploaded,
+                    active: !allRequiredUploaded,
+                    label: 'Documents Uploaded',
+                    desc: `${uploadedDocs.length} of ${requiredDocsCount} required documents uploaded`,
+                    status: allRequiredUploaded ? 'completed' : 'pending'
+                },
+                payment: {
+                    completed: hasCompletedPayment,
+                    active: !hasCompletedPayment && allRequiredUploaded,
+                    label: 'Payment Completed',
+                    desc: hasCompletedPayment ? 'Application fees have been processed' : 'Awaiting payment confirmation',
+                    status: hasCompletedPayment ? 'completed' : 'pending'
+                },
+                review: {
+                    completed: stages.review?.completed || false,
+                    active: stages.review?.active || false,
+                    label: 'Application Under Review',
+                    desc: 'Your application is being reviewed by our team',
+                    status: stages.review?.completed ? 'completed' : (stages.review?.active ? 'active' : 'pending')
+                },
+                approval: {
+                    completed: stages.approval?.completed || false,
+                    active: stages.approval?.active || false,
+                    label: 'Visa Issued',
+                    desc: 'Your visa has been approved! 🎉',
+                    status: stages.approval?.completed ? 'completed' : 'pending'
+                }
+            };
+            
+            // Update app status based on completion
+            if (stagesStatus.approval.completed) {
+                document.getElementById('appStatus').textContent = 'APPROVED';
+            } else if (stagesStatus.review.completed) {
+                document.getElementById('appStatus').textContent = 'UNDER REVIEW';
+            } else if (stagesStatus.payment.completed) {
+                document.getElementById('appStatus').textContent = 'PAYMENT CONFIRMED';
+            } else if (allRequiredUploaded) {
+                document.getElementById('appStatus').textContent = 'DOCUMENTS UPLOADED';
+            }
+            
             const timelineData = [
-                { key: 'personal_info', label: 'Personal Information Submitted', desc: 'Your personal details have been submitted' },
-                { key: 'document_upload', label: 'Documents Uploaded', desc: 'All required documents have been uploaded' },
-                { key: 'payment', label: 'Payment Completed', desc: 'Application fees have been processed' },
-                { key: 'review', label: 'Application Under Review', desc: 'Your application is being reviewed by our team' },
-                { key: 'approval', label: 'Visa Issued', desc: 'Your visa has been approved! 🎉' }
+                { key: 'personal_info', ...stagesStatus.personal_info },
+                { key: 'document_upload', ...stagesStatus.document_upload },
+                { key: 'payment', ...stagesStatus.payment },
+                { key: 'review', ...stagesStatus.review },
+                { key: 'approval', ...stagesStatus.approval }
             ];
+            
             container.innerHTML = timelineData.map((item) => {
-                const stage = stages[item.key] || { completed: false };
-                const isCompleted = stage.completed || false;
-                const date = stage.completedAt ? new Date(stage.completedAt).toLocaleDateString() : '';
+                const isCompleted = item.completed;
+                const isActive = item.active;
+                const date = stages[item.key]?.completedAt ? new Date(stages[item.key].completedAt).toLocaleDateString() : '';
+                const statusLabel = isCompleted ? '✓ Completed' : (isActive ? 'In Progress' : 'Pending');
+                const statusClass = isCompleted ? 'completed' : (isActive ? 'active' : 'pending');
+                
                 return `
-                    <div class="timeline-item ${isCompleted ? 'completed' : ''}">
+                    <div class="timeline-item ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''}">
                         <div class="timeline-dot"></div>
                         <div class="timeline-content">
                             <h5>${item.label}</h5>
                             <p>${item.desc}</p>
                             ${date ? `<small>${date}</small>` : ''}
-                            ${isCompleted ? '<small style="color: #28a745;">✓ Completed</small>' : ''}
+                            <span class="status-label ${statusClass}">${statusLabel}</span>
                         </div>
                     </div>
                 `;
@@ -1417,6 +1616,74 @@ async function uploadDocument(docType) {
             document.getElementById('pendingAmount').textContent = pending.toFixed(2);
             document.getElementById('dueAmount').textContent = due.toFixed(2);
         }
+        
+        // ============================================================
+        // PAYMENT RECEIPT UPLOAD
+        // ============================================================
+        document.getElementById('receiptUploadArea').addEventListener('click', () => {
+            document.getElementById('receiptUpload').click();
+        });
+        
+        document.getElementById('receiptUpload').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('Receipt file must be less than 5MB', 'error');
+                return;
+            }
+            
+            showToast('Uploading receipt...', 'info');
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('userId', currentUser.uid);
+                formData.append('docType', 'payment_receipt');
+                
+                const response = await fetch(`${API_URL}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) throw new Error('Upload failed');
+                const result = await response.json();
+                if (!result.success) throw new Error(result.message || 'Upload failed');
+                
+                // Save receipt reference to application
+                const receiptData = {
+                    uid: currentUser.uid,
+                    receiptUrl: result.url,
+                    receiptFileId: result.fileId,
+                    receiptFileName: file.name,
+                    uploadedAt: new Date().toISOString(),
+                    status: 'pending_verification'
+                };
+                
+                const metaResponse = await fetch(`${API_URL}/users/payment-receipt`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(receiptData)
+                });
+                
+                if (!metaResponse.ok) throw new Error('Failed to save receipt');
+                
+                document.getElementById('receiptStatus').innerHTML = `
+                    <div style="background: rgba(40, 167, 69, 0.15); padding: 10px 15px; border-radius: 8px; color: #28a745;">
+                        <i class="fas fa-check-circle"></i> Receipt uploaded successfully! 
+                        <a href="${result.url}" target="_blank" style="color: #28a745; text-decoration: underline; margin-left: 10px;">View Receipt</a>
+                        <span style="color: rgba(255,255,255,0.5); font-size: 0.7rem; margin-left: 10px;">(Pending verification)</span>
+                    </div>
+                `;
+                
+                showToast('Payment receipt uploaded successfully!', 'success');
+                await loadDashboardData();
+                
+            } catch (error) {
+                console.error('Receipt upload error:', error);
+                showToast('Failed to upload receipt: ' + error.message, 'error');
+            }
+        });
         
         // ============================================================
         // PROFILE UPDATE
@@ -1480,7 +1747,7 @@ async function uploadDocument(docType) {
    • Account Number: 53080500327155
    • Bank: United Bank for Africa (UBA)
 
-✅ After payment, email screenshot to: infoglobalimmigrationsc@gmail.com`);
+✅ After payment, upload your receipt below or email to: infoglobalimmigrationsc@gmail.com`);
         });
         
         // ============================================================
