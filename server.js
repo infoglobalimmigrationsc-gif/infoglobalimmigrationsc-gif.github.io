@@ -1,30 +1,21 @@
-// server.js - COMPLETE WORKING VERSION
+// server.js - COMPLETE WORKING FIXED VERSION
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
-const { MongoClient, GridFSBucket } = require('mongodb'); 
+const { MongoClient, GridFSBucket } = require('mongodb');
 const { v4: uuidv4 } = require('uuid');
-const path = require('path');
-
-// Load bcrypt and jwt
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const app = express();
 
 // ============================================================
-// CORS CONFIGURATION
+// CORS
 // ============================================================
 app.use(cors({
-    origin: [
-        'https://globalimmigrationsclr.com',
-        'https://www.globalimmigrationsclr.com',
-        'http://localhost:5500',
-        'http://127.0.0.1:5500',
-        'https://gisc-app-production.up.railway.app'
-    ],
+    origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     credentials: true
 }));
 
@@ -33,70 +24,71 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // ============================================================
-// MONGODB CONNECTION
+// MONGODB CONNECTION - FIXED
 // ============================================================
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb://giscadmin:GISCsecure2024!@ac-lfqluos-shard-00-00.rkaqbht.mongodb.net:27017,ac-lfqluos-shard-00-01.rkaqbht.mongodb.net:27017,ac-lfqluos-shard-00-02.rkaqbht.mongodb.net:27017/gisc-app?ssl=true&replicaSet=atlas-r7gnc7-shard-0&authSource=admin&retryWrites=true&w=majority&appName=GISCAPP0";
+
 let db;
 let bucket;
-let dbConnected = false;
+let client;
 
-async function getDb() {
-    if (db) return db;
-    
+async function connectDB() {
     try {
         console.log('🔄 Connecting to MongoDB...');
-        const client = new MongoClient(MONGODB_URI, {
-            serverSelectionTimeoutMS: 10000
-        });
-        
+        client = new MongoClient(MONGODB_URI);
         await client.connect();
         console.log('✅ Connected to MongoDB');
         
         db = client.db('gisc-app');
         console.log('✅ Using database: gisc-app');
         
-        // Check admins collection
-        const adminCount = await db.collection('admins').countDocuments();
-        console.log(`📊 Admins in collection: ${adminCount}`);
+        // Test the connection
+        const collections = await db.listCollections().toArray();
+        console.log('📁 Collections:', collections.map(c => c.name).join(', '));
         
-        if (adminCount > 0) {
-            const admin = await db.collection('admins').findOne({ email: 'admin@globalimmigrationsc.com' });
-            if (admin) {
-                console.log('✅ Admin found in database');
-            } else {
-                console.log('⚠️ Admin not found with email: admin@globalimmigrationsc.com');
-            }
+        // Check admin
+        const admin = await db.collection('admins').findOne({ email: 'admin@globalimmigrationsc.com' });
+        if (admin) {
+            console.log('✅ Admin found!');
+            console.log(`📧 Email: ${admin.email}`);
+            console.log(`🔑 Hash: ${admin.password.substring(0, 30)}...`);
+        } else {
+            console.log('❌ Admin NOT found - creating one...');
+            const hashedPassword = await bcrypt.hash('@Motiva6060', 12);
+            await db.collection('admins').insertOne({
+                name: 'Super Admin',
+                email: 'admin@globalimmigrationsc.com',
+                password: hashedPassword,
+                role: 'super_admin',
+                createdAt: new Date(),
+                updatedAt: new Date()
+            });
+            console.log('✅ Admin created with password: @Motiva6060');
         }
         
-        bucket = new GridFSBucket(db, {
-            bucketName: 'documents'
-        });
+        bucket = new GridFSBucket(db, { bucketName: 'documents' });
         console.log('✅ GridFS Bucket initialized');
-        
-        dbConnected = true;
         return db;
     } catch (error) {
         console.error('❌ MongoDB connection error:', error);
-        dbConnected = false;
         throw error;
     }
 }
 
-// Connect on startup
-getDb().catch(console.error);
+// Connect NOW
+connectDB().catch(console.error);
 
 // ============================================================
-// ADMIN LOGIN - SIMPLIFIED AND FIXED
+// ADMIN LOGIN - FIXED
 // ============================================================
 app.post('/api/admin/login', async (req, res) => {
+    console.log('🔐 Admin login attempt');
+    
     try {
         const { email, password } = req.body;
-        console.log(`🔐 Admin login attempt: ${email}`);
+        console.log(`📧 Email: ${email}`);
 
-        // Wait for database
-        const database = await getDb();
-        
-        if (!database) {
+        if (!db) {
             console.log('❌ Database not connected');
             return res.status(503).json({
                 success: false,
@@ -104,17 +96,8 @@ app.post('/api/admin/login', async (req, res) => {
             });
         }
 
-        // Find admin - using try/catch for safety
-        let admin = null;
-        try {
-            admin = await database.collection('admins').findOne({ email: email });
-        } catch (err) {
-            console.error('❌ Error finding admin:', err);
-            return res.status(500).json({
-                success: false,
-                message: 'Database error'
-            });
-        }
+        // Find admin
+        const admin = await db.collection('admins').findOne({ email: email });
         
         if (!admin) {
             console.log(`❌ Admin not found: ${email}`);
@@ -126,11 +109,12 @@ app.post('/api/admin/login', async (req, res) => {
 
         console.log(`✅ Admin found: ${admin.name}`);
 
-        // Compare password
-        const isValidPassword = await bcrypt.compare(password, admin.password);
+        // Verify password
+        const isValid = await bcrypt.compare(password, admin.password);
+        console.log(`🔑 Password valid: ${isValid}`);
         
-        if (!isValidPassword) {
-            console.log(`❌ Invalid password for: ${email}`);
+        if (!isValid) {
+            console.log(`❌ Invalid password`);
             return res.status(401).json({
                 success: false,
                 message: 'Invalid credentials'
@@ -139,17 +123,13 @@ app.post('/api/admin/login', async (req, res) => {
 
         // Generate token
         const token = jwt.sign(
-            { 
-                id: admin._id, 
-                email: admin.email, 
-                role: admin.role || 'admin' 
-            },
-            process.env.JWT_SECRET || 'your-secret-key-change-me',
+            { id: admin._id, email: admin.email, role: admin.role || 'admin' },
+            process.env.JWT_SECRET || 'your-secret-key',
             { expiresIn: '24h' }
         );
 
-        console.log(`✅ Admin logged in: ${email}`);
-
+        console.log(`✅ Login successful: ${email}`);
+        
         res.json({
             success: true,
             token: token,
@@ -162,7 +142,7 @@ app.post('/api/admin/login', async (req, res) => {
         });
 
     } catch (error) {
-        console.error('❌ Admin login error:', error);
+        console.error('❌ Login error:', error);
         res.status(500).json({
             success: false,
             message: error.message || 'Server error'
@@ -171,21 +151,33 @@ app.post('/api/admin/login', async (req, res) => {
 });
 
 // ============================================================
-// FILE UPLOAD CONFIGURATION
+// TEST ENDPOINT - For debugging
+// ============================================================
+app.get('/api/admin/test', async (req, res) => {
+    try {
+        if (!db) {
+            return res.json({ connected: false, message: 'Database not connected' });
+        }
+        const admins = await db.collection('admins').find({}).toArray();
+        res.json({
+            connected: true,
+            adminCount: admins.length,
+            admins: admins.map(a => ({ email: a.email, name: a.name }))
+        });
+    } catch (error) {
+        res.json({ error: error.message });
+    }
+});
+
+// ============================================================
+// UPLOAD ENDPOINT
 // ============================================================
 const storage = multer.memoryStorage();
 const upload = multer({
     storage: storage,
-    limits: {
-        fileSize: 10 * 1024 * 1024
-    },
+    limits: { fileSize: 10 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
-        const allowedTypes = [
-            'image/jpeg', 'image/png', 'image/jpg',
-            'application/pdf',
-            'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-        ];
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
         if (allowedTypes.includes(file.mimetype)) {
             cb(null, true);
         } else {
@@ -194,79 +186,51 @@ const upload = multer({
     }
 });
 
-// ============================================================
-// UPLOAD ENDPOINT
-// ============================================================
 app.post('/api/upload', upload.single('file'), async (req, res) => {
     try {
-        console.log('📤 Upload request received');
-        
         if (!req.file) {
-            return res.status(400).json({
-                success: false,
-                message: 'No file uploaded'
-            });
+            return res.status(400).json({ success: false, message: 'No file uploaded' });
         }
-
-        const database = await getDb();
-        if (!database) {
-            return res.status(500).json({
-                success: false,
-                message: 'Database not connected'
-            });
+        if (!db || !bucket) {
+            return res.status(500).json({ success: false, message: 'Database not connected' });
         }
 
         const file = req.file;
         const userId = req.body.userId || 'unknown';
         const docType = req.body.docType || 'other';
-
-        const fileId = new Date().getTime().toString(36) + '_' + uuidv4();
+        const fileId = Date.now().toString(36) + '_' + uuidv4();
         const fileName = `${userId}_${docType}_${fileId}_${file.originalname}`;
 
         const uploadStream = bucket.openUploadStream(fileName, {
             contentType: file.mimetype,
             metadata: {
-                userId: userId,
-                docType: docType,
+                userId, docType,
                 originalName: file.originalname,
                 uploadedAt: new Date().toISOString(),
                 fileSize: file.size,
-                fileId: fileId
+                fileId
             }
         });
 
         await new Promise((resolve, reject) => {
-            uploadStream.write(file.buffer, (err) => {
-                if (err) reject(err);
-                else resolve();
-            });
+            uploadStream.write(file.buffer, (err) => { if (err) reject(err); else resolve(); });
         });
-
         await new Promise((resolve, reject) => {
-            uploadStream.end((err) => {
-                if (err) reject(err);
-                else resolve();
-            });
+            uploadStream.end((err) => { if (err) reject(err); else resolve(); });
         });
-
-        const fileUrl = `https://gisc-app-production.up.railway.app/api/file/${uploadStream.id}`;
 
         res.json({
             success: true,
-            url: fileUrl,
+            url: `https://gisc-app-production.up.railway.app/api/file/${uploadStream.id}`,
             fileId: uploadStream.id,
             fileName: file.originalname,
             fileSize: file.size,
-            fileType: file.mimetype,
-            message: 'File uploaded successfully'
+            fileType: file.mimetype
         });
 
     } catch (error) {
-        console.error('❌ Upload error:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message || 'Upload failed'
-        });
+        console.error('Upload error:', error);
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -275,16 +239,10 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
 // ============================================================
 app.get('/api/file/:id', async (req, res) => {
     try {
-        const fileId = req.params.id;
         const ObjectId = require('mongodb').ObjectId;
-        const downloadStream = bucket.openDownloadStream(new ObjectId(fileId));
-
-        downloadStream.on('error', (error) => {
-            res.status(404).json({ success: false, message: 'File not found' });
-        });
-
+        const downloadStream = bucket.openDownloadStream(new ObjectId(req.params.id));
+        downloadStream.on('error', () => res.status(404).json({ success: false, message: 'File not found' }));
         downloadStream.pipe(res);
-
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -295,36 +253,23 @@ app.get('/api/file/:id', async (req, res) => {
 // ============================================================
 app.get('/api/documents/:userId', async (req, res) => {
     try {
-        const userId = req.params.userId;
-        
-        const database = await getDb();
-        if (!database) {
-            return res.status(500).json({
-                success: false,
-                message: 'Database not connected'
-            });
-        }
-
-        const files = await database.collection('documents.files')
-            .find({ 'metadata.userId': userId })
+        const files = await db.collection('documents.files')
+            .find({ 'metadata.userId': req.params.userId })
             .sort({ uploadDate: -1 })
             .toArray();
 
-        const documents = files.map(file => ({
-            id: file._id,
-            fileName: file.metadata.originalName || file.filename.split('_').pop(),
-            fileSize: file.length,
-            fileType: file.contentType,
-            uploadedAt: file.uploadDate,
-            docType: file.metadata.docType || 'other',
-            url: `https://gisc-app-production.up.railway.app/api/file/${file._id}`
-        }));
-
         res.json({
             success: true,
-            documents: documents
+            documents: files.map(file => ({
+                id: file._id,
+                fileName: file.metadata.originalName || file.filename.split('_').pop(),
+                fileSize: file.length,
+                fileType: file.contentType,
+                uploadedAt: file.uploadDate,
+                docType: file.metadata.docType || 'other',
+                url: `https://gisc-app-production.up.railway.app/api/file/${file._id}`
+            }))
         });
-
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -333,26 +278,18 @@ app.get('/api/documents/:userId', async (req, res) => {
 // ============================================================
 // HEALTH CHECK
 // ============================================================
-app.get('/api/health', async (req, res) => {
-    let dbStatus = 'disconnected';
-    try {
-        const database = await getDb();
-        dbStatus = database ? 'connected' : 'disconnected';
-    } catch (e) {
-        dbStatus = 'error';
-    }
-    
+app.get('/api/health', (req, res) => {
     res.json({
         status: 'ok',
         timestamp: new Date().toISOString(),
         service: 'Global Immigration SC API',
-        database: dbStatus,
+        database: db ? 'connected' : 'disconnected',
         uptime: process.uptime()
     });
 });
 
 // ============================================================
-// ROOT ENDPOINT
+// ROOT
 // ============================================================
 app.get('/', (req, res) => {
     res.json({
@@ -361,6 +298,7 @@ app.get('/', (req, res) => {
         status: 'running',
         endpoints: {
             admin_login: '/api/admin/login (POST)',
+            admin_test: '/api/admin/test (GET)',
             upload: '/api/upload (POST)',
             download: '/api/file/:id (GET)',
             documents: '/api/documents/:userId (GET)',
@@ -370,11 +308,10 @@ app.get('/', (req, res) => {
 });
 
 // ============================================================
-// START SERVER
+// START
 // ============================================================
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Server running on port ${PORT}`);
     console.log(`📍 URL: https://gisc-app-production.up.railway.app`);
-    console.log(`📍 MongoDB: ${MONGODB_URI ? 'Configured' : 'Not configured'}`);
 });
