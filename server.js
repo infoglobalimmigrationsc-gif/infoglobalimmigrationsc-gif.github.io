@@ -1,9 +1,11 @@
-// server.js - MongoDB GridFS Version
+// server.js - COMPLETE VERSION WITH ADMIN LOGIN
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
 const { MongoClient, GridFSBucket } = require('mongodb');
 const { v4: uuidv4 } = require('uuid');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const path = require('path');
 
 const app = express();
@@ -32,7 +34,6 @@ async function connectDB() {
     }
 }
 
-// Connect on startup
 connectDB();
 
 // ============================================================
@@ -56,13 +57,76 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // ============================================================
+// ADMIN AUTHENTICATION
+// ============================================================
+app.post('/api/admin/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        console.log(`🔐 Admin login attempt: ${email}`);
+
+        if (!db) {
+            return res.status(500).json({ 
+                success: false, 
+                message: 'Database not connected' 
+            });
+        }
+
+        const admin = await db.collection('admins').findOne({ email: email });
+        
+        if (!admin) {
+            console.log(`❌ Admin not found: ${email}`);
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid credentials'
+            });
+        }
+
+        const isValidPassword = await bcrypt.compare(password, admin.password);
+        
+        if (!isValidPassword) {
+            console.log(`❌ Invalid password for: ${email}`);
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid credentials'
+            });
+        }
+
+        const token = jwt.sign(
+            { id: admin._id, email: admin.email, role: admin.role || 'admin' },
+            process.env.JWT_SECRET || 'your-secret-key-change-me',
+            { expiresIn: '24h' }
+        );
+
+        console.log(`✅ Admin logged in: ${email}`);
+
+        res.json({
+            success: true,
+            token: token,
+            admin: {
+                id: admin._id,
+                name: admin.name,
+                email: admin.email,
+                role: admin.role || 'admin'
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Admin login error:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Server error'
+        });
+    }
+});
+
+// ============================================================
 // FILE UPLOAD CONFIGURATION
 // ============================================================
 const storage = multer.memoryStorage();
 const upload = multer({
     storage: storage,
     limits: {
-        fileSize: 10 * 1024 * 1024 // 10MB
+        fileSize: 10 * 1024 * 1024
     },
     fileFilter: (req, file, cb) => {
         const allowedTypes = [
@@ -80,15 +144,13 @@ const upload = multer({
 });
 
 // ============================================================
-// UPLOAD ENDPOINT - GridFS
+// UPLOAD ENDPOINT
 // ============================================================
 app.post('/api/upload', upload.single('file'), async (req, res) => {
     try {
         console.log('📤 Upload request received');
-        console.log('📋 Body:', req.body);
         
         if (!req.file) {
-            console.log('❌ No file uploaded');
             return res.status(400).json({
                 success: false,
                 message: 'No file uploaded'
@@ -96,7 +158,6 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
         }
 
         if (!db || !bucket) {
-            console.log('❌ Database not connected');
             return res.status(500).json({
                 success: false,
                 message: 'Database not connected'
@@ -107,13 +168,9 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
         const userId = req.body.userId || 'unknown';
         const docType = req.body.docType || 'other';
 
-        console.log(`📄 File: ${file.originalname}, Size: ${file.size} bytes, Type: ${docType}`);
-
-        // Generate unique filename
         const fileId = new Date().getTime().toString(36) + '_' + uuidv4();
         const fileName = `${userId}_${docType}_${fileId}_${file.originalname}`;
 
-        // Create upload stream to GridFS
         const uploadStream = bucket.openUploadStream(fileName, {
             contentType: file.mimetype,
             metadata: {
@@ -126,7 +183,6 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
             }
         });
 
-        // Write file to GridFS
         await new Promise((resolve, reject) => {
             uploadStream.write(file.buffer, (err) => {
                 if (err) reject(err);
@@ -141,9 +197,6 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
             });
         });
 
-        console.log(`✅ File saved to GridFS with ID: ${uploadStream.id}`);
-
-        // Generate URL for file download
         const fileUrl = `https://gisc-app-production.up.railway.app/api/file/${uploadStream.id}`;
 
         res.json({
@@ -153,7 +206,7 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
             fileName: file.originalname,
             fileSize: file.size,
             fileType: file.mimetype,
-            message: 'File uploaded successfully to GridFS'
+            message: 'File uploaded successfully'
         });
 
     } catch (error) {
@@ -166,29 +219,21 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
 });
 
 // ============================================================
-// DOWNLOAD FILE ENDPOINT
+// DOWNLOAD FILE
 // ============================================================
 app.get('/api/file/:id', async (req, res) => {
     try {
         const fileId = req.params.id;
-        console.log(`📥 Downloading file: ${fileId}`);
-
-        if (!db || !bucket) {
-            return res.status(500).json({ success: false, message: 'Database not connected' });
-        }
-
         const ObjectId = require('mongodb').ObjectId;
         const downloadStream = bucket.openDownloadStream(new ObjectId(fileId));
 
         downloadStream.on('error', (error) => {
-            console.error('Download error:', error);
             res.status(404).json({ success: false, message: 'File not found' });
         });
 
         downloadStream.pipe(res);
 
     } catch (error) {
-        console.error('Download error:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
@@ -199,11 +244,6 @@ app.get('/api/file/:id', async (req, res) => {
 app.get('/api/documents/:userId', async (req, res) => {
     try {
         const userId = req.params.userId;
-        console.log(`📂 Listing documents for user: ${userId}`);
-
-        if (!db || !bucket) {
-            return res.status(500).json({ success: false, message: 'Database not connected' });
-        }
 
         const files = await db.collection('documents.files')
             .find({ 'metadata.userId': userId })
@@ -226,40 +266,7 @@ app.get('/api/documents/:userId', async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error fetching documents:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
-    }
-});
-
-// ============================================================
-// DELETE DOCUMENT
-// ============================================================
-app.delete('/api/documents/:id', async (req, res) => {
-    try {
-        const fileId = req.params.id;
-        console.log(`🗑️ Deleting file: ${fileId}`);
-
-        if (!db || !bucket) {
-            return res.status(500).json({ success: false, message: 'Database not connected' });
-        }
-
-        const ObjectId = require('mongodb').ObjectId;
-        await bucket.delete(new ObjectId(fileId));
-
-        res.json({
-            success: true,
-            message: 'Document deleted successfully'
-        });
-
-    } catch (error) {
-        console.error('Delete error:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -267,12 +274,11 @@ app.delete('/api/documents/:id', async (req, res) => {
 // HEALTH CHECK
 // ============================================================
 app.get('/api/health', async (req, res) => {
-    const dbStatus = db ? 'connected' : 'disconnected';
     res.json({
         status: 'ok',
         timestamp: new Date().toISOString(),
         service: 'Global Immigration SC API',
-        database: dbStatus,
+        database: db ? 'connected' : 'disconnected',
         uptime: process.uptime()
     });
 });
@@ -286,134 +292,15 @@ app.get('/', (req, res) => {
         version: '1.0.0',
         status: 'running',
         endpoints: {
+            admin_login: '/api/admin/login (POST)',
             upload: '/api/upload (POST)',
             download: '/api/file/:id (GET)',
             documents: '/api/documents/:userId (GET)',
-            delete: '/api/documents/:id (DELETE)',
             health: '/api/health (GET)'
         }
     });
 });
 
-// ============================================================
-// ERROR HANDLING
-// ============================================================
-app.use((err, req, res, next) => {
-    console.error('❌ Error:', err);
-    res.status(500).json({
-        success: false,
-        message: err.message || 'Internal server error'
-    });
-});
-
-// ============================================================
-// ADMIN AUTHENTICATION
-// ============================================================
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-
-// Admin login endpoint
-app.post('/api/admin/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        console.log('🔐 Admin login attempt:', email);
-
-        if (!db) {
-            return res.status(500).json({ success: false, message: 'Database not connected' });
-        }
-
-        // Find admin in users collection
-        const admin = await db.collection('users').findOne({ 
-            email: email,
-            userType: 'admin'
-        });
-
-        if (!admin) {
-            console.log('❌ Admin not found:', email);
-            return res.status(401).json({ success: false, message: 'Invalid credentials' });
-        }
-
-        // Compare password (using bcrypt)
-        const isValidPassword = await bcrypt.compare(password, admin.password);
-        if (!isValidPassword) {
-            console.log('❌ Invalid password for:', email);
-            return res.status(401).json({ success: false, message: 'Invalid credentials' });
-        }
-
-        // Generate JWT token
-        const token = jwt.sign(
-            { 
-                id: admin._id, 
-                email: admin.email, 
-                role: admin.userType 
-            },
-            process.env.JWT_SECRET || 'your-secret-key',
-            { expiresIn: '8h' }
-        );
-
-        console.log('✅ Admin logged in:', email);
-
-        res.json({
-            success: true,
-            token: token,
-            admin: {
-                id: admin._id,
-                name: admin.name || 'Admin',
-                email: admin.email,
-                role: admin.userType
-            }
-        });
-
-    } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ success: false, message: 'Server error' });
-    }
-});
-
-// ============================================================
-// CREATE ADMIN USER (Run once)
-// ============================================================
-async function createAdminUser() {
-    try {
-        if (!db) return;
-        
-        const adminEmail = 'admin@globalimmigrationsc.com';
-        const adminPassword = '@Motiva6060';
-        
-        // Check if admin exists
-        const existingAdmin = await db.collection('users').findOne({ email: adminEmail });
-        if (existingAdmin) {
-            console.log('✅ Admin user already exists');
-            return;
-        }
-
-        // Hash password
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(adminPassword, salt);
-
-        // Create admin user
-        await db.collection('users').insertOne({
-            name: 'Super Admin',
-            email: adminEmail,
-            password: hashedPassword,
-            userType: 'admin',
-            createdAt: new Date(),
-            updatedAt: new Date()
-        });
-
-        console.log('✅ Admin user created successfully!');
-        console.log(`📧 Email: ${adminEmail}`);
-        console.log(`🔑 Password: ${adminPassword}`);
-
-    } catch (error) {
-        console.error('❌ Error creating admin:', error);
-    }
-}
-
-// Call after DB connection
-connectDB().then(() => {
-    createAdminUser();
-});
 // ============================================================
 // START SERVER
 // ============================================================
