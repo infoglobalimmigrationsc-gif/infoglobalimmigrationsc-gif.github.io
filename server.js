@@ -1,4 +1,4 @@
-// server.js - COMPLETE VERSION WITH ADMIN LOGIN
+// server.js - COMPLETE VERSION WITH PROPER DATABASE CONNECTION
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
@@ -16,32 +16,6 @@ try {
 }
 
 const app = express();
-
-// ============================================================
-// MONGODB CONNECTION
-// ============================================================
-const MONGODB_URI = process.env.MONGODB_URI;
-let db;
-let bucket;
-
-async function connectDB() {
-    try {
-        const client = new MongoClient(MONGODB_URI);
-        await client.connect();
-        console.log('✅ Connected to MongoDB');
-        db = client.db('gisc-app');
-        bucket = new GridFSBucket(db, {
-            bucketName: 'documents'
-        });
-        console.log('✅ GridFS Bucket initialized');
-        return client;
-    } catch (error) {
-        console.error('❌ MongoDB connection error:', error);
-        throw error;
-    }
-}
-
-connectDB();
 
 // ============================================================
 // CORS CONFIGURATION
@@ -64,7 +38,59 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // ============================================================
-// ADMIN AUTHENTICATION - Only if modules are available
+// MONGODB CONNECTION - FIXED
+// ============================================================
+const MONGODB_URI = process.env.MONGODB_URI;
+let db;
+let bucket;
+let dbConnected = false;
+
+async function connectDB() {
+    try {
+        console.log('🔄 Connecting to MongoDB...');
+        const client = new MongoClient(MONGODB_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            serverSelectionTimeoutMS: 5000
+        });
+        
+        await client.connect();
+        console.log('✅ Connected to MongoDB');
+        
+        db = client.db('gisc-app');
+        console.log('✅ Using database: gisc-app');
+        
+        // Test the connection by listing collections
+        const collections = await db.listCollections().toArray();
+        console.log('📁 Collections:', collections.map(c => c.name).join(', '));
+        
+        // Check if admins collection exists
+        const adminCollection = await db.collection('admins').findOne({ email: 'admin@globalimmigrationsc.com' });
+        if (adminCollection) {
+            console.log('✅ Admin found in database');
+        } else {
+            console.log('⚠️ Admin not found - please create admin user');
+        }
+        
+        bucket = new GridFSBucket(db, {
+            bucketName: 'documents'
+        });
+        console.log('✅ GridFS Bucket initialized');
+        
+        dbConnected = true;
+        return client;
+    } catch (error) {
+        console.error('❌ MongoDB connection error:', error);
+        dbConnected = false;
+        throw error;
+    }
+}
+
+// Connect on startup
+connectDB().catch(console.error);
+
+// ============================================================
+// ADMIN AUTHENTICATION - FIXED
 // ============================================================
 if (bcrypt && jwt) {
     app.post('/api/admin/login', async (req, res) => {
@@ -72,22 +98,36 @@ if (bcrypt && jwt) {
             const { email, password } = req.body;
             console.log(`🔐 Admin login attempt: ${email}`);
 
+            // Check if database is connected
             if (!db) {
-                return res.status(500).json({ 
-                    success: false, 
-                    message: 'Database not connected' 
+                console.log('❌ Database not connected');
+                return res.status(503).json({
+                    success: false,
+                    message: 'Database not connected. Please try again.'
                 });
             }
 
+            // Log what we're searching for
+            console.log(`🔍 Searching for admin with email: "${email}"`);
+            
+            // Search for admin - MAKE SURE WE'RE USING THE RIGHT COLLECTION
             const admin = await db.collection('admins').findOne({ email: email });
             
             if (!admin) {
-                console.log(`❌ Admin not found: ${email}`);
+                console.log(`❌ Admin not found with email: ${email}`);
+                
+                // Let's check if the collection has any documents
+                const count = await db.collection('admins').countDocuments();
+                console.log(`📊 Total admins in collection: ${count}`);
+                
                 return res.status(401).json({
                     success: false,
                     message: 'Invalid credentials'
                 });
             }
+
+            console.log(`✅ Admin found: ${admin.name} (${admin.email})`);
+            console.log(`🔑 Password hash: ${admin.password.substring(0, 20)}...`);
 
             const isValidPassword = await bcrypt.compare(password, admin.password);
             
