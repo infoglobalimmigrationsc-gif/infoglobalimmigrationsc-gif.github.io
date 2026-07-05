@@ -709,17 +709,21 @@ app.put('/api/users/:uid', async (req, res) => {
 });
 
 // ============================================================
-// NOTIFICATIONS - UNIFIED ENDPOINT
+// NOTIFICATIONS - MOVED TO TOP LEVEL (NO ROUTE CONFLICT)
 // ============================================================
 app.put('/api/users/notifications', async (req, res) => {
     try {
         const { uid, notifications } = req.body;
+        console.log(`📝 Updating notifications for user: ${uid}`);
+        console.log(`📋 Notifications count: ${notifications ? notifications.length : 0}`);
+        
         if (!uid) {
             return res.status(400).json({ success: false, message: 'uid is required' });
         }
         
         // Check if application exists first
-        const application = await db.collection('applications').findOne({ uid: uid });
+        let application = await db.collection('applications').findOne({ uid: uid });
+        
         if (!application) {
             // Create application if it doesn't exist
             const user = await db.collection('users').findOne({ uid: uid });
@@ -755,9 +759,11 @@ app.put('/api/users/notifications', async (req, res) => {
                 }
             };
             await db.collection('applications').insertOne(newApp);
+            console.log(`✅ Created new application for user: ${uid}`);
             return res.json({ success: true, message: 'Application created and notifications updated' });
         }
         
+        // Update existing application
         const result = await db.collection('applications').updateOne(
             { uid: uid },
             {
@@ -767,6 +773,8 @@ app.put('/api/users/notifications', async (req, res) => {
                 }
             }
         );
+        
+        console.log(`✅ Notifications updated for user: ${uid}, matched: ${result.matchedCount}, modified: ${result.modifiedCount}`);
         res.json({ success: true, message: 'Notifications updated' });
     } catch (error) {
         console.error('Error updating notifications:', error);
