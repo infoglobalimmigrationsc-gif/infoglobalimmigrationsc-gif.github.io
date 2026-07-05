@@ -2,7 +2,7 @@
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
-const { MongoClient, GridFSBucket } = require('mongodb');
+const { MongoClient, GridFSBucket, ObjectId } = require('mongodb');
 const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -24,7 +24,7 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // ============================================================
-// MONGODB CONNECTION - FIXED
+// MONGODB CONNECTION
 // ============================================================
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb://giscadmin:GISCsecure2024!@ac-lfqluos-shard-00-00.rkaqbht.mongodb.net:27017,ac-lfqluos-shard-00-01.rkaqbht.mongodb.net:27017,ac-lfqluos-shard-00-02.rkaqbht.mongodb.net:27017/gisc-app?ssl=true&replicaSet=atlas-r7gnc7-shard-0&authSource=admin&retryWrites=true&w=majority&appName=GISCAPP0";
 
@@ -51,7 +51,6 @@ async function connectDB() {
         if (admin) {
             console.log('✅ Admin found!');
             console.log(`📧 Email: ${admin.email}`);
-            console.log(`🔑 Hash: ${admin.password.substring(0, 30)}...`);
         } else {
             console.log('❌ Admin NOT found - creating one...');
             const hashedPassword = await bcrypt.hash('@Motiva6060', 12);
@@ -79,7 +78,27 @@ async function connectDB() {
 connectDB().catch(console.error);
 
 // ============================================================
-// ADMIN LOGIN - FIXED
+// MIDDLEWARE - JWT Authentication
+// ============================================================
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    if (!token) {
+        return res.status(401).json({ success: false, message: 'No token provided' });
+    }
+    
+    jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key', (err, user) => {
+        if (err) {
+            return res.status(403).json({ success: false, message: 'Invalid token' });
+        }
+        req.user = user;
+        next();
+    });
+}
+
+// ============================================================
+// ADMIN LOGIN
 // ============================================================
 app.post('/api/admin/login', async (req, res) => {
     console.log('🔐 Admin login attempt');
@@ -96,7 +115,6 @@ app.post('/api/admin/login', async (req, res) => {
             });
         }
 
-        // Find admin
         const admin = await db.collection('admins').findOne({ email: email });
         
         if (!admin) {
@@ -109,7 +127,6 @@ app.post('/api/admin/login', async (req, res) => {
 
         console.log(`✅ Admin found: ${admin.name}`);
 
-        // Verify password
         const isValid = await bcrypt.compare(password, admin.password);
         console.log(`🔑 Password valid: ${isValid}`);
         
@@ -121,7 +138,6 @@ app.post('/api/admin/login', async (req, res) => {
             });
         }
 
-        // Generate token
         const token = jwt.sign(
             { id: admin._id, email: admin.email, role: admin.role || 'admin' },
             process.env.JWT_SECRET || 'your-secret-key',
@@ -151,7 +167,7 @@ app.post('/api/admin/login', async (req, res) => {
 });
 
 // ============================================================
-// TEST ENDPOINT - For debugging
+// TEST ENDPOINT
 // ============================================================
 app.get('/api/admin/test', async (req, res) => {
     try {
@@ -239,7 +255,6 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
 // ============================================================
 app.get('/api/file/:id', async (req, res) => {
     try {
-        const ObjectId = require('mongodb').ObjectId;
         const downloadStream = bucket.openDownloadStream(new ObjectId(req.params.id));
         downloadStream.on('error', () => res.status(404).json({ success: false, message: 'File not found' }));
         downloadStream.pipe(res);
@@ -302,101 +317,193 @@ app.get('/', (req, res) => {
             upload: '/api/upload (POST)',
             download: '/api/file/:id (GET)',
             documents: '/api/documents/:userId (GET)',
-            health: '/api/health (GET)'
+            health: '/api/health (GET)',
+            admin_users: '/api/admin/users (GET, POST)',
+            admin_applications: '/api/admin/applications (GET, PUT)',
+            admin_blogs: '/api/admin/blogs (GET, POST, PUT, DELETE)',
+            admin_contacts: '/api/admin/contacts (GET, DELETE)'
         }
     });
 });
 
 // ============================================================
-// ADMIN API ENDPOINTS - Add to server.js
+// ============================================================
+// ADMIN API ENDPOINTS
+// ============================================================
 // ============================================================
 
-// Middleware to verify JWT token
-function authenticateToken(req, res, next) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    
-    if (!token) {
-        return res.status(401).json({ success: false, message: 'No token provided' });
-    }
-    
-    jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key', (err, user) => {
-        if (err) {
-            return res.status(403).json({ success: false, message: 'Invalid token' });
-        }
-        req.user = user;
-        next();
-    });
-}
-
-// GET all users
+// ============================================================
+// USERS - GET all
+// ============================================================
 app.get('/api/admin/users', authenticateToken, async (req, res) => {
     try {
         const users = await db.collection('users').find({}).toArray();
+        console.log(`📋 GET /api/admin/users - Found ${users.length} users`);
         res.json({ success: true, users });
     } catch (error) {
+        console.error('Error fetching users:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// GET all applications
+// ============================================================
+// USERS - CREATE new user
+// ============================================================
+app.post('/api/admin/users', authenticateToken, async (req, res) => {
+    try {
+        const { email, name, phone, countryOfInterest, userType } = req.body;
+        
+        // Check if user already exists
+        const existingUser = await db.collection('users').findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'User with this email already exists' 
+            });
+        }
+        
+        const userData = {
+            email,
+            name: name || 'Unknown',
+            phone: phone || '',
+            countryOfInterest: countryOfInterest || 'USA',
+            userType: userType || 'applicant',
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+        
+        const result = await db.collection('users').insertOne(userData);
+        console.log(`✅ Created user: ${email}`);
+        res.json({ 
+            success: true, 
+            id: result.insertedId, 
+            user: { ...userData, _id: result.insertedId } 
+        });
+    } catch (error) {
+        console.error('Error creating user:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
+// USERS - DELETE user
+// ============================================================
+app.delete('/api/admin/users/:id', authenticateToken, async (req, res) => {
+    try {
+        const result = await db.collection('users').deleteOne({ _id: new ObjectId(req.params.id) });
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        console.log(`✅ Deleted user: ${req.params.id}`);
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
+// USERS - SYNC from Firebase (placeholder)
+// ============================================================
+app.post('/api/admin/sync-users', authenticateToken, async (req, res) => {
+    try {
+        // This would normally call Firebase Admin SDK to list users
+        // For now, just return a message
+        res.json({ 
+            success: true, 
+            synced: 0, 
+            message: 'Sync functionality requires Firebase Admin SDK setup. Users are added via registration or manually.' 
+        });
+    } catch (error) {
+        console.error('Sync error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
+// APPLICATIONS - GET all
+// ============================================================
 app.get('/api/admin/applications', authenticateToken, async (req, res) => {
     try {
         const applications = await db.collection('applications').find({}).toArray();
+        console.log(`📋 GET /api/admin/applications - Found ${applications.length} applications`);
         res.json({ success: true, applications });
     } catch (error) {
+        console.error('Error fetching applications:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// GET single application
+// ============================================================
+// APPLICATIONS - GET single
+// ============================================================
 app.get('/api/admin/applications/:id', authenticateToken, async (req, res) => {
     try {
-        const ObjectId = require('mongodb').ObjectId;
         const application = await db.collection('applications').findOne({ _id: new ObjectId(req.params.id) });
+        if (!application) {
+            return res.status(404).json({ success: false, message: 'Application not found' });
+        }
         res.json({ success: true, application });
     } catch (error) {
+        console.error('Error fetching application:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// UPDATE application status
+// ============================================================
+// APPLICATIONS - UPDATE status
+// ============================================================
 app.put('/api/admin/applications/:id', authenticateToken, async (req, res) => {
     try {
-        const ObjectId = require('mongodb').ObjectId;
         const { status } = req.body;
-        await db.collection('applications').updateOne(
+        const result = await db.collection('applications').updateOne(
             { _id: new ObjectId(req.params.id) },
             { $set: { status, updatedAt: new Date() } }
         );
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Application not found' });
+        }
+        console.log(`✅ Updated application ${req.params.id} status to ${status}`);
         res.json({ success: true });
     } catch (error) {
+        console.error('Error updating application:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// GET all blogs
+// ============================================================
+// BLOGS - GET all
+// ============================================================
 app.get('/api/admin/blogs', authenticateToken, async (req, res) => {
     try {
         const blogs = await db.collection('blogs').find({}).sort({ createdAt: -1 }).toArray();
+        console.log(`📋 GET /api/admin/blogs - Found ${blogs.length} blogs`);
         res.json({ success: true, blogs });
     } catch (error) {
+        console.error('Error fetching blogs:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// GET single blog
+// ============================================================
+// BLOGS - GET single
+// ============================================================
 app.get('/api/admin/blogs/:id', authenticateToken, async (req, res) => {
     try {
-        const ObjectId = require('mongodb').ObjectId;
         const blog = await db.collection('blogs').findOne({ _id: new ObjectId(req.params.id) });
+        if (!blog) {
+            return res.status(404).json({ success: false, message: 'Blog not found' });
+        }
         res.json({ success: true, blog });
     } catch (error) {
+        console.error('Error fetching blog:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// CREATE blog post
+// ============================================================
+// BLOGS - CREATE
+// ============================================================
 app.post('/api/admin/blogs', authenticateToken, async (req, res) => {
     try {
         const blogData = {
@@ -405,68 +512,92 @@ app.post('/api/admin/blogs', authenticateToken, async (req, res) => {
             updatedAt: new Date()
         };
         const result = await db.collection('blogs').insertOne(blogData);
-        res.json({ success: true, id: result.insertedId });
+        console.log(`✅ Created blog: ${blogData.title}`);
+        res.json({ success: true, id: result.insertedId, blog: blogData });
     } catch (error) {
+        console.error('Error creating blog:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// UPDATE blog post
+// ============================================================
+// BLOGS - UPDATE
+// ============================================================
 app.put('/api/admin/blogs/:id', authenticateToken, async (req, res) => {
     try {
-        const ObjectId = require('mongodb').ObjectId;
         const { id } = req.params;
         const updateData = { ...req.body, updatedAt: new Date() };
         delete updateData._id;
         delete updateData.createdAt;
-        await db.collection('blogs').updateOne(
+        
+        const result = await db.collection('blogs').updateOne(
             { _id: new ObjectId(id) },
             { $set: updateData }
         );
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Blog not found' });
+        }
+        console.log(`✅ Updated blog: ${id}`);
         res.json({ success: true });
     } catch (error) {
+        console.error('Error updating blog:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// DELETE blog post
+// ============================================================
+// BLOGS - DELETE
+// ============================================================
 app.delete('/api/admin/blogs/:id', authenticateToken, async (req, res) => {
     try {
-        const ObjectId = require('mongodb').ObjectId;
-        await db.collection('blogs').deleteOne({ _id: new ObjectId(req.params.id) });
+        const result = await db.collection('blogs').deleteOne({ _id: new ObjectId(req.params.id) });
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Blog not found' });
+        }
+        console.log(`✅ Deleted blog: ${req.params.id}`);
         res.json({ success: true });
     } catch (error) {
+        console.error('Error deleting blog:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// GET all contacts
+// ============================================================
+// CONTACTS - GET all
+// ============================================================
 app.get('/api/admin/contacts', authenticateToken, async (req, res) => {
     try {
         const contacts = await db.collection('contacts').find({}).sort({ createdAt: -1 }).toArray();
+        console.log(`📋 GET /api/admin/contacts - Found ${contacts.length} contacts`);
         res.json({ success: true, contacts });
     } catch (error) {
+        console.error('Error fetching contacts:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// DELETE contact
+// ============================================================
+// CONTACTS - DELETE
+// ============================================================
 app.delete('/api/admin/contacts/:id', authenticateToken, async (req, res) => {
     try {
-        const ObjectId = require('mongodb').ObjectId;
-        await db.collection('contacts').deleteOne({ _id: new ObjectId(req.params.id) });
+        const result = await db.collection('contacts').deleteOne({ _id: new ObjectId(req.params.id) });
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Contact not found' });
+        }
+        console.log(`✅ Deleted contact: ${req.params.id}`);
         res.json({ success: true });
     } catch (error) {
+        console.error('Error deleting contact:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// Generate Firebase custom token (optional - for Firestore access)
+// ============================================================
+// FIREBASE TOKEN (placeholder)
+// ============================================================
 app.get('/api/admin/firebase-token', authenticateToken, async (req, res) => {
     try {
-        // This requires Firebase Admin SDK
-        // const customToken = await admin.auth().createCustomToken(req.user.email);
-        // res.json({ success: true, customToken });
         res.json({ success: false, message: 'Firebase Admin SDK not configured' });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -474,10 +605,24 @@ app.get('/api/admin/firebase-token', authenticateToken, async (req, res) => {
 });
 
 // ============================================================
-// START
+// START SERVER
 // ============================================================
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Server running on port ${PORT}`);
     console.log(`📍 URL: https://gisc-app-production.up.railway.app`);
+    console.log(`📋 Available endpoints:`);
+    console.log(`   POST /api/admin/login`);
+    console.log(`   GET  /api/admin/users`);
+    console.log(`   POST /api/admin/users`);
+    console.log(`   DELETE /api/admin/users/:id`);
+    console.log(`   GET  /api/admin/applications`);
+    console.log(`   GET  /api/admin/applications/:id`);
+    console.log(`   PUT  /api/admin/applications/:id`);
+    console.log(`   GET  /api/admin/blogs`);
+    console.log(`   POST /api/admin/blogs`);
+    console.log(`   PUT  /api/admin/blogs/:id`);
+    console.log(`   DELETE /api/admin/blogs/:id`);
+    console.log(`   GET  /api/admin/contacts`);
+    console.log(`   DELETE /api/admin/contacts/:id`);
 });
