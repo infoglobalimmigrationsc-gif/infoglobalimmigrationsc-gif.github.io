@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Global Immigration SC</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -82,7 +82,6 @@
             margin-top: 2px;
         }
 
-        /* Sidebar Navigation */
         .sidebar-nav {
             flex: 1;
             overflow-y: auto;
@@ -124,7 +123,6 @@
             border-radius: 20px;
         }
 
-        /* Sidebar Footer */
         .sidebar-footer {
             flex-shrink: 0;
             padding-top: 20px;
@@ -194,7 +192,6 @@
             padding: 30px;
         }
 
-        /* Header */
         .admin-header {
             display: flex;
             justify-content: space-between;
@@ -223,7 +220,6 @@
             flex-wrap: wrap;
         }
 
-        /* Buttons */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -257,16 +253,6 @@
 
         .btn-outline:hover {
             background: rgba(255,255,255,0.25);
-        }
-
-        .btn-success {
-            background: var(--success-green);
-            color: white;
-        }
-
-        .btn-danger {
-            background: var(--danger-red);
-            color: white;
         }
 
         .btn-sm {
@@ -337,10 +323,6 @@
             text-align: center;
             border: 1px solid rgba(255, 255, 255, 0.15);
             transition: transform 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-3px);
         }
 
         .stat-card .stat-icon {
@@ -432,10 +414,6 @@
             transition: all 0.3s ease;
         }
 
-        .blog-item:hover {
-            background: rgba(255, 255, 255, 0.12);
-        }
-
         .blog-item .blog-header {
             display: flex;
             justify-content: space-between;
@@ -479,11 +457,6 @@
         .status-draft {
             background: rgba(255, 193, 7, 0.2);
             color: var(--warning-yellow);
-        }
-
-        .status-scheduled {
-            background: rgba(23, 162, 184, 0.2);
-            color: #17a2b8;
         }
 
         /* ============================================
@@ -579,7 +552,6 @@
             min-height: 100px;
         }
 
-        /* Upload Area in Modal */
         .glass-upload {
             border: 2px dashed rgba(0,0,0,0.15);
             border-radius: 12px;
@@ -697,7 +669,6 @@
             opacity: 0.3;
         }
 
-        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -710,69 +681,27 @@
             border-radius: 3px;
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
-            .admin-sidebar {
-                transform: translateX(-100%);
-                width: 280px;
-            }
-            .admin-sidebar.open {
-                transform: translateX(0);
-            }
-            .admin-main {
-                margin-left: 0;
-                padding: 15px;
-                padding-top: 70px;
-            }
-            .mobile-menu-toggle {
-                display: block;
-            }
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
-            }
-            .stat-card h3 {
-                font-size: 1.3rem;
-            }
-            .admin-section {
-                padding: 15px;
-            }
-            .section-header h1 {
-                font-size: 1.1rem;
-            }
-            .search-bar {
-                flex-direction: column;
-            }
-            .search-bar select {
-                min-width: 100%;
-            }
-            .modal-content {
-                padding: 20px;
-                margin: 10px;
-            }
-            .blog-item .blog-header {
-                flex-direction: column;
-            }
-            .blog-item .blog-actions {
-                width: 100%;
-                justify-content: flex-start;
-            }
+            .admin-sidebar { transform: translateX(-100%); width: 280px; }
+            .admin-sidebar.open { transform: translateX(0); }
+            .admin-main { margin-left: 0; padding: 15px; padding-top: 70px; }
+            .mobile-menu-toggle { display: block; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .stat-card h3 { font-size: 1.3rem; }
+            .admin-section { padding: 15px; }
+            .section-header h1 { font-size: 1.1rem; }
+            .search-bar { flex-direction: column; }
+            .search-bar select { min-width: 100%; }
+            .modal-content { padding: 20px; margin: 10px; }
+            .blog-item .blog-header { flex-direction: column; }
+            .blog-item .blog-actions { width: 100%; justify-content: flex-start; }
         }
 
         @media (max-width: 480px) {
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            .stat-card {
-                padding: 12px;
-            }
-            .stat-card h3 {
-                font-size: 1.1rem;
-            }
-            .admin-main {
-                padding: 10px;
-                padding-top: 60px;
-            }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .stat-card { padding: 12px; }
+            .stat-card h3 { font-size: 1.1rem; }
+            .admin-main { padding: 10px; padding-top: 60px; }
         }
     </style>
 </head>
@@ -958,7 +887,6 @@
                                 <label>Title <span class="required">*</span></label>
                                 <input type="text" id="blogTitle" class="glass-input" required>
                             </div>
-
                             <div class="form-group">
                                 <label>Category <span class="required">*</span></label>
                                 <select id="blogCategory" class="glass-input" required>
@@ -971,7 +899,6 @@
                                     <option value="Travel Guides">Travel Guides</option>
                                 </select>
                             </div>
-
                             <div class="form-group">
                                 <label>Featured Image</label>
                                 <div class="glass-upload" id="imageUploadArea">
@@ -984,17 +911,14 @@
                                     <button type="button" id="removeImage" class="btn btn-danger btn-sm" style="margin-top: 10px;">Remove</button>
                                 </div>
                             </div>
-
                             <div class="form-group">
-                                <label>Excerpt (Short Description)</label>
-                                <textarea id="blogExcerpt" class="glass-input" rows="3" placeholder="Brief summary of the post..."></textarea>
+                                <label>Excerpt</label>
+                                <textarea id="blogExcerpt" class="glass-input" rows="3" placeholder="Brief summary..."></textarea>
                             </div>
-
                             <div class="form-group">
                                 <label>Content <span class="required">*</span></label>
                                 <textarea id="blogContent" class="glass-input" rows="10" placeholder="Write your blog content here..."></textarea>
                             </div>
-
                             <div class="form-group">
                                 <label>Status</label>
                                 <select id="blogStatus" class="glass-input">
@@ -1013,71 +937,43 @@
         </main>
     </div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-
     <script>
         // ============================================================
-        // FIREBASE CONFIGURATION
+        // ADMIN AUTHENTICATION - USING JWT TOKEN FROM LOGIN
         // ============================================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyAJ3p91t83EQeQ6XopPfvisc1fIdsWIMm8",
-            authDomain: "global-immigration-sc.firebaseapp.com",
-            projectId: "global-immigration-sc",
-            storageBucket: "global-immigration-sc.firebasestorage.app",
-            messagingSenderId: "791181145117",
-            appId: "1:791181145117:web:527b7df63c9a32adf9c2f4"
-        };
+        const API_URL = 'https://gisc-app-production.up.railway.app/api';
 
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const storage = firebase.storage();
+        // Check if admin is logged in
+        const adminToken = localStorage.getItem('adminToken');
+        const adminData = localStorage.getItem('adminData');
 
-        // ============================================================
-        // GLOBAL VARIABLES
-        // ============================================================
-        let currentUser = null;
-        let allUsers = [];
-        let allApplications = [];
-        let allBlogs = [];
-        let editingPostId = null;
+        if (!adminToken || !adminData) {
+            // No token, redirect to login
+            window.location.href = 'login.html';
+        }
 
-        // ============================================================
-        // AUTHENTICATION
-        // ============================================================
-        auth.onAuthStateChanged(async (user) => {
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            currentUser = user;
-
-            // Check if user is admin
-            const userDoc = await db.collection('users').doc(user.uid).get();
-            if (userDoc.exists && userDoc.data().userType === 'admin') {
-                document.getElementById('adminName').textContent = userDoc.data().name || 'Admin';
-                document.getElementById('adminAvatar').textContent = (userDoc.data().name || 'A')[0].toUpperCase();
-                document.getElementById('adminRole').textContent = 'Administrator';
-                await loadDashboardData();
-                setupRealTimeListeners();
-            } else {
-                alert('You do not have admin access.');
-                auth.signOut();
-                window.location.href = 'login.html';
-            }
-        });
+        // Parse admin data
+        let adminUser = null;
+        try {
+            adminUser = JSON.parse(adminData);
+            console.log('✅ Admin logged in:', adminUser.email);
+            
+            // Update UI with admin info
+            document.getElementById('adminName').textContent = adminUser.name || 'Admin';
+            document.getElementById('adminAvatar').textContent = (adminUser.name || 'A')[0].toUpperCase();
+            document.getElementById('adminRole').textContent = adminUser.role || 'Administrator';
+        } catch (e) {
+            console.error('Error parsing admin data:', e);
+            window.location.href = 'login.html';
+        }
 
         // ============================================================
         // LOGOUT
         // ============================================================
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
+        document.getElementById('logoutBtn').addEventListener('click', function() {
             if (confirm('Are you sure you want to logout?')) {
-                await auth.signOut();
+                localStorage.removeItem('adminToken');
+                localStorage.removeItem('adminData');
                 window.location.href = 'login.html';
             }
         });
@@ -1086,23 +982,21 @@
         // NAVIGATION
         // ============================================================
         document.querySelectorAll('.sidebar-nav a').forEach(link => {
-            link.addEventListener('click', (e) => {
+            link.addEventListener('click', function(e) {
                 e.preventDefault();
-                const section = link.dataset.section;
+                const section = this.dataset.section;
 
                 document.querySelectorAll('.sidebar-nav a').forEach(l => l.classList.remove('active'));
-                link.classList.add('active');
+                this.classList.add('active');
 
                 document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
                 const targetSection = document.getElementById(`${section}-section`);
                 if (targetSection) targetSection.classList.add('active');
 
-                // Load section data
                 if (section === 'blog') loadBlogPosts();
                 if (section === 'users') loadUsers();
                 if (section === 'applications') loadApplications();
 
-                // Close mobile sidebar
                 document.getElementById('sidebar').classList.remove('open');
             });
         });
@@ -1110,11 +1004,11 @@
         // ============================================================
         // MOBILE MENU
         // ============================================================
-        document.getElementById('mobileMenuToggle').addEventListener('click', () => {
+        document.getElementById('mobileMenuToggle').addEventListener('click', function() {
             document.getElementById('sidebar').classList.toggle('open');
         });
 
-        document.addEventListener('click', (e) => {
+        document.addEventListener('click', function(e) {
             const sidebar = document.getElementById('sidebar');
             const toggle = document.getElementById('mobileMenuToggle');
             if (window.innerWidth <= 768) {
@@ -1130,21 +1024,21 @@
         async function loadDashboardData() {
             try {
                 // Count users
-                const usersSnapshot = await db.collection('users').get();
+                const usersSnapshot = await firebase.firestore().collection('users').get();
                 const totalUsers = usersSnapshot.size;
 
                 // Count applications
-                const appsSnapshot = await db.collection('applications').get();
+                const appsSnapshot = await firebase.firestore().collection('applications').get();
                 const totalApps = appsSnapshot.size;
                 const pendingApps = appsSnapshot.docs.filter(d => d.data().status === 'pending' || d.data().status === 'draft').length;
                 const approvedApps = appsSnapshot.docs.filter(d => d.data().status === 'approved').length;
 
                 // Count blogs
-                const blogsSnapshot = await db.collection('blogs').get();
+                const blogsSnapshot = await firebase.firestore().collection('blogs').get();
                 const totalBlogs = blogsSnapshot.size;
 
                 // Count contacts
-                const contactsSnapshot = await db.collection('contacts').get();
+                const contactsSnapshot = await firebase.firestore().collection('contacts').get();
                 const totalContacts = contactsSnapshot.size;
 
                 document.getElementById('totalUsers').textContent = totalUsers;
@@ -1159,7 +1053,7 @@
 
                 // Recent activity
                 const recentActivity = document.getElementById('recentActivityList');
-                const allDocs = await db.collection('applications')
+                const allDocs = await firebase.firestore().collection('applications')
                     .orderBy('updatedAt', 'desc')
                     .limit(10)
                     .get();
@@ -1196,25 +1090,19 @@
         // ============================================================
         // REAL-TIME LISTENERS
         // ============================================================
-        function setupRealTimeListeners() {
-            db.collection('applications').onSnapshot(() => {
-                loadDashboardData();
-            }, (error) => console.error('Real-time update error:', error));
-        }
+        firebase.firestore().collection('applications').onSnapshot(() => {
+            loadDashboardData();
+        }, (error) => console.error('Real-time update error:', error));
 
         // ============================================================
         // LOAD USERS
         // ============================================================
         async function loadUsers() {
-            const container = document.getElementById('users-section');
-            if (!container) return;
-
             try {
-                const snapshot = await db.collection('users').get();
-                allUsers = [];
-                snapshot.forEach(doc => allUsers.push({ id: doc.id, ...doc.data() }));
+                const snapshot = await firebase.firestore().collection('users').get();
+                const users = [];
+                snapshot.forEach(doc => users.push({ id: doc.id, ...doc.data() }));
 
-                // Create users section if not exists
                 let usersSection = document.getElementById('users-section');
                 if (!usersSection) {
                     usersSection = document.createElement('section');
@@ -1244,7 +1132,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${allUsers.map(user => `
+                                    ${users.map(user => `
                                         <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                                             <td style="padding: 12px;">${user.name || 'Unknown'}</td>
                                             <td style="padding: 12px;">${user.email || 'No email'}</td>
@@ -1268,6 +1156,9 @@
                     </div>
                 `;
 
+                usersSection.style.display = 'block';
+                document.getElementById('users-section').classList.add('active');
+
             } catch (error) {
                 console.error('Error loading users:', error);
                 showToast('Error loading users', 'error');
@@ -1279,9 +1170,9 @@
         // ============================================================
         async function loadApplications() {
             try {
-                const snapshot = await db.collection('applications').get();
-                allApplications = [];
-                snapshot.forEach(doc => allApplications.push({ id: doc.id, ...doc.data() }));
+                const snapshot = await firebase.firestore().collection('applications').get();
+                const apps = [];
+                snapshot.forEach(doc => apps.push({ id: doc.id, ...doc.data() }));
 
                 let appsSection = document.getElementById('applications-section');
                 if (!appsSection) {
@@ -1294,10 +1185,10 @@
                 appsSection.innerHTML = `
                     <div class="section-header">
                         <h1><i class="fas fa-file-alt"></i> Applications</h1>
-                        <span style="color: rgba(255,255,255,0.5);">${allApplications.length} total</span>
+                        <span style="color: rgba(255,255,255,0.5);">${apps.length} total</span>
                     </div>
                     <div class="glass-container">
-                        ${allApplications.length === 0 ? `
+                        ${apps.length === 0 ? `
                             <div class="empty-state">
                                 <i class="fas fa-inbox"></i>
                                 <p>No applications yet</p>
@@ -1316,8 +1207,8 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${await Promise.all(allApplications.map(async (app) => {
-                                            const userDoc = await db.collection('users').doc(app.userId).get();
+                                        ${await Promise.all(apps.map(async (app) => {
+                                            const userDoc = await firebase.firestore().collection('users').doc(app.userId).get();
                                             const userData = userDoc.data();
                                             return `
                                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
@@ -1350,6 +1241,9 @@
                     </div>
                 `;
 
+                appsSection.style.display = 'block';
+                document.getElementById('applications-section').classList.add('active');
+
             } catch (error) {
                 console.error('Error loading applications:', error);
                 showToast('Error loading applications', 'error');
@@ -1361,7 +1255,7 @@
         // ============================================================
         async function updateApplicationStatus(userId, status) {
             try {
-                await db.collection('applications').doc(userId).update({
+                await firebase.firestore().collection('applications').doc(userId).update({
                     status: status,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
@@ -1378,8 +1272,8 @@
         // VIEW APPLICATION
         // ============================================================
         async function viewApplication(userId) {
-            const appDoc = await db.collection('applications').doc(userId).get();
-            const userDoc = await db.collection('users').doc(userId).get();
+            const appDoc = await firebase.firestore().collection('applications').doc(userId).get();
+            const userDoc = await firebase.firestore().collection('users').doc(userId).get();
             const appData = appDoc.data();
             const userData = userDoc.data();
 
@@ -1395,18 +1289,26 @@ Submitted: ${appData?.createdAt?.toDate?.()?.toLocaleDateString() || 'N/A'}`);
         }
 
         // ============================================================
+        // VIEW USER
+        // ============================================================
+        window.viewUser = (userId) => {
+            const user = allUsers?.find(u => u.id === userId);
+            alert(`👤 User Details\n\nName: ${user?.name || 'Unknown'}\nEmail: ${user?.email || 'N/A'}\nPhone: ${user?.phone || 'N/A'}\nCountry: ${user?.countryOfInterest || 'N/A'}\nType: ${user?.userType || 'applicant'}`);
+        };
+
+        // ============================================================
         // LOAD BLOG POSTS
         // ============================================================
         async function loadBlogPosts() {
             try {
-                const snapshot = await db.collection('blogs').orderBy('createdAt', 'desc').get();
-                allBlogs = [];
-                snapshot.forEach(doc => allBlogs.push({ id: doc.id, ...doc.data() }));
+                const snapshot = await firebase.firestore().collection('blogs').orderBy('createdAt', 'desc').get();
+                const blogs = [];
+                snapshot.forEach(doc => blogs.push({ id: doc.id, ...doc.data() }));
 
                 const container = document.getElementById('blogPostsList');
-                const total = allBlogs.length;
-                const published = allBlogs.filter(b => b.status === 'published').length;
-                const drafts = allBlogs.filter(b => b.status === 'draft').length;
+                const total = blogs.length;
+                const published = blogs.filter(b => b.status === 'published').length;
+                const drafts = blogs.filter(b => b.status === 'draft').length;
 
                 document.getElementById('totalPostsCount').textContent = total;
                 document.getElementById('publishedPostsCount').textContent = published;
@@ -1418,7 +1320,7 @@ Submitted: ${appData?.createdAt?.toDate?.()?.toLocaleDateString() || 'N/A'}`);
                     return;
                 }
 
-                container.innerHTML = allBlogs.map(post => `
+                container.innerHTML = blogs.map(post => `
                     <div class="blog-item">
                         <div class="blog-header">
                             <div>
@@ -1452,6 +1354,8 @@ Submitted: ${appData?.createdAt?.toDate?.()?.toLocaleDateString() || 'N/A'}`);
         // ============================================================
         // SAVE BLOG POST
         // ============================================================
+        let editingPostId = null;
+
         async function saveBlogPost() {
             const title = document.getElementById('blogTitle').value.trim();
             const category = document.getElementById('blogCategory').value;
@@ -1459,14 +1363,8 @@ Submitted: ${appData?.createdAt?.toDate?.()?.toLocaleDateString() || 'N/A'}`);
             const content = document.getElementById('blogContent').value.trim();
             const status = document.getElementById('blogStatus').value;
 
-            if (!title) {
-                showToast('Please enter a title', 'error');
-                return;
-            }
-            if (!content) {
-                showToast('Please enter content', 'error');
-                return;
-            }
+            if (!title) { showToast('Please enter a title', 'error'); return; }
+            if (!content) { showToast('Please enter content', 'error'); return; }
 
             const submitBtn = document.getElementById('savePostBtn');
             const originalText = submitBtn.innerHTML;
@@ -1481,15 +1379,15 @@ Submitted: ${appData?.createdAt?.toDate?.()?.toLocaleDateString() || 'N/A'}`);
                     content: content,
                     status: status,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    author: currentUser.displayName || 'Admin'
+                    author: adminUser?.name || 'Admin'
                 };
 
                 if (editingPostId) {
-                    await db.collection('blogs').doc(editingPostId).update(postData);
+                    await firebase.firestore().collection('blogs').doc(editingPostId).update(postData);
                     showToast('Post updated successfully!', 'success');
                 } else {
                     postData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-                    await db.collection('blogs').add(postData);
+                    await firebase.firestore().collection('blogs').add(postData);
                     showToast('Post created successfully!', 'success');
                 }
 
@@ -1509,8 +1407,9 @@ Submitted: ${appData?.createdAt?.toDate?.()?.toLocaleDateString() || 'N/A'}`);
         // ============================================================
         // EDIT BLOG POST
         // ============================================================
-        async function editBlogPost(postId) {
-            const post = allBlogs.find(b => b.id === postId);
+        window.editBlogPost = async (postId) => {
+            const snapshot = await firebase.firestore().collection('blogs').doc(postId).get();
+            const post = snapshot.data();
             if (!post) return;
 
             editingPostId = postId;
@@ -1522,16 +1421,16 @@ Submitted: ${appData?.createdAt?.toDate?.()?.toLocaleDateString() || 'N/A'}`);
             document.getElementById('blogStatus').value = post.status || 'draft';
 
             document.getElementById('blogEditorModal').classList.add('active');
-        }
+        };
 
         // ============================================================
         // DELETE BLOG POST
         // ============================================================
-        async function deleteBlogPost(postId) {
+        window.deleteBlogPost = async (postId) => {
             if (!confirm('Are you sure you want to delete this post?')) return;
 
             try {
-                await db.collection('blogs').doc(postId).delete();
+                await firebase.firestore().collection('blogs').doc(postId).delete();
                 showToast('Post deleted successfully!', 'success');
                 loadBlogPosts();
                 loadDashboardData();
@@ -1539,7 +1438,7 @@ Submitted: ${appData?.createdAt?.toDate?.()?.toLocaleDateString() || 'N/A'}`);
                 console.error('Error deleting post:', error);
                 showToast('Error deleting post', 'error');
             }
-        }
+        };
 
         // ============================================================
         // BLOG MODAL
@@ -1562,13 +1461,13 @@ Submitted: ${appData?.createdAt?.toDate?.()?.toLocaleDateString() || 'N/A'}`);
         }
 
         // ============================================================
-        // IMAGE UPLOAD FOR BLOG
+        // IMAGE UPLOAD
         // ============================================================
         document.getElementById('imageUploadArea').addEventListener('click', () => {
             document.getElementById('blogImage').click();
         });
 
-        document.getElementById('blogImage').addEventListener('change', async (e) => {
+        document.getElementById('blogImage').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
@@ -1578,7 +1477,7 @@ Submitted: ${appData?.createdAt?.toDate?.()?.toLocaleDateString() || 'N/A'}`);
             }
 
             const reader = new FileReader();
-            reader.onload = (event) => {
+            reader.onload = function(event) {
                 document.getElementById('previewImg').src = event.target.result;
                 document.getElementById('imagePreview').style.display = 'block';
             };
@@ -1640,7 +1539,7 @@ Submitted: ${appData?.createdAt?.toDate?.()?.toLocaleDateString() || 'N/A'}`);
         // ============================================================
         // KEYBOARD SHORTCUTS
         // ============================================================
-        document.addEventListener('keydown', (e) => {
+        document.addEventListener('keydown', function(e) {
             if ((e.ctrlKey || e.metaKey) && e.key === 'r') { e.preventDefault(); refreshData(); }
             if (e.key === 'Escape') { closeBlogModal(); document.getElementById('sidebar').classList.remove('open'); }
         });
@@ -1653,14 +1552,12 @@ Submitted: ${appData?.createdAt?.toDate?.()?.toLocaleDateString() || 'N/A'}`);
         window.loadApplications = loadApplications;
         window.viewApplication = viewApplication;
         window.updateApplicationStatus = updateApplicationStatus;
-        window.editBlogPost = editBlogPost;
-        window.deleteBlogPost = deleteBlogPost;
-        window.viewUser = (userId) => {
-            const user = allUsers.find(u => u.id === userId);
-            alert(`👤 User Details\n\nName: ${user?.name || 'Unknown'}\nEmail: ${user?.email || 'N/A'}\nPhone: ${user?.phone || 'N/A'}\nCountry: ${user?.countryOfInterest || 'N/A'}\nType: ${user?.userType || 'applicant'}`);
-        };
 
+        // ============================================================
+        // LOAD INITIAL DATA
+        // ============================================================
         console.log('✅ Admin Dashboard loaded successfully');
+        loadDashboardData();
     </script>
 </body>
 </html>
