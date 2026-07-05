@@ -1,7 +1,7 @@
-// server.js - COMPLETE FIXED VERSION
+// server.js - COMPLETE WORKING VERSION
 const express = require('express');
 const multer = require('multer');
-const cors = require('cors'); 
+const cors = require('cors');
 const { MongoClient, GridFSBucket } = require('mongodb');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
@@ -33,14 +33,13 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // ============================================================
-// MONGODB CONNECTION - FIXED WITH PROPER AWAIT
+// MONGODB CONNECTION
 // ============================================================
 const MONGODB_URI = process.env.MONGODB_URI;
 let db;
 let bucket;
-let isDbConnected = false;
+let dbConnected = false;
 
-// Function to get database connection
 async function getDb() {
     if (db) return db;
     
@@ -56,7 +55,7 @@ async function getDb() {
         db = client.db('gisc-app');
         console.log('✅ Using database: gisc-app');
         
-        // Verify admins collection exists and has data
+        // Check admins collection
         const adminCount = await db.collection('admins').countDocuments();
         console.log(`📊 Admins in collection: ${adminCount}`);
         
@@ -74,11 +73,11 @@ async function getDb() {
         });
         console.log('✅ GridFS Bucket initialized');
         
-        isDbConnected = true;
+        dbConnected = true;
         return db;
     } catch (error) {
         console.error('❌ MongoDB connection error:', error);
-        isDbConnected = false;
+        dbConnected = false;
         throw error;
     }
 }
@@ -87,28 +86,35 @@ async function getDb() {
 getDb().catch(console.error);
 
 // ============================================================
-// ADMIN AUTHENTICATION - FIXED WITH PROPER DB WAITING
+// ADMIN LOGIN - SIMPLIFIED AND FIXED
 // ============================================================
 app.post('/api/admin/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         console.log(`🔐 Admin login attempt: ${email}`);
 
-        // Wait for database connection
+        // Wait for database
         const database = await getDb();
         
         if (!database) {
             console.log('❌ Database not connected');
             return res.status(503).json({
                 success: false,
-                message: 'Database not connected. Please try again.'
+                message: 'Database not connected'
             });
         }
 
-        console.log(`🔍 Searching for admin: ${email}`);
-        
-        // Find admin
-        const admin = await database.collection('admins').findOne({ email: email });
+        // Find admin - using try/catch for safety
+        let admin = null;
+        try {
+            admin = await database.collection('admins').findOne({ email: email });
+        } catch (err) {
+            console.error('❌ Error finding admin:', err);
+            return res.status(500).json({
+                success: false,
+                message: 'Database error'
+            });
+        }
         
         if (!admin) {
             console.log(`❌ Admin not found: ${email}`);
@@ -119,7 +125,6 @@ app.post('/api/admin/login', async (req, res) => {
         }
 
         console.log(`✅ Admin found: ${admin.name}`);
-        console.log(`🔑 Checking password...`);
 
         // Compare password
         const isValidPassword = await bcrypt.compare(password, admin.password);
