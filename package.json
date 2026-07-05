@@ -1,7 +1,7 @@
 {
   "name": "gisc-backend",
   "version": "1.0.0",
-  "description": "Global Immigration SC Backend API",
+  "description": "Global Immigration SC Backend API with MongoDB GridFS",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -11,7 +11,8 @@
     "express": "^4.18.2",
     "multer": "^1.4.5-lts.1",
     "cors": "^2.8.5",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "mongodb": "^5.6.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"
