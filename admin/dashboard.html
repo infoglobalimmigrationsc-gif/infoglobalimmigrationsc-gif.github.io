@@ -16,6 +16,9 @@
             --warning-yellow: #ffc107;
             --danger-red: #dc3545;
             --info-blue: #17a2b8;
+            --payment-paid: #28a745;
+            --payment-pending: #ffc107;
+            --payment-due: #dc3545;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -267,6 +270,30 @@
             background: #138496;
         }
 
+        .btn-payment-paid {
+            background: var(--payment-paid);
+            color: white;
+        }
+        .btn-payment-paid:hover {
+            background: #1e7e34;
+        }
+
+        .btn-payment-pending {
+            background: var(--payment-pending);
+            color: #333;
+        }
+        .btn-payment-pending:hover {
+            background: #e0a800;
+        }
+
+        .btn-payment-due {
+            background: var(--payment-due);
+            color: white;
+        }
+        .btn-payment-due:hover {
+            background: #bd2130;
+        }
+
         /* ========== SECTIONS ========== */
         .admin-section {
             display: none;
@@ -332,7 +359,6 @@
 
         .stat-card .stat-icon {
             font-size: 1.8rem;
-            color: var(--primary-red);
             margin-bottom: 8px;
         }
 
@@ -346,6 +372,11 @@
             color: rgba(255, 255, 255, 0.8);
             font-size: 0.8rem;
         }
+
+        .stat-card .stat-icon.paid { color: var(--payment-paid); }
+        .stat-card .stat-icon.pending { color: var(--payment-pending); }
+        .stat-card .stat-icon.due { color: var(--payment-due); }
+        .stat-card .stat-icon.revenue { color: #17a2b8; }
 
         /* ========== GLASS CONTAINER ========== */
         .glass-container {
@@ -463,6 +494,9 @@
         .status-pending_review { background: rgba(255, 193, 7, 0.2); color: var(--warning-yellow); }
         .status-read { background: rgba(108, 117, 125, 0.2); color: #6c757d; }
         .status-unread { background: rgba(227, 6, 19, 0.2); color: var(--primary-red); }
+        .status-paid { background: rgba(40, 167, 69, 0.2); color: var(--success-green); }
+        .status-unpaid { background: rgba(220, 53, 69, 0.2); color: var(--danger-red); }
+        .status-pending_payment { background: rgba(255, 193, 7, 0.2); color: var(--warning-yellow); }
 
         /* ========== MODAL ========== */
         .glass-modal {
@@ -760,6 +794,18 @@
             overflow-y: auto;
         }
 
+        /* Payment Status Badge */
+        .payment-status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .payment-status-badge.paid { background: rgba(40, 167, 69, 0.2); color: #28a745; }
+        .payment-status-badge.pending { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+        .payment-status-badge.due { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
+
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -879,6 +925,10 @@
                 <a href="#" data-section="applications">
                     <i class="fas fa-file-alt"></i> Applications
                     <span class="badge" id="pendingAppsCount">0</span>
+                </a>
+                <a href="#" data-section="payments">
+                    <i class="fas fa-credit-card"></i> Payments
+                    <span class="badge" id="paymentCountBadge">0</span>
                 </a>
                 <a href="#" data-section="notifications">
                     <i class="fas fa-bell"></i> Notifications
@@ -1026,6 +1076,64 @@
                             <i class="fas fa-inbox"></i>
                             <p>No applications yet</p>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- PAYMENTS SECTION - NEW -->
+            <!-- ============================================================ -->
+            <section id="payments-section" class="admin-section">
+                <div class="section-header">
+                    <h1><i class="fas fa-credit-card"></i> Payment Management</h1>
+                    <span style="color: rgba(255,255,255,0.5);" id="paymentTotalLabel">0 total</span>
+                </div>
+
+                <!-- Payment Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon revenue"><i class="fas fa-dollar-sign"></i></div>
+                        <h3>$<span id="totalRevenue">0.00</span></h3>
+                        <p>Total Revenue</p>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon paid"><i class="fas fa-check-circle"></i></div>
+                        <h3 id="paidUsers">0</h3>
+                        <p>Paid Users</p>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon pending"><i class="fas fa-clock"></i></div>
+                        <h3 id="pendingPayments">0</h3>
+                        <p>Pending Payments</p>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon due"><i class="fas fa-exclamation-triangle"></i></div>
+                        <h3 id="duePayments">0</h3>
+                        <p>Due Payments</p>
+                    </div>
+                </div>
+
+                <div class="glass-container">
+                    <div class="debug-info" id="paymentDebugInfo">
+                        <span style="color: #ff0;">🔍 Debug: Loading payment data...</span>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Email</th>
+                                    <th>Payment Status</th>
+                                    <th>Receipt</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentsTableBody">
+                                <tr><td colspan="7" style="text-align: center; padding: 30px; color: rgba(255,255,255,0.5);">Loading payment data...</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </section>
@@ -1324,6 +1432,7 @@
                 if (section === 'applications') loadApplications();
                 if (section === 'contacts') loadContacts();
                 if (section === 'notifications') loadNotifications();
+                if (section === 'payments') loadPayments();
 
                 document.getElementById('sidebar').classList.remove('open');
             });
@@ -1410,7 +1519,6 @@
                 } else {
                     let items = [];
                     
-                    // Add notifications to recent activity
                     notifsList.slice(0, 5).forEach(notif => {
                         items.push(`
                             <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">
@@ -1426,7 +1534,6 @@
                         `);
                     });
                     
-                    // Add applications to recent activity
                     sortedApps.forEach(app => {
                         const name = app.personalInfo?.name || app.name || 'Unknown User';
                         const status = app.status || 'draft';
@@ -1453,6 +1560,249 @@
                 showToast('Error loading dashboard data', 'error');
             }
         }
+
+        // ============================================================
+        // LOAD PAYMENTS - NEW
+        // ============================================================
+        async function loadPayments() {
+            const debugEl = document.getElementById('paymentDebugInfo');
+            const tbody = document.getElementById('paymentsTableBody');
+            
+            try {
+                debugEl.innerHTML = '<span style="color: #ff0;">🔄 Fetching payment data...</span>';
+                
+                // Get users with applications
+                const usersResult = await apiFetch('users');
+                const users = usersResult.users || [];
+                
+                // Get all applications
+                const appsResult = await apiFetch('applications');
+                const apps = appsResult.applications || [];
+                const appMap = {};
+                apps.forEach(app => {
+                    if (app.uid) appMap[app.uid] = app;
+                    if (app.userId) appMap[app.userId] = app;
+                });
+                
+                // Enrich users with payment data
+                const paymentData = users.map(user => {
+                    const app = appMap[user.uid] || appMap[user.userId] || null;
+                    const receipt = app?.paymentReceipt || null;
+                    const payments = app?.payments || [];
+                    
+                    // Determine payment status
+                    let paymentStatus = 'due';
+                    let amount = 50; // Default amount
+                    
+                    // Check if payment is completed
+                    const hasCompleted = payments.some(p => p.status === 'completed');
+                    const hasPending = payments.some(p => p.status === 'pending');
+                    
+                    if (hasCompleted || (receipt && receipt.status === 'verified')) {
+                        paymentStatus = 'paid';
+                    } else if (hasPending || (receipt && receipt.status === 'pending_verification')) {
+                        paymentStatus = 'pending';
+                    } else {
+                        paymentStatus = 'due';
+                    }
+                    
+                    // Calculate amount from payments or use default
+                    if (payments.length > 0) {
+                        const total = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+                        if (total > 0) amount = total;
+                    }
+                    
+                    return {
+                        ...user,
+                        application: app,
+                        paymentStatus: paymentStatus,
+                        amount: amount,
+                        receipt: receipt,
+                        payments: payments,
+                        hasReceipt: !!receipt,
+                        receiptUrl: receipt?.receiptUrl || null
+                    };
+                });
+                
+                // Calculate stats
+                const paidUsers = paymentData.filter(p => p.paymentStatus === 'paid');
+                const pendingUsers = paymentData.filter(p => p.paymentStatus === 'pending');
+                const dueUsers = paymentData.filter(p => p.paymentStatus === 'due');
+                const totalRevenue = paidUsers.reduce((sum, p) => sum + (p.amount || 0), 0);
+                
+                document.getElementById('totalRevenue').textContent = totalRevenue.toFixed(2);
+                document.getElementById('paidUsers').textContent = paidUsers.length;
+                document.getElementById('pendingPayments').textContent = pendingUsers.length;
+                document.getElementById('duePayments').textContent = dueUsers.length;
+                document.getElementById('paymentCountBadge').textContent = paymentData.filter(p => p.paymentStatus !== 'due').length;
+                document.getElementById('paymentTotalLabel').textContent = `${paymentData.length} total`;
+                
+                debugEl.innerHTML = `
+                    <span style="color: #0f0;">✅ ${paymentData.length} users with payment data</span>
+                    <span style="color: #ff0; margin-left: 15px;">💰 Paid: ${paidUsers.length}, Pending: ${pendingUsers.length}, Due: ${dueUsers.length}</span>
+                    <span style="color: #17a2b8; margin-left: 15px;">💵 Revenue: $${totalRevenue.toFixed(2)}</span>
+                `;
+
+                if (paymentData.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 30px; color: rgba(255,255,255,0.5);">No payment data available</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = paymentData.map(p => `
+                    <tr>
+                        <td><strong>${p.name || 'Unknown'}</strong></td>
+                        <td>${p.email || 'N/A'}</td>
+                        <td>
+                            <span class="payment-status-badge ${p.paymentStatus}">
+                                ${p.paymentStatus.toUpperCase()}
+                            </span>
+                        </td>
+                        <td>
+                            ${p.hasReceipt ? 
+                                `<a href="${p.receiptUrl}" target="_blank" class="btn btn-sm btn-info" title="View Receipt"><i class="fas fa-receipt"></i></a>` : 
+                                '<span style="color: rgba(255,255,255,0.3); font-size: 0.7rem;">No receipt</span>'
+                            }
+                        </td>
+                        <td>$${p.amount.toFixed(2)}</td>
+                        <td>${p.receipt?.uploadedAt ? new Date(p.receipt.uploadedAt).toLocaleDateString() : 'N/A'}</td>
+                        <td>
+                            ${p.paymentStatus === 'pending' ? 
+                                `<button class="btn btn-sm btn-success" onclick="confirmPayment('${p._id || p.id}')" title="Confirm Payment">
+                                    <i class="fas fa-check"></i> Confirm
+                                </button>` : 
+                                p.paymentStatus === 'paid' ?
+                                `<span style="color: #28a745; font-size: 0.7rem;"><i class="fas fa-check-circle"></i> Confirmed</span>` :
+                                `<button class="btn btn-sm btn-primary" onclick="markPaymentPending('${p._id || p.id}')" title="Mark as Pending">
+                                    <i class="fas fa-clock"></i> Mark Pending
+                                </button>`
+                            }
+                            ${p.paymentStatus !== 'paid' ? 
+                                `<button class="btn btn-sm btn-outline" onclick="markPaymentDue('${p._id || p.id}')" title="Mark as Due">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </button>` : ''
+                            }
+                        </td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading payments:', error);
+                debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 30px; color: rgba(255,255,255,0.5);">Error loading payment data: ${error.message}</td></tr>`;
+                showToast('Error loading payments', 'error');
+            }
+        }
+
+        // ============================================================
+        // CONFIRM PAYMENT - Admin marks user as paid
+        // ============================================================
+        window.confirmPayment = async (userId) => {
+            if (!confirm('Confirm payment for this user? This will update their application status and timeline.')) return;
+            
+            try {
+                showToast('Confirming payment...', 'info');
+                
+                // Get user to find their UID
+                const usersResult = await apiFetch('users');
+                const user = (usersResult.users || []).find(u => u._id === userId || u.id === userId);
+                if (!user) {
+                    throw new Error('User not found');
+                }
+                
+                const uid = user.uid;
+                
+                // Update payment status in application
+                const response = await fetch(`${API_URL}/admin/payments/confirm`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ uid: uid })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.text();
+                    throw new Error(error);
+                }
+                
+                showToast(`Payment confirmed for ${user.name}!`, 'success');
+                
+                // Refresh all data
+                await loadPayments();
+                await loadDashboardData();
+                await loadUsers();
+                await loadApplications();
+                
+            } catch (error) {
+                console.error('Error confirming payment:', error);
+                showToast('Error confirming payment: ' + error.message, 'error');
+            }
+        };
+
+        // ============================================================
+        // MARK PAYMENT PENDING
+        // ============================================================
+        window.markPaymentPending = async (userId) => {
+            try {
+                const usersResult = await apiFetch('users');
+                const user = (usersResult.users || []).find(u => u._id === userId || u.id === userId);
+                if (!user) throw new Error('User not found');
+                
+                const uid = user.uid;
+                
+                const response = await fetch(`${API_URL}/admin/payments/pending`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ uid: uid })
+                });
+                
+                if (!response.ok) throw new Error('Failed to update');
+                
+                showToast(`Payment marked as pending for ${user.name}`, 'warning');
+                await loadPayments();
+                await loadDashboardData();
+                
+            } catch (error) {
+                console.error('Error marking payment pending:', error);
+                showToast('Error updating payment status', 'error');
+            }
+        };
+
+        // ============================================================
+        // MARK PAYMENT DUE
+        // ============================================================
+        window.markPaymentDue = async (userId) => {
+            try {
+                const usersResult = await apiFetch('users');
+                const user = (usersResult.users || []).find(u => u._id === userId || u.id === userId);
+                if (!user) throw new Error('User not found');
+                
+                const uid = user.uid;
+                
+                const response = await fetch(`${API_URL}/admin/payments/due`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ uid: uid })
+                });
+                
+                if (!response.ok) throw new Error('Failed to update');
+                
+                showToast(`Payment marked as due for ${user.name}`, 'info');
+                await loadPayments();
+                await loadDashboardData();
+                
+            } catch (error) {
+                console.error('Error marking payment due:', error);
+                showToast('Error updating payment status', 'error');
+            }
+        };
 
         // ============================================================
         // LOAD NOTIFICATIONS
@@ -1569,7 +1919,6 @@
 
                 showToast(`Announcement sent successfully to ${result.recipientCount || 0} users!`, 'success');
                 
-                // Close modal and refresh
                 closeNotificationModal();
                 await loadNotifications();
                 await loadDashboardData();
@@ -1631,7 +1980,6 @@
             document.getElementById('notificationModal').classList.remove('active');
         }
 
-        // Close modal on backdrop click
         document.getElementById('notificationModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 this.classList.remove('active');
@@ -1639,7 +1987,7 @@
         });
 
         // ============================================================
-        // LOAD USERS - WITH FULL DETAILS
+        // LOAD USERS
         // ============================================================
         let allUsers = [];
 
@@ -1653,7 +2001,6 @@
                 const result = await apiFetch('users');
                 allUsers = result.users || [];
                 
-                // Get applications to check document counts
                 const appResult = await apiFetch('applications');
                 const apps = appResult.applications || [];
                 const appMap = {};
@@ -1662,7 +2009,6 @@
                     if (app.userId) appMap[app.userId] = app;
                 });
                 
-                // Enrich users with application data
                 allUsers = allUsers.map(user => {
                     const app = appMap[user.uid] || appMap[user.userId] || null;
                     return {
@@ -1670,7 +2016,9 @@
                         application: app,
                         documentCount: app && app.documents ? Object.keys(app.documents).length : 0,
                         appStatus: app ? app.status : 'No Application',
-                        documents: app ? app.documents || {} : {}
+                        documents: app ? app.documents || {} : {},
+                        paymentStatus: app?.paymentReceipt ? 
+                            (app.paymentReceipt.status === 'verified' ? 'paid' : 'pending') : 'due'
                     };
                 });
                 
@@ -1724,7 +2072,7 @@
         }
 
         // ============================================================
-        // VIEW USER DETAIL - FULL PROFILE WITH DOCUMENTS
+        // VIEW USER DETAIL
         // ============================================================
         window.viewUserDetail = async (userId) => {
             const modal = document.getElementById('userDetailModal');
@@ -1735,7 +2083,6 @@
             body.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner"></div><p style="margin-top: 10px; color: #666;">Loading user details...</p></div>';
             
             try {
-                // Find user in our loaded data
                 const user = allUsers.find(u => u._id === userId || u.id === userId);
                 
                 if (!user) {
@@ -1776,6 +2123,34 @@
                     `;
                 }
                 
+                // Payment info
+                const receipt = app.paymentReceipt || null;
+                let paymentHtml = `
+                    <div style="margin-top: 15px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                        <h4 style="color: var(--primary-red); margin-bottom: 10px;"><i class="fas fa-credit-card"></i> Payment Status</h4>
+                        <div class="detail-row"><span class="detail-label">Status</span>
+                            <span class="detail-value">
+                                <span class="payment-status-badge ${user.paymentStatus || 'due'}">
+                                    ${(user.paymentStatus || 'due').toUpperCase()}
+                                </span>
+                            </span>
+                        </div>
+                        ${receipt ? `
+                            <div class="detail-row"><span class="detail-label">Receipt</span>
+                                <span class="detail-value">
+                                    <a href="${receipt.receiptUrl}" target="_blank" class="btn btn-sm btn-info">
+                                        <i class="fas fa-receipt"></i> View Receipt
+                                    </a>
+                                    <span style="margin-left: 10px; font-size: 0.7rem; color: #666;">${receipt.receiptFileName || ''}</span>
+                                </span>
+                            </div>
+                            <div class="detail-row"><span class="detail-label">Uploaded</span>
+                                <span class="detail-value">${receipt.uploadedAt ? new Date(receipt.uploadedAt).toLocaleDateString() : 'N/A'}</span>
+                            </div>
+                        ` : '<div class="detail-row"><span class="detail-label">Receipt</span><span class="detail-value">No receipt uploaded</span></div>'}
+                    </div>
+                `;
+                
                 // Upload history
                 let historyHtml = '';
                 const uploadHistory = app.uploadHistory || [];
@@ -1812,6 +2187,7 @@
                             <div class="detail-row"><span class="detail-label">Joined</span><span class="detail-value">${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</span></div>
                         </div>
                     </div>
+                    ${paymentHtml}
                     ${docsHtml}
                     ${historyHtml}
                 `;
@@ -1823,7 +2199,7 @@
         };
 
         // ============================================================
-        // HELPER FUNCTIONS FOR DOCUMENTS
+        // HELPER FUNCTIONS
         // ============================================================
         function getDocIcon(docType) {
             const icons = {
@@ -1865,7 +2241,7 @@
         });
 
         // ============================================================
-        // SYNC USERS FROM FIREBASE (via API)
+        // SYNC USERS
         // ============================================================
         async function syncUsers() {
             showToast('Syncing users from Firebase...', 'info');
@@ -2067,7 +2443,6 @@
                 showToast('Application status updated successfully!', 'success');
                 loadApplications();
                 loadDashboardData();
-                // Refresh users to show updated status
                 loadUsers();
             } catch (error) {
                 console.error('Error updating status:', error);
@@ -2339,7 +2714,6 @@
         async function refreshData() {
             showToast('Refreshing data...', 'info');
             await loadDashboardData();
-            // Also refresh any open sections
             const activeSection = document.querySelector('.admin-section.active');
             if (activeSection) {
                 const id = activeSection.id;
@@ -2348,6 +2722,7 @@
                 else if (id === 'contacts-section') await loadContacts();
                 else if (id === 'blog-section') await loadBlogPosts();
                 else if (id === 'notifications-section') await loadNotifications();
+                else if (id === 'payments-section') await loadPayments();
             }
             showToast('Data refreshed!', 'success');
         }
@@ -2412,6 +2787,7 @@
         window.loadContacts = loadContacts;
         window.loadBlogPosts = loadBlogPosts;
         window.loadNotifications = loadNotifications;
+        window.loadPayments = loadPayments;
         window.viewApplication = viewApplication;
         window.viewApplicationDetail = viewApplicationDetail;
         window.updateApplicationStatus = updateApplicationStatus;
@@ -2427,6 +2803,9 @@
         window.sendNotification = sendNotification;
         window.markNotificationRead = markNotificationRead;
         window.deleteNotification = deleteNotification;
+        window.confirmPayment = confirmPayment;
+        window.markPaymentPending = markPaymentPending;
+        window.markPaymentDue = markPaymentDue;
 
         // ============================================================
         // INITIALIZE
@@ -2435,13 +2814,12 @@
         console.log('👤 Admin:', adminUser?.email);
         console.log('🔗 API URL:', API_URL);
         
-        // Load all data
         loadDashboardData();
-        // Load users by default
         setTimeout(() => loadUsers(), 500);
+        setTimeout(() => loadPayments(), 1000);
         
         console.log('✅ Admin Dashboard ready');
-        console.log('💡 Click the bell icon in sidebar to manage announcements');
+        console.log('💡 Payment Management: Click "Confirm" to mark a user as paid');
     </script>
 </body>
 </html>
