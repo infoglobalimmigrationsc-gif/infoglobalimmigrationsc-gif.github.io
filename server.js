@@ -789,8 +789,9 @@ app.get('/api/users/:uid/full', async (req, res) => {
     }
 });
 
+
 // ============================================================
-// SAVE DOCUMENT METADATA IN MONGODB
+// SAVE DOCUMENT METADATA IN MONGODB - FIXED
 // ============================================================
 app.post('/api/users/documents', async (req, res) => {
     try {
@@ -806,18 +807,23 @@ app.post('/api/users/documents', async (req, res) => {
             });
         }
 
+        console.log(`📤 Saving document for user: ${uid}, docType: ${docType}`);
+
         // Verify user exists
         const user = await db.collection('users').findOne({ uid: uid });
         if (!user) {
+            console.log(`❌ User not found: ${uid}`);
             return res.status(404).json({ 
                 success: false, 
                 message: 'User not found' 
             });
         }
 
-        // Get or create application
+        // Get or create application - WITHOUT using applicationId
         let application = await db.collection('applications').findOne({ uid: uid });
+        
         if (!application) {
+            console.log(`📝 Creating new application for user: ${uid}`);
             // Create application if it doesn't exist
             const newApp = {
                 uid: uid,
@@ -845,8 +851,20 @@ app.post('/api/users/documents', async (req, res) => {
                     approval: { completed: false, status: 'pending' }
                 }
             };
-            await db.collection('applications').insertOne(newApp);
-            application = newApp;
+            
+            try {
+                const result = await db.collection('applications').insertOne(newApp);
+                console.log(`✅ New application created with _id: ${result.insertedId}`);
+                application = newApp;
+            } catch (insertError) {
+                // If insert fails due to duplicate key, try to find the application again
+                console.log('⚠️ Insert failed, checking if application was created by another request...');
+                application = await db.collection('applications').findOne({ uid: uid });
+                if (!application) {
+                    throw insertError;
+                }
+                console.log('✅ Found application created by another request');
+            }
         }
 
         // Prepare document metadata
@@ -862,6 +880,8 @@ app.post('/api/users/documents', async (req, res) => {
 
         // Update application with document metadata
         const updatePath = `documents.${docType}`;
+        
+        // Use updateOne with upsert to avoid race conditions
         await db.collection('applications').updateOne(
             { uid: uid },
             { 
@@ -898,6 +918,7 @@ app.post('/api/users/documents', async (req, res) => {
         });
     }
 });
+
 
 // ============================================================
 // GET USER DOCUMENTS FROM MONGODB
@@ -1012,6 +1033,44 @@ app.put('/api/users/notifications', async (req, res) => {
         res.json({ success: true });
     } catch (error) {
         console.error('Error updating notifications:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
+// FIX: Remove duplicate applicationId index (RUN ONCE)
+// ============================================================
+app.get('/api/fix-indexes', async (req, res) => {
+    try {
+        const indexes = await db.collection('applications').getIndexes();
+        console.log('📋 Current indexes:', indexes);
+        
+        // Drop applicationId index if it exists
+        try {
+            await db.collection('applications').dropIndex('applicationId_1');
+            console.log('✅ Dropped applicationId_1 index');
+        } catch (dropError) {
+            console.log('⚠️ Index applicationId_1 may not exist:', dropError.message);
+        }
+        
+        // Create unique index on uid instead
+        try {
+            await db.collection('applications').createIndex(
+                { uid: 1 }, 
+                { unique: true, name: 'uid_1' }
+            );
+            console.log('✅ Created unique index on uid');
+        } catch (createError) {
+            console.log('⚠️ Could not create uid index:', createError.message);
+        }
+        
+        res.json({ 
+            success: true, 
+            message: 'Indexes fixed',
+            indexes: await db.collection('applications').getIndexes()
+        });
+    } catch (error) {
+        console.error('Error fixing indexes:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
