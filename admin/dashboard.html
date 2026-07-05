@@ -1,26 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"> 
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Global Immigration SC</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- FIREBASE SDK - ADDED -->
+    <!-- FIREBASE SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     <style>
-        /* ========================================
-           ADMIN DASHBOARD STYLES
-           ======================================== */
         :root {
             --primary-red: #E30613;
             --primary-red-dark: #b30000;
             --primary-white: #FFFFFF;
             --dark-gray: #333333;
             --medium-gray: #777777;
-            --light-gray: #F5F5F5;
             --success-green: #28a745;
             --warning-yellow: #ffc107;
             --danger-red: #dc3545;
@@ -44,14 +40,12 @@
             min-height: 100vh;
         }
 
-        /* ============================================
-           SIDEBAR
-           ============================================ */
+        /* ========== SIDEBAR ========== */
         .admin-sidebar {
             width: 280px;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(15px);
-            border-right: 1px solid rgba(255,  [0m255, 255, 0.3);
+            border-right: 1px solid rgba(255, 255, 255, 0.3);
             padding: 25px 20px;
             position: fixed;
             height: 100vh;
@@ -84,7 +78,6 @@
         .sidebar-header .subtitle {
             color: var(--medium-gray);
             font-size: 0.7rem;
-            margin-top: 2px;
         }
 
         .sidebar-nav {
@@ -188,9 +181,7 @@
             color: white;
         }
 
-        /* ============================================
-           MAIN CONTENT
-           ============================================ */
+        /* ========== MAIN CONTENT ========== */
         .admin-main {
             flex: 1;
             margin-left: 280px;
@@ -265,9 +256,7 @@
             font-size: 0.75rem;
         }
 
-        /* ============================================
-           SECTIONS
-           ============================================ */
+        /* ========== SECTIONS ========== */
         .admin-section {
             display: none;
             background: rgba(255, 255, 255, 0.08);
@@ -306,9 +295,7 @@
             margin-right: 10px;
         }
 
-        /* ============================================
-           STATS CARDS
-           ============================================ */
+        /* ========== STATS CARDS ========== */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -347,9 +334,7 @@
             font-size: 0.8rem;
         }
 
-        /* ============================================
-           GLASS CONTAINER
-           ============================================ */
+        /* ========== GLASS CONTAINER ========== */
         .glass-container {
             background: rgba(255, 255, 255, 0.06);
             backdrop-filter: blur(10px);
@@ -364,9 +349,12 @@
             font-size: 1.1rem;
         }
 
-        /* ============================================
-           GLASS INPUT
-           ============================================ */
+        .glass-container h3 i {
+            color: var(--primary-red);
+            margin-right: 8px;
+        }
+
+        /* ========== GLASS INPUT ========== */
         .glass-input {
             background: rgba(255, 255, 255, 0.85) !important;
             backdrop-filter: blur(8px) !important;
@@ -386,9 +374,7 @@
             outline: none;
         }
 
-        /* ============================================
-           BLOG LIST
-           ============================================ */
+        /* ========== BLOG LIST ========== */
         .search-bar {
             display: flex;
             gap: 15px;
@@ -464,9 +450,7 @@
             color: var(--warning-yellow);
         }
 
-        /* ============================================
-           MODAL
-           ============================================ */
+        /* ========== MODAL ========== */
         .glass-modal {
             position: fixed;
             top: 0;
@@ -535,7 +519,6 @@
             border-top: 1px solid rgba(0,0,0,0.1);
         }
 
-        /* Modal Form */
         .modal-content .form-group {
             margin-bottom: 18px;
         }
@@ -583,9 +566,7 @@
             font-size: 0.9rem;
         }
 
-        /* ============================================
-           TOAST NOTIFICATIONS
-           ============================================ */
+        /* ========== TOAST ========== */
         .toast-container {
             position: fixed;
             top: 20px;
@@ -629,9 +610,7 @@
             to { transform: translateX(0); opacity: 1; }
         }
 
-        /* ============================================
-           MOBILE
-           ============================================ */
+        /* ========== MOBILE ========== */
         .mobile-menu-toggle {
             display: none;
             position: fixed;
@@ -687,26 +666,67 @@
         }
 
         @media (max-width: 768px) {
-            .admin-sidebar { transform: translateX(-100%); width: 280px; }
-            .admin-sidebar.open { transform: translateX(0); }
-            .admin-main { margin-left: 0; padding: 15px; padding-top: 70px; }
-            .mobile-menu-toggle { display: block; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .stat-card h3 { font-size: 1.3rem; }
-            .admin-section { padding: 15px; }
-            .section-header h1 { font-size: 1.1rem; }
-            .search-bar { flex-direction: column; }
-            .search-bar select { min-width: 100%; }
-            .modal-content { padding: 20px; margin: 10px; }
-            .blog-item .blog-header { flex-direction: column; }
-            .blog-item .blog-actions { width: 100%; justify-content: flex-start; }
+            .admin-sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            .admin-sidebar.open {
+                transform: translateX(0);
+            }
+            .admin-main {
+                margin-left: 0;
+                padding: 15px;
+                padding-top: 70px;
+            }
+            .mobile-menu-toggle {
+                display: block;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            .stat-card h3 {
+                font-size: 1.3rem;
+            }
+            .admin-section {
+                padding: 15px;
+            }
+            .section-header h1 {
+                font-size: 1.1rem;
+            }
+            .search-bar {
+                flex-direction: column;
+            }
+            .search-bar select {
+                min-width: 100%;
+            }
+            .modal-content {
+                padding: 20px;
+                margin: 10px;
+            }
+            .blog-item .blog-header {
+                flex-direction: column;
+            }
+            .blog-item .blog-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
         }
 
         @media (max-width: 480px) {
-            .stats-grid { grid-template-columns: 1fr 1fr; }
-            .stat-card { padding: 12px; }
-            .stat-card h3 { font-size: 1.1rem; }
-            .admin-main { padding: 10px; padding-top: 60px; }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .stat-card {
+                padding: 12px;
+            }
+            .stat-card h3 {
+                font-size: 1.1rem;
+            }
+            .admin-main {
+                padding: 10px;
+                padding-top: 60px;
+            }
         }
     </style>
 </head>
@@ -955,31 +975,24 @@
             appId: "1:791181145117:web:527b7df63c9a32adf9c2f4"
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
         // ============================================================
-        // ADMIN AUTHENTICATION - USING JWT TOKEN FROM LOGIN
+        // ADMIN AUTHENTICATION - JWT TOKEN
         // ============================================================
         const API_URL = 'https://gisc-app-production.up.railway.app/api';
 
-        // Check if admin is logged in
         const adminToken = localStorage.getItem('adminToken');
         const adminData = localStorage.getItem('adminData');
 
         if (!adminToken || !adminData) {
-            // No token, redirect to login
             window.location.href = 'login.html';
         }
 
-        // Parse admin data
         let adminUser = null;
         try {
             adminUser = JSON.parse(adminData);
-            console.log('✅ Admin logged in:', adminUser.email);
-            
-            // Update UI with admin info
             document.getElementById('adminName').textContent = adminUser.name || 'Admin';
             document.getElementById('adminAvatar').textContent = (adminUser.name || 'A')[0].toUpperCase();
             document.getElementById('adminRole').textContent = adminUser.role || 'Administrator';
@@ -1044,11 +1057,9 @@
         // ============================================================
         async function loadDashboardData() {
             try {
-                // Count users
                 const usersSnapshot = await db.collection('users').get();
                 const totalUsers = usersSnapshot.size;
 
-                // Count applications
                 const appsSnapshot = await db.collection('applications').get();
                 const totalApps = appsSnapshot.size;
                 const pendingApps = appsSnapshot.docs.filter(d => {
@@ -1057,11 +1068,9 @@
                 }).length;
                 const approvedApps = appsSnapshot.docs.filter(d => d.data().status === 'approved').length;
 
-                // Count blogs
                 const blogsSnapshot = await db.collection('blogs').get();
                 const totalBlogs = blogsSnapshot.size;
 
-                // Count contacts
                 const contactsSnapshot = await db.collection('contacts').get();
                 const totalContacts = contactsSnapshot.size;
 
@@ -1075,7 +1084,6 @@
                 document.getElementById('totalContacts').textContent = totalContacts;
                 document.getElementById('contactCount').textContent = totalContacts;
 
-                // Recent activity
                 const recentActivity = document.getElementById('recentActivityList');
                 const allDocs = await db.collection('applications')
                     .orderBy('updatedAt', 'desc')
@@ -1121,11 +1129,13 @@
         // ============================================================
         // LOAD USERS
         // ============================================================
+        let allUsers = [];
+
         async function loadUsers() {
             try {
                 const snapshot = await db.collection('users').get();
-                const users = [];
-                snapshot.forEach(doc => users.push({ id: doc.id, ...doc.data() }));
+                allUsers = [];
+                snapshot.forEach(doc => allUsers.push({ id: doc.id, ...doc.data() }));
 
                 let usersSection = document.getElementById('users-section');
                 if (!usersSection) {
@@ -1156,7 +1166,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${users.map(user => `
+                                    ${allUsers.map(user => `
                                         <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                                             <td style="padding: 12px;">${user.name || 'Unknown'}</td>
                                             <td style="padding: 12px;">${user.email || 'No email'}</td>
@@ -1322,7 +1332,7 @@ Submitted: ${appData?.createdAt?.toDate?.()?.toLocaleDateString() || 'N/A'}`);
         // VIEW USER
         // ============================================================
         window.viewUser = (userId) => {
-            const user = allUsers?.find(u => u.id === userId);
+            const user = allUsers.find(u => u.id === userId);
             alert(`👤 User Details\n\nName: ${user?.name || 'Unknown'}\nEmail: ${user?.email || 'N/A'}\nPhone: ${user?.phone || 'N/A'}\nCountry: ${user?.countryOfInterest || 'N/A'}\nType: ${user?.userType || 'applicant'}`);
         };
 
