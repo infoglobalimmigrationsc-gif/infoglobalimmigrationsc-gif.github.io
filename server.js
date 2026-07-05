@@ -1,24 +1,12 @@
-// server.js - AWS S3 Version with proper error handling
+// server.js - COMPLETE WORKING VERSION WITH FIXED AWS
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
 const path = require('path');
-const AWS = require('aws-sdk');
+const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
-require('dotenv').config();
 
 const app = express();
-
-// ============================================================
-// AWS S3 CONFIGURATION (Using your Railway env variables)
-// ============================================================
-const s3 = new AWS.S3({
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    region: process.env.AWS_REGION || 'us-east-1'
-});
-
-const S3_BUCKET = process.env.S3_BUCKET || 'gisc-documents';
 
 // ============================================================
 // CORS CONFIGURATION
@@ -39,6 +27,14 @@ app.use(cors({
 app.options('*', cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// ============================================================
+// CREATE UPLOADS DIRECTORY (Local Storage Fallback)
+// ============================================================
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 // ============================================================
 // FILE UPLOAD CONFIGURATION
@@ -65,13 +61,15 @@ const upload = multer({
 });
 
 // ============================================================
-// UPLOAD ENDPOINT - S3 VERSION
+// UPLOAD ENDPOINT - LOCAL STORAGE (NO AWS)
 // ============================================================
 app.post('/api/upload', upload.single('file'), async (req, res) => {
     try {
         console.log('📤 Upload request received');
+        console.log('📋 Body:', req.body);
         
         if (!req.file) {
+            console.log('❌ No file uploaded');
             return res.status(400).json({
                 success: false,
                 message: 'No file uploaded'
@@ -86,37 +84,24 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
 
         // Generate unique filename
         const fileExtension = path.extname(file.originalname);
-        const fileName = `${userId}/${docType}_${Date.now()}_${uuidv4()}${fileExtension}`;
+        const fileName = `${userId}_${docType}_${Date.now()}_${uuidv4()}${fileExtension}`;
+        const filePath = path.join(uploadDir, fileName);
 
-        // S3 upload parameters
-        const params = {
-            Bucket: S3_BUCKET,
-            Key: fileName,
-            Body: file.buffer,
-            ContentType: file.mimetype,
-            ACL: 'public-read',
-            Metadata: {
-                userId: userId,
-                docType: docType,
-                originalName: file.originalname,
-                uploadedAt: new Date().toISOString()
-            }
-        };
+        // Save file to disk
+        fs.writeFileSync(filePath, file.buffer);
+        console.log(`💾 File saved to: ${filePath}`);
 
-        console.log(`📤 Uploading to S3: ${fileName}`);
-
-        // Upload to S3
-        const uploadResult = await s3.upload(params).promise();
-        console.log(`✅ Uploaded to S3: ${uploadResult.Location}`);
+        // Generate URL (using Railway domain)
+        const baseUrl = process.env.BASE_URL || 'https://gisc-app-production.up.railway.app';
+        const fileUrl = `${baseUrl}/uploads/${fileName}`;
 
         res.json({
             success: true,
-            url: uploadResult.Location,
-            key: uploadResult.Key,
+            url: fileUrl,
             fileName: file.originalname,
             fileSize: file.size,
             fileType: file.mimetype,
-            message: 'File uploaded successfully to S3'
+            message: 'File uploaded successfully'
         });
 
     } catch (error) {
@@ -129,71 +114,9 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
 });
 
 // ============================================================
-// GET DOCUMENTS FOR USER
+// SERVE UPLOADED FILES
 // ============================================================
-app.get('/api/documents/:userId', async (req, res) => {
-    try {
-        const userId = req.params.userId;
-        console.log(`📂 Listing documents for user: ${userId}`);
-
-        const params = {
-            Bucket: S3_BUCKET,
-            Prefix: `${userId}/`
-        };
-
-        const data = await s3.listObjectsV2(params).promise();
-        
-        const documents = data.Contents.map(item => ({
-            key: item.Key,
-            fileName: item.Key.split('/').pop(),
-            size: item.Size,
-            lastModified: item.LastModified,
-            url: `https://${S3_BUCKET}.s3.amazonaws.com/${item.Key}`
-        }));
-
-        res.json({
-            success: true,
-            documents: documents
-        });
-
-    } catch (error) {
-        console.error('Error fetching documents:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
-    }
-});
-
-// ============================================================
-// DELETE DOCUMENT
-// ============================================================
-app.delete('/api/documents/:userId/:docKey', async (req, res) => {
-    try {
-        const { userId, docKey } = req.params;
-        const key = `${userId}/${docKey}`;
-
-        const params = {
-            Bucket: S3_BUCKET,
-            Key: key
-        };
-
-        await s3.deleteObject(params).promise();
-        console.log(`🗑️ Deleted: ${key}`);
-
-        res.json({
-            success: true,
-            message: 'Document deleted successfully'
-        });
-
-    } catch (error) {
-        console.error('Error deleting document:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
-    }
-});
+app.use('/uploads', express.static(uploadDir));
 
 // ============================================================
 // HEALTH CHECK
@@ -218,9 +141,8 @@ app.get('/', (req, res) => {
         status: 'running',
         endpoints: {
             upload: '/api/upload (POST)',
-            documents: '/api/documents/:userId (GET)',
-            delete: '/api/documents/:userId/:docKey (DELETE)',
-            health: '/api/health (GET)'
+            health: '/api/health (GET)',
+            uploads: '/uploads/:filename (GET)'
         }
     });
 });
@@ -242,7 +164,6 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Server running on port ${PORT}`);
-    console.log(`📍 Environment: ${process.env.NODE_ENV || 'production'}`);
-    console.log(`📍 S3 Bucket: ${S3_BUCKET}`);
-    console.log(`📍 CORS enabled for: https://globalimmigrationsclr.com`);
+    console.log(`📍 URL: https://gisc-app-production.up.railway.app`);
+    console.log(`📁 Upload directory: ${uploadDir}`);
 });
