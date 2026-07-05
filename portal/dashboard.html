@@ -984,74 +984,92 @@
             document.getElementById('docBadge').textContent = completedCount;
         }
         
+
+
         // ============================================================
-        // UPLOAD DOCUMENT - FIXED CORS
-        // ============================================================
-        async function uploadDocument(docType) {
-            if (!currentUser) { showToast('Please log in first', 'error'); return; }
-            
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.pdf,.jpg,.jpeg,.png,.doc,.docx';
-            
-            input.onchange = async (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                if (file.size > 10 * 1024 * 1024) {
-                    showToast('File size must be less than 10MB', 'error');
-                    return;
-                }
-                
-                showToast('Uploading ' + file.name + '...', 'info');
-                
-                try {
-                    // Use FormData for file upload
-                    const formData = new FormData();
-                    formData.append('file', file);
-                    formData.append('userId', currentUser.uid);
-                    formData.append('docType', docType);
-                    
-                    const response = await fetch(`${API_URL}/upload`, {
-                        method: 'POST',
-                        body: formData
-                    });
-                    
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        throw new Error(`Upload failed: ${response.status} - ${errorText}`);
-                    }
-                    
-                    const result = await response.json();
-                    if (!result.success) throw new Error(result.message || 'Upload failed');
-                    
-                    // Store document URL in Firestore
-                    await db.collection('applications').doc(currentUser.uid).update({
-                        [`documents.${docType}`]: {
-                            url: result.url || result.tempUrl || '',
-                            fileName: result.fileName || file.name,
-                            fileSize: result.fileSize || file.size,
-                            fileType: result.fileType || file.type,
-                            uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            status: 'pending_review'
-                        },
-                        uploadHistory: firebase.firestore.FieldValue.arrayUnion({
-                            filename: result.fileName || file.name,
-                            docType: docType,
-                            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                            status: 'submitted'
-                        }),
-                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    
-                    showToast('Document uploaded successfully!', 'success');
-                    await loadDashboardData();
-                } catch (error) {
-                    console.error('Upload error:', error);
-                    showToast('Upload failed: ' + error.message, 'error');
-                }
-            };
-            input.click();
+// UPLOAD DOCUMENT - MongoDB GridFS
+// ============================================================
+async function uploadDocument(docType) {
+    if (!currentUser) { showToast('Please log in first', 'error'); return; }
+    
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.jpg,.jpeg,.png,.doc,.docx';
+    
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 10 * 1024 * 1024) {
+            showToast('File size must be less than 10MB', 'error');
+            return;
         }
+        
+        showToast('Uploading ' + file.name + '...', 'info');
+        
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('userId', currentUser.uid);
+            formData.append('docType', docType);
+            
+            const response = await fetch(`${API_URL}/upload`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+            }
+            
+            const result = await response.json();
+            if (!result.success) throw new Error(result.message || 'Upload failed');
+            
+            // Store document reference in Firestore
+            const docRef = db.collection('applications').doc(currentUser.uid);
+            
+            // Fix: Use regular object instead of FieldValue.arrayUnion with serverTimestamp
+            const uploadHistoryItem = {
+                filename: result.fileName || file.name,
+                docType: docType,
+                timestamp: new Date().toISOString(),
+                status: 'submitted',
+                fileId: result.fileId,
+                fileUrl: result.url
+            };
+            
+            // Get current data first
+            const docSnapshot = await docRef.get();
+            const currentData = docSnapshot.data() || {};
+            const currentHistory = currentData.uploadHistory || [];
+            
+            // Update with new history
+            await docRef.update({
+                [`documents.${docType}`]: {
+                    url: result.url,
+                    fileId: result.fileId,
+                    fileName: result.fileName || file.name,
+                    fileSize: result.fileSize || file.size,
+                    fileType: result.fileType || file.type,
+                    uploadedAt: new Date().toISOString(),
+                    status: 'pending_review'
+                },
+                uploadHistory: [...currentHistory, uploadHistoryItem],
+                updatedAt: new Date().toISOString()
+            });
+            
+            showToast('Document uploaded successfully!', 'success');
+            await loadDashboardData();
+        } catch (error) {
+            console.error('Upload error:', error);
+            showToast('Upload failed: ' + error.message, 'error');
+        }
+    };
+    
+    input.click();
+}
+
+        
         
         // ============================================================
         // VIEW DOCUMENT
