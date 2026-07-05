@@ -1367,6 +1367,37 @@ app.post('/api/users/payment-receipt', async (req, res) => {
     }
 });
 
+// ============================================================
+// UPDATE NOTIFICATIONS - Mark all as read
+// ============================================================
+app.put('/api/users/notifications', async (req, res) => {
+    try {
+        const { uid, notifications } = req.body;
+        if (!uid) {
+            return res.status(400).json({ success: false, message: 'uid is required' });
+        }
+        
+        // Update the notifications array in the user's application
+        const result = await db.collection('applications').updateOne(
+            { uid: uid },
+            { 
+                $set: { 
+                    notifications: notifications,
+                    updatedAt: new Date()
+                }
+            }
+        );
+        
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Application not found' });
+        }
+        
+        res.json({ success: true, message: 'Notifications updated' });
+    } catch (error) {
+        console.error('Error updating notifications:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
 
 // ============================================================
 // START SERVER
