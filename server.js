@@ -1,4 +1,4 @@
-// server.js - COMPLETE VERSION WITH PROPER DATABASE CONNECTION
+// server.js - COMPLETE FIXED VERSION
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
@@ -6,14 +6,9 @@ const { MongoClient, GridFSBucket } = require('mongodb');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 
-// Try to load optional modules with fallback
-let bcrypt, jwt;
-try {
-    bcrypt = require('bcryptjs');
-    jwt = require('jsonwebtoken');
-} catch (e) {
-    console.log('⚠️ bcryptjs or jsonwebtoken not installed - admin login will be disabled');
-}
+// Load bcrypt and jwt
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 
@@ -38,20 +33,21 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // ============================================================
-// MONGODB CONNECTION - FIXED
+// MONGODB CONNECTION - FIXED WITH PROPER AWAIT
 // ============================================================
 const MONGODB_URI = process.env.MONGODB_URI;
 let db;
 let bucket;
-let dbConnected = false;
+let isDbConnected = false;
 
-async function connectDB() {
+// Function to get database connection
+async function getDb() {
+    if (db) return db;
+    
     try {
         console.log('🔄 Connecting to MongoDB...');
         const client = new MongoClient(MONGODB_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-            serverSelectionTimeoutMS: 5000
+            serverSelectionTimeoutMS: 10000
         });
         
         await client.connect();
@@ -60,16 +56,17 @@ async function connectDB() {
         db = client.db('gisc-app');
         console.log('✅ Using database: gisc-app');
         
-        // Test the connection by listing collections
-        const collections = await db.listCollections().toArray();
-        console.log('📁 Collections:', collections.map(c => c.name).join(', '));
+        // Verify admins collection exists and has data
+        const adminCount = await db.collection('admins').countDocuments();
+        console.log(`📊 Admins in collection: ${adminCount}`);
         
-        // Check if admins collection exists
-        const adminCollection = await db.collection('admins').findOne({ email: 'admin@globalimmigrationsc.com' });
-        if (adminCollection) {
-            console.log('✅ Admin found in database');
-        } else {
-            console.log('⚠️ Admin not found - please create admin user');
+        if (adminCount > 0) {
+            const admin = await db.collection('admins').findOne({ email: 'admin@globalimmigrationsc.com' });
+            if (admin) {
+                console.log('✅ Admin found in database');
+            } else {
+                console.log('⚠️ Admin not found with email: admin@globalimmigrationsc.com');
+            }
         }
         
         bucket = new GridFSBucket(db, {
@@ -77,100 +74,96 @@ async function connectDB() {
         });
         console.log('✅ GridFS Bucket initialized');
         
-        dbConnected = true;
-        return client;
+        isDbConnected = true;
+        return db;
     } catch (error) {
         console.error('❌ MongoDB connection error:', error);
-        dbConnected = false;
+        isDbConnected = false;
         throw error;
     }
 }
 
 // Connect on startup
-connectDB().catch(console.error);
+getDb().catch(console.error);
 
 // ============================================================
-// ADMIN AUTHENTICATION - FIXED
+// ADMIN AUTHENTICATION - FIXED WITH PROPER DB WAITING
 // ============================================================
-if (bcrypt && jwt) {
-    app.post('/api/admin/login', async (req, res) => {
-        try {
-            const { email, password } = req.body;
-            console.log(`🔐 Admin login attempt: ${email}`);
+app.post('/api/admin/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        console.log(`🔐 Admin login attempt: ${email}`);
 
-            // Check if database is connected
-            if (!db) {
-                console.log('❌ Database not connected');
-                return res.status(503).json({
-                    success: false,
-                    message: 'Database not connected. Please try again.'
-                });
-            }
-
-            // Log what we're searching for
-            console.log(`🔍 Searching for admin with email: "${email}"`);
-            
-            // Search for admin - MAKE SURE WE'RE USING THE RIGHT COLLECTION
-            const admin = await db.collection('admins').findOne({ email: email });
-            
-            if (!admin) {
-                console.log(`❌ Admin not found with email: ${email}`);
-                
-                // Let's check if the collection has any documents
-                const count = await db.collection('admins').countDocuments();
-                console.log(`📊 Total admins in collection: ${count}`);
-                
-                return res.status(401).json({
-                    success: false,
-                    message: 'Invalid credentials'
-                });
-            }
-
-            console.log(`✅ Admin found: ${admin.name} (${admin.email})`);
-            console.log(`🔑 Password hash: ${admin.password.substring(0, 20)}...`);
-
-            const isValidPassword = await bcrypt.compare(password, admin.password);
-            
-            if (!isValidPassword) {
-                console.log(`❌ Invalid password for: ${email}`);
-                return res.status(401).json({
-                    success: false,
-                    message: 'Invalid credentials'
-                });
-            }
-
-            const token = jwt.sign(
-                { id: admin._id, email: admin.email, role: admin.role || 'admin' },
-                process.env.JWT_SECRET || 'your-secret-key-change-me',
-                { expiresIn: '24h' }
-            );
-
-            console.log(`✅ Admin logged in: ${email}`);
-
-            res.json({
-                success: true,
-                token: token,
-                admin: {
-                    id: admin._id,
-                    name: admin.name,
-                    email: admin.email,
-                    role: admin.role || 'admin'
-                }
-            });
-
-        } catch (error) {
-            console.error('❌ Admin login error:', error);
-            res.status(500).json({
+        // Wait for database connection
+        const database = await getDb();
+        
+        if (!database) {
+            console.log('❌ Database not connected');
+            return res.status(503).json({
                 success: false,
-                message: error.message || 'Server error'
+                message: 'Database not connected. Please try again.'
             });
         }
-    });
-    
-    console.log('✅ Admin authentication enabled');
-} else {
-    console.log('⚠️ Admin authentication disabled - missing bcryptjs or jsonwebtoken');
-}
+
+        console.log(`🔍 Searching for admin: ${email}`);
+        
+        // Find admin
+        const admin = await database.collection('admins').findOne({ email: email });
+        
+        if (!admin) {
+            console.log(`❌ Admin not found: ${email}`);
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid credentials'
+            });
+        }
+
+        console.log(`✅ Admin found: ${admin.name}`);
+        console.log(`🔑 Checking password...`);
+
+        // Compare password
+        const isValidPassword = await bcrypt.compare(password, admin.password);
+        
+        if (!isValidPassword) {
+            console.log(`❌ Invalid password for: ${email}`);
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid credentials'
+            });
+        }
+
+        // Generate token
+        const token = jwt.sign(
+            { 
+                id: admin._id, 
+                email: admin.email, 
+                role: admin.role || 'admin' 
+            },
+            process.env.JWT_SECRET || 'your-secret-key-change-me',
+            { expiresIn: '24h' }
+        );
+
+        console.log(`✅ Admin logged in: ${email}`);
+
+        res.json({
+            success: true,
+            token: token,
+            admin: {
+                id: admin._id,
+                name: admin.name,
+                email: admin.email,
+                role: admin.role || 'admin'
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Admin login error:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Server error'
+        });
+    }
+});
 
 // ============================================================
 // FILE UPLOAD CONFIGURATION
@@ -210,7 +203,8 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
             });
         }
 
-        if (!db || !bucket) {
+        const database = await getDb();
+        if (!database) {
             return res.status(500).json({
                 success: false,
                 message: 'Database not connected'
@@ -297,8 +291,16 @@ app.get('/api/file/:id', async (req, res) => {
 app.get('/api/documents/:userId', async (req, res) => {
     try {
         const userId = req.params.userId;
+        
+        const database = await getDb();
+        if (!database) {
+            return res.status(500).json({
+                success: false,
+                message: 'Database not connected'
+            });
+        }
 
-        const files = await db.collection('documents.files')
+        const files = await database.collection('documents.files')
             .find({ 'metadata.userId': userId })
             .sort({ uploadDate: -1 })
             .toArray();
@@ -327,11 +329,19 @@ app.get('/api/documents/:userId', async (req, res) => {
 // HEALTH CHECK
 // ============================================================
 app.get('/api/health', async (req, res) => {
+    let dbStatus = 'disconnected';
+    try {
+        const database = await getDb();
+        dbStatus = database ? 'connected' : 'disconnected';
+    } catch (e) {
+        dbStatus = 'error';
+    }
+    
     res.json({
         status: 'ok',
         timestamp: new Date().toISOString(),
         service: 'Global Immigration SC API',
-        database: db ? 'connected' : 'disconnected',
+        database: dbStatus,
         uptime: process.uptime()
     });
 });
@@ -340,22 +350,17 @@ app.get('/api/health', async (req, res) => {
 // ROOT ENDPOINT
 // ============================================================
 app.get('/', (req, res) => {
-    const endpoints = {
-        upload: '/api/upload (POST)',
-        download: '/api/file/:id (GET)',
-        documents: '/api/documents/:userId (GET)',
-        health: '/api/health (GET)'
-    };
-    
-    if (bcrypt && jwt) {
-        endpoints.admin_login = '/api/admin/login (POST)';
-    }
-    
     res.json({
         name: 'Global Immigration SC API',
         version: '1.0.0',
         status: 'running',
-        endpoints: endpoints
+        endpoints: {
+            admin_login: '/api/admin/login (POST)',
+            upload: '/api/upload (POST)',
+            download: '/api/file/:id (GET)',
+            documents: '/api/documents/:userId (GET)',
+            health: '/api/health (GET)'
+        }
     });
 });
 
@@ -367,5 +372,4 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Server running on port ${PORT}`);
     console.log(`📍 URL: https://gisc-app-production.up.railway.app`);
     console.log(`📍 MongoDB: ${MONGODB_URI ? 'Configured' : 'Not configured'}`);
-    console.log(`📍 Admin login: ${bcrypt && jwt ? 'Enabled' : 'Disabled'}`);
 });
