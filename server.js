@@ -2,11 +2,18 @@
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
-const { MongoClient, GridFSBucket } = require('mongodb'); 
+const { MongoClient, GridFSBucket } = require('mongodb');
 const { v4: uuidv4 } = require('uuid');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const path = require('path');
+
+// Try to load optional modules with fallback
+let bcrypt, jwt;
+try {
+    bcrypt = require('bcryptjs');
+    jwt = require('jsonwebtoken');
+} catch (e) {
+    console.log('⚠️ bcryptjs or jsonwebtoken not installed - admin login will be disabled');
+}
 
 const app = express();
 
@@ -57,67 +64,73 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // ============================================================
-// ADMIN AUTHENTICATION
+// ADMIN AUTHENTICATION - Only if modules are available
 // ============================================================
-app.post('/api/admin/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        console.log(`🔐 Admin login attempt: ${email}`);
+if (bcrypt && jwt) {
+    app.post('/api/admin/login', async (req, res) => {
+        try {
+            const { email, password } = req.body;
+            console.log(`🔐 Admin login attempt: ${email}`);
 
-        if (!db) {
-            return res.status(500).json({ 
-                success: false, 
-                message: 'Database not connected' 
-            });
-        }
-
-        const admin = await db.collection('admins').findOne({ email: email });
-        
-        if (!admin) {
-            console.log(`❌ Admin not found: ${email}`);
-            return res.status(401).json({
-                success: false,
-                message: 'Invalid credentials'
-            });
-        }
-
-        const isValidPassword = await bcrypt.compare(password, admin.password);
-        
-        if (!isValidPassword) {
-            console.log(`❌ Invalid password for: ${email}`);
-            return res.status(401).json({
-                success: false,
-                message: 'Invalid credentials'
-            });
-        }
-
-        const token = jwt.sign(
-            { id: admin._id, email: admin.email, role: admin.role || 'admin' },
-            process.env.JWT_SECRET || 'your-secret-key-change-me',
-            { expiresIn: '24h' }
-        );
-
-        console.log(`✅ Admin logged in: ${email}`);
-
-        res.json({
-            success: true,
-            token: token,
-            admin: {
-                id: admin._id,
-                name: admin.name,
-                email: admin.email,
-                role: admin.role || 'admin'
+            if (!db) {
+                return res.status(500).json({ 
+                    success: false, 
+                    message: 'Database not connected' 
+                });
             }
-        });
 
-    } catch (error) {
-        console.error('❌ Admin login error:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message || 'Server error'
-        });
-    }
-});
+            const admin = await db.collection('admins').findOne({ email: email });
+            
+            if (!admin) {
+                console.log(`❌ Admin not found: ${email}`);
+                return res.status(401).json({
+                    success: false,
+                    message: 'Invalid credentials'
+                });
+            }
+
+            const isValidPassword = await bcrypt.compare(password, admin.password);
+            
+            if (!isValidPassword) {
+                console.log(`❌ Invalid password for: ${email}`);
+                return res.status(401).json({
+                    success: false,
+                    message: 'Invalid credentials'
+                });
+            }
+
+            const token = jwt.sign(
+                { id: admin._id, email: admin.email, role: admin.role || 'admin' },
+                process.env.JWT_SECRET || 'your-secret-key-change-me',
+                { expiresIn: '24h' }
+            );
+
+            console.log(`✅ Admin logged in: ${email}`);
+
+            res.json({
+                success: true,
+                token: token,
+                admin: {
+                    id: admin._id,
+                    name: admin.name,
+                    email: admin.email,
+                    role: admin.role || 'admin'
+                }
+            });
+
+        } catch (error) {
+            console.error('❌ Admin login error:', error);
+            res.status(500).json({
+                success: false,
+                message: error.message || 'Server error'
+            });
+        }
+    });
+    
+    console.log('✅ Admin authentication enabled');
+} else {
+    console.log('⚠️ Admin authentication disabled - missing bcryptjs or jsonwebtoken');
+}
 
 // ============================================================
 // FILE UPLOAD CONFIGURATION
@@ -287,17 +300,22 @@ app.get('/api/health', async (req, res) => {
 // ROOT ENDPOINT
 // ============================================================
 app.get('/', (req, res) => {
+    const endpoints = {
+        upload: '/api/upload (POST)',
+        download: '/api/file/:id (GET)',
+        documents: '/api/documents/:userId (GET)',
+        health: '/api/health (GET)'
+    };
+    
+    if (bcrypt && jwt) {
+        endpoints.admin_login = '/api/admin/login (POST)';
+    }
+    
     res.json({
         name: 'Global Immigration SC API',
         version: '1.0.0',
         status: 'running',
-        endpoints: {
-            admin_login: '/api/admin/login (POST)',
-            upload: '/api/upload (POST)',
-            download: '/api/file/:id (GET)',
-            documents: '/api/documents/:userId (GET)',
-            health: '/api/health (GET)'
-        }
+        endpoints: endpoints
     });
 });
 
@@ -309,4 +327,5 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Server running on port ${PORT}`);
     console.log(`📍 URL: https://gisc-app-production.up.railway.app`);
     console.log(`📍 MongoDB: ${MONGODB_URI ? 'Configured' : 'Not configured'}`);
+    console.log(`📍 Admin login: ${bcrypt && jwt ? 'Enabled' : 'Disabled'}`);
 });
