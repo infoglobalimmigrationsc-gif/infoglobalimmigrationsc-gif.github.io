@@ -4,7 +4,7 @@ const multer = require('multer');
 const cors = require('cors');
 const path = require('path');
 
-const app = express();
+const app = express(); 
 
 // ============================================================
 // CORS CONFIGURATION - FIXES THE CORS ERROR
