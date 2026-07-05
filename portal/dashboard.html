@@ -935,6 +935,7 @@
                 renderTimeline();
                 loadUploadHistory();
                 updatePaymentStats();
+                loadPaymentReceipt(); // Load receipt on page load
                 
             } catch (error) {
                 console.error('Error loading dashboard:', error);
@@ -963,6 +964,7 @@
                     payments: [],
                     notifications: [],
                     uploadHistory: [],
+                    paymentReceipt: null,
                     applicationStages: {
                         personal_info: { completed: true, status: 'completed', completedAt: new Date().toISOString() },
                         document_upload: { completed: false, status: 'pending' },
@@ -1042,7 +1044,12 @@
             
             // Update payment stage based on payment status
             const payments = appData.payments || [];
-            const hasCompletedPayment = payments.some(p => p.status === 'completed');
+            const receipt = appData.paymentReceipt || null;
+            
+            // Check if receipt is verified or payment is completed
+            const hasCompletedPayment = payments.some(p => p.status === 'completed') || 
+                                        (receipt && receipt.status === 'verified');
+            
             if (hasCompletedPayment && !stages.payment?.completed) {
                 stages.payment = { 
                     completed: true, 
@@ -1520,13 +1527,15 @@
             
             // Check payment completion
             const payments = appData?.payments || [];
-            const hasCompletedPayment = payments.some(p => p.status === 'completed');
+            const receipt = appData?.paymentReceipt || null;
+            const hasCompletedPayment = payments.some(p => p.status === 'completed') || 
+                                        (receipt && receipt.status === 'verified');
             
             // Determine status for each stage
             const stagesStatus = {
                 personal_info: {
                     completed: stages.personal_info?.completed || false,
-                    active: true, // Always true as it's the first step
+                    active: true,
                     label: 'Personal Information Submitted',
                     desc: 'Your personal details have been submitted',
                     status: stages.personal_info?.completed ? 'completed' : 'active'
@@ -1606,15 +1615,64 @@
         // ============================================================
         function updatePaymentStats() {
             const payments = appData?.payments || [];
+            const receipt = appData?.paymentReceipt || null;
+            
             let paid = 0, pending = 0, due = 0;
+            
+            // Check if receipt is verified
+            if (receipt && receipt.status === 'verified') {
+                paid += 50; // Example amount
+            } else if (receipt && receipt.status === 'pending_verification') {
+                pending += 50;
+            } else {
+                due += 50;
+            }
+            
             payments.forEach(p => {
                 if (p.status === 'completed') paid += p.amount || 0;
                 else if (p.status === 'pending') pending += p.amount || 0;
                 else if (p.status === 'due') due += p.amount || 0;
             });
+            
             document.getElementById('paidAmount').textContent = paid.toFixed(2);
             document.getElementById('pendingAmount').textContent = pending.toFixed(2);
             document.getElementById('dueAmount').textContent = due.toFixed(2);
+        }
+        
+        // ============================================================
+        // LOAD PAYMENT RECEIPT - PERSISTS ON REFRESH
+        // ============================================================
+        function loadPaymentReceipt() {
+            const receiptStatus = document.getElementById('receiptStatus');
+            const receipt = appData?.paymentReceipt || null;
+            
+            if (receipt && receipt.receiptUrl) {
+                const statusColor = receipt.status === 'verified' ? '#28a745' : '#ffc107';
+                const statusText = receipt.status === 'verified' ? 'Verified' : 'Pending Verification';
+                
+                receiptStatus.innerHTML = `
+                    <div style="background: rgba(40, 167, 69, 0.1); padding: 10px 15px; border-radius: 8px; border: 1px solid rgba(40, 167, 69, 0.2);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                            <div>
+                                <i class="fas fa-check-circle" style="color: ${statusColor};"></i>
+                                <span style="color: white;">Receipt uploaded</span>
+                                <span style="color: rgba(255,255,255,0.5); font-size: 0.7rem; margin-left: 10px;">${receipt.receiptFileName || 'receipt'}</span>
+                            </div>
+                            <div>
+                                <span style="color: ${statusColor}; font-size: 0.7rem; font-weight: 600;">${statusText}</span>
+                                <a href="${receipt.receiptUrl}" target="_blank" style="color: #17a2b8; margin-left: 15px; font-size: 0.8rem;">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                                <span style="color: rgba(255,255,255,0.3); font-size: 0.6rem; margin-left: 10px;">
+                                    ${receipt.uploadedAt ? new Date(receipt.uploadedAt).toLocaleDateString() : ''}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                receiptStatus.innerHTML = '';
+            }
         }
         
         // ============================================================
@@ -1667,14 +1725,6 @@
                 });
                 
                 if (!metaResponse.ok) throw new Error('Failed to save receipt');
-                
-                document.getElementById('receiptStatus').innerHTML = `
-                    <div style="background: rgba(40, 167, 69, 0.15); padding: 10px 15px; border-radius: 8px; color: #28a745;">
-                        <i class="fas fa-check-circle"></i> Receipt uploaded successfully! 
-                        <a href="${result.url}" target="_blank" style="color: #28a745; text-decoration: underline; margin-left: 10px;">View Receipt</a>
-                        <span style="color: rgba(255,255,255,0.5); font-size: 0.7rem; margin-left: 10px;">(Pending verification)</span>
-                    </div>
-                `;
                 
                 showToast('Payment receipt uploaded successfully!', 'success');
                 await loadDashboardData();
