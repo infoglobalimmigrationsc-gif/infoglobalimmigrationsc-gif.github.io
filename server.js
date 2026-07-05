@@ -605,6 +605,160 @@ app.get('/api/admin/firebase-token', authenticateToken, async (req, res) => {
 });
 
 // ============================================================
+// USER REGISTRATION - Create user from Firebase Auth
+// ============================================================
+app.post('/api/users/register', async (req, res) => {
+    try {
+        const { 
+            uid, name, email, phone, whatsapp, dob, 
+            citizenship, countryOfInterest, referral, 
+            receiveUpdates, userType, accountStatus 
+        } = req.body;
+
+        if (!uid || !email) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'uid and email are required' 
+            });
+        }
+
+        // Check if user already exists in MongoDB
+        const existingUser = await db.collection('users').findOne({ uid: uid });
+        if (existingUser) {
+            console.log(`⚠️ User already exists in MongoDB: ${email}`);
+            return res.status(200).json({ 
+                success: true, 
+                message: 'User already exists',
+                user: existingUser 
+            });
+        }
+
+        // Check if email already exists
+        const existingEmail = await db.collection('users').findOne({ email: email });
+        if (existingEmail) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Email already registered' 
+            });
+        }
+
+        // Create user in MongoDB
+        const userData = {
+            uid: uid,
+            name: name || 'Unknown',
+            email: email,
+            phone: phone || '',
+            whatsapp: whatsapp || phone || '',
+            dob: dob || '',
+            citizenship: citizenship || '',
+            countryOfInterest: countryOfInterest || '',
+            referral: referral || '',
+            receiveUpdates: receiveUpdates || false,
+            userType: userType || 'applicant',
+            accountStatus: accountStatus || 'active',
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+
+        const result = await db.collection('users').insertOne(userData);
+        console.log(`✅ MongoDB user created: ${email} (UID: ${uid})`);
+
+        // Create initial application document
+        const applicationData = {
+            userId: uid,
+            uid: uid,
+            status: 'draft',
+            progress: 0,
+            currentStep: 'personal_info',
+            personalInfo: {
+                name: name || 'Unknown',
+                email: email,
+                phone: phone || '',
+                countryOfInterest: countryOfInterest || ''
+            },
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            documents: {},
+            payments: [],
+            notifications: [],
+            uploadHistory: [],
+            applicationStages: {
+                personal_info: { completed: true, status: 'completed', completedAt: new Date() },
+                document_upload: { completed: false, status: 'pending' },
+                payment: { completed: false, status: 'pending' },
+                review: { completed: false, status: 'pending' },
+                approval: { completed: false, status: 'pending' }
+            }
+        };
+
+        await db.collection('applications').insertOne(applicationData);
+        console.log(`✅ Application created for user: ${email}`);
+
+        res.json({ 
+            success: true, 
+            message: 'User registered successfully',
+            user: { ...userData, _id: result.insertedId }
+        });
+
+    } catch (error) {
+        console.error('❌ User registration error:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+});
+
+// ============================================================
+// GET USER BY UID
+// ============================================================
+app.get('/api/users/:uid', async (req, res) => {
+    try {
+        const { uid } = req.params;
+        const user = await db.collection('users').findOne({ uid: uid });
+        if (!user) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'User not found' 
+            });
+        }
+        res.json({ success: true, user });
+    } catch (error) {
+        console.error('Error fetching user:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
+// GET USER WITH APPLICATION
+// ============================================================
+app.get('/api/users/:uid/full', async (req, res) => {
+    try {
+        const { uid } = req.params;
+        
+        const user = await db.collection('users').findOne({ uid: uid });
+        if (!user) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'User not found' 
+            });
+        }
+        
+        const application = await db.collection('applications').findOne({ uid: uid });
+        
+        res.json({ 
+            success: true, 
+            user: user,
+            application: application || null
+        });
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+
+// ============================================================
 // START SERVER
 // ============================================================
 const PORT = process.env.PORT || 8080;
