@@ -1025,6 +1025,156 @@ app.delete('/api/admin/notifications/:id', authenticateToken, async (req, res) =
 });
 
 // ============================================================
+// PAYMENT MANAGEMENT - ADMIN ENDPOINTS
+// ============================================================
+
+// Confirm Payment - Admin marks user as paid
+app.put('/api/admin/payments/confirm', authenticateToken, async (req, res) => {
+    try {
+        const { uid } = req.body;
+        if (!uid) {
+            return res.status(400).json({ success: false, message: 'uid is required' });
+        }
+
+        // Get user's application
+        const application = await db.collection('applications').findOne({ uid: uid });
+        if (!application) {
+            return res.status(404).json({ success: false, message: 'Application not found' });
+        }
+
+        // Update payment status
+        const receipt = application.paymentReceipt || {};
+        const updatedReceipt = {
+            ...receipt,
+            status: 'verified',
+            verifiedAt: new Date().toISOString(),
+            verifiedBy: req.user?.email || 'admin'
+        };
+
+        // Add to payments array
+        const paymentEntry = {
+            amount: 50,
+            status: 'completed',
+            description: 'Payment confirmed by admin',
+            receiptUrl: receipt.receiptUrl || '',
+            confirmedAt: new Date().toISOString(),
+            confirmedBy: req.user?.email || 'admin'
+        };
+
+        // Update application
+        await db.collection('applications').updateOne(
+            { uid: uid },
+            {
+                $set: {
+                    paymentReceipt: updatedReceipt,
+                    status: 'payment_confirmed',
+                    updatedAt: new Date()
+                },
+                $push: {
+                    payments: paymentEntry
+                }
+            }
+        );
+
+        // Also update application stage for payment
+        await db.collection('applications').updateOne(
+            { uid: uid },
+            {
+                $set: {
+                    'applicationStages.payment': {
+                        completed: true,
+                        status: 'completed',
+                        completedAt: new Date().toISOString()
+                    },
+                    updatedAt: new Date()
+                }
+            }
+        );
+
+        console.log(`✅ Payment confirmed for user: ${uid}`);
+        res.json({ success: true, message: 'Payment confirmed successfully' });
+    } catch (error) {
+        console.error('Error confirming payment:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Mark Payment as Pending
+app.put('/api/admin/payments/pending', authenticateToken, async (req, res) => {
+    try {
+        const { uid } = req.body;
+        if (!uid) {
+            return res.status(400).json({ success: false, message: 'uid is required' });
+        }
+
+        const application = await db.collection('applications').findOne({ uid: uid });
+        if (!application) {
+            return res.status(404).json({ success: false, message: 'Application not found' });
+        }
+
+        const receipt = application.paymentReceipt || {};
+        const updatedReceipt = {
+            ...receipt,
+            status: 'pending_verification'
+        };
+
+        await db.collection('applications').updateOne(
+            { uid: uid },
+            {
+                $set: {
+                    paymentReceipt: updatedReceipt,
+                    status: 'payment_pending',
+                    updatedAt: new Date()
+                }
+            }
+        );
+
+        console.log(`⏳ Payment marked as pending for user: ${uid}`);
+        res.json({ success: true, message: 'Payment marked as pending' });
+    } catch (error) {
+        console.error('Error marking payment pending:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Mark Payment as Due
+app.put('/api/admin/payments/due', authenticateToken, async (req, res) => {
+    try {
+        const { uid } = req.body;
+        if (!uid) {
+            return res.status(400).json({ success: false, message: 'uid is required' });
+        }
+
+        const application = await db.collection('applications').findOne({ uid: uid });
+        if (!application) {
+            return res.status(404).json({ success: false, message: 'Application not found' });
+        }
+
+        const receipt = application.paymentReceipt || {};
+        const updatedReceipt = {
+            ...receipt,
+            status: 'due'
+        };
+
+        await db.collection('applications').updateOne(
+            { uid: uid },
+            {
+                $set: {
+                    paymentReceipt: updatedReceipt,
+                    status: 'draft',
+                    updatedAt: new Date()
+                }
+            }
+        );
+
+        console.log(`💳 Payment marked as due for user: ${uid}`);
+        res.json({ success: true, message: 'Payment marked as due' });
+    } catch (error) {
+        console.error('Error marking payment due:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+// ============================================================
 // START SERVER
 // ============================================================
 const PORT = process.env.PORT || 8080;
