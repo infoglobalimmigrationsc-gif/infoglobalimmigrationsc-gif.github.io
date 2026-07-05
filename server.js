@@ -923,6 +923,24 @@ app.get('/api/users/:uid/documents', async (req, res) => {
 });
 
 // ============================================================
+// CHECK IF USER EXISTS IN MONGODB
+// ============================================================
+app.get('/api/users/:uid/exists', async (req, res) => {
+    try {
+        const { uid } = req.params;
+        const user = await db.collection('users').findOne({ uid: uid });
+        res.json({ 
+            success: true, 
+            exists: !!user,
+            user: user || null
+        });
+    } catch (error) {
+        console.error('Error checking user:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
 // START SERVER
 // ============================================================
 const PORT = process.env.PORT || 8080;
