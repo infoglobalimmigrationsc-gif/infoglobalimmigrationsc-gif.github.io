@@ -972,10 +972,8 @@
         const db = firebase.firestore();
 
         // ============================================================
-        // ADMIN AUTHENTICATION
+        // ADMIN AUTHENTICATION - JWT TOKEN ONLY (NO REDIRECT LOOP)
         // ============================================================
-        const API_URL = 'https://gisc-app-production.up.railway.app/api';
-
         const adminToken = localStorage.getItem('adminToken');
         const adminData = localStorage.getItem('adminData');
 
@@ -984,73 +982,24 @@
         }
 
         let adminUser = null;
-
-        // ============================================================
-        // VERIFY ADMIN ACCESS
-        // ============================================================
-        async function verifyAdminAccess() {
-            try {
-                const user = await new Promise((resolve) => {
-                    const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
-                        unsubscribe();
-                        resolve(user);
-                    });
-                });
-
-                if (!user) {
-                    console.log('❌ No Firebase user found');
-                    window.location.href = 'login.html';
-                    return false;
-                }
-
-                const userDoc = await db.collection('users').doc(user.uid).get();
-
-                if (!userDoc.exists) {
-                    console.log('❌ Creating admin document...');
-                    await db.collection('users').doc(user.uid).set({
-                        name: 'Super Admin',
-                        email: user.email || 'admin@globalimmigrationsc.com',
-                        userType: 'admin',
-                        role: 'super_admin',
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    console.log('✅ Admin created! Refreshing...');
-                    location.reload();
-                    return true;
-                }
-
-                const userData = userDoc.data();
-
-                if (userData.userType !== 'admin') {
-                    alert('You do not have admin access.');
-                    firebase.auth().signOut();
-                    window.location.href = 'login.html';
-                    return false;
-                }
-
-                adminUser = userData;
-                document.getElementById('adminName').textContent = userData.name || 'Admin';
-                document.getElementById('adminAvatar').textContent = (userData.name || 'A')[0].toUpperCase();
-                document.getElementById('adminRole').textContent = userData.role || 'Administrator';
-
-                console.log('✅ Admin verified:', userData.name);
-                return true;
-
-            } catch (error) {
-                console.error('Admin verification error:', error);
-                return false;
-            }
+        try {
+            adminUser = JSON.parse(adminData);
+            document.getElementById('adminName').textContent = adminUser.name || 'Admin';
+            document.getElementById('adminAvatar').textContent = (adminUser.name || 'A')[0].toUpperCase();
+            document.getElementById('adminRole').textContent = adminUser.role || 'Administrator';
+            console.log('✅ Admin logged in via JWT:', adminUser.email);
+        } catch (e) {
+            console.error('Error parsing admin data:', e);
+            window.location.href = 'login.html';
         }
 
         // ============================================================
-        // LOGOUT
+        // LOGOUT - Clear JWT token
         // ============================================================
         document.getElementById('logoutBtn').addEventListener('click', function() {
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.removeItem('adminToken');
                 localStorage.removeItem('adminData');
-                firebase.auth().signOut();
                 window.location.href = 'login.html';
             }
         });
@@ -1644,22 +1593,11 @@ Submitted: ${appData?.createdAt?.toDate?.()?.toLocaleDateString() || 'N/A'}`);
         window.deleteBlogPost = deleteBlogPost;
 
         // ============================================================
-        // INITIALIZE
+        // LOAD INITIAL DATA
         // ============================================================
-        console.log('🔐 Verifying admin access...');
-
-        verifyAdminAccess().then((isAdmin) => {
-            if (isAdmin) {
-                console.log('✅ Admin access granted! Loading dashboard...');
-                loadDashboardData();
-                db.collection('applications').onSnapshot(() => {
-                    loadDashboardData();
-                }, (error) => console.error('Real-time update error:', error));
-            } else {
-                console.log('❌ Admin access denied');
-                window.location.href = 'login.html';
-            }
-        });
+        console.log('✅ Admin Dashboard loaded successfully');
+        console.log('👤 Admin:', adminUser?.email);
+        loadDashboardData();
     </script>
 </body>
 </html>
