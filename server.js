@@ -1179,6 +1179,64 @@ app.put('/api/admin/payments/due', authenticateToken, async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 });
+
+
+// ============================================================
+// REJECT PAYMENT - Admin rejects user's payment
+// ============================================================
+app.put('/api/admin/payments/reject', authenticateToken, async (req, res) => {
+    try {
+        const { uid, reason } = req.body;
+        if (!uid) {
+            return res.status(400).json({ success: false, message: 'uid is required' });
+        }
+
+        const application = await db.collection('applications').findOne({ uid: uid });
+        if (!application) {
+            return res.status(404).json({ success: false, message: 'Application not found' });
+        }
+
+        const receipt = application.paymentReceipt || {};
+        const updatedReceipt = {
+            ...receipt,
+            status: 'rejected',
+            rejectionReason: reason || 'Invalid receipt',
+            rejectedAt: new Date().toISOString(),
+            rejectedBy: req.user?.email || 'admin'
+        };
+
+        // Add to payments array
+        const paymentEntry = {
+            amount: receipt.amount || 0,
+            status: 'rejected',
+            description: `Payment rejected. Reason: ${reason || 'Invalid receipt'}`,
+            receiptUrl: receipt.receiptUrl || '',
+            rejectedAt: new Date().toISOString(),
+            rejectedBy: req.user?.email || 'admin'
+        };
+
+        await db.collection('applications').updateOne(
+            { uid: uid },
+            {
+                $set: {
+                    paymentReceipt: updatedReceipt,
+                    status: 'payment_rejected',
+                    updatedAt: new Date()
+                },
+                $push: {
+                    payments: paymentEntry
+                }
+            }
+        );
+
+        console.log(`❌ Payment rejected for user: ${uid}`);
+        res.json({ success: true, message: 'Payment rejected successfully' });
+    } catch (error) {
+        console.error('Error rejecting payment:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // ============================================================
 // START SERVER
 // ============================================================
