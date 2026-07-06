@@ -19,6 +19,7 @@
             --payment-paid: #28a745;
             --payment-pending: #ffc107;
             --payment-due: #dc3545;
+            --payment-rejected: #dc3545;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -270,6 +271,14 @@
             background: #138496;
         }
 
+        .btn-warning {
+            background: var(--warning-yellow);
+            color: #333;
+        }
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
         .btn-payment-paid {
             background: var(--payment-paid);
             color: white;
@@ -376,6 +385,7 @@
         .stat-card .stat-icon.paid { color: var(--payment-paid); }
         .stat-card .stat-icon.pending { color: var(--payment-pending); }
         .stat-card .stat-icon.due { color: var(--payment-due); }
+        .stat-card .stat-icon.rejected { color: var(--payment-rejected); }
         .stat-card .stat-icon.revenue { color: #17a2b8; }
 
         /* ========== GLASS CONTAINER ========== */
@@ -805,6 +815,13 @@
         .payment-status-badge.paid { background: rgba(40, 167, 69, 0.2); color: #28a745; }
         .payment-status-badge.pending { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
         .payment-status-badge.due { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
+        .payment-status-badge.rejected { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
 
         ::-webkit-scrollbar {
             width: 6px;
@@ -880,6 +897,14 @@
                 margin-top: 8px;
                 width: 100%;
                 justify-content: flex-start;
+            }
+            .action-buttons {
+                flex-direction: column;
+                gap: 3px;
+            }
+            .action-buttons .btn {
+                width: 100%;
+                justify-content: center;
             }
         }
 
@@ -1081,7 +1106,7 @@
             </section>
 
             <!-- ============================================================ -->
-            <!-- PAYMENTS SECTION - NEW -->
+            <!-- PAYMENTS SECTION - WITH REJECT OPTION -->
             <!-- ============================================================ -->
             <section id="payments-section" class="admin-section">
                 <div class="section-header">
@@ -1110,6 +1135,11 @@
                         <div class="stat-icon due"><i class="fas fa-exclamation-triangle"></i></div>
                         <h3 id="duePayments">0</h3>
                         <p>Due Payments</p>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon rejected"><i class="fas fa-times-circle"></i></div>
+                        <h3 id="rejectedPayments">0</h3>
+                        <p>Rejected</p>
                     </div>
                 </div>
 
@@ -1562,7 +1592,7 @@
         }
 
         // ============================================================
-        // LOAD PAYMENTS - NEW
+        // LOAD PAYMENTS - WITH REJECT STATUS
         // ============================================================
         async function loadPayments() {
             const debugEl = document.getElementById('paymentDebugInfo');
@@ -1571,11 +1601,9 @@
             try {
                 debugEl.innerHTML = '<span style="color: #ff0;">🔄 Fetching payment data...</span>';
                 
-                // Get users with applications
                 const usersResult = await apiFetch('users');
                 const users = usersResult.users || [];
                 
-                // Get all applications
                 const appsResult = await apiFetch('applications');
                 const apps = appsResult.applications || [];
                 const appMap = {};
@@ -1584,32 +1612,33 @@
                     if (app.userId) appMap[app.userId] = app;
                 });
                 
-                // Enrich users with payment data
                 const paymentData = users.map(user => {
                     const app = appMap[user.uid] || appMap[user.userId] || null;
                     const receipt = app?.paymentReceipt || null;
                     const payments = app?.payments || [];
                     
-                    // Determine payment status
                     let paymentStatus = 'due';
-                    let amount = 50; // Default amount
+                    let amount = 0;
                     
-                    // Check if payment is completed
                     const hasCompleted = payments.some(p => p.status === 'completed');
                     const hasPending = payments.some(p => p.status === 'pending');
+                    const hasRejected = payments.some(p => p.status === 'rejected');
                     
                     if (hasCompleted || (receipt && receipt.status === 'verified')) {
                         paymentStatus = 'paid';
+                    } else if (hasRejected || (receipt && receipt.status === 'rejected')) {
+                        paymentStatus = 'rejected';
                     } else if (hasPending || (receipt && receipt.status === 'pending_verification')) {
                         paymentStatus = 'pending';
                     } else {
                         paymentStatus = 'due';
                     }
                     
-                    // Calculate amount from payments or use default
                     if (payments.length > 0) {
                         const total = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
                         if (total > 0) amount = total;
+                    } else if (receipt && receipt.amount) {
+                        amount = receipt.amount;
                     }
                     
                     return {
@@ -1624,22 +1653,23 @@
                     };
                 });
                 
-                // Calculate stats
                 const paidUsers = paymentData.filter(p => p.paymentStatus === 'paid');
                 const pendingUsers = paymentData.filter(p => p.paymentStatus === 'pending');
                 const dueUsers = paymentData.filter(p => p.paymentStatus === 'due');
+                const rejectedUsers = paymentData.filter(p => p.paymentStatus === 'rejected');
                 const totalRevenue = paidUsers.reduce((sum, p) => sum + (p.amount || 0), 0);
                 
                 document.getElementById('totalRevenue').textContent = totalRevenue.toFixed(2);
                 document.getElementById('paidUsers').textContent = paidUsers.length;
                 document.getElementById('pendingPayments').textContent = pendingUsers.length;
                 document.getElementById('duePayments').textContent = dueUsers.length;
+                document.getElementById('rejectedPayments').textContent = rejectedUsers.length;
                 document.getElementById('paymentCountBadge').textContent = paymentData.filter(p => p.paymentStatus !== 'due').length;
                 document.getElementById('paymentTotalLabel').textContent = `${paymentData.length} total`;
                 
                 debugEl.innerHTML = `
                     <span style="color: #0f0;">✅ ${paymentData.length} users with payment data</span>
-                    <span style="color: #ff0; margin-left: 15px;">💰 Paid: ${paidUsers.length}, Pending: ${pendingUsers.length}, Due: ${dueUsers.length}</span>
+                    <span style="color: #ff0; margin-left: 15px;">💰 Paid: ${paidUsers.length}, Pending: ${pendingUsers.length}, Due: ${dueUsers.length}, Rejected: ${rejectedUsers.length}</span>
                     <span style="color: #17a2b8; margin-left: 15px;">💵 Revenue: $${totalRevenue.toFixed(2)}</span>
                 `;
 
@@ -1648,42 +1678,73 @@
                     return;
                 }
 
-                tbody.innerHTML = paymentData.map(p => `
-                    <tr>
-                        <td><strong>${p.name || 'Unknown'}</strong></td>
-                        <td>${p.email || 'N/A'}</td>
-                        <td>
-                            <span class="payment-status-badge ${p.paymentStatus}">
-                                ${p.paymentStatus.toUpperCase()}
-                            </span>
-                        </td>
-                        <td>
-                            ${p.hasReceipt ? 
-                                `<a href="${p.receiptUrl}" target="_blank" class="btn btn-sm btn-info" title="View Receipt"><i class="fas fa-receipt"></i></a>` : 
-                                '<span style="color: rgba(255,255,255,0.3); font-size: 0.7rem;">No receipt</span>'
-                            }
-                        </td>
-                        <td>$${p.amount.toFixed(2)}</td>
-                        <td>${p.receipt?.uploadedAt ? new Date(p.receipt.uploadedAt).toLocaleDateString() : 'N/A'}</td>
-                        <td>
-                            ${p.paymentStatus === 'pending' ? 
-                                `<button class="btn btn-sm btn-success" onclick="confirmPayment('${p._id || p.id}')" title="Confirm Payment">
+                tbody.innerHTML = paymentData.map(p => {
+                    const isPending = p.paymentStatus === 'pending';
+                    const isPaid = p.paymentStatus === 'paid';
+                    const isRejected = p.paymentStatus === 'rejected';
+                    const isDue = p.paymentStatus === 'due';
+                    
+                    let actionButtons = '';
+                    
+                    if (isPending) {
+                        actionButtons = `
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-success" onclick="confirmPayment('${p._id || p.id}')" title="Confirm Payment">
                                     <i class="fas fa-check"></i> Confirm
-                                </button>` : 
-                                p.paymentStatus === 'paid' ?
-                                `<span style="color: #28a745; font-size: 0.7rem;"><i class="fas fa-check-circle"></i> Confirmed</span>` :
-                                `<button class="btn btn-sm btn-primary" onclick="markPaymentPending('${p._id || p.id}')" title="Mark as Pending">
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="rejectPayment('${p._id || p.id}')" title="Reject Payment">
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
+                            </div>
+                        `;
+                    } else if (isPaid) {
+                        actionButtons = `
+                            <span style="color: #28a745; font-size: 0.7rem;"><i class="fas fa-check-circle"></i> Confirmed</span>
+                            <button class="btn btn-sm btn-warning" onclick="markPaymentPending('${p._id || p.id}')" title="Revert to Pending">
+                                <i class="fas fa-undo"></i>
+                            </button>
+                        `;
+                    } else if (isRejected) {
+                        actionButtons = `
+                            <span style="color: #dc3545; font-size: 0.7rem;"><i class="fas fa-times-circle"></i> Rejected</span>
+                            <button class="btn btn-sm btn-outline" onclick="markPaymentPending('${p._id || p.id}')" title="Mark as Pending">
+                                <i class="fas fa-clock"></i> Retry
+                            </button>
+                        `;
+                    } else if (isDue) {
+                        actionButtons = `
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-primary" onclick="markPaymentPending('${p._id || p.id}')" title="Mark as Pending">
                                     <i class="fas fa-clock"></i> Mark Pending
-                                </button>`
-                            }
-                            ${p.paymentStatus !== 'paid' ? 
-                                `<button class="btn btn-sm btn-outline" onclick="markPaymentDue('${p._id || p.id}')" title="Mark as Due">
+                                </button>
+                                <button class="btn btn-sm btn-outline" onclick="markPaymentDue('${p._id || p.id}')" title="Keep as Due">
                                     <i class="fas fa-exclamation-triangle"></i>
-                                </button>` : ''
-                            }
-                        </td>
-                    </tr>
-                `).join('');
+                                </button>
+                            </div>
+                        `;
+                    }
+                    
+                    return `
+                        <tr>
+                            <td><strong>${p.name || 'Unknown'}</strong></td>
+                            <td>${p.email || 'N/A'}</td>
+                            <td>
+                                <span class="payment-status-badge ${p.paymentStatus}">
+                                    ${p.paymentStatus.toUpperCase()}
+                                </span>
+                            </td>
+                            <td>
+                                ${p.hasReceipt ? 
+                                    `<a href="${p.receiptUrl}" target="_blank" class="btn btn-sm btn-info" title="View Receipt"><i class="fas fa-receipt"></i></a>` : 
+                                    '<span style="color: rgba(255,255,255,0.3); font-size: 0.7rem;">No receipt</span>'
+                                }
+                            </td>
+                            <td>$${p.amount.toFixed(2)}</td>
+                            <td>${p.receipt?.uploadedAt ? new Date(p.receipt.uploadedAt).toLocaleDateString() : 'N/A'}</td>
+                            <td>${actionButtons}</td>
+                        </tr>
+                    `;
+                }).join('');
 
             } catch (error) {
                 console.error('Error loading payments:', error);
@@ -1702,7 +1763,6 @@
             try {
                 showToast('Confirming payment...', 'info');
                 
-                // Get user to find their UID
                 const usersResult = await apiFetch('users');
                 const user = (usersResult.users || []).find(u => u._id === userId || u.id === userId);
                 if (!user) {
@@ -1711,7 +1771,6 @@
                 
                 const uid = user.uid;
                 
-                // Update payment status in application
                 const response = await fetch(`${API_URL}/admin/payments/confirm`, {
                     method: 'PUT',
                     headers: {
@@ -1728,7 +1787,6 @@
                 
                 showToast(`Payment confirmed for ${user.name}!`, 'success');
                 
-                // Refresh all data
                 await loadPayments();
                 await loadDashboardData();
                 await loadUsers();
@@ -1737,6 +1795,53 @@
             } catch (error) {
                 console.error('Error confirming payment:', error);
                 showToast('Error confirming payment: ' + error.message, 'error');
+            }
+        };
+
+        // ============================================================
+        // REJECT PAYMENT - NEW
+        // ============================================================
+        window.rejectPayment = async (userId) => {
+            const reason = prompt('Enter reason for rejecting this payment:');
+            if (reason === null) return; // User cancelled
+            
+            if (!confirm('Reject this payment? The user will be notified and can upload a new receipt.')) return;
+            
+            try {
+                showToast('Rejecting payment...', 'info');
+                
+                const usersResult = await apiFetch('users');
+                const user = (usersResult.users || []).find(u => u._id === userId || u.id === userId);
+                if (!user) {
+                    throw new Error('User not found');
+                }
+                
+                const uid = user.uid;
+                
+                const response = await fetch(`${API_URL}/admin/payments/reject`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ uid: uid, reason: reason || 'Invalid receipt' })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.text();
+                    throw new Error(error);
+                }
+                
+                showToast(`Payment rejected for ${user.name}. Reason: ${reason || 'Invalid receipt'}`, 'error');
+                
+                await loadPayments();
+                await loadDashboardData();
+                await loadUsers();
+                await loadApplications();
+                
+            } catch (error) {
+                console.error('Error rejecting payment:', error);
+                showToast('Error rejecting payment: ' + error.message, 'error');
             }
         };
 
@@ -2018,7 +2123,8 @@
                         appStatus: app ? app.status : 'No Application',
                         documents: app ? app.documents || {} : {},
                         paymentStatus: app?.paymentReceipt ? 
-                            (app.paymentReceipt.status === 'verified' ? 'paid' : 'pending') : 'due'
+                            (app.paymentReceipt.status === 'verified' ? 'paid' : 
+                             app.paymentReceipt.status === 'rejected' ? 'rejected' : 'pending') : 'due'
                     };
                 });
                 
@@ -2123,7 +2229,6 @@
                     `;
                 }
                 
-                // Payment info
                 const receipt = app.paymentReceipt || null;
                 let paymentHtml = `
                     <div style="margin-top: 15px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
@@ -2147,11 +2252,15 @@
                             <div class="detail-row"><span class="detail-label">Uploaded</span>
                                 <span class="detail-value">${receipt.uploadedAt ? new Date(receipt.uploadedAt).toLocaleDateString() : 'N/A'}</span>
                             </div>
+                            ${receipt.rejectionReason ? `
+                                <div class="detail-row"><span class="detail-label">Rejection Reason</span>
+                                    <span class="detail-value" style="color: #dc3545;">${receipt.rejectionReason}</span>
+                                </div>
+                            ` : ''}
                         ` : '<div class="detail-row"><span class="detail-label">Receipt</span><span class="detail-value">No receipt uploaded</span></div>'}
                     </div>
                 `;
                 
-                // Upload history
                 let historyHtml = '';
                 const uploadHistory = app.uploadHistory || [];
                 if (uploadHistory.length > 0) {
@@ -2804,6 +2913,7 @@
         window.markNotificationRead = markNotificationRead;
         window.deleteNotification = deleteNotification;
         window.confirmPayment = confirmPayment;
+        window.rejectPayment = rejectPayment;
         window.markPaymentPending = markPaymentPending;
         window.markPaymentDue = markPaymentDue;
 
@@ -2819,7 +2929,7 @@
         setTimeout(() => loadPayments(), 1000);
         
         console.log('✅ Admin Dashboard ready');
-        console.log('💡 Payment Management: Click "Confirm" to mark a user as paid');
+        console.log('💡 Payment Management: Confirm, Reject, or Mark as Pending');
     </script>
 </body>
 </html>
