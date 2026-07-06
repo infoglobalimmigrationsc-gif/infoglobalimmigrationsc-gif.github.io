@@ -279,30 +279,6 @@
             background: #e0a800;
         }
 
-        .btn-payment-paid {
-            background: var(--payment-paid);
-            color: white;
-        }
-        .btn-payment-paid:hover {
-            background: #1e7e34;
-        }
-
-        .btn-payment-pending {
-            background: var(--payment-pending);
-            color: #333;
-        }
-        .btn-payment-pending:hover {
-            background: #e0a800;
-        }
-
-        .btn-payment-due {
-            background: var(--payment-due);
-            color: white;
-        }
-        .btn-payment-due:hover {
-            background: #bd2130;
-        }
-
         /* ========== SECTIONS ========== */
         .admin-section {
             display: none;
@@ -1106,7 +1082,7 @@
             </section>
 
             <!-- ============================================================ -->
-            <!-- PAYMENTS SECTION - WITH REJECT OPTION -->
+            <!-- PAYMENTS SECTION - WITH DELETE & PROPER STATUS -->
             <!-- ============================================================ -->
             <section id="payments-section" class="admin-section">
                 <div class="section-header">
@@ -1592,7 +1568,7 @@
         }
 
         // ============================================================
-        // LOAD PAYMENTS - WITH REJECT STATUS
+        // LOAD PAYMENTS - WITH DELETE & PROPER STATUS
         // ============================================================
         async function loadPayments() {
             const debugEl = document.getElementById('paymentDebugInfo');
@@ -1687,38 +1663,55 @@
                     let actionButtons = '';
                     
                     if (isPending) {
+                        // PENDING: Show Confirm and Reject buttons
                         actionButtons = `
                             <div class="action-buttons">
                                 <button class="btn btn-sm btn-success" onclick="confirmPayment('${p._id || p.id}')" title="Confirm Payment">
-                                    <i class="fas fa-check"></i> Confirm
+                                    <i class="fas fa-check"></i> Approve
                                 </button>
                                 <button class="btn btn-sm btn-danger" onclick="rejectPayment('${p._id || p.id}')" title="Reject Payment">
                                     <i class="fas fa-times"></i> Reject
                                 </button>
+                                <button class="btn btn-sm btn-outline" onclick="deletePayment('${p._id || p.id}')" title="Delete Payment Record">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </div>
                         `;
                     } else if (isPaid) {
-                        actionButtons = `
-                            <span style="color: #28a745; font-size: 0.7rem;"><i class="fas fa-check-circle"></i> Confirmed</span>
-                            <button class="btn btn-sm btn-warning" onclick="markPaymentPending('${p._id || p.id}')" title="Revert to Pending">
-                                <i class="fas fa-undo"></i>
-                            </button>
-                        `;
-                    } else if (isRejected) {
-                        actionButtons = `
-                            <span style="color: #dc3545; font-size: 0.7rem;"><i class="fas fa-times-circle"></i> Rejected</span>
-                            <button class="btn btn-sm btn-outline" onclick="markPaymentPending('${p._id || p.id}')" title="Mark as Pending">
-                                <i class="fas fa-clock"></i> Retry
-                            </button>
-                        `;
-                    } else if (isDue) {
+                        // PAID: Show Revert to Pending (changes to PENDING status)
                         actionButtons = `
                             <div class="action-buttons">
-                                <button class="btn btn-sm btn-primary" onclick="markPaymentPending('${p._id || p.id}')" title="Mark as Pending">
+                                <span style="color: #28a745; font-size: 0.7rem;"><i class="fas fa-check-circle"></i> Confirmed</span>
+                                <button class="btn btn-sm btn-warning" onclick="markAsPending('${p._id || p.id}')" title="Revert to Pending">
+                                    <i class="fas fa-undo"></i> Pending
+                                </button>
+                                <button class="btn btn-sm btn-outline" onclick="deletePayment('${p._id || p.id}')" title="Delete Payment Record">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        `;
+                    } else if (isRejected) {
+                        // REJECTED: Show Retry (changes to PENDING)
+                        actionButtons = `
+                            <div class="action-buttons">
+                                <span style="color: #dc3545; font-size: 0.7rem;"><i class="fas fa-times-circle"></i> Rejected</span>
+                                <button class="btn btn-sm btn-primary" onclick="markAsPending('${p._id || p.id}')" title="Retry - Mark as Pending">
+                                    <i class="fas fa-clock"></i> Retry
+                                </button>
+                                <button class="btn btn-sm btn-outline" onclick="deletePayment('${p._id || p.id}')" title="Delete Payment Record">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        `;
+                    } else if (isDue) {
+                        // DUE: Show Mark as Pending
+                        actionButtons = `
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-primary" onclick="markAsPending('${p._id || p.id}')" title="Mark as Pending">
                                     <i class="fas fa-clock"></i> Mark Pending
                                 </button>
-                                <button class="btn btn-sm btn-outline" onclick="markPaymentDue('${p._id || p.id}')" title="Keep as Due">
-                                    <i class="fas fa-exclamation-triangle"></i>
+                                <button class="btn btn-sm btn-outline" onclick="deletePayment('${p._id || p.id}')" title="Delete Payment Record">
+                                    <i class="fas fa-trash"></i>
                                 </button>
                             </div>
                         `;
@@ -1755,6 +1748,38 @@
         }
 
         // ============================================================
+        // MARK AS PENDING - Unified function (not "Revert to Pending")
+        // ============================================================
+        window.markAsPending = async (userId) => {
+            try {
+                const usersResult = await apiFetch('users');
+                const user = (usersResult.users || []).find(u => u._id === userId || u.id === userId);
+                if (!user) throw new Error('User not found');
+                
+                const uid = user.uid;
+                
+                const response = await fetch(`${API_URL}/admin/payments/pending`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ uid: uid })
+                });
+                
+                if (!response.ok) throw new Error('Failed to update');
+                
+                showToast(`Payment marked as PENDING for ${user.name}`, 'warning');
+                await loadPayments();
+                await loadDashboardData();
+                
+            } catch (error) {
+                console.error('Error marking payment pending:', error);
+                showToast('Error updating payment status', 'error');
+            }
+        };
+
+        // ============================================================
         // CONFIRM PAYMENT - Admin marks user as paid
         // ============================================================
         window.confirmPayment = async (userId) => {
@@ -1785,7 +1810,7 @@
                     throw new Error(error);
                 }
                 
-                showToast(`Payment confirmed for ${user.name}!`, 'success');
+                showToast(`Payment APPROVED for ${user.name}!`, 'success');
                 
                 await loadPayments();
                 await loadDashboardData();
@@ -1799,11 +1824,11 @@
         };
 
         // ============================================================
-        // REJECT PAYMENT - NEW
+        // REJECT PAYMENT
         // ============================================================
         window.rejectPayment = async (userId) => {
             const reason = prompt('Enter reason for rejecting this payment:');
-            if (reason === null) return; // User cancelled
+            if (reason === null) return;
             
             if (!confirm('Reject this payment? The user will be notified and can upload a new receipt.')) return;
             
@@ -1832,7 +1857,7 @@
                     throw new Error(error);
                 }
                 
-                showToast(`Payment rejected for ${user.name}. Reason: ${reason || 'Invalid receipt'}`, 'error');
+                showToast(`Payment REJECTED for ${user.name}. Reason: ${reason || 'Invalid receipt'}`, 'error');
                 
                 await loadPayments();
                 await loadDashboardData();
@@ -1846,18 +1871,24 @@
         };
 
         // ============================================================
-        // MARK PAYMENT PENDING
+        // DELETE PAYMENT - NEW
         // ============================================================
-        window.markPaymentPending = async (userId) => {
+        window.deletePayment = async (userId) => {
+            if (!confirm('Delete this payment record? This action cannot be undone.')) return;
+            
             try {
+                showToast('Deleting payment record...', 'info');
+                
                 const usersResult = await apiFetch('users');
                 const user = (usersResult.users || []).find(u => u._id === userId || u.id === userId);
-                if (!user) throw new Error('User not found');
+                if (!user) {
+                    throw new Error('User not found');
+                }
                 
                 const uid = user.uid;
                 
-                const response = await fetch(`${API_URL}/admin/payments/pending`, {
-                    method: 'PUT',
+                const response = await fetch(`${API_URL}/admin/payments/delete`, {
+                    method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${adminToken}`,
                         'Content-Type': 'application/json'
@@ -1865,20 +1896,26 @@
                     body: JSON.stringify({ uid: uid })
                 });
                 
-                if (!response.ok) throw new Error('Failed to update');
+                if (!response.ok) {
+                    const error = await response.text();
+                    throw new Error(error);
+                }
                 
-                showToast(`Payment marked as pending for ${user.name}`, 'warning');
+                showToast(`Payment record deleted for ${user.name}`, 'info');
+                
                 await loadPayments();
                 await loadDashboardData();
+                await loadUsers();
+                await loadApplications();
                 
             } catch (error) {
-                console.error('Error marking payment pending:', error);
-                showToast('Error updating payment status', 'error');
+                console.error('Error deleting payment:', error);
+                showToast('Error deleting payment: ' + error.message, 'error');
             }
         };
 
         // ============================================================
-        // MARK PAYMENT DUE
+        // MARK PAYMENT DUE (kept for reference, but not used in UI)
         // ============================================================
         window.markPaymentDue = async (userId) => {
             try {
@@ -2914,7 +2951,8 @@
         window.deleteNotification = deleteNotification;
         window.confirmPayment = confirmPayment;
         window.rejectPayment = rejectPayment;
-        window.markPaymentPending = markPaymentPending;
+        window.markAsPending = markAsPending;
+        window.deletePayment = deletePayment;
         window.markPaymentDue = markPaymentDue;
 
         // ============================================================
@@ -2929,7 +2967,7 @@
         setTimeout(() => loadPayments(), 1000);
         
         console.log('✅ Admin Dashboard ready');
-        console.log('💡 Payment Management: Confirm, Reject, or Mark as Pending');
+        console.log('💡 Payment Management: Approve, Reject, or Delete payments');
     </script>
 </body>
 </html>
