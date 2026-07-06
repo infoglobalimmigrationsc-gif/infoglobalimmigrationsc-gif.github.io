@@ -1055,22 +1055,13 @@
             }
             
             // Calculate progress based on completed stages
-            const totalStages = 5; // Personal Info, Documents, Payment, Review, Approval
+            const totalStages = 5;
             let completedCount = 0;
             
-            // Personal Info is always completed after registration
             if (stages.personal_info?.completed) completedCount++;
-            
-            // Documents - only if ALL required docs are uploaded
             if (allRequiredUploaded) completedCount++;
-            
-            // Payment - only if confirmed
             if (hasCompletedPayment) completedCount++;
-            
-            // Review - admin sets this
             if (stages.review?.completed) completedCount++;
-            
-            // Approval - admin sets this
             if (stages.approval?.completed) completedCount++;
             
             const progress = Math.round((completedCount / totalStages) * 100);
@@ -1623,7 +1614,7 @@
         }
         
         // ============================================================
-        // UPDATE PAYMENT STATS - WITH CUSTOM AMOUNT
+        // UPDATE PAYMENT STATS - FIXED
         // ============================================================
         function updatePaymentStats() {
             const payments = appData?.payments || [];
@@ -1631,25 +1622,36 @@
             
             let paid = 0, pending = 0, due = 0;
             
+            // First, check payments array
             payments.forEach(p => {
-                if (p.status === 'completed') paid += p.amount || 0;
-                else if (p.status === 'pending') pending += p.amount || 0;
-                else if (p.status === 'due') due += p.amount || 0;
+                if (p.status === 'completed') {
+                    paid += p.amount || 0;
+                } else if (p.status === 'pending') {
+                    pending += p.amount || 0;
+                } else if (p.status === 'due') {
+                    due += p.amount || 0;
+                }
             });
             
-            // If receipt is verified but no payment record, use receipt amount
-            if (receipt && receipt.status === 'verified' && paid === 0) {
-                paid = receipt.amount || 50;
+            // If receipt exists and has amount
+            if (receipt && receipt.amount > 0) {
+                if (receipt.status === 'verified') {
+                    // If already verified but no payment record, use receipt amount
+                    if (paid === 0) {
+                        paid = receipt.amount;
+                    }
+                } else if (receipt.status === 'pending_verification') {
+                    // If pending but no payment record
+                    if (pending === 0 && paid === 0) {
+                        pending = receipt.amount;
+                    }
+                }
             }
             
-            // If receipt is pending but no payment record
-            if (receipt && receipt.status === 'pending_verification' && pending === 0) {
-                pending = receipt.amount || 50;
-            }
-            
-            // If no payments and no receipt, show due
+            // If no payments and no receipt with amount, show $0.00
             if (paid === 0 && pending === 0 && due === 0) {
-                due = 50;
+                // Don't set default $50 anymore
+                // Keep as $0.00
             }
             
             document.getElementById('paidAmount').textContent = paid.toFixed(2);
@@ -1666,8 +1668,8 @@
             
             if (receipt && receipt.receiptUrl) {
                 const statusColor = receipt.status === 'verified' ? '#28a745' : '#ffc107';
-                const statusText = receipt.status === 'verified' ? 'Verified' : 'Pending Verification';
-                const amount = receipt.amount || '0.00';
+                const statusText = receipt.status === 'verified' ? 'Verified ✓' : 'Pending Verification';
+                const amount = receipt.amount ? receipt.amount.toFixed(2) : '0.00';
                 
                 receiptStatus.innerHTML = `
                     <div style="background: rgba(40, 167, 69, 0.1); padding: 10px 15px; border-radius: 8px; border: 1px solid rgba(40, 167, 69, 0.2);">
@@ -1699,9 +1701,8 @@
         // MAKE PAYMENT - WITH CUSTOM AMOUNT
         // ============================================================
         document.getElementById('makePaymentBtn').addEventListener('click', () => {
-            // Ask for payment amount first
             const amount = prompt('Enter the payment amount in USD:', '50.00');
-            if (amount === null) return; // User cancelled
+            if (amount === null) return;
             
             const parsedAmount = parseFloat(amount);
             if (isNaN(parsedAmount) || parsedAmount <= 0) {
@@ -1725,7 +1726,6 @@ Amount: $${parsedAmount.toFixed(2)}
 
 ✅ After payment, upload your receipt below or email to: infoglobalimmigrationsc@gmail.com`);
             
-            // Store the amount for receipt upload
             window.paymentAmount = parsedAmount;
         });
         
@@ -1745,7 +1745,6 @@ Amount: $${parsedAmount.toFixed(2)}
                 return;
             }
             
-            // Get the amount from the stored value or prompt
             let amount = window.paymentAmount || 0;
             if (!amount || amount <= 0) {
                 const amountInput = prompt('Enter the payment amount for this receipt:', '50.00');
@@ -1792,7 +1791,6 @@ Amount: $${parsedAmount.toFixed(2)}
                 
                 if (!metaResponse.ok) throw new Error('Failed to save receipt');
                 
-                // Reset stored amount
                 window.paymentAmount = null;
                 
                 showToast(`Payment receipt of $${amount.toFixed(2)} uploaded successfully!`, 'success');
