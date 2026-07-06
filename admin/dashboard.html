@@ -1567,185 +1567,196 @@
             }
         }
 
+
         // ============================================================
-        // LOAD PAYMENTS - WITH DELETE & PROPER STATUS
-        // ============================================================
-        async function loadPayments() {
-            const debugEl = document.getElementById('paymentDebugInfo');
-            const tbody = document.getElementById('paymentsTableBody');
+// LOAD PAYMENTS - FIXED (No double counting)
+// ============================================================
+async function loadPayments() {
+    const debugEl = document.getElementById('paymentDebugInfo');
+    const tbody = document.getElementById('paymentsTableBody');
+    
+    try {
+        debugEl.innerHTML = '<span style="color: #ff0;">🔄 Fetching payment data...</span>';
+        
+        const usersResult = await apiFetch('users');
+        const users = usersResult.users || [];
+        
+        const appsResult = await apiFetch('applications');
+        const apps = appsResult.applications || [];
+        const appMap = {};
+        apps.forEach(app => {
+            if (app.uid) appMap[app.uid] = app;
+            if (app.userId) appMap[app.userId] = app;
+        });
+        
+        const paymentData = users.map(user => {
+            const app = appMap[user.uid] || appMap[user.userId] || null;
+            const receipt = app?.paymentReceipt || null;
+            const payments = app?.payments || [];
             
-            try {
-                debugEl.innerHTML = '<span style="color: #ff0;">🔄 Fetching payment data...</span>';
-                
-                const usersResult = await apiFetch('users');
-                const users = usersResult.users || [];
-                
-                const appsResult = await apiFetch('applications');
-                const apps = appsResult.applications || [];
-                const appMap = {};
-                apps.forEach(app => {
-                    if (app.uid) appMap[app.uid] = app;
-                    if (app.userId) appMap[app.userId] = app;
-                });
-                
-                const paymentData = users.map(user => {
-                    const app = appMap[user.uid] || appMap[user.userId] || null;
-                    const receipt = app?.paymentReceipt || null;
-                    const payments = app?.payments || [];
-                    
-                    let paymentStatus = 'due';
-                    let amount = 0;
-                    
-                    const hasCompleted = payments.some(p => p.status === 'completed');
-                    const hasPending = payments.some(p => p.status === 'pending');
-                    const hasRejected = payments.some(p => p.status === 'rejected');
-                    
-                    if (hasCompleted || (receipt && receipt.status === 'verified')) {
-                        paymentStatus = 'paid';
-                    } else if (hasRejected || (receipt && receipt.status === 'rejected')) {
-                        paymentStatus = 'rejected';
-                    } else if (hasPending || (receipt && receipt.status === 'pending_verification')) {
-                        paymentStatus = 'pending';
-                    } else {
-                        paymentStatus = 'due';
-                    }
-                    
-                    if (payments.length > 0) {
-                        const total = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
-                        if (total > 0) amount = total;
-                    } else if (receipt && receipt.amount) {
-                        amount = receipt.amount;
-                    }
-                    
-                    return {
-                        ...user,
-                        application: app,
-                        paymentStatus: paymentStatus,
-                        amount: amount,
-                        receipt: receipt,
-                        payments: payments,
-                        hasReceipt: !!receipt,
-                        receiptUrl: receipt?.receiptUrl || null
-                    };
-                });
-                
-                const paidUsers = paymentData.filter(p => p.paymentStatus === 'paid');
-                const pendingUsers = paymentData.filter(p => p.paymentStatus === 'pending');
-                const dueUsers = paymentData.filter(p => p.paymentStatus === 'due');
-                const rejectedUsers = paymentData.filter(p => p.paymentStatus === 'rejected');
-                const totalRevenue = paidUsers.reduce((sum, p) => sum + (p.amount || 0), 0);
-                
-                document.getElementById('totalRevenue').textContent = totalRevenue.toFixed(2);
-                document.getElementById('paidUsers').textContent = paidUsers.length;
-                document.getElementById('pendingPayments').textContent = pendingUsers.length;
-                document.getElementById('duePayments').textContent = dueUsers.length;
-                document.getElementById('rejectedPayments').textContent = rejectedUsers.length;
-                document.getElementById('paymentCountBadge').textContent = paymentData.filter(p => p.paymentStatus !== 'due').length;
-                document.getElementById('paymentTotalLabel').textContent = `${paymentData.length} total`;
-                
-                debugEl.innerHTML = `
-                    <span style="color: #0f0;">✅ ${paymentData.length} users with payment data</span>
-                    <span style="color: #ff0; margin-left: 15px;">💰 Paid: ${paidUsers.length}, Pending: ${pendingUsers.length}, Due: ${dueUsers.length}, Rejected: ${rejectedUsers.length}</span>
-                    <span style="color: #17a2b8; margin-left: 15px;">💵 Revenue: $${totalRevenue.toFixed(2)}</span>
-                `;
-
-                if (paymentData.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 30px; color: rgba(255,255,255,0.5);">No payment data available</td></tr>`;
-                    return;
+            let paymentStatus = 'due';
+            let amount = 0;
+            
+            // Check payments array first (source of truth)
+            const hasCompleted = payments.some(p => p.status === 'completed');
+            const hasPending = payments.some(p => p.status === 'pending');
+            const hasRejected = payments.some(p => p.status === 'rejected');
+            
+            if (hasCompleted) {
+                paymentStatus = 'paid';
+                // Get amount from completed payment
+                const completedPayment = payments.find(p => p.status === 'completed');
+                amount = completedPayment?.amount || 0;
+            } else if (hasRejected) {
+                paymentStatus = 'rejected';
+                const rejectedPayment = payments.find(p => p.status === 'rejected');
+                amount = rejectedPayment?.amount || 0;
+            } else if (hasPending) {
+                paymentStatus = 'pending';
+                const pendingPayment = payments.find(p => p.status === 'pending');
+                amount = pendingPayment?.amount || 0;
+            } else if (receipt && receipt.amount > 0) {
+                // If no payment entry but receipt exists (edge case)
+                if (receipt.status === 'verified') {
+                    paymentStatus = 'paid';
+                    amount = receipt.amount;
+                } else if (receipt.status === 'pending_verification') {
+                    paymentStatus = 'pending';
+                    amount = receipt.amount;
+                } else if (receipt.status === 'rejected') {
+                    paymentStatus = 'rejected';
+                    amount = receipt.amount;
+                } else {
+                    paymentStatus = 'due';
+                    amount = receipt.amount || 0;
                 }
-
-                tbody.innerHTML = paymentData.map(p => {
-                    const isPending = p.paymentStatus === 'pending';
-                    const isPaid = p.paymentStatus === 'paid';
-                    const isRejected = p.paymentStatus === 'rejected';
-                    const isDue = p.paymentStatus === 'due';
-                    
-                    let actionButtons = '';
-                    
-                    if (isPending) {
-                        // PENDING: Show Confirm and Reject buttons
-                        actionButtons = `
-                            <div class="action-buttons">
-                                <button class="btn btn-sm btn-success" onclick="confirmPayment('${p._id || p.id}')" title="Confirm Payment">
-                                    <i class="fas fa-check"></i> Approve
-                                </button>
-                                <button class="btn btn-sm btn-danger" onclick="rejectPayment('${p._id || p.id}')" title="Reject Payment">
-                                    <i class="fas fa-times"></i> Reject
-                                </button>
-                                <button class="btn btn-sm btn-outline" onclick="deletePayment('${p._id || p.id}')" title="Delete Payment Record">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        `;
-                    } else if (isPaid) {
-                        // PAID: Show Revert to Pending (changes to PENDING status)
-                        actionButtons = `
-                            <div class="action-buttons">
-                                <span style="color: #28a745; font-size: 0.7rem;"><i class="fas fa-check-circle"></i> Confirmed</span>
-                                <button class="btn btn-sm btn-warning" onclick="markAsPending('${p._id || p.id}')" title="Revert to Pending">
-                                    <i class="fas fa-undo"></i> Pending
-                                </button>
-                                <button class="btn btn-sm btn-outline" onclick="deletePayment('${p._id || p.id}')" title="Delete Payment Record">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        `;
-                    } else if (isRejected) {
-                        // REJECTED: Show Retry (changes to PENDING)
-                        actionButtons = `
-                            <div class="action-buttons">
-                                <span style="color: #dc3545; font-size: 0.7rem;"><i class="fas fa-times-circle"></i> Rejected</span>
-                                <button class="btn btn-sm btn-primary" onclick="markAsPending('${p._id || p.id}')" title="Retry - Mark as Pending">
-                                    <i class="fas fa-clock"></i> Retry
-                                </button>
-                                <button class="btn btn-sm btn-outline" onclick="deletePayment('${p._id || p.id}')" title="Delete Payment Record">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        `;
-                    } else if (isDue) {
-                        // DUE: Show Mark as Pending
-                        actionButtons = `
-                            <div class="action-buttons">
-                                <button class="btn btn-sm btn-primary" onclick="markAsPending('${p._id || p.id}')" title="Mark as Pending">
-                                    <i class="fas fa-clock"></i> Mark Pending
-                                </button>
-                                <button class="btn btn-sm btn-outline" onclick="deletePayment('${p._id || p.id}')" title="Delete Payment Record">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        `;
-                    }
-                    
-                    return `
-                        <tr>
-                            <td><strong>${p.name || 'Unknown'}</strong></td>
-                            <td>${p.email || 'N/A'}</td>
-                            <td>
-                                <span class="payment-status-badge ${p.paymentStatus}">
-                                    ${p.paymentStatus.toUpperCase()}
-                                </span>
-                            </td>
-                            <td>
-                                ${p.hasReceipt ? 
-                                    `<a href="${p.receiptUrl}" target="_blank" class="btn btn-sm btn-info" title="View Receipt"><i class="fas fa-receipt"></i></a>` : 
-                                    '<span style="color: rgba(255,255,255,0.3); font-size: 0.7rem;">No receipt</span>'
-                                }
-                            </td>
-                            <td>$${p.amount.toFixed(2)}</td>
-                            <td>${p.receipt?.uploadedAt ? new Date(p.receipt.uploadedAt).toLocaleDateString() : 'N/A'}</td>
-                            <td>${actionButtons}</td>
-                        </tr>
-                    `;
-                }).join('');
-
-            } catch (error) {
-                console.error('Error loading payments:', error);
-                debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 30px; color: rgba(255,255,255,0.5);">Error loading payment data: ${error.message}</td></tr>`;
-                showToast('Error loading payments', 'error');
             }
+            
+            return {
+                ...user,
+                application: app,
+                paymentStatus: paymentStatus,
+                amount: amount,
+                receipt: receipt,
+                payments: payments,
+                hasReceipt: !!receipt,
+                receiptUrl: receipt?.receiptUrl || null
+            };
+        });
+        
+        const paidUsers = paymentData.filter(p => p.paymentStatus === 'paid');
+        const pendingUsers = paymentData.filter(p => p.paymentStatus === 'pending');
+        const dueUsers = paymentData.filter(p => p.paymentStatus === 'due');
+        const rejectedUsers = paymentData.filter(p => p.paymentStatus === 'rejected');
+        const totalRevenue = paidUsers.reduce((sum, p) => sum + (p.amount || 0), 0);
+        
+        document.getElementById('totalRevenue').textContent = totalRevenue.toFixed(2);
+        document.getElementById('paidUsers').textContent = paidUsers.length;
+        document.getElementById('pendingPayments').textContent = pendingUsers.length;
+        document.getElementById('duePayments').textContent = dueUsers.length;
+        document.getElementById('rejectedPayments').textContent = rejectedUsers.length;
+        document.getElementById('paymentCountBadge').textContent = paymentData.filter(p => p.paymentStatus !== 'due').length;
+        document.getElementById('paymentTotalLabel').textContent = `${paymentData.length} total`;
+        
+        debugEl.innerHTML = `
+            <span style="color: #0f0;">✅ ${paymentData.length} users with payment data</span>
+            <span style="color: #ff0; margin-left: 15px;">💰 Paid: ${paidUsers.length}, Pending: ${pendingUsers.length}, Due: ${dueUsers.length}, Rejected: ${rejectedUsers.length}</span>
+            <span style="color: #17a2b8; margin-left: 15px;">💵 Revenue: $${totalRevenue.toFixed(2)}</span>
+        `;
+
+        if (paymentData.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 30px; color: rgba(255,255,255,0.5);">No payment data available</td></tr>`;
+            return;
         }
+
+        tbody.innerHTML = paymentData.map(p => {
+            const isPending = p.paymentStatus === 'pending';
+            const isPaid = p.paymentStatus === 'paid';
+            const isRejected = p.paymentStatus === 'rejected';
+            const isDue = p.paymentStatus === 'due';
+            
+            let actionButtons = '';
+            
+            if (isPending) {
+                actionButtons = `
+                    <div class="action-buttons">
+                        <button class="btn btn-sm btn-success" onclick="confirmPayment('${p._id || p.id}')" title="Confirm Payment">
+                            <i class="fas fa-check"></i> Approve
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="rejectPayment('${p._id || p.id}')" title="Reject Payment">
+                            <i class="fas fa-times"></i> Reject
+                        </button>
+                        <button class="btn btn-sm btn-outline" onclick="deletePayment('${p._id || p.id}')" title="Delete Payment Record">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            } else if (isPaid) {
+                actionButtons = `
+                    <div class="action-buttons">
+                        <span style="color: #28a745; font-size: 0.7rem;"><i class="fas fa-check-circle"></i> Confirmed</span>
+                        <button class="btn btn-sm btn-warning" onclick="markAsPending('${p._id || p.id}')" title="Revert to Pending">
+                            <i class="fas fa-undo"></i> Pending
+                        </button>
+                        <button class="btn btn-sm btn-outline" onclick="deletePayment('${p._id || p.id}')" title="Delete Payment Record">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            } else if (isRejected) {
+                actionButtons = `
+                    <div class="action-buttons">
+                        <span style="color: #dc3545; font-size: 0.7rem;"><i class="fas fa-times-circle"></i> Rejected</span>
+                        <button class="btn btn-sm btn-primary" onclick="markAsPending('${p._id || p.id}')" title="Retry - Mark as Pending">
+                            <i class="fas fa-clock"></i> Retry
+                        </button>
+                        <button class="btn btn-sm btn-outline" onclick="deletePayment('${p._id || p.id}')" title="Delete Payment Record">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            } else if (isDue) {
+                actionButtons = `
+                    <div class="action-buttons">
+                        <button class="btn btn-sm btn-primary" onclick="markAsPending('${p._id || p.id}')" title="Mark as Pending">
+                            <i class="fas fa-clock"></i> Mark Pending
+                        </button>
+                        <button class="btn btn-sm btn-outline" onclick="deletePayment('${p._id || p.id}')" title="Delete Payment Record">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            }
+            
+            return `
+                <tr>
+                    <td><strong>${p.name || 'Unknown'}</strong></td>
+                    <td>${p.email || 'N/A'}</td>
+                    <td>
+                        <span class="payment-status-badge ${p.paymentStatus}">
+                            ${p.paymentStatus.toUpperCase()}
+                        </span>
+                    </td>
+                    <td>
+                        ${p.hasReceipt ? 
+                            `<a href="${p.receiptUrl}" target="_blank" class="btn btn-sm btn-info" title="View Receipt"><i class="fas fa-receipt"></i></a>` : 
+                            '<span style="color: rgba(255,255,255,0.3); font-size: 0.7rem;">No receipt</span>'
+                        }
+                    </td>
+                    <td>$${p.amount.toFixed(2)}</td>
+                    <td>${p.receipt?.uploadedAt ? new Date(p.receipt.uploadedAt).toLocaleDateString() : 'N/A'}</td>
+                    <td>${actionButtons}</td>
+                </tr>
+            `;
+        }).join('');
+
+    } catch (error) {
+        console.error('Error loading payments:', error);
+        debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 30px; color: rgba(255,255,255,0.5);">Error loading payment data: ${error.message}</td></tr>`;
+        showToast('Error loading payments', 'error');
+    }
+}
 
         // ============================================================
         // MARK AS PENDING - Unified function (not "Revert to Pending")
