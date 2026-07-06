@@ -1614,50 +1614,38 @@
         }
         
         // ============================================================
-        // UPDATE PAYMENT STATS - FIXED
-        // ============================================================
-        function updatePaymentStats() {
-            const payments = appData?.payments || [];
-            const receipt = appData?.paymentReceipt || null;
-            
-            let paid = 0, pending = 0, due = 0;
-            
-            // First, check payments array
-            payments.forEach(p => {
-                if (p.status === 'completed') {
-                    paid += p.amount || 0;
-                } else if (p.status === 'pending') {
-                    pending += p.amount || 0;
-                } else if (p.status === 'due') {
-                    due += p.amount || 0;
-                }
-            });
-            
-            // If receipt exists and has amount
-            if (receipt && receipt.amount > 0) {
-                if (receipt.status === 'verified') {
-                    // If already verified but no payment record, use receipt amount
-                    if (paid === 0) {
-                        paid = receipt.amount;
-                    }
-                } else if (receipt.status === 'pending_verification') {
-                    // If pending but no payment record
-                    if (pending === 0 && paid === 0) {
-                        pending = receipt.amount;
-                    }
-                }
-            }
-            
-            // If no payments and no receipt with amount, show $0.00
-            if (paid === 0 && pending === 0 && due === 0) {
-                // Don't set default $50 anymore
-                // Keep as $0.00
-            }
-            
-            document.getElementById('paidAmount').textContent = paid.toFixed(2);
-            document.getElementById('pendingAmount').textContent = pending.toFixed(2);
-            document.getElementById('dueAmount').textContent = due.toFixed(2);
+// UPDATE PAYMENT STATS - FIXED (No double counting)
+// ============================================================
+function updatePaymentStats() {
+    const payments = appData?.payments || [];
+    const receipt = appData?.paymentReceipt || null;
+    
+    let paid = 0, pending = 0, due = 0;
+    
+    // Only use payments array as source of truth
+    payments.forEach(p => {
+        if (p.status === 'completed') {
+            paid += p.amount || 0;
+        } else if (p.status === 'pending') {
+            pending += p.amount || 0;
+        } else if (p.status === 'due') {
+            due += p.amount || 0;
         }
+    });
+    
+    // If no payments but receipt exists with amount, show as pending
+    if (receipt && receipt.amount > 0 && paid === 0 && pending === 0) {
+        if (receipt.status === 'pending_verification') {
+            pending = receipt.amount;
+        } else if (receipt.status === 'verified') {
+            paid = receipt.amount;
+        }
+    }
+    
+    document.getElementById('paidAmount').textContent = paid.toFixed(2);
+    document.getElementById('pendingAmount').textContent = pending.toFixed(2);
+    document.getElementById('dueAmount').textContent = due.toFixed(2);
+}
         
         // ============================================================
         // LOAD PAYMENT RECEIPT
