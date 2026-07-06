@@ -1237,6 +1237,110 @@ app.put('/api/admin/payments/reject', authenticateToken, async (req, res) => {
     }
 });
 
+
+// ============================================================
+// DELETE PAYMENT - Admin deletes payment record
+// ============================================================
+app.delete('/api/admin/payments/delete', authenticateToken, async (req, res) => {
+    try {
+        const { uid } = req.body;
+        if (!uid) {
+            return res.status(400).json({ success: false, message: 'uid is required' });
+        }
+
+        const application = await db.collection('applications').findOne({ uid: uid });
+        if (!application) {
+            return res.status(404).json({ success: false, message: 'Application not found' });
+        }
+
+        // Remove payment receipt and reset payment status
+        await db.collection('applications').updateOne(
+            { uid: uid },
+            {
+                $set: {
+                    paymentReceipt: null,
+                    status: 'draft',
+                    updatedAt: new Date()
+                },
+                $pull: {
+                    payments: { status: { $in: ['pending', 'completed', 'rejected'] } }
+                }
+            }
+        );
+
+        console.log(`🗑️ Payment record deleted for user: ${uid}`);
+        res.json({ success: true, message: 'Payment record deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting payment:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
+// MARK AS PENDING - Unified function
+// ============================================================
+app.put('/api/admin/payments/pending', authenticateToken, async (req, res) => {
+    try {
+        const { uid } = req.body;
+        if (!uid) {
+            return res.status(400).json({ success: false, message: 'uid is required' });
+        }
+
+        const application = await db.collection('applications').findOne({ uid: uid });
+        if (!application) {
+            return res.status(404).json({ success: false, message: 'Application not found' });
+        }
+
+        const receipt = application.paymentReceipt || {};
+        const updatedReceipt = {
+            ...receipt,
+            status: 'pending_verification',
+            pendingAt: new Date().toISOString()
+        };
+
+        // Add to payments array if not already
+        const existingPending = application.payments?.some(p => p.status === 'pending');
+        if (!existingPending && receipt.receiptUrl) {
+            await db.collection('applications').updateOne(
+                { uid: uid },
+                {
+                    $set: {
+                        paymentReceipt: updatedReceipt,
+                        status: 'payment_pending',
+                        updatedAt: new Date()
+                    },
+                    $push: {
+                        payments: {
+                            amount: receipt.amount || 0,
+                            status: 'pending',
+                            description: 'Payment pending verification',
+                            receiptUrl: receipt.receiptUrl || '',
+                            pendingAt: new Date().toISOString()
+                        }
+                    }
+                }
+            );
+        } else {
+            await db.collection('applications').updateOne(
+                { uid: uid },
+                {
+                    $set: {
+                        paymentReceipt: updatedReceipt,
+                        status: 'payment_pending',
+                        updatedAt: new Date()
+                    }
+                }
+            );
+        }
+
+        console.log(`⏳ Payment marked as pending for user: ${uid}`);
+        res.json({ success: true, message: 'Payment marked as pending' });
+    } catch (error) {
+        console.error('Error marking payment pending:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // ============================================================
 // START SERVER
 // ============================================================
