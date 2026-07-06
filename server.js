@@ -851,6 +851,9 @@ app.put('/api/users/application/update', async (req, res) => {
 
 
 
+// ============================================================
+// SAVE PAYMENT RECEIPT - FIXED
+// ============================================================
 app.post('/api/users/payment-receipt', async (req, res) => {
     try {
         const { uid, receiptUrl, receiptFileId, receiptFileName, uploadedAt, status, amount } = req.body;
@@ -895,12 +898,22 @@ app.post('/api/users/payment-receipt', async (req, res) => {
             application = newApp;
         }
         
+        // Remove any existing pending payments to avoid duplicates
+        await db.collection('applications').updateOne(
+            { uid: uid },
+            {
+                $pull: {
+                    payments: { status: 'pending' }
+                }
+            }
+        );
+        
         const receiptData = {
             receiptUrl: receiptUrl,
             receiptFileId: receiptFileId,
             receiptFileName: receiptFileName || 'receipt',
             uploadedAt: uploadedAt || new Date().toISOString(),
-            status: status || 'pending_verification',
+            status: 'pending_verification',
             amount: amount || 0
         };
         
@@ -909,15 +922,16 @@ app.post('/api/users/payment-receipt', async (req, res) => {
             {
                 $set: { 
                     paymentReceipt: receiptData, 
-                    updatedAt: new Date() 
+                    updatedAt: new Date(),
+                    status: 'payment_pending'
                 },
                 $push: {
                     payments: {
                         amount: amount || 0,
                         status: 'pending',
-                        description: 'Payment receipt uploaded',
+                        description: `Payment receipt uploaded: $${(amount || 0).toFixed(2)}`,
                         receiptUrl: receiptUrl,
-                        uploadedAt: new Date().toISOString()
+                        uploadedAt: uploadedAt || new Date().toISOString()
                     }
                 }
             }
@@ -1034,7 +1048,7 @@ app.delete('/api/admin/notifications/:id', authenticateToken, async (req, res) =
 // ============================================================
 
 // ============================================================
-// CONFIRM PAYMENT - Admin marks user as paid
+// CONFIRM PAYMENT - FIXED (Updates existing pending payment)
 // ============================================================
 app.put('/api/admin/payments/confirm', authenticateToken, async (req, res) => {
     try {
@@ -1059,60 +1073,50 @@ app.put('/api/admin/payments/confirm', authenticateToken, async (req, res) => {
             verifiedBy: req.user?.email || 'admin'
         };
 
-        // Check if there's an existing pending payment to update
-        const existingPendingIndex = application.payments?.findIndex(p => p.status === 'pending') || -1;
+        // Find the pending payment and update it
+        const pendingPaymentIndex = application.payments?.findIndex(p => p.status === 'pending') || -1;
         
-        // Prepare payment entry with correct amount
-        const paymentEntry = {
-            amount: amount,
-            status: 'completed',
-            description: `Payment confirmed by admin. Amount: $${amount.toFixed(2)}`,
-            receiptUrl: receipt.receiptUrl || '',
-            confirmedAt: new Date().toISOString(),
-            confirmedBy: req.user?.email || 'admin'
-        };
-
         let updateQuery = {
             $set: {
                 paymentReceipt: updatedReceipt,
                 status: 'payment_confirmed',
-                updatedAt: new Date()
+                updatedAt: new Date(),
+                'applicationStages.payment': {
+                    completed: true,
+                    status: 'completed',
+                    completedAt: new Date().toISOString()
+                }
             }
         };
 
-        // If there's a pending payment, update it; otherwise push new
-        if (existingPendingIndex !== -1) {
-            // Update existing pending payment
-            const updatePath = `payments.${existingPendingIndex}`;
-            updateQuery.$set = {
-                ...updateQuery.$set,
-                [updatePath]: paymentEntry
+        if (pendingPaymentIndex !== -1) {
+            // Update existing pending payment to completed
+            const updatePath = `payments.${pendingPaymentIndex}`;
+            updateQuery.$set[updatePath] = {
+                amount: amount,
+                status: 'completed',
+                description: `Payment confirmed by admin. Amount: $${amount.toFixed(2)}`,
+                receiptUrl: receipt.receiptUrl || '',
+                confirmedAt: new Date().toISOString(),
+                confirmedBy: req.user?.email || 'admin'
             };
         } else {
-            // Push new payment entry
+            // No pending payment found, add new completed payment
             updateQuery.$push = {
-                payments: paymentEntry
+                payments: {
+                    amount: amount,
+                    status: 'completed',
+                    description: `Payment confirmed by admin. Amount: $${amount.toFixed(2)}`,
+                    receiptUrl: receipt.receiptUrl || '',
+                    confirmedAt: new Date().toISOString(),
+                    confirmedBy: req.user?.email || 'admin'
+                }
             };
         }
 
         await db.collection('applications').updateOne(
             { uid: uid },
             updateQuery
-        );
-
-        // Also update application stage for payment
-        await db.collection('applications').updateOne(
-            { uid: uid },
-            {
-                $set: {
-                    'applicationStages.payment': {
-                        completed: true,
-                        status: 'completed',
-                        completedAt: new Date().toISOString()
-                    },
-                    updatedAt: new Date()
-                }
-            }
         );
 
         console.log(`✅ Payment confirmed for user: ${uid} - Amount: $${amount.toFixed(2)}`);
