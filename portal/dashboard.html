@@ -935,7 +935,7 @@
                 renderTimeline();
                 loadUploadHistory();
                 updatePaymentStats();
-                loadPaymentReceipt(); // Load receipt on page load
+                loadPaymentReceipt();
                 
             } catch (error) {
                 console.error('Error loading dashboard:', error);
@@ -1014,8 +1014,6 @@
             
             // Calculate progress based on actual completed stages
             const stages = appData.applicationStages || {};
-            const totalStages = Object.keys(stages).length;
-            const completedStages = Object.values(stages).filter(s => s.completed).length;
             
             // Document upload completion - only if ALL required docs are uploaded
             const uploadedDocs = Object.keys(allDocuments).filter(key => 
@@ -1031,10 +1029,8 @@
                     status: 'completed', 
                     completedAt: new Date().toISOString() 
                 };
-                // Save to MongoDB
                 updateApplicationStage('document_upload', true);
             } else if (!allRequiredUploaded && stages.document_upload?.completed) {
-                // If documents were removed, un-complete the stage
                 stages.document_upload = { 
                     completed: false, 
                     status: 'pending' 
@@ -1046,7 +1042,6 @@
             const payments = appData.payments || [];
             const receipt = appData.paymentReceipt || null;
             
-            // Check if receipt is verified or payment is completed
             const hasCompletedPayment = payments.some(p => p.status === 'completed') || 
                                         (receipt && receipt.status === 'verified');
             
@@ -1059,9 +1054,26 @@
                 updateApplicationStage('payment', true);
             }
             
-            // Recalculate completed stages
-            const updatedCompletedStages = Object.values(stages).filter(s => s.completed).length;
-            const progress = totalStages > 0 ? Math.round((updatedCompletedStages / totalStages) * 100) : 0;
+            // Calculate progress based on completed stages
+            const totalStages = 5; // Personal Info, Documents, Payment, Review, Approval
+            let completedCount = 0;
+            
+            // Personal Info is always completed after registration
+            if (stages.personal_info?.completed) completedCount++;
+            
+            // Documents - only if ALL required docs are uploaded
+            if (allRequiredUploaded) completedCount++;
+            
+            // Payment - only if confirmed
+            if (hasCompletedPayment) completedCount++;
+            
+            // Review - admin sets this
+            if (stages.review?.completed) completedCount++;
+            
+            // Approval - admin sets this
+            if (stages.approval?.completed) completedCount++;
+            
+            const progress = Math.round((completedCount / totalStages) * 100);
             
             document.getElementById('progressPercent').textContent = progress + '%';
             document.getElementById('progressLabel').textContent = progress + '%';
@@ -1440,11 +1452,9 @@
                 return;
             }
             
-            // Sort by date (newest first)
             const sortedNotifs = [...allNotifications].reverse();
             const unreadCount = sortedNotifs.filter(n => !n.read).length;
             
-            // Update badge with unread count only
             document.getElementById('notifBadge').textContent = unreadCount;
             document.getElementById('notifCount').textContent = unreadCount;
             
@@ -1467,7 +1477,7 @@
         }
         
         // ============================================================
-        // MARK ALL NOTIFICATIONS READ - FIXED
+        // MARK ALL NOTIFICATIONS READ
         // ============================================================
         async function markAllRead() {
             if (!currentUser || !allNotifications || allNotifications.length === 0) {
@@ -1475,7 +1485,6 @@
                 return;
             }
             
-            // Check if all are already read
             const hasUnread = allNotifications.some(n => !n.read);
             if (!hasUnread) {
                 showToast('All notifications already read', 'info');
@@ -1492,11 +1501,9 @@
                 });
                 
                 if (response.ok) {
-                    // Update local state
                     allNotifications = updatedNotifs;
                     unreadCount = 0;
                     
-                    // Update UI
                     renderNotifications();
                     document.getElementById('notifBadge').textContent = '0';
                     document.getElementById('notifCount').textContent = '0';
@@ -1518,20 +1525,17 @@
             const container = document.getElementById('timelineContainer');
             const stages = appData?.applicationStages || {};
             
-            // Check document upload completion - ALL required docs must be uploaded
             const uploadedDocs = Object.keys(allDocuments).filter(key => 
                 allDocuments[key] && allDocuments[key].status !== 'missing'
             );
             const requiredDocsCount = requiredDocs.filter(d => d.required).length;
             const allRequiredUploaded = uploadedDocs.length >= requiredDocsCount;
             
-            // Check payment completion
             const payments = appData?.payments || [];
             const receipt = appData?.paymentReceipt || null;
             const hasCompletedPayment = payments.some(p => p.status === 'completed') || 
                                         (receipt && receipt.status === 'verified');
             
-            // Determine status for each stage
             const stagesStatus = {
                 personal_info: {
                     completed: stages.personal_info?.completed || false,
@@ -1551,7 +1555,7 @@
                     completed: hasCompletedPayment,
                     active: !hasCompletedPayment && allRequiredUploaded,
                     label: 'Payment Completed',
-                    desc: hasCompletedPayment ? 'Application fees have been processed' : 'Awaiting payment confirmation',
+                    desc: hasCompletedPayment ? `Application fees of $${getPaymentAmount()} have been processed` : 'Awaiting payment confirmation',
                     status: hasCompletedPayment ? 'completed' : 'pending'
                 },
                 review: {
@@ -1570,7 +1574,6 @@
                 }
             };
             
-            // Update app status based on completion
             if (stagesStatus.approval.completed) {
                 document.getElementById('appStatus').textContent = 'APPROVED';
             } else if (stagesStatus.review.completed) {
@@ -1611,7 +1614,16 @@
         }
         
         // ============================================================
-        // UPDATE PAYMENT STATS
+        // GET PAYMENT AMOUNT
+        // ============================================================
+        function getPaymentAmount() {
+            const payments = appData?.payments || [];
+            const total = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+            return total > 0 ? total.toFixed(2) : '0.00';
+        }
+        
+        // ============================================================
+        // UPDATE PAYMENT STATS - WITH CUSTOM AMOUNT
         // ============================================================
         function updatePaymentStats() {
             const payments = appData?.payments || [];
@@ -1619,20 +1631,26 @@
             
             let paid = 0, pending = 0, due = 0;
             
-            // Check if receipt is verified
-            if (receipt && receipt.status === 'verified') {
-                paid += 50; // Example amount
-            } else if (receipt && receipt.status === 'pending_verification') {
-                pending += 50;
-            } else {
-                due += 50;
-            }
-            
             payments.forEach(p => {
                 if (p.status === 'completed') paid += p.amount || 0;
                 else if (p.status === 'pending') pending += p.amount || 0;
                 else if (p.status === 'due') due += p.amount || 0;
             });
+            
+            // If receipt is verified but no payment record, use receipt amount
+            if (receipt && receipt.status === 'verified' && paid === 0) {
+                paid = receipt.amount || 50;
+            }
+            
+            // If receipt is pending but no payment record
+            if (receipt && receipt.status === 'pending_verification' && pending === 0) {
+                pending = receipt.amount || 50;
+            }
+            
+            // If no payments and no receipt, show due
+            if (paid === 0 && pending === 0 && due === 0) {
+                due = 50;
+            }
             
             document.getElementById('paidAmount').textContent = paid.toFixed(2);
             document.getElementById('pendingAmount').textContent = pending.toFixed(2);
@@ -1640,7 +1658,7 @@
         }
         
         // ============================================================
-        // LOAD PAYMENT RECEIPT - PERSISTS ON REFRESH
+        // LOAD PAYMENT RECEIPT
         // ============================================================
         function loadPaymentReceipt() {
             const receiptStatus = document.getElementById('receiptStatus');
@@ -1649,6 +1667,7 @@
             if (receipt && receipt.receiptUrl) {
                 const statusColor = receipt.status === 'verified' ? '#28a745' : '#ffc107';
                 const statusText = receipt.status === 'verified' ? 'Verified' : 'Pending Verification';
+                const amount = receipt.amount || '0.00';
                 
                 receiptStatus.innerHTML = `
                     <div style="background: rgba(40, 167, 69, 0.1); padding: 10px 15px; border-radius: 8px; border: 1px solid rgba(40, 167, 69, 0.2);">
@@ -1657,6 +1676,7 @@
                                 <i class="fas fa-check-circle" style="color: ${statusColor};"></i>
                                 <span style="color: white;">Receipt uploaded</span>
                                 <span style="color: rgba(255,255,255,0.5); font-size: 0.7rem; margin-left: 10px;">${receipt.receiptFileName || 'receipt'}</span>
+                                <span style="color: rgba(255,255,255,0.5); font-size: 0.7rem; margin-left: 10px;">Amount: $${amount}</span>
                             </div>
                             <div>
                                 <span style="color: ${statusColor}; font-size: 0.7rem; font-weight: 600;">${statusText}</span>
@@ -1676,7 +1696,41 @@
         }
         
         // ============================================================
-        // PAYMENT RECEIPT UPLOAD
+        // MAKE PAYMENT - WITH CUSTOM AMOUNT
+        // ============================================================
+        document.getElementById('makePaymentBtn').addEventListener('click', () => {
+            // Ask for payment amount first
+            const amount = prompt('Enter the payment amount in USD:', '50.00');
+            if (amount === null) return; // User cancelled
+            
+            const parsedAmount = parseFloat(amount);
+            if (isNaN(parsedAmount) || parsedAmount <= 0) {
+                showToast('Please enter a valid amount', 'error');
+                return;
+            }
+            
+            alert(`📋 PAYMENT INSTRUCTIONS
+
+Amount: $${parsedAmount.toFixed(2)}
+
+💳 Mobile Money:
+   • Orange Money: +231 770562292
+   • Lonestar Money: +231 886590302
+   • Account Name: Darlington Tamba
+
+🏦 Bank Transfer (UBA Liberia):
+   • Account Name: Darlington Tamba
+   • Account Number: 53080500327155
+   • Bank: United Bank for Africa (UBA)
+
+✅ After payment, upload your receipt below or email to: infoglobalimmigrationsc@gmail.com`);
+            
+            // Store the amount for receipt upload
+            window.paymentAmount = parsedAmount;
+        });
+        
+        // ============================================================
+        // PAYMENT RECEIPT UPLOAD - WITH AMOUNT
         // ============================================================
         document.getElementById('receiptUploadArea').addEventListener('click', () => {
             document.getElementById('receiptUpload').click();
@@ -1689,6 +1743,18 @@
             if (file.size > 5 * 1024 * 1024) {
                 showToast('Receipt file must be less than 5MB', 'error');
                 return;
+            }
+            
+            // Get the amount from the stored value or prompt
+            let amount = window.paymentAmount || 0;
+            if (!amount || amount <= 0) {
+                const amountInput = prompt('Enter the payment amount for this receipt:', '50.00');
+                if (amountInput === null) return;
+                amount = parseFloat(amountInput);
+                if (isNaN(amount) || amount <= 0) {
+                    showToast('Please enter a valid amount', 'error');
+                    return;
+                }
             }
             
             showToast('Uploading receipt...', 'info');
@@ -1708,14 +1774,14 @@
                 const result = await response.json();
                 if (!result.success) throw new Error(result.message || 'Upload failed');
                 
-                // Save receipt reference to application
                 const receiptData = {
                     uid: currentUser.uid,
                     receiptUrl: result.url,
                     receiptFileId: result.fileId,
                     receiptFileName: file.name,
                     uploadedAt: new Date().toISOString(),
-                    status: 'pending_verification'
+                    status: 'pending_verification',
+                    amount: amount
                 };
                 
                 const metaResponse = await fetch(`${API_URL}/users/payment-receipt`, {
@@ -1726,7 +1792,10 @@
                 
                 if (!metaResponse.ok) throw new Error('Failed to save receipt');
                 
-                showToast('Payment receipt uploaded successfully!', 'success');
+                // Reset stored amount
+                window.paymentAmount = null;
+                
+                showToast(`Payment receipt of $${amount.toFixed(2)} uploaded successfully!`, 'success');
                 await loadDashboardData();
                 
             } catch (error) {
@@ -1779,25 +1848,6 @@
                 submitBtn.innerHTML = originalText;
                 submitBtn.disabled = false;
             }
-        });
-        
-        // ============================================================
-        // PAYMENT BUTTON
-        // ============================================================
-        document.getElementById('makePaymentBtn').addEventListener('click', () => {
-            alert(`📋 PAYMENT INSTRUCTIONS
-
-💳 Mobile Money:
-   • Orange Money: +231 770562292
-   • Lonestar Money: +231 886590302
-   • Account Name: Darlington Tamba
-
-🏦 Bank Transfer (UBA Liberia):
-   • Account Name: Darlington Tamba
-   • Account Number: 53080500327155
-   • Bank: United Bank for Africa (UBA)
-
-✅ After payment, upload your receipt below or email to: infoglobalimmigrationsc@gmail.com`);
         });
         
         // ============================================================
