@@ -849,9 +849,11 @@ app.put('/api/users/application/update', async (req, res) => {
     }
 });
 
+
+
 app.post('/api/users/payment-receipt', async (req, res) => {
     try {
-        const { uid, receiptUrl, receiptFileId, receiptFileName, uploadedAt, status } = req.body;
+        const { uid, receiptUrl, receiptFileId, receiptFileName, uploadedAt, status, amount } = req.body;
         if (!uid || !receiptUrl) {
             return res.status(400).json({ success: false, message: 'uid and receiptUrl are required' });
         }
@@ -898,7 +900,8 @@ app.post('/api/users/payment-receipt', async (req, res) => {
             receiptFileId: receiptFileId,
             receiptFileName: receiptFileName || 'receipt',
             uploadedAt: uploadedAt || new Date().toISOString(),
-            status: status || 'pending_verification'
+            status: status || 'pending_verification',
+            amount: amount || 0
         };
         
         await db.collection('applications').updateOne(
@@ -910,7 +913,7 @@ app.post('/api/users/payment-receipt', async (req, res) => {
                 },
                 $push: {
                     payments: {
-                        amount: 0,
+                        amount: amount || 0,
                         status: 'pending',
                         description: 'Payment receipt uploaded',
                         receiptUrl: receiptUrl,
@@ -925,6 +928,8 @@ app.post('/api/users/payment-receipt', async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 });
+
+
 
 // ============================================================
 // ADMIN NOTIFICATIONS
