@@ -1,7 +1,7 @@
 name: Deploy to Firebase Hosting
 
 on:
-  push:
+  push: 
     branches:
       - main  # or master - change to your default branch name
 
