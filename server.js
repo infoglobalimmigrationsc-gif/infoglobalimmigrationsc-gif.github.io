@@ -6,6 +6,7 @@ const { MongoClient, GridFSBucket, ObjectId } = require('mongodb');
 const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const path = require('path');
 
 const app = express();
 
@@ -22,6 +23,15 @@ app.use(cors({
 app.options('*', cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// ============================================================
+// API ROUTE PREFIX - MUST COME BEFORE ALL OTHER ROUTES
+// ============================================================
+// This ensures all /api/* routes are handled correctly
+app.use('/api', (req, res, next) => {
+    console.log(`📡 API Request: ${req.method} ${req.url}`);
+    next();
+});
 
 // ============================================================
 // MONGODB CONNECTION
@@ -76,13 +86,14 @@ connectDB().catch(console.error);
 // ============================================================
 // ============================================================
 // PASSWORD RESET - Custom Flow (Backend)
-// MOVED TO TOP - BEFORE OTHER ROUTES
+// MUST BE BEFORE ANY OTHER ROUTES
 // ============================================================
 // ============================================================
 
 // 1. Generate reset token and send email
 app.post('/api/users/forgot-password', async (req, res) => {
     try {
+        console.log('🔐 Forgot password request received for:', req.body.email);
         const { email } = req.body;
         
         if (!email) {
