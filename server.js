@@ -1,4 +1,4 @@
-// server.js - COMPLETE WORKING FIXED VERSION1
+// server.js - COMPLETE WORKING FIXED VERSION
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
@@ -72,6 +72,119 @@ async function connectDB() {
 }
 
 connectDB().catch(console.error);
+
+// ============================================================
+// ============================================================
+// PASSWORD RESET - Custom Flow (Backend)
+// MOVED TO TOP - BEFORE OTHER ROUTES
+// ============================================================
+// ============================================================
+
+// 1. Generate reset token and send email
+app.post('/api/users/forgot-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+        
+        if (!email) {
+            return res.status(400).json({ success: false, message: 'Email is required' });
+        }
+
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'Database not connected' });
+        }
+
+        // Find user in MongoDB
+        const user = await db.collection('users').findOne({ email: email });
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'No account found with this email address.' });
+        }
+
+        // Generate a secure random token
+        const crypto = require('crypto');
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const tokenExpiry = new Date();
+        tokenExpiry.setHours(tokenExpiry.getHours() + 1); // 1 hour expiry
+
+        // Store token in user document
+        await db.collection('users').updateOne(
+            { email: email },
+            { 
+                $set: { 
+                    resetToken: resetToken,
+                    resetTokenExpiry: tokenExpiry
+                }
+            }
+        );
+
+        // Create reset link using your custom domain
+        const resetLink = `https://globalimmigrationsclr.com/portal/reset-password.html?token=${resetToken}`;
+
+        // Log the link for testing
+        console.log(`🔗 Reset link for ${email}: ${resetLink}`);
+
+        res.json({ 
+            success: true, 
+            message: 'Password reset link sent to your email',
+            debugLink: resetLink 
+        });
+
+    } catch (error) {
+        console.error('Error in forgot-password:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 2. Verify token and reset password
+app.post('/api/users/reset-password', async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+        
+        if (!token || !newPassword) {
+            return res.status(400).json({ success: false, message: 'Token and password are required' });
+        }
+
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'Database not connected' });
+        }
+
+        // Find user with valid token
+        const user = await db.collection('users').findOne({ 
+            resetToken: token,
+            resetTokenExpiry: { $gt: new Date() }
+        });
+
+        if (!user) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Invalid or expired reset token. Please request a new one.' 
+            });
+        }
+
+        // Hash the new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Update user password and clear token
+        await db.collection('users').updateOne(
+            { _id: user._id },
+            { 
+                $set: { 
+                    password: hashedPassword,
+                    updatedAt: new Date()
+                },
+                $unset: {
+                    resetToken: "",
+                    resetTokenExpiry: ""
+                }
+            }
+        );
+
+        res.json({ success: true, message: 'Password reset successfully' });
+
+    } catch (error) {
+        console.error('Error in reset-password:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
 
 // ============================================================
 // MIDDLEWARE - JWT Authentication
@@ -1422,113 +1535,6 @@ app.put('/api/admin/payments/pending', authenticateToken, async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 });
-
-
-// ============================================================
-// PASSWORD RESET - Custom Flow (Backend)
-// ============================================================
-
-// 1. Generate reset token and send email
-app.post('/api/users/forgot-password', async (req, res) => {
-    try {
-        const { email } = req.body;
-        
-        if (!email) {
-            return res.status(400).json({ success: false, message: 'Email is required' });
-        }
-
-        // Find user in MongoDB
-        const user = await db.collection('users').findOne({ email: email });
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'No account found with this email address.' });
-        }
-
-        // Generate a secure random token
-        const crypto = require('crypto');
-        const resetToken = crypto.randomBytes(32).toString('hex');
-        const tokenExpiry = new Date();
-        tokenExpiry.setHours(tokenExpiry.getHours() + 1); // 1 hour expiry
-
-        // Store token in user document
-        await db.collection('users').updateOne(
-            { email: email },
-            { 
-                $set: { 
-                    resetToken: resetToken,
-                    resetTokenExpiry: tokenExpiry
-                }
-            }
-        );
-
-        // Create reset link using your custom domain
-        const resetLink = `https://globalimmigrationsclr.com/portal/reset-password.html?token=${resetToken}`;
-
-        // Log the link for testing
-        console.log(`🔗 Reset link for ${email}: ${resetLink}`);
-
-        res.json({ 
-            success: true, 
-            message: 'Password reset link sent to your email',
-            // Remove this in production - just for testing
-            debugLink: resetLink 
-        });
-
-    } catch (error) {
-        console.error('Error in forgot-password:', error);
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-// 2. Verify token and reset password
-app.post('/api/users/reset-password', async (req, res) => {
-    try {
-        const { token, newPassword } = req.body;
-        
-        if (!token || !newPassword) {
-            return res.status(400).json({ success: false, message: 'Token and password are required' });
-        }
-
-        // Find user with valid token
-        const user = await db.collection('users').findOne({ 
-            resetToken: token,
-            resetTokenExpiry: { $gt: new Date() }
-        });
-
-        if (!user) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Invalid or expired reset token. Please request a new one.' 
-            });
-        }
-
-        // Hash the new password
-        const bcrypt = require('bcryptjs');
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-        // Update user password and clear token
-        await db.collection('users').updateOne(
-            { _id: user._id },
-            { 
-                $set: { 
-                    password: hashedPassword,
-                    updatedAt: new Date()
-                },
-                $unset: {
-                    resetToken: "",
-                    resetTokenExpiry: ""
-                }
-            }
-        );
-
-        res.json({ success: true, message: 'Password reset successfully' });
-
-    } catch (error) {
-        console.error('Error in reset-password:', error);
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-
 
 // ============================================================
 // START SERVER
