@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Redirecting...</title>
+    <script>
+        (function() {
+            // Get all URL parameters
+            const params = new URLSearchParams(window.location.search);
+            const mode = params.get('mode');
+            const oobCode = params.get('oobCode');
+            const apiKey = params.get('apiKey');
+            const lang = params.get('lang');
+            
+            // Redirect to your reset page with same parameters
+            let redirectUrl = 'https://globalimmigrationsclr.com/portal/reset-password.html';
+            
+            const queryParams = new URLSearchParams();
+            if (mode) queryParams.set('mode', mode);
+            if (oobCode) queryParams.set('oobCode', oobCode);
+            if (apiKey) queryParams.set('apiKey', apiKey);
+            if (lang) queryParams.set('lang', lang);
+            
+            const queryString = queryParams.toString();
+            if (queryString) {
+                redirectUrl += '?' + queryString;
+            }
+
+            window.location.href = redirectUrl;
+        })();
+    </script>
+</head>
+<body>
+    <p>Redirecting to password reset...</p>
+</body>
+</html>
