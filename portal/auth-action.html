@@ -12,8 +12,11 @@
             const apiKey = params.get('apiKey');
             const lang = params.get('lang');
             
-            // Redirect to your reset page with same parameters
-            let redirectUrl = 'https://globalimmigrationsclr.com/portal/reset-password.html';
+            // Redirect to your actual reset page on Railway
+            let redirectUrl = 'https://gisc-app-production.up.railway.app/portal/reset-password.html';
+            
+            // If you want to use your custom domain instead
+            // let redirectUrl = 'https://globalimmigrationsclr.com/portal/reset-password.html';
             
             const queryParams = new URLSearchParams();
             if (mode) queryParams.set('mode', mode);
