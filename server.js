@@ -1423,6 +1423,7 @@ app.put('/api/admin/payments/pending', authenticateToken, async (req, res) => {
     }
 });
 
+
 // ============================================================
 // PASSWORD RESET - Custom Flow (Backend)
 // ============================================================
@@ -1439,7 +1440,7 @@ app.post('/api/users/forgot-password', async (req, res) => {
         // Find user in MongoDB
         const user = await db.collection('users').findOne({ email: email });
         if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found' });
+            return res.status(404).json({ success: false, message: 'No account found with this email address.' });
         }
 
         // Generate a secure random token
@@ -1459,14 +1460,10 @@ app.post('/api/users/forgot-password', async (req, res) => {
             }
         );
 
-        // Create reset link using your actual domain
+        // Create reset link using your custom domain
         const resetLink = `https://globalimmigrationsclr.com/portal/reset-password.html?token=${resetToken}`;
 
-        // Send email using a simple email service
-        // For now, we'll use Formspree to notify admin
-        // In production, use SendGrid, Nodemailer, etc.
-        
-        // Also log the link for testing
+        // Log the link for testing
         console.log(`🔗 Reset link for ${email}: ${resetLink}`);
 
         res.json({ 
@@ -1530,6 +1527,8 @@ app.post('/api/users/reset-password', async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 });
+
+
 
 // ============================================================
 // START SERVER
