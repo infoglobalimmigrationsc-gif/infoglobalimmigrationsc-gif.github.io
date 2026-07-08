@@ -75,11 +75,20 @@ async function connectDB() {
 connectDB().catch(console.error);
 
 // ============================================================
+// PASSWORD RESET - Custom Flow (Backend) WITH EMAIL
 // ============================================================
-// PASSWORD RESET - Custom Flow (Backend)
-// MUST BE BEFORE ANY STATIC FILE MIDDLEWARE
-// ============================================================
-// ============================================================
+
+// Email configuration
+const nodemailer = require('nodemailer');
+
+// Configure email transporter
+const emailTransporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER || 'your-email@gmail.com', // Your Gmail
+        pass: process.env.EMAIL_PASSWORD || 'your-app-password' // App password (not regular password)
+    }
+});
 
 // 1. Generate reset token and send email
 app.post('/api/users/forgot-password', async (req, res) => {
@@ -123,11 +132,76 @@ app.post('/api/users/forgot-password', async (req, res) => {
         // Log the link for testing
         console.log(`🔗 Reset link for ${email}: ${resetLink}`);
 
-        res.json({ 
-            success: true, 
-            message: 'Password reset link sent to your email',
-            debugLink: resetLink 
-        });
+        // ============================================================
+        // SEND THE EMAIL
+        // ============================================================
+        try {
+            const mailOptions = {
+                from: `"Global Immigration SC" <${process.env.EMAIL_USER || 'your-email@gmail.com'}>`,
+                to: email,
+                subject: 'Password Reset Request - Global Immigration SC',
+                html: `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <style>
+                            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                            .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px; }
+                            .header { text-align: center; border-bottom: 2px solid #E30613; padding-bottom: 20px; }
+                            .header h1 { color: #E30613; margin: 0; }
+                            .content { padding: 20px 0; }
+                            .button { display: inline-block; padding: 12px 30px; background-color: #E30613; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
+                            .footer { text-align: center; font-size: 12px; color: #999; border-top: 1px solid #ddd; padding-top: 20px; margin-top: 20px; }
+                            .warning { color: #E30613; font-size: 12px; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <div class="header">
+                                <h1>Global Immigration SC</h1>
+                                <p>Password Reset Request</p>
+                            </div>
+                            <div class="content">
+                                <p>Hello <strong>${user.name || 'User'}</strong>,</p>
+                                <p>We received a request to reset your password for your Global Immigration SC account.</p>
+                                <p style="text-align: center; margin: 30px 0;">
+                                    <a href="${resetLink}" class="button">Reset Password</a>
+                                </p>
+                                <p>Or copy and paste this link into your browser:</p>
+                                <p style="word-break: break-all; background: #f5f5f5; padding: 10px; border-radius: 5px; font-size: 12px;">
+                                    ${resetLink}
+                                </p>
+                                <p><strong>This link will expire in 1 hour.</strong></p>
+                                <p class="warning">If you didn't request this, please ignore this email and your password will remain unchanged.</p>
+                            </div>
+                            <div class="footer">
+                                <p>&copy; ${new Date().getFullYear()} Global Immigration SC. All rights reserved.</p>
+                                <p>This email was sent to ${email}</p>
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                `
+            };
+
+            await emailTransporter.sendMail(mailOptions);
+            console.log(`📧 Password reset email sent to ${email}`);
+
+            res.json({ 
+                success: true, 
+                message: 'Password reset link sent to your email. Please check your inbox.' 
+            });
+
+        } catch (emailError) {
+            console.error('❌ Email sending error:', emailError);
+            // Still return success but with a note
+            res.json({ 
+                success: true, 
+                message: 'Password reset link generated. Please check your email (check spam folder too).',
+                debugLink: resetLink // Remove in production
+            });
+        }
 
     } catch (error) {
         console.error('Error in forgot-password:', error);
