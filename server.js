@@ -1,4 +1,4 @@
-// server.js - COMPLETE WORKING FIXED VERSION (No nodemailer)
+// server.js - COMPLETE WORKING FIXED VERSION WITH BLOG & CONTACTS
 const express = require('express'); 
 const multer = require('multer');
 const cors = require('cors');
@@ -46,6 +46,17 @@ async function connectDB() {
         const collections = await db.listCollections().toArray();
         console.log('📁 Collections:', collections.map(c => c.name).join(', '));
         
+        // Ensure indexes for blog and contacts
+        try {
+            await db.collection('blogs').createIndex({ createdAt: -1 });
+            await db.collection('blogs').createIndex({ status: 1 });
+            await db.collection('contacts').createIndex({ createdAt: -1 });
+            await db.collection('contacts').createIndex({ status: 1 });
+            console.log('✅ Indexes created');
+        } catch (indexError) {
+            console.log('⚠️ Index creation warning:', indexError.message);
+        }
+        
         const admin = await db.collection('admins').findOne({ email: 'admin@globalimmigrationsc.com' });
         if (admin) {
             console.log('✅ Admin found!');
@@ -73,117 +84,6 @@ async function connectDB() {
 }
 
 connectDB().catch(console.error);
-
-// ============================================================
-// PASSWORD RESET - Custom Flow (Backend) - NO EMAIL MODULE
-// ============================================================
-
-// 1. Generate reset token and send email (console only)
-app.post('/api/users/forgot-password', async (req, res) => {
-    try {
-        const { email } = req.body;
-        
-        if (!email) {
-            return res.status(400).json({ success: false, message: 'Email is required' });
-        }
-
-        if (!db) {
-            return res.status(503).json({ success: false, message: 'Database not connected' });
-        }
-
-        // Find user in MongoDB
-        const user = await db.collection('users').findOne({ email: email });
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'No account found with this email address.' });
-        }
-
-        // Generate a secure random token
-        const crypto = require('crypto');
-        const resetToken = crypto.randomBytes(32).toString('hex');
-        const tokenExpiry = new Date();
-        tokenExpiry.setHours(tokenExpiry.getHours() + 1); // 1 hour expiry
-
-        // Store token in user document
-        await db.collection('users').updateOne(
-            { email: email },
-            { 
-                $set: { 
-                    resetToken: resetToken,
-                    resetTokenExpiry: tokenExpiry
-                }
-            }
-        );
-
-        // Create reset link using your custom domain
-        const resetLink = `https://globalimmigrationsclr.com/portal/reset-password.html?token=${resetToken}`;
-
-        // Log the link for testing
-        console.log(`🔗 🔗 🔗 RESET LINK FOR ${email}: ${resetLink} 🔗 🔗 🔗`);
-
-        // Return the link in the response for testing
-        res.json({ 
-            success: true, 
-            message: 'Password reset link generated. Check the server logs for the link.',
-            debugLink: resetLink
-        });
-
-    } catch (error) {
-        console.error('Error in forgot-password:', error);
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-// 2. Verify token and reset password
-app.post('/api/users/reset-password', async (req, res) => {
-    try {
-        const { token, newPassword } = req.body;
-        
-        if (!token || !newPassword) {
-            return res.status(400).json({ success: false, message: 'Token and password are required' });
-        }
-
-        if (!db) {
-            return res.status(503).json({ success: false, message: 'Database not connected' });
-        }
-
-        // Find user with valid token
-        const user = await db.collection('users').findOne({ 
-            resetToken: token,
-            resetTokenExpiry: { $gt: new Date() }
-        });
-
-        if (!user) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Invalid or expired reset token. Please request a new one.' 
-            });
-        }
-
-        // Hash the new password
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-        // Update user password and clear token
-        await db.collection('users').updateOne(
-            { _id: user._id },
-            { 
-                $set: { 
-                    password: hashedPassword,
-                    updatedAt: new Date()
-                },
-                $unset: {
-                    resetToken: "",
-                    resetTokenExpiry: ""
-                }
-            }
-        );
-
-        res.json({ success: true, message: 'Password reset successfully' });
-
-    } catch (error) {
-        console.error('Error in reset-password:', error);
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
 
 // ============================================================
 // MIDDLEWARE - JWT Authentication
@@ -383,7 +283,9 @@ app.get('/', (req, res) => {
             admin_login: '/api/admin/login (POST)',
             upload: '/api/upload (POST)',
             download: '/api/file/:id (GET)',
-            health: '/api/health (GET)'
+            health: '/api/health (GET)',
+            blogs: '/api/blogs (GET) - public',
+            contacts: '/api/contacts (POST) - public'
         }
     });
 });
@@ -524,10 +426,36 @@ app.get('/api/admin/blogs/:id', authenticateToken, async (req, res) => {
 
 app.post('/api/admin/blogs', authenticateToken, async (req, res) => {
     try {
-        const blogData = { ...req.body, createdAt: new Date(), updatedAt: new Date() };
+        const { title, category, excerpt, content, status, author, tags, featuredImage } = req.body;
+        
+        if (!title || !content) {
+            return res.status(400).json({ success: false, message: 'Title and content are required' });
+        }
+        
+        const blogData = {
+            title: title.trim(),
+            category: category || 'General',
+            excerpt: excerpt || content.substring(0, 200) + '...',
+            content: content,
+            status: status || 'draft',
+            author: author || 'Admin',
+            tags: tags || [],
+            featuredImage: featuredImage || '',
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+        
         const result = await db.collection('blogs').insertOne(blogData);
-        res.json({ success: true, id: result.insertedId, blog: blogData });
+        
+        console.log(`📝 Blog post created: "${title}" (${status})`);
+        
+        res.json({ 
+            success: true, 
+            id: result.insertedId, 
+            blog: { ...blogData, _id: result.insertedId }
+        });
     } catch (error) {
+        console.error('Error creating blog:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
@@ -535,18 +463,31 @@ app.post('/api/admin/blogs', authenticateToken, async (req, res) => {
 app.put('/api/admin/blogs/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
-        const updateData = { ...req.body, updatedAt: new Date() };
-        delete updateData._id;
-        delete updateData.createdAt;
+        const { title, category, excerpt, content, status, author, tags, featuredImage } = req.body;
+        
+        const updateData = { updatedAt: new Date() };
+        if (title !== undefined) updateData.title = title.trim();
+        if (category !== undefined) updateData.category = category;
+        if (excerpt !== undefined) updateData.excerpt = excerpt;
+        if (content !== undefined) updateData.content = content;
+        if (status !== undefined) updateData.status = status;
+        if (author !== undefined) updateData.author = author;
+        if (tags !== undefined) updateData.tags = tags;
+        if (featuredImage !== undefined) updateData.featuredImage = featuredImage;
+        
         const result = await db.collection('blogs').updateOne(
             { _id: new ObjectId(id) },
             { $set: updateData }
         );
+        
         if (result.matchedCount === 0) {
             return res.status(404).json({ success: false, message: 'Blog not found' });
         }
-        res.json({ success: true });
+        
+        console.log(`📝 Blog updated: ${id}`);
+        res.json({ success: true, message: 'Blog updated successfully' });
     } catch (error) {
+        console.error('Error updating blog:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
@@ -557,6 +498,7 @@ app.delete('/api/admin/blogs/:id', authenticateToken, async (req, res) => {
         if (result.deletedCount === 0) {
             return res.status(404).json({ success: false, message: 'Blog not found' });
         }
+        console.log(`🗑️ Blog deleted: ${req.params.id}`);
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -564,74 +506,35 @@ app.delete('/api/admin/blogs/:id', authenticateToken, async (req, res) => {
 });
 
 // ============================================================
-// PUBLIC BLOG ROUTE (No auth required)
+// PUBLIC BLOG ROUTE - FIXED
 // ============================================================
 app.get('/api/blogs', async (req, res) => {
     try {
-        // Get only published blogs, sorted by newest first
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'Database not connected' });
+        }
+        
+        // Get ONLY published blogs, sorted by newest first
         const blogs = await db.collection('blogs')
             .find({ status: 'published' })
             .sort({ createdAt: -1 })
             .toArray();
-        res.json({ success: true, blogs });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-app.get('/api/blogs/:id', async (req, res) => {
-    try {
-        const blog = await db.collection('blogs').findOne({ 
-            _id: new ObjectId(req.params.id),
-            status: 'published'
+        
+        console.log(`📚 Public blog request: ${blogs.length} published blogs found`);
+        
+        res.json({ 
+            success: true, 
+            blogs: blogs,
+            count: blogs.length
         });
-        if (!blog) {
-            return res.status(404).json({ success: false, message: 'Blog not found' });
-        }
-        res.json({ success: true, blog });
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-app.delete('/api/admin/blogs/:id', authenticateToken, async (req, res) => {
-    try {
-        const result = await db.collection('blogs').deleteOne({ _id: new ObjectId(req.params.id) });
-        if (result.deletedCount === 0) {
-            return res.status(404).json({ success: false, message: 'Blog not found' });
-        }
-        res.json({ success: true });
-    } catch (error) {
+        console.error('Error fetching public blogs:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
 // ============================================================
-// ADMIN CONTACT ROUTES (Protected)
-// ============================================================
-app.get('/api/admin/contacts', authenticateToken, async (req, res) => {
-    try {
-        const contacts = await db.collection('contacts').find({}).sort({ createdAt: -1 }).toArray();
-        res.json({ success: true, contacts });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-app.delete('/api/admin/contacts/:id', authenticateToken, async (req, res) => {
-    try {
-        const result = await db.collection('contacts').deleteOne({ _id: new ObjectId(req.params.id) });
-        if (result.deletedCount === 0) {
-            return res.status(404).json({ success: false, message: 'Contact not found' });
-        }
-        res.json({ success: true });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-// ============================================================
-// PUBLIC CONTACT SUBMISSION (No auth required)
+// PUBLIC CONTACT SUBMISSION - FIXED
 // ============================================================
 app.post('/api/contacts', async (req, res) => {
     try {
@@ -679,6 +582,30 @@ app.post('/api/contacts', async (req, res) => {
         
     } catch (error) {
         console.error('❌ Error saving contact:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
+// ADMIN CONTACT ROUTES (Protected)
+// ============================================================
+app.get('/api/admin/contacts', authenticateToken, async (req, res) => {
+    try {
+        const contacts = await db.collection('contacts').find({}).sort({ createdAt: -1 }).toArray();
+        res.json({ success: true, contacts });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.delete('/api/admin/contacts/:id', authenticateToken, async (req, res) => {
+    try {
+        const result = await db.collection('contacts').deleteOne({ _id: new ObjectId(req.params.id) });
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Contact not found' });
+        }
+        res.json({ success: true });
+    } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 });
@@ -754,7 +681,7 @@ app.post('/api/users/register', async (req, res) => {
 });
 
 // ============================================================
-// NOTIFICATIONS - MUST COME BEFORE /api/users/:uid ROUTES
+// NOTIFICATIONS
 // ============================================================
 app.put('/api/users/notifications', async (req, res) => {
     try {
@@ -825,7 +752,7 @@ app.put('/api/users/notifications', async (req, res) => {
 });
 
 // ============================================================
-// USER ROUTES - MUST COME AFTER /api/users/notifications
+// USER ROUTES
 // ============================================================
 app.get('/api/users/:uid', async (req, res) => {
     try {
@@ -894,9 +821,6 @@ app.put('/api/users/:uid', async (req, res) => {
     }
 });
 
-// ============================================================
-// OTHER USER API ENDPOINTS
-// ============================================================
 app.post('/api/users/documents', async (req, res) => {
     try {
         const { uid, docType, fileId, fileName, fileSize, fileType, fileUrl, status, uploadedAt } = req.body;
@@ -1057,7 +981,7 @@ app.put('/api/users/application/update', async (req, res) => {
 });
 
 // ============================================================
-// SAVE PAYMENT RECEIPT - FIXED
+// SAVE PAYMENT RECEIPT
 // ============================================================
 app.post('/api/users/payment-receipt', async (req, res) => {
     try {
@@ -1532,7 +1456,106 @@ app.delete('/api/admin/payments/delete', authenticateToken, async (req, res) => 
 });
 
 // ============================================================
-// SERVE STATIC FILES - AT THE VERY END
+// PASSWORD RESET
+// ============================================================
+app.post('/api/users/forgot-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+        
+        if (!email) {
+            return res.status(400).json({ success: false, message: 'Email is required' });
+        }
+
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'Database not connected' });
+        }
+
+        const user = await db.collection('users').findOne({ email: email });
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'No account found with this email address.' });
+        }
+
+        const crypto = require('crypto');
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const tokenExpiry = new Date();
+        tokenExpiry.setHours(tokenExpiry.getHours() + 1);
+
+        await db.collection('users').updateOne(
+            { email: email },
+            { 
+                $set: { 
+                    resetToken: resetToken,
+                    resetTokenExpiry: tokenExpiry
+                }
+            }
+        );
+
+        const resetLink = `https://globalimmigrationsclr.com/portal/reset-password.html?token=${resetToken}`;
+
+        console.log(`🔗 RESET LINK FOR ${email}: ${resetLink}`);
+
+        res.json({ 
+            success: true, 
+            message: 'Password reset link generated. Check your email for the link.',
+            debugLink: resetLink
+        });
+
+    } catch (error) {
+        console.error('Error in forgot-password:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.post('/api/users/reset-password', async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+        
+        if (!token || !newPassword) {
+            return res.status(400).json({ success: false, message: 'Token and password are required' });
+        }
+
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'Database not connected' });
+        }
+
+        const user = await db.collection('users').findOne({ 
+            resetToken: token,
+            resetTokenExpiry: { $gt: new Date() }
+        });
+
+        if (!user) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Invalid or expired reset token. Please request a new one.' 
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        await db.collection('users').updateOne(
+            { _id: user._id },
+            { 
+                $set: { 
+                    password: hashedPassword,
+                    updatedAt: new Date()
+                },
+                $unset: {
+                    resetToken: "",
+                    resetTokenExpiry: ""
+                }
+            }
+        );
+
+        res.json({ success: true, message: 'Password reset successfully' });
+
+    } catch (error) {
+        console.error('Error in reset-password:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
+// SERVE STATIC FILES
 // ============================================================
 app.use('/portal', express.static(path.join(__dirname, 'portal')));
 app.get('*', (req, res) => {
