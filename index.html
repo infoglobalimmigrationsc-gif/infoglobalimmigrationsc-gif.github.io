@@ -5731,9 +5731,9 @@
                         </div>
                     </div>
                     
-                    <div class="contact-form">
+                                        <div class="contact-form">
                         <h3>Send us a Message</h3>
-                        <form id="inquiryForm" action="https://formspree.io/f/mrbaejkr" method="POST">
+                        <form id="inquiryForm">
                             <div class="form-group">
                                 <label for="name">Full Name *</label>
                                 <input type="text" id="name" name="name" class="form-control" required>
@@ -5801,8 +5801,15 @@
                                 <span class="loading-spinner" style="display: none;"></span>
                             </button>
                             
-                            <div id="formSuccess" class="form-success">
-                                Thank you for your inquiry! We will contact you shortly.
+                            <div id="formSuccess" class="form-success" style="display: none;">
+                                <i class="fas fa-check-circle" style="font-size: 2rem; color: #28a745; margin-bottom: 10px;"></i>
+                                <p style="font-weight: 600;">Thank you for your inquiry!</p>
+                                <p>We will contact you shortly.</p>
+                            </div>
+                            
+                            <div id="formError" class="form-error" style="display: none; text-align: center; padding: 10px; background: #f8d7da; border-radius: 4px; color: #721c24;">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span id="formErrorMessage">Something went wrong. Please try again.</span>
                             </div>
                         </form>
                     </div>
@@ -10675,6 +10682,13 @@ function clearFieldError(field) {
                 }
             });
             
+                        // ============================================================
+            // CONTACT FORM - Connected to Backend API
+            // ============================================================
+            
+            // API URL for backend
+            const CONTACT_API_URL = 'https://gisc-app-production.up.railway.app/api/contacts';
+            
             // Contact Form Validation and Submission
             document.getElementById('inquiryForm').addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -10742,59 +10756,96 @@ function clearFieldError(field) {
                     messageError.style.display = 'none';
                 }
                 
-                if (isValid) {
-                    // Show loading state
-                    const submitBtn = this.querySelector('button[type="submit"]');
-                    const btnText = submitBtn.querySelector('.btn-text');
-                    const spinner = submitBtn.querySelector('.loading-spinner');
-                    
-                    btnText.textContent = 'Submitting...';
-                    spinner.style.display = 'inline-block';
-                    submitBtn.disabled = true;
-                    
-                    // Create FormData object
-                    const formData = new FormData(this);
-                    
-                    // Send form data using Fetch API
-                    fetch(this.action, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                            // Show success message
-                            document.getElementById('formSuccess').style.display = 'block';
-                            
-                            // Form submission tracking for Google Analytics
-                            gtag('event', 'form_submission', {
-                                'event_category': 'contact',
-                                'event_label': 'inquiry_form'
-                            });
-                            
-                            // Reset form
-                            this.reset();
-                        } else {
-                            throw new Error('Form submission failed');
-                        }
-                    })
-                    .catch(error => {
-                        alert('There was a problem with your submission. Please try again or contact us directly.');
-                    })
-                    .finally(() => {
-                        // Reset button
-                        btnText.textContent = 'Submit Inquiry';
-                        spinner.style.display = 'none';
-                        submitBtn.disabled = false;
-                        
-                        // Hide success message after 5 seconds
-                        setTimeout(() => {
-                            document.getElementById('formSuccess').style.display = 'none';
-                            }, 5000);
-                    });
+                if (!isValid) {
+                    return;
                 }
+                
+                // Show loading state
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const btnText = submitBtn.querySelector('.btn-text');
+                const spinner = submitBtn.querySelector('.loading-spinner');
+                const successDiv = document.getElementById('formSuccess');
+                const errorDiv = document.getElementById('formError');
+                
+                // Hide previous messages
+                successDiv.style.display = 'none';
+                errorDiv.style.display = 'none';
+                
+                btnText.textContent = 'Submitting...';
+                spinner.style.display = 'inline-block';
+                submitBtn.disabled = true;
+                
+                // Prepare data for API
+                const formData = {
+                    name: name.value.trim(),
+                    email: email.value.trim(),
+                    phone: phone.value.trim(),
+                    country: country.value,
+                    interest: interest.value,
+                    message: message.value.trim(),
+                    form_type: 'contact_form'
+                };
+                
+                console.log('📤 Submitting contact form:', formData);
+                
+                // Send to backend API
+                fetch(CONTACT_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => {
+                            throw new Error(err.message || 'Server error');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('✅ Contact form submitted successfully:', data);
+                    
+                    // Show success message
+                    successDiv.style.display = 'block';
+                    
+                    // Form submission tracking for Google Analytics
+                    if (typeof gtag !== 'undefined') {
+                        gtag('event', 'form_submission', {
+                            'event_category': 'contact',
+                            'event_label': 'inquiry_form'
+                        });
+                    }
+                    
+                    // Reset form
+                    this.reset();
+                    
+                    // Hide success after 8 seconds
+                    setTimeout(() => {
+                        successDiv.style.display = 'none';
+                    }, 8000);
+                })
+                .catch(error => {
+                    console.error('❌ Contact form error:', error);
+                    
+                    // Show error message
+                    const errorMsg = document.getElementById('formErrorMessage');
+                    errorMsg.textContent = error.message || 'Something went wrong. Please try again or contact us directly.';
+                    errorDiv.style.display = 'block';
+                    
+                    // Hide error after 8 seconds
+                    setTimeout(() => {
+                        errorDiv.style.display = 'none';
+                    }, 8000);
+                })
+                .finally(() => {
+                    // Reset button
+                    btnText.textContent = 'Submit Inquiry';
+                    spinner.style.display = 'none';
+                    submitBtn.disabled = false;
+                });
             });
             
             // Smooth Scrolling for Anchor Links
