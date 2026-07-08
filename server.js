@@ -606,6 +606,9 @@ app.delete('/api/admin/blogs/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// ============================================================
+// ADMIN CONTACT ROUTES (Protected)
+// ============================================================
 app.get('/api/admin/contacts', authenticateToken, async (req, res) => {
     try {
         const contacts = await db.collection('contacts').find({}).sort({ createdAt: -1 }).toArray();
@@ -623,6 +626,59 @@ app.delete('/api/admin/contacts/:id', authenticateToken, async (req, res) => {
         }
         res.json({ success: true });
     } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
+// PUBLIC CONTACT SUBMISSION (No auth required)
+// ============================================================
+app.post('/api/contacts', async (req, res) => {
+    try {
+        const { name, email, phone, country, interest, message, form_type } = req.body;
+        
+        // Validate required fields
+        if (!name || !email || !phone || !country || !interest || !message) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'All fields are required: name, email, phone, country, interest, message' 
+            });
+        }
+        
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ success: false, message: 'Invalid email format' });
+        }
+        
+        // Create contact entry
+        const contactData = {
+            name: name.trim(),
+            email: email.trim().toLowerCase(),
+            phone: phone.trim(),
+            country: country.trim(),
+            interest: interest.trim(),
+            message: message.trim(),
+            form_type: form_type || 'contact_form',
+            status: 'new',
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+        
+        // Save to database
+        const result = await db.collection('contacts').insertOne(contactData);
+        
+        console.log(`📩 New contact submission from ${name} (${email})`);
+        
+        // Return success with the saved data
+        res.json({ 
+            success: true, 
+            message: 'Your message has been sent successfully! We will contact you shortly.',
+            contact: { ...contactData, _id: result.insertedId }
+        });
+        
+    } catch (error) {
+        console.error('❌ Error saving contact:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
