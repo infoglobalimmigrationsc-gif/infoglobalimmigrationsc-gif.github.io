@@ -498,6 +498,9 @@ app.put('/api/admin/applications/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// ============================================================
+// ADMIN BLOG ROUTES (Protected)
+// ============================================================
 app.get('/api/admin/blogs', authenticateToken, async (req, res) => {
     try {
         const blogs = await db.collection('blogs').find({}).sort({ createdAt: -1 }).toArray();
@@ -543,6 +546,49 @@ app.put('/api/admin/blogs/:id', authenticateToken, async (req, res) => {
             return res.status(404).json({ success: false, message: 'Blog not found' });
         }
         res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.delete('/api/admin/blogs/:id', authenticateToken, async (req, res) => {
+    try {
+        const result = await db.collection('blogs').deleteOne({ _id: new ObjectId(req.params.id) });
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Blog not found' });
+        }
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
+// PUBLIC BLOG ROUTE (No auth required)
+// ============================================================
+app.get('/api/blogs', async (req, res) => {
+    try {
+        // Get only published blogs, sorted by newest first
+        const blogs = await db.collection('blogs')
+            .find({ status: 'published' })
+            .sort({ createdAt: -1 })
+            .toArray();
+        res.json({ success: true, blogs });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.get('/api/blogs/:id', async (req, res) => {
+    try {
+        const blog = await db.collection('blogs').findOne({ 
+            _id: new ObjectId(req.params.id),
+            status: 'published'
+        });
+        if (!blog) {
+            return res.status(404).json({ success: false, message: 'Blog not found' });
+        }
+        res.json({ success: true, blog });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
