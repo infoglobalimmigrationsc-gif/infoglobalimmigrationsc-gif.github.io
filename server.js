@@ -1,4 +1,4 @@
-// server.js - COMPLETE WORKING FIXED VERSION2 
+// server.js - COMPLETE WORKING FIXED VERSION (No nodemailer)
 const express = require('express'); 
 const multer = require('multer');
 const cors = require('cors');
@@ -75,22 +75,10 @@ async function connectDB() {
 connectDB().catch(console.error);
 
 // ============================================================
-// PASSWORD RESET - Custom Flow (Backend) WITH EMAIL
+// PASSWORD RESET - Custom Flow (Backend) - NO EMAIL MODULE
 // ============================================================
 
-// Email configuration
-const nodemailer = require('nodemailer');
-
-// Configure email transporter
-const emailTransporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER || 'your-email@gmail.com', // Your Gmail
-        pass: process.env.EMAIL_PASSWORD || 'your-app-password' // App password (not regular password)
-    }
-});
-
-// 1. Generate reset token and send email
+// 1. Generate reset token and send email (console only)
 app.post('/api/users/forgot-password', async (req, res) => {
     try {
         const { email } = req.body;
@@ -130,78 +118,14 @@ app.post('/api/users/forgot-password', async (req, res) => {
         const resetLink = `https://globalimmigrationsclr.com/portal/reset-password.html?token=${resetToken}`;
 
         // Log the link for testing
-        console.log(`🔗 Reset link for ${email}: ${resetLink}`);
+        console.log(`🔗 🔗 🔗 RESET LINK FOR ${email}: ${resetLink} 🔗 🔗 🔗`);
 
-        // ============================================================
-        // SEND THE EMAIL
-        // ============================================================
-        try {
-            const mailOptions = {
-                from: `"Global Immigration SC" <${process.env.EMAIL_USER || 'your-email@gmail.com'}>`,
-                to: email,
-                subject: 'Password Reset Request - Global Immigration SC',
-                html: `
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <meta charset="UTF-8">
-                        <style>
-                            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                            .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px; }
-                            .header { text-align: center; border-bottom: 2px solid #E30613; padding-bottom: 20px; }
-                            .header h1 { color: #E30613; margin: 0; }
-                            .content { padding: 20px 0; }
-                            .button { display: inline-block; padding: 12px 30px; background-color: #E30613; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
-                            .footer { text-align: center; font-size: 12px; color: #999; border-top: 1px solid #ddd; padding-top: 20px; margin-top: 20px; }
-                            .warning { color: #E30613; font-size: 12px; }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="container">
-                            <div class="header">
-                                <h1>Global Immigration SC</h1>
-                                <p>Password Reset Request</p>
-                            </div>
-                            <div class="content">
-                                <p>Hello <strong>${user.name || 'User'}</strong>,</p>
-                                <p>We received a request to reset your password for your Global Immigration SC account.</p>
-                                <p style="text-align: center; margin: 30px 0;">
-                                    <a href="${resetLink}" class="button">Reset Password</a>
-                                </p>
-                                <p>Or copy and paste this link into your browser:</p>
-                                <p style="word-break: break-all; background: #f5f5f5; padding: 10px; border-radius: 5px; font-size: 12px;">
-                                    ${resetLink}
-                                </p>
-                                <p><strong>This link will expire in 1 hour.</strong></p>
-                                <p class="warning">If you didn't request this, please ignore this email and your password will remain unchanged.</p>
-                            </div>
-                            <div class="footer">
-                                <p>&copy; ${new Date().getFullYear()} Global Immigration SC. All rights reserved.</p>
-                                <p>This email was sent to ${email}</p>
-                            </div>
-                        </div>
-                    </body>
-                    </html>
-                `
-            };
-
-            await emailTransporter.sendMail(mailOptions);
-            console.log(`📧 Password reset email sent to ${email}`);
-
-            res.json({ 
-                success: true, 
-                message: 'Password reset link sent to your email. Please check your inbox.' 
-            });
-
-        } catch (emailError) {
-            console.error('❌ Email sending error:', emailError);
-            // Still return success but with a note
-            res.json({ 
-                success: true, 
-                message: 'Password reset link generated. Please check your email (check spam folder too).',
-                debugLink: resetLink // Remove in production
-            });
-        }
+        // Return the link in the response for testing
+        res.json({ 
+            success: true, 
+            message: 'Password reset link generated. Check the server logs for the link.',
+            debugLink: resetLink
+        });
 
     } catch (error) {
         console.error('Error in forgot-password:', error);
@@ -465,9 +389,7 @@ app.get('/', (req, res) => {
 });
 
 // ============================================================
-// ============================================================
 // ADMIN API ENDPOINTS
-// ============================================================
 // ============================================================
 
 app.get('/api/admin/users', authenticateToken, async (req, res) => {
@@ -660,9 +582,7 @@ app.delete('/api/admin/contacts/:id', authenticateToken, async (req, res) => {
 });
 
 // ============================================================
-// ============================================================
 // USER API ENDPOINTS
-// ============================================================
 // ============================================================
 
 app.post('/api/users/register', async (req, res) => {
@@ -744,11 +664,9 @@ app.put('/api/users/notifications', async (req, res) => {
             return res.status(400).json({ success: false, message: 'uid is required' });
         }
         
-        // Check if application exists first
         let application = await db.collection('applications').findOne({ uid: uid });
         
         if (!application) {
-            // Create application if it doesn't exist
             const user = await db.collection('users').findOne({ uid: uid });
             if (!user) {
                 return res.status(404).json({ success: false, message: 'User not found' });
@@ -786,7 +704,6 @@ app.put('/api/users/notifications', async (req, res) => {
             return res.json({ success: true, message: 'Application created and notifications updated' });
         }
         
-        // Update existing application
         const result = await db.collection('applications').updateOne(
             { uid: uid },
             {
@@ -1037,8 +954,6 @@ app.put('/api/users/application/update', async (req, res) => {
     }
 });
 
-
-
 // ============================================================
 // SAVE PAYMENT RECEIPT - FIXED
 // ============================================================
@@ -1086,7 +1001,6 @@ app.post('/api/users/payment-receipt', async (req, res) => {
             application = newApp;
         }
         
-        // Remove any existing pending payments to avoid duplicates
         await db.collection('applications').updateOne(
             { uid: uid },
             {
@@ -1130,8 +1044,6 @@ app.post('/api/users/payment-receipt', async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 });
-
-
 
 // ============================================================
 // ADMIN NOTIFICATIONS
@@ -1234,10 +1146,6 @@ app.delete('/api/admin/notifications/:id', authenticateToken, async (req, res) =
 // ============================================================
 // PAYMENT MANAGEMENT - ADMIN ENDPOINTS
 // ============================================================
-
-// ============================================================
-// CONFIRM PAYMENT - FIXED (Updates existing pending payment)
-// ============================================================
 app.put('/api/admin/payments/confirm', authenticateToken, async (req, res) => {
     try {
         const { uid } = req.body;
@@ -1253,7 +1161,6 @@ app.put('/api/admin/payments/confirm', authenticateToken, async (req, res) => {
         const receipt = application.paymentReceipt || {};
         const amount = receipt.amount || 0;
 
-        // Update receipt status
         const updatedReceipt = {
             ...receipt,
             status: 'verified',
@@ -1261,7 +1168,6 @@ app.put('/api/admin/payments/confirm', authenticateToken, async (req, res) => {
             verifiedBy: req.user?.email || 'admin'
         };
 
-        // Find the pending payment and update it
         const pendingPaymentIndex = application.payments?.findIndex(p => p.status === 'pending') || -1;
         
         let updateQuery = {
@@ -1278,7 +1184,6 @@ app.put('/api/admin/payments/confirm', authenticateToken, async (req, res) => {
         };
 
         if (pendingPaymentIndex !== -1) {
-            // Update existing pending payment to completed
             const updatePath = `payments.${pendingPaymentIndex}`;
             updateQuery.$set[updatePath] = {
                 amount: amount,
@@ -1289,7 +1194,6 @@ app.put('/api/admin/payments/confirm', authenticateToken, async (req, res) => {
                 confirmedBy: req.user?.email || 'admin'
             };
         } else {
-            // No pending payment found, add new completed payment
             updateQuery.$push = {
                 payments: {
                     amount: amount,
@@ -1315,10 +1219,6 @@ app.put('/api/admin/payments/confirm', authenticateToken, async (req, res) => {
     }
 });
 
-
-// ============================================================
-// MARK AS PENDING - Unified function with amount
-// ============================================================
 app.put('/api/admin/payments/pending', authenticateToken, async (req, res) => {
     try {
         const { uid } = req.body;
@@ -1340,7 +1240,6 @@ app.put('/api/admin/payments/pending', authenticateToken, async (req, res) => {
             pendingAt: new Date().toISOString()
         };
 
-        // Remove any completed payment entries
         await db.collection('applications').updateOne(
             { uid: uid },
             {
@@ -1350,7 +1249,6 @@ app.put('/api/admin/payments/pending', authenticateToken, async (req, res) => {
             }
         );
 
-        // Check if there's already a pending payment
         const hasPending = application.payments?.some(p => p.status === 'pending');
         
         let updateQuery = {
@@ -1386,9 +1284,6 @@ app.put('/api/admin/payments/pending', authenticateToken, async (req, res) => {
     }
 });
 
-
-
-// Mark Payment as Due
 app.put('/api/admin/payments/due', authenticateToken, async (req, res) => {
     try {
         const { uid } = req.body;
@@ -1426,10 +1321,6 @@ app.put('/api/admin/payments/due', authenticateToken, async (req, res) => {
     }
 });
 
-
-// ============================================================
-// REJECT PAYMENT - Admin rejects user's payment
-// ============================================================
 app.put('/api/admin/payments/reject', authenticateToken, async (req, res) => {
     try {
         const { uid, reason } = req.body;
@@ -1453,7 +1344,6 @@ app.put('/api/admin/payments/reject', authenticateToken, async (req, res) => {
             rejectedBy: req.user?.email || 'admin'
         };
 
-        // Remove any pending or completed payments
         await db.collection('applications').updateOne(
             { uid: uid },
             {
@@ -1492,10 +1382,6 @@ app.put('/api/admin/payments/reject', authenticateToken, async (req, res) => {
     }
 });
 
-
-// ============================================================
-// DELETE PAYMENT - Admin deletes payment record
-// ============================================================
 app.delete('/api/admin/payments/delete', authenticateToken, async (req, res) => {
     try {
         const { uid } = req.body;
@@ -1508,7 +1394,6 @@ app.delete('/api/admin/payments/delete', authenticateToken, async (req, res) => 
             return res.status(404).json({ success: false, message: 'Application not found' });
         }
 
-        // Remove payment receipt and reset payment status
         await db.collection('applications').updateOne(
             { uid: uid },
             {
@@ -1523,7 +1408,6 @@ app.delete('/api/admin/payments/delete', authenticateToken, async (req, res) => 
             }
         );
 
-        // Reset payment stage
         await db.collection('applications').updateOne(
             { uid: uid },
             {
@@ -1545,79 +1429,10 @@ app.delete('/api/admin/payments/delete', authenticateToken, async (req, res) => 
     }
 });
 
-
-// ============================================================
-// MARK AS PENDING - Unified function
-// ============================================================
-app.put('/api/admin/payments/pending', authenticateToken, async (req, res) => {
-    try {
-        const { uid } = req.body;
-        if (!uid) {
-            return res.status(400).json({ success: false, message: 'uid is required' });
-        }
-
-        const application = await db.collection('applications').findOne({ uid: uid });
-        if (!application) {
-            return res.status(404).json({ success: false, message: 'Application not found' });
-        }
-
-        const receipt = application.paymentReceipt || {};
-        const updatedReceipt = {
-            ...receipt,
-            status: 'pending_verification',
-            pendingAt: new Date().toISOString()
-        };
-
-        // Add to payments array if not already
-        const existingPending = application.payments?.some(p => p.status === 'pending');
-        if (!existingPending && receipt.receiptUrl) {
-            await db.collection('applications').updateOne(
-                { uid: uid },
-                {
-                    $set: {
-                        paymentReceipt: updatedReceipt,
-                        status: 'payment_pending',
-                        updatedAt: new Date()
-                    },
-                    $push: {
-                        payments: {
-                            amount: receipt.amount || 0,
-                            status: 'pending',
-                            description: 'Payment pending verification',
-                            receiptUrl: receipt.receiptUrl || '',
-                            pendingAt: new Date().toISOString()
-                        }
-                    }
-                }
-            );
-        } else {
-            await db.collection('applications').updateOne(
-                { uid: uid },
-                {
-                    $set: {
-                        paymentReceipt: updatedReceipt,
-                        status: 'payment_pending',
-                        updatedAt: new Date()
-                    }
-                }
-            );
-        }
-
-        console.log(`⏳ Payment marked as pending for user: ${uid}`);
-        res.json({ success: true, message: 'Payment marked as pending' });
-    } catch (error) {
-        console.error('Error marking payment pending:', error);
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
 // ============================================================
 // SERVE STATIC FILES - AT THE VERY END
 // ============================================================
-// Serve the portal directory
 app.use('/portal', express.static(path.join(__dirname, 'portal')));
-
-// For any other route, serve index.html
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
