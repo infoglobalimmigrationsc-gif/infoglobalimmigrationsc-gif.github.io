@@ -1228,23 +1228,21 @@
             </section>
 
             <!-- Contacts Section -->
-<section id="contacts-section" class="admin-section">
-    <div class="section-header">
-        <h1><i class="fas fa-envelope"></i> Contact Submissions</h1>
-        <span style="color: rgba(255,255,255,0.5);" id="contactTotalLabel">0 total</span>
-    </div>
-    <div class="glass-container">
-        <div class="debug-info" id="contactDebugInfo">
-            <span style="color: #ff0;">🔍 Debug: Loading contacts...</span>
-        </div>
-        <div id="contactsList">
-            <div class="empty-state">
-                <i class="fas fa-inbox"></i>
-                <p>No contact submissions yet</p>
-            </div>
-        </div>
-    </div>
-</section>
+            <section id="contacts-section" class="admin-section">
+                <div class="section-header">
+                    <h1><i class="fas fa-envelope"></i> Contact Submissions</h1>
+                    <span style="color: rgba(255,255,255,0.5);" id="contactTotalLabel">0 total</span>
+                </div>
+                <div class="glass-container">
+                    <div id="contactsList">
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>No contact submissions yet</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- User Detail Modal -->
             <div id="userDetailModal" class="glass-modal">
                 <div class="modal-content">
@@ -2609,95 +2607,75 @@ async function loadPayments() {
             }
         };
 
+        // ============================================================
+        // LOAD CONTACTS
+        // ============================================================
+        async function loadContacts() {
+            try {
+                const result = await apiFetch('contacts');
+                const contacts = result.contacts || [];
 
-         // ============================================================
-// LOAD CONTACTS - FIXED
-// ============================================================
-async function loadContacts() {
-    const debugEl = document.getElementById('contactDebugInfo') || (() => {
-        const el = document.createElement('div');
-        el.id = 'contactDebugInfo';
-        el.className = 'debug-info';
-        document.querySelector('#contacts-section .glass-container').prepend(el);
-        return el;
-    })();
-    
-    try {
-        debugEl.innerHTML = '<span style="color: #ff0;">🔄 Fetching contacts from API...</span>';
-        
-        const result = await apiFetch('contacts');
-        const contacts = result.contacts || [];
+                const container = document.getElementById('contactsList');
+                document.getElementById('contactTotalLabel').textContent = `${contacts.length} total`;
 
-        const container = document.getElementById('contactsList');
-        document.getElementById('contactTotalLabel').textContent = `${contacts.length} total`;
-        document.getElementById('contactCount').textContent = contacts.length;
+                if (contacts.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>No contact submissions yet</p>
+                        </div>
+                    `;
+                    return;
+                }
 
-        debugEl.innerHTML = `
-            <span style="color: #0f0;">✅ Found ${contacts.length} contact submissions</span>
-            <span style="color: #ff0; margin-left: 15px;">📋 Latest: ${contacts.length > 0 ? new Date(contacts[0].createdAt).toLocaleDateString() : 'None'}</span>
-        `;
+                container.innerHTML = `
+                    <div class="table-wrapper">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Subject</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${contacts.map(contact => `
+                                    <tr>
+                                        <td><strong>${contact.name || 'Unknown'}</strong></td>
+                                        <td>${contact.email || 'N/A'}</td>
+                                        <td>${contact.phone || 'N/A'}</td>
+                                        <td>${contact.subject || 'N/A'}</td>
+                                        <td>${contact.createdAt ? new Date(contact.createdAt).toLocaleDateString() : 'N/A'}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline" onclick="viewContact('${contact._id || contact.id}')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" onclick="deleteContact('${contact._id || contact.id}')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
 
-        if (contacts.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-inbox"></i>
-                    <p>No contact submissions yet</p>
-                </div>
-            `;
-            return;
+            } catch (error) {
+                console.error('Error loading contacts:', error);
+                showToast('Error loading contacts', 'error');
+            }
         }
 
-        container.innerHTML = `
-            <div class="table-wrapper">
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Interest</th>
-                            <th>Country</th>
-                            <th>Date</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${contacts.map(contact => `
-                            <tr>
-                                <td><strong>${contact.name || 'Unknown'}</strong></td>
-                                <td>${contact.email || 'N/A'}</td>
-                                <td>${contact.phone || 'N/A'}</td>
-                                <td>${contact.interest || 'N/A'}</td>
-                                <td>${contact.country || 'N/A'}</td>
-                                <td>${contact.createdAt ? new Date(contact.createdAt).toLocaleDateString() : 'N/A'}</td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline" onclick="viewContact('${contact._id || contact.id}')">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-danger" onclick="deleteContact('${contact._id || contact.id}')">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            </div>
-        `;
-
-    } catch (error) {
-        console.error('Error loading contacts:', error);
-        debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
-        showToast('Error loading contacts: ' + error.message, 'error');
-    }
-}
-
-// View contact details
-window.viewContact = (contactId) => {
-    // Fetch and show contact details
-    showToast('Contact details feature - click to view full message', 'info');
-};
-        
+        // ============================================================
+        // VIEW CONTACT
+        // ============================================================
+        window.viewContact = (contactId) => {
+            showToast('Contact details feature coming soon', 'info');
+        };
 
         // ============================================================
         // DELETE CONTACT
@@ -2715,79 +2693,59 @@ window.viewContact = (contactId) => {
             }
         };
 
-
-
-
         // ============================================================
-// LOAD BLOG POSTS - FIXED
-// ============================================================
-async function loadBlogPosts() {
-    const debugEl = document.getElementById('blogDebugInfo') || (() => {
-        const el = document.createElement('div');
-        el.id = 'blogDebugInfo';
-        el.className = 'debug-info';
-        document.querySelector('#blog-section .glass-container').prepend(el);
-        return el;
-    })();
-    
-    try {
-        debugEl.innerHTML = '<span style="color: #ff0;">🔄 Fetching blog posts from API...</span>';
-        
-        const result = await apiFetch('blogs');
-        const blogs = result.blogs || [];
+        // LOAD BLOG POSTS
+        // ============================================================
+        async function loadBlogPosts() {
+            try {
+                const result = await apiFetch('blogs');
+                const blogs = result.blogs || [];
 
-        const container = document.getElementById('blogPostsList');
-        const total = blogs.length;
-        const published = blogs.filter(b => b.status === 'published').length;
-        const drafts = blogs.filter(b => b.status === 'draft').length;
+                const container = document.getElementById('blogPostsList');
+                const total = blogs.length;
+                const published = blogs.filter(b => b.status === 'published').length;
+                const drafts = blogs.filter(b => b.status === 'draft').length;
 
-        document.getElementById('totalPostsCount').textContent = total;
-        document.getElementById('publishedPostsCount').textContent = published;
-        document.getElementById('draftPostsCount').textContent = drafts;
-        document.getElementById('blogCount').textContent = total;
+                document.getElementById('totalPostsCount').textContent = total;
+                document.getElementById('publishedPostsCount').textContent = published;
+                document.getElementById('draftPostsCount').textContent = drafts;
+                document.getElementById('blogCount').textContent = total;
 
-        debugEl.innerHTML = `
-            <span style="color: #0f0;">✅ Found ${total} blog posts</span>
-            <span style="color: #ff0; margin-left: 15px;">📋 Published: ${published}, Drafts: ${drafts}</span>
-        `;
+                if (total === 0) {
+                    container.innerHTML = `<div class="empty-state"><i class="fas fa-newspaper"></i><p>No blog posts yet. Create your first post!</p></div>`;
+                    return;
+                }
 
-        if (total === 0) {
-            container.innerHTML = `<div class="empty-state"><i class="fas fa-newspaper"></i><p>No blog posts yet. Create your first post!</p></div>`;
-            return;
-        }
-
-        container.innerHTML = blogs.map(post => `
-            <div class="blog-item">
-                <div class="blog-header">
-                    <div>
-                        <div class="blog-title">${post.title || 'Untitled'}</div>
-                        <div class="blog-meta">
-                            <span>📂 ${post.category || 'Uncategorized'}</span>
-                            <span>📅 ${post.createdAt ? new Date(post.createdAt).toLocaleDateString() : 'Just now'}</span>
-                            <span class="status-badge status-${post.status || 'draft'}">${(post.status || 'draft').toUpperCase()}</span>
-                            ${post.author ? `<span>✍️ ${post.author}</span>` : ''}
+                container.innerHTML = blogs.map(post => `
+                    <div class="blog-item">
+                        <div class="blog-header">
+                            <div>
+                                <div class="blog-title">${post.title || 'Untitled'}</div>
+                                <div class="blog-meta">
+                                    <span>${post.category || 'Uncategorized'}</span>
+                                    <span>${post.createdAt ? new Date(post.createdAt).toLocaleDateString() : 'Just now'}</span>
+                                    <span class="status-badge status-${post.status || 'draft'}">${(post.status || 'draft').toUpperCase()}</span>
+                                    ${post.author ? `<span>✍️ ${post.author}</span>` : ''}
+                                </div>
+                            </div>
+                            <div class="blog-actions">
+                                <button class="btn btn-sm btn-outline" onclick="editBlogPost('${post._id || post.id}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteBlogPost('${post._id || post.id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
                         </div>
+                        ${post.excerpt ? `<p style="color: rgba(255,255,255,0.5); font-size: 0.85rem; margin-top: 8px;">${post.excerpt}</p>` : ''}
                     </div>
-                    <div class="blog-actions">
-                        <button class="btn btn-sm btn-outline" onclick="editBlogPost('${post._id || post.id}')">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteBlogPost('${post._id || post.id}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-                ${post.excerpt ? `<p style="color: rgba(255,255,255,0.5); font-size: 0.85rem; margin-top: 8px;">${post.excerpt}</p>` : ''}
-            </div>
-        `).join('');
+                `).join('');
 
-    } catch (error) {
-        console.error('Error loading blog posts:', error);
-        debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
-        showToast('Error loading blog posts: ' + error.message, 'error');
-    }
-}
-        
+            } catch (error) {
+                console.error('Error loading blog posts:', error);
+                showToast('Error loading blog posts', 'error');
+            }
+        }
 
         // ============================================================
         // SAVE BLOG POST
