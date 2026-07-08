@@ -6,7 +6,7 @@ const { MongoClient, GridFSBucket, ObjectId } = require('mongodb');
 const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const path = require('path'); // ADD THIS
+const path = require('path');
 
 const app = express();
 
@@ -77,7 +77,7 @@ connectDB().catch(console.error);
 // ============================================================
 // ============================================================
 // PASSWORD RESET - Custom Flow (Backend)
-// MOVED TO TOP - BEFORE OTHER ROUTES
+// MUST BE BEFORE ANY STATIC FILE MIDDLEWARE
 // ============================================================
 // ============================================================
 
@@ -1538,23 +1538,13 @@ app.put('/api/admin/payments/pending', authenticateToken, async (req, res) => {
 });
 
 // ============================================================
-// SERVE STATIC FILES (HTML, CSS, JS) - ONLY FOR GET REQUESTS
+// SERVE STATIC FILES - AT THE VERY END
 // ============================================================
-// This must be at the VERY END - before app.listen
-
-// Serve static files from the portal directory
+// Serve the portal directory
 app.use('/portal', express.static(path.join(__dirname, 'portal')));
 
-// Serve static files from the root directory
-app.use(express.static(__dirname));
-
-// For any GET request that doesn't match an API route, serve the index.html
+// For any other route, serve index.html
 app.get('*', (req, res) => {
-    // Check if the request is for an API route - if so, return 404
-    if (req.path.startsWith('/api/')) {
-        return res.status(404).json({ success: false, message: 'API endpoint not found' });
-    }
-    // Serve the index.html for client-side routing
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
