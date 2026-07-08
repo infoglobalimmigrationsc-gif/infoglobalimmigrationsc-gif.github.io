@@ -5093,8 +5093,10 @@
                     <!-- Blog posts will be dynamically loaded here from localStorage -->
                 </div>
                 
-                <div style="text-align: center; margin-top: 40px;">
-                    <a href="https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr" class="btn btn-primary" target="_blank" rel="noopener noreferrer">View All Posts on Facebook</a>
+                                <div style="text-align: center; margin-top: 40px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+                    <a href="https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                        <i class="fab fa-facebook" style="margin-right: 8px;"></i> View All Posts on Facebook
+                    </a>
                 </div>
             </div>
         </section>
@@ -10947,104 +10949,198 @@ function clearFieldError(field) {
                 });
             });
 
-           // Function to load blog posts from localStorage - UPDATED CODE
-            function loadBlogPostsToWebsite() {
-                const blogContainer = document.getElementById('dynamic-blog-container');
-                const postsJSON = localStorage.getItem('blogPosts');
-                const posts = postsJSON ? JSON.parse(postsJSON) : [];
-                
-                // Clear existing content
-                blogContainer.innerHTML = '';
-                
-                if (posts.length === 0) {
-                    // Show default content if no posts exist
-                    blogContainer.innerHTML = `
-                        <div class="blog-card">
-                            <div class="blog-image">
-                                <div class="image-fallback">
-                                    <i class="fas fa-book"></i>
-                                </div>
-                            </div>
-                            <div class="blog-content">
-                                <div class="blog-date">July 20, 2023</div>
-                                <h3 class="blog-title">Why Study Abroad: Benefits & Opportunities</h3>
-                                <p class="blog-excerpt">Discover the life-changing benefits of studying in a foreign country and how it can transform your career prospects.</p>
-                                <a href="https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr" class="btn btn-outline btn-small" target="_blank" rel="noopener noreferrer">Read More</a>
-                            </div>
-                        </div>
-                        
-                        <div class="blog-card">
-                            <div class="blog-image">
-                                <div class="image-fallback">
-                                    <i class="fas fa-plane"></i>
-                                </div>
-                            </div>
-                            <div class="blog-content">
-                                <div class="blog-date">July 15, 2023</div>
-                                <h3 class="blog-title">Why You Need a Professional Travel Agency</h3>
-                                <p class="blog-excerpt">Learn how working with experienced travel consultants can save you time, money, and stress in your immigration journey.</p>
-                                <a href="https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr" class="btn btn-outline btn-small" target="_blank" rel="noopener noreferrer">Read More</a>
-                            </div>
-                        </div>
-                        
-                        <div class="blog-card">
-                            <div class="blog-image">
-                                <div class="image-fallback">
-                                    <i class="fas fa-passport"></i>
-                                </div>
-                            </div>
-                            <div class="blog-content">
-                                <div class="blog-date">July 10, 2023</div>
-                                <h3 class="blog-title">Top 10 Visa Interview Tips for Success</h3>
-                                <p class="blog-excerpt">Expert advice on how to prepare for your visa interview and increase your chances of approval.</p>
-                                <a href="https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr" class="btn btn-outline btn-small" target="_blank" rel="noopener noreferrer">Read More</a>
-                            </div>
-                        </div>
-                    `;
-                    return;
+                      // ============================================================
+           // BLOG SECTION - Connected to Backend API
+           // ============================================================
+           
+           // API URL for backend
+           const BLOG_API_URL = 'https://gisc-app-production.up.railway.app/api/blogs';
+           
+           // Default fallback blog posts (shown if API fails or no posts exist)
+           const DEFAULT_BLOG_POSTS = [
+                {
+                    title: 'Why Study Abroad: Benefits & Opportunities',
+                    excerpt: 'Discover the life-changing benefits of studying in a foreign country and how it can transform your career prospects.',
+                    category: 'Study Abroad',
+                    date: '2023-07-20',
+                    link: 'https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr',
+                    image: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
+                },
+                {
+                    title: 'Why You Need a Professional Travel Agency',
+                    excerpt: 'Learn how working with experienced travel consultants can save you time, money, and stress in your immigration journey.',
+                    category: 'Travel Guides',
+                    date: '2023-07-15',
+                    link: 'https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr',
+                    image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
+                },
+                {
+                    title: 'Top 10 Visa Interview Tips for Success',
+                    excerpt: 'Expert advice on how to prepare for your visa interview and increase your chances of approval.',
+                    category: 'Visa Tips',
+                    date: '2023-07-10',
+                    link: 'https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr',
+                    image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
                 }
-                
-                // Display posts from localStorage
-                posts.forEach(post => {
-                    const formattedDate = new Date(post.date).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    });
-                    
-                    const blogCard = document.createElement('div');
-                    blogCard.className = 'blog-card';
-                    blogCard.innerHTML = `
-                        <div class="blog-image">
-                            <picture>
-                                <source srcset="${post.image}" type="image/webp">
-                                <source srcset="${post.image.replace('.webp', '.jpg')}" type="image/jpeg"> 
-                                <img src="${post.image.replace('.webp', '.jpg')}" alt="${post.title}" loading="lazy" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'">
-                            </picture>
-                        </div>
-                        <div class="blog-content">
-                            <div class="blog-date">${formattedDate}</div>
-                            <h3 class="blog-title">${post.title}</h3>
-                            <p class="blog-excerpt">${post.excerpt}</p>
-                            <a href="${post.link}" class="btn btn-outline btn-small" target="_blank" rel="noopener noreferrer">Read More</a>
-                        </div>
-                    `;
-                    
-                    blogContainer.appendChild(blogCard);
-                });
-            }
-
-            // Load blog posts when the page is ready
-            loadBlogPostsToWebsite();
-            
-            // Optional: Add an event listener to refresh blog posts if they're updated
-            // This would be useful if you had multiple tabs open
-            window.addEventListener('storage', function(e) {
-                if (e.key === 'blogPosts') {
-                    loadBlogPostsToWebsite();
-                }
-            });
-        });
+            ];
+           
+           // Function to fetch and display blog posts from backend API
+           async function loadBlogPostsToWebsite() {
+               const blogContainer = document.getElementById('dynamic-blog-container');
+               if (!blogContainer) return;
+               
+               // Show loading state
+               blogContainer.innerHTML = `
+                   <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                       <div class="loading-spinner" style="display: inline-block; width: 40px; height: 40px; border-width: 4px;"></div>
+                       <p style="margin-top: 15px; color: var(--medium-gray);">Loading blog posts...</p>
+                   </div>
+               `;
+               
+               try {
+                   console.log('📡 Fetching blog posts from API...');
+                   const response = await fetch(BLOG_API_URL);
+                   
+                   if (!response.ok) {
+                       throw new Error(`HTTP error! status: ${response.status}`);
+                   }
+                   
+                   const result = await response.json();
+                   console.log('✅ Blog posts fetched:', result);
+                   
+                   let posts = result.blogs || [];
+                   
+                   // If no posts from API, use defaults
+                   if (posts.length === 0) {
+                       console.log('📝 No posts from API, using defaults');
+                       posts = DEFAULT_BLOG_POSTS;
+                   }
+                   
+                   // Render posts
+                   renderBlogPosts(blogContainer, posts);
+                   
+               } catch (error) {
+                   console.error('❌ Error loading blog posts:', error);
+                   
+                   // Try localStorage as fallback
+                   try {
+                       const postsJSON = localStorage.getItem('blogPosts');
+                       const posts = postsJSON ? JSON.parse(postsJSON) : [];
+                       if (posts.length > 0) {
+                           console.log('📝 Using localStorage fallback');
+                           renderBlogPosts(blogContainer, posts);
+                           return;
+                       }
+                   } catch (localError) {
+                       console.warn('⚠️ localStorage fallback failed:', localError);
+                   }
+                   
+                   // Use defaults as final fallback
+                   console.log('📝 Using default blog posts');
+                   renderBlogPosts(blogContainer, DEFAULT_BLOG_POSTS);
+               }
+           }
+           
+           // Helper function to render blog posts
+           function renderBlogPosts(container, posts) {
+               // Clear container
+               container.innerHTML = '';
+               
+               posts.forEach(post => {
+                   // Format date
+                   let formattedDate = 'Recent Post';
+                   try {
+                       if (post.createdAt) {
+                           formattedDate = new Date(post.createdAt).toLocaleDateString('en-US', {
+                               year: 'numeric',
+                               month: 'long',
+                               day: 'numeric'
+                           });
+                       } else if (post.date) {
+                           formattedDate = new Date(post.date).toLocaleDateString('en-US', {
+                               year: 'numeric',
+                               month: 'long',
+                               day: 'numeric'
+                           });
+                       }
+                   } catch (e) {
+                       formattedDate = 'Recent Post';
+                   }
+                   
+                   // Get image URL
+                   let imageUrl = post.image || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80';
+                   
+                   // Get category
+                   const category = post.category || 'General';
+                   
+                   // Get link (use Facebook link if available, or create a read more link)
+                   let linkUrl = post.link || `https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr`;
+                   
+                   const blogCard = document.createElement('div');
+                   blogCard.className = 'blog-card';
+                   blogCard.innerHTML = `
+                       <div class="blog-image">
+                           <img src="${imageUrl}" alt="${post.title || 'Blog Post'}" loading="lazy" 
+                                onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'">
+                           ${category ? `<span style="position: absolute; top: 12px; left: 12px; background: var(--primary-red); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600;">${category}</span>` : ''}
+                       </div>
+                       <div class="blog-content">
+                           <div class="blog-date">${formattedDate}</div>
+                           <h3 class="blog-title">${post.title || 'Untitled Post'}</h3>
+                           <p class="blog-excerpt">${post.excerpt || post.content ? (post.content.substring(0, 120) + '...') : 'Read more about this topic on our blog.'}</p>
+                           <a href="${linkUrl}" class="btn btn-outline btn-small" target="_blank" rel="noopener noreferrer">
+                               Read More <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
+                           </a>
+                       </div>
+                   `;
+                   
+                   container.appendChild(blogCard);
+               });
+               
+               console.log(`✅ Rendered ${posts.length} blog posts`);
+           }
+           
+           // Load blog posts when the page is ready
+           document.addEventListener('DOMContentLoaded', function() {
+               // Load blog posts after a short delay to ensure DOM is ready
+               setTimeout(loadBlogPostsToWebsite, 500);
+           });
+           
+           // Also load when the blog section becomes visible (for single-page navigation)
+           // Observer to reload when blog section is scrolled to
+           if ('IntersectionObserver' in window) {
+               const blogSection = document.getElementById('blog');
+               if (blogSection) {
+                   const observer = new IntersectionObserver((entries) => {
+                       entries.forEach(entry => {
+                           if (entry.isIntersecting) {
+                               // Reload posts when blog section becomes visible
+                               // Only if container is empty or shows loading
+                               const container = document.getElementById('dynamic-blog-container');
+                               if (container && container.children.length <= 1) {
+                                   loadBlogPostsToWebsite();
+                               }
+                           }
+                       });
+                   }, { threshold: 0.1 });
+                   observer.observe(blogSection);
+               }
+           }
+           
+           // Refresh blog posts every 5 minutes (in case admin updates)
+           setInterval(() => {
+               const container = document.getElementById('dynamic-blog-container');
+               if (container && container.children.length > 0) {
+                   // Only refresh if the blog section is visible or near visible
+                   const blogSection = document.getElementById('blog');
+                   if (blogSection) {
+                       const rect = blogSection.getBoundingClientRect();
+                       if (rect.top < window.innerHeight + 200) {
+                           loadBlogPostsToWebsite();
+                       }
+                   }
+               }
+           }, 300000); // 5 minutes
 
         // ==================== CAPTCHA VALIDATION ====================
 
