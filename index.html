@@ -11121,7 +11121,6 @@ function clearFieldError(field) {
 
 
 
-
 // ============================================================
 // BLOG SECTION - CONNECTED TO BACKEND API (FIXED)
 // ============================================================
@@ -11217,7 +11216,7 @@ async function loadBlogPosts() {
         const response = await fetch(BLOG_API_URL);
         
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error('HTTP error! status: ' + response.status);
         }
         
         const result = await response.json();
@@ -11227,34 +11226,36 @@ async function loadBlogPosts() {
         
         if (result && result.success && Array.isArray(result.blogs)) {
             posts = result.blogs;
-            console.log(`📚 Found ${posts.length} blog posts in success.blogs`);
+            console.log('📚 Found ' + posts.length + ' blog posts in success.blogs');
         } else if (Array.isArray(result)) {
             posts = result;
-            console.log(`📚 Found ${posts.length} blog posts in direct array`);
+            console.log('📚 Found ' + posts.length + ' blog posts in direct array');
         } else if (result && result.data && Array.isArray(result.data)) {
             posts = result.data;
-            console.log(`📚 Found ${posts.length} blog posts in data array`);
+            console.log('📚 Found ' + posts.length + ' blog posts in data array');
         } else {
             console.warn('⚠️ Unknown response format:', result);
             posts = [];
         }
         
-        allBlogPosts = posts.map(post => ({
-            id: post._id || post.id || Date.now(),
-            title: post.title || 'Untitled Post',
-            content: post.content || post.description || '',
-            excerpt: post.excerpt || post.summary || '',
-            category: post.category || post.tags?.[0] || 'General',
-            date: post.createdAt || post.date || post.publishedAt || new Date().toISOString(),
-            createdAt: post.createdAt || post.date || new Date().toISOString(),
-            image: post.image || post.featuredImage || post.thumbnail || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-            link: post.link || post.url || `https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr`,
-            status: post.status || 'published',
-            author: post.author || 'Admin',
-            slug: post.slug || post.title?.toLowerCase().replace(/\s+/g, '-') || 'post'
-        }));
+        allBlogPosts = posts.map(function(post) {
+            return {
+                id: post._id || post.id || Date.now(),
+                title: post.title || 'Untitled Post',
+                content: post.content || post.description || '',
+                excerpt: post.excerpt || post.summary || '',
+                category: post.category || (post.tags && post.tags[0]) || 'General',
+                date: post.createdAt || post.date || post.publishedAt || new Date().toISOString(),
+                createdAt: post.createdAt || post.date || new Date().toISOString(),
+                image: post.image || post.featuredImage || post.thumbnail || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+                link: post.link || post.url || 'https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr',
+                status: post.status || 'published',
+                author: post.author || 'Admin',
+                slug: post.slug || (post.title ? post.title.toLowerCase().replace(/\s+/g, '-') : 'post')
+            };
+        });
         
-        console.log(`✅ Processed ${allBlogPosts.length} blog posts for display`);
+        console.log('✅ Processed ' + allBlogPosts.length + ' blog posts for display');
         
         if (allBlogPosts.length === 0) {
             blogContainer.innerHTML = `
@@ -11278,15 +11279,15 @@ async function loadBlogPosts() {
 
 // Render blog posts with optional category filter
 function renderBlogPosts(posts) {
-    const blogContainer = document.getElementById('dynamic-blog-container');
+    var blogContainer = document.getElementById('dynamic-blog-container');
     if (!blogContainer) return;
     
-    let filteredPosts = posts;
+    var filteredPosts = posts;
     if (currentCategory !== 'all') {
-        filteredPosts = posts.filter(post => 
-            post.category && post.category.toLowerCase() === currentCategory.toLowerCase()
-        );
-        console.log(`🔍 Filtered to ${filteredPosts.length} posts in category: ${currentCategory}`);
+        filteredPosts = posts.filter(function(post) {
+            return post.category && post.category.toLowerCase() === currentCategory.toLowerCase();
+        });
+        console.log('🔍 Filtered to ' + filteredPosts.length + ' posts in category: ' + currentCategory);
     }
     
     if (!filteredPosts || filteredPosts.length === 0) {
@@ -11301,11 +11302,11 @@ function renderBlogPosts(posts) {
     
     blogContainer.innerHTML = '';
     
-    filteredPosts.forEach((post, index) => {
-        let formattedDate = 'Recent Post';
+    filteredPosts.forEach(function(post, index) {
+        var formattedDate = 'Recent Post';
         try {
             if (post.createdAt) {
-                const dateObj = new Date(post.createdAt);
+                var dateObj = new Date(post.createdAt);
                 if (!isNaN(dateObj.getTime())) {
                     formattedDate = dateObj.toLocaleDateString('en-US', {
                         year: 'numeric',
@@ -11314,9 +11315,9 @@ function renderBlogPosts(posts) {
                     });
                 }
             } else if (post.date) {
-                const dateObj = new Date(post.date);
-                if (!isNaN(dateObj.getTime())) {
-                    formattedDate = dateObj.toLocaleDateString('en-US', {
+                var dateObj2 = new Date(post.date);
+                if (!isNaN(dateObj2.getTime())) {
+                    formattedDate = dateObj2.toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
@@ -11327,23 +11328,23 @@ function renderBlogPosts(posts) {
             formattedDate = 'Recent Post';
         }
         
-        let imageUrl = post.image || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80';
-        const category = post.category || 'General';
-        let linkUrl = post.link || `https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr`;
+        var imageUrl = post.image || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80';
+        var category = post.category || 'General';
+        var linkUrl = post.link || 'https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr';
         
-        let excerpt = post.excerpt || '';
+        var excerpt = post.excerpt || '';
         if (!excerpt && post.content) {
-            const tempDiv = document.createElement('div');
+            var tempDiv = document.createElement('div');
             tempDiv.innerHTML = post.content;
-            const textContent = tempDiv.textContent || tempDiv.innerText || '';
+            var textContent = tempDiv.textContent || tempDiv.innerText || '';
             excerpt = textContent.substring(0, 120) + (textContent.length > 120 ? '...' : '');
         } else if (!excerpt) {
             excerpt = 'Read more about this topic on our blog.';
         }
         
-        const blogCard = document.createElement('div');
+        var blogCard = document.createElement('div');
         blogCard.className = 'blog-card';
-        blogCard.style.animation = `fadeInUp 0.5s ease ${index * 0.1}s forwards`;
+        blogCard.style.animation = 'fadeInUp 0.5s ease ' + (index * 0.1) + 's forwards';
         blogCard.style.opacity = '0';
         
         blogCard.innerHTML = `
@@ -11351,8 +11352,8 @@ function renderBlogPosts(posts) {
                 <img src="${imageUrl}" alt="${post.title || 'Blog Post'}" loading="lazy" 
                      style="width: 100%; height: 100%; object-fit: cover;"
                      onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'">
-                ${category ? `<span style="position: absolute; top: 12px; left: 12px; background: var(--primary-red); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600;">${category}</span>` : ''}
-                ${post.status === 'published' ? `<span style="position: absolute; top: 12px; right: 12px; background: rgba(40, 167, 69, 0.9); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.6rem; font-weight: 600;"><i class="fas fa-check-circle"></i> Published</span>` : ''}
+                ${category ? '<span style="position: absolute; top: 12px; left: 12px; background: var(--primary-red); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600;">' + category + '</span>' : ''}
+                ${post.status === 'published' ? '<span style="position: absolute; top: 12px; right: 12px; background: rgba(40, 167, 69, 0.9); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.6rem; font-weight: 600;"><i class="fas fa-check-circle"></i> Published</span>' : ''}
             </div>
             <div class="blog-content">
                 <div class="blog-date">
@@ -11365,7 +11366,7 @@ function renderBlogPosts(posts) {
                     <a href="${linkUrl}" class="btn btn-outline btn-small" target="_blank" rel="noopener noreferrer">
                         Read More <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
                     </a>
-                    ${post.author ? `<span style="font-size: 0.7rem; color: var(--medium-gray);"><i class="fas fa-user-edit"></i> ${post.author}</span>` : ''}
+                    ${post.author ? '<span style="font-size: 0.7rem; color: var(--medium-gray);"><i class="fas fa-user-edit"></i> ' + post.author + '</span>' : ''}
                 </div>
             </div>
         `;
@@ -11373,20 +11374,22 @@ function renderBlogPosts(posts) {
         blogContainer.appendChild(blogCard);
     });
     
-    console.log(`✅ Rendered ${filteredPosts.length} blog posts`);
+    console.log('✅ Rendered ' + filteredPosts.length + ' blog posts');
 }
 
 // Setup blog filters
 function setupBlogFilters() {
-    const filterButtons = document.querySelectorAll('.blog-filter-btn');
+    var filterButtons = document.querySelectorAll('.blog-filter-btn');
     
-    filterButtons.forEach(btn => {
+    filterButtons.forEach(function(btn) {
         btn.addEventListener('click', function() {
-            filterButtons.forEach(b => b.classList.remove('active'));
+            filterButtons.forEach(function(b) {
+                b.classList.remove('active');
+            });
             this.classList.add('active');
             
             currentCategory = this.getAttribute('data-category');
-            console.log(`🔍 Filtering by category: ${currentCategory}`);
+            console.log('🔍 Filtering by category: ' + currentCategory);
             
             renderBlogPosts(allBlogPosts);
         });
@@ -11396,7 +11399,7 @@ function setupBlogFilters() {
 // Add animation styles if not present
 function addBlogAnimationStyles() {
     if (!document.getElementById('blogAnimationStyles')) {
-        const style = document.createElement('style');
+        var style = document.createElement('style');
         style.id = 'blogAnimationStyles';
         style.textContent = `
             @keyframes fadeInUp {
@@ -11426,14 +11429,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Also load when blog section becomes visible
 if ('IntersectionObserver' in window) {
-    const blogSection = document.getElementById('blog');
+    var blogSection = document.getElementById('blog');
     if (blogSection) {
-        let hasLoaded = false;
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
+        var hasLoaded = false;
+        var observer = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
                 if (entry.isIntersecting && !hasLoaded) {
                     hasLoaded = true;
-                    const container = document.getElementById('dynamic-blog-container');
+                    var container = document.getElementById('dynamic-blog-container');
                     if (container && container.children.length <= 1) {
                         loadBlogPosts();
                     }
@@ -11445,12 +11448,12 @@ if ('IntersectionObserver' in window) {
 }
 
 // Refresh blog posts every 5 minutes
-setInterval(() => {
-    const container = document.getElementById('dynamic-blog-container');
+setInterval(function() {
+    var container = document.getElementById('dynamic-blog-container');
     if (container && container.children.length > 0) {
-        const blogSection = document.getElementById('blog');
+        var blogSection = document.getElementById('blog');
         if (blogSection) {
-            const rect = blogSection.getBoundingClientRect();
+            var rect = blogSection.getBoundingClientRect();
             if (rect.top < window.innerHeight + 200) {
                 loadBlogPosts();
             }
