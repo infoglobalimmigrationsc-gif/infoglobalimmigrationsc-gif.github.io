@@ -5135,7 +5135,7 @@
     </div>
 </section>
 
-        <!-- Blog Preview Section - CONNECTED TO BACKEND API -->
+                <!-- Blog Preview Section - CONNECTED TO BACKEND API -->
 <section id="blog" class="section blog-preview">
     <div class="container">
         <div class="section-title">
@@ -11132,238 +11132,7 @@ const BLOG_API_URL = 'https://gisc-app-production.up.railway.app/api/blogs';
 let currentCategory = 'all';
 let allBlogPosts = [];
 
-// Load blog posts from API
-async function loadBlogPosts() {
-    const blogContainer = document.getElementById('dynamic-blog-container');
-    if (!blogContainer) {
-        console.log('⚠️ Blog container not found');
-        return;
-    }
-    
-    // Show loading state
-    blogContainer.innerHTML = `
-        <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-            <div class="loading-spinner" style="display: inline-block; width: 40px; height: 40px; border-width: 4px;"></div>
-            <p style="margin-top: 15px; color: var(--medium-gray);">Loading blog posts...</p>
-        </div>
-    `;
-    
-    try {
-        console.log('📡 Fetching blog posts from API...');
-        const response = await fetch(BLOG_API_URL);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const result = await response.json();
-        console.log('✅ API Response:', result);
-        
-        // ======== FIX: Handle BOTH response formats ========
-        // Your API returns { success: true, blogs: [...] }
-        // But also might return an array directly
-        
-        let posts = [];
-        
-        if (result && result.success && Array.isArray(result.blogs)) {
-            // Format: { success: true, blogs: [...] }
-            posts = result.blogs;
-            console.log(`📚 Found ${posts.length} blog posts in success.blogs`);
-        } else if (Array.isArray(result)) {
-            // Format: direct array
-            posts = result;
-            console.log(`📚 Found ${posts.length} blog posts in direct array`);
-        } else if (result && result.data && Array.isArray(result.data)) {
-            // Format: { data: [...] }
-            posts = result.data;
-            console.log(`📚 Found ${posts.length} blog posts in data array`);
-        } else {
-            console.warn('⚠️ Unknown response format:', result);
-            posts = [];
-        }
-        
-        // Map posts to a consistent format
-        allBlogPosts = posts.map(post => ({
-            id: post._id || post.id || Date.now(),
-            title: post.title || 'Untitled Post',
-            content: post.content || post.description || '',
-            excerpt: post.excerpt || post.summary || '',
-            category: post.category || post.tags?.[0] || 'General',
-            date: post.createdAt || post.date || post.publishedAt || new Date().toISOString(),
-            createdAt: post.createdAt || post.date || new Date().toISOString(),
-            image: post.image || post.featuredImage || post.thumbnail || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-            link: post.link || post.url || `https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr`,
-            status: post.status || 'published',
-            author: post.author || 'Admin',
-            slug: post.slug || post.title?.toLowerCase().replace(/\s+/g, '-') || 'post'
-        }));
-        
-        console.log(`✅ Processed ${allBlogPosts.length} blog posts for display`);
-        
-        if (allBlogPosts.length === 0) {
-            // Show a message when no posts are available
-            blogContainer.innerHTML = `
-                <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--medium-gray);">
-                    <i class="fas fa-newspaper" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.3;"></i>
-                    <p>No blog posts available yet. Check back soon for updates!</p>
-                </div>
-            `;
-            return;
-        }
-        
-        renderBlogPosts(allBlogPosts);
-        
-    } catch (error) {
-        console.error('❌ Error loading blog posts:', error);
-        console.log('📝 Using default blog posts as fallback');
-        
-        // Use default posts as fallback
-        allBlogPosts = DEFAULT_BLOG_POSTS;
-        renderBlogPosts(allBlogPosts);
-    }
-}
-
-// Render blog posts with optional category filter
-function renderBlogPosts(posts) {
-    const blogContainer = document.getElementById('dynamic-blog-container');
-    if (!blogContainer) return;
-    
-    // Filter by category if not 'all'
-    let filteredPosts = posts;
-    if (currentCategory !== 'all') {
-        filteredPosts = posts.filter(post => 
-            post.category && post.category.toLowerCase() === currentCategory.toLowerCase()
-        );
-        console.log(`🔍 Filtered to ${filteredPosts.length} posts in category: ${currentCategory}`);
-    }
-    
-    // If no posts, show message
-    if (!filteredPosts || filteredPosts.length === 0) {
-        blogContainer.innerHTML = `
-            <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--medium-gray);">
-                <i class="fas fa-newspaper" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.3;"></i>
-                <p>No blog posts available in this category. Check back soon!</p>
-            </div>
-        `;
-        return;
-    }
-    
-    // Clear container
-    blogContainer.innerHTML = '';
-    
-    // Render each post
-    filteredPosts.forEach((post, index) => {
-        // Format date
-        let formattedDate = 'Recent Post';
-        try {
-            if (post.createdAt) {
-                const dateObj = new Date(post.createdAt);
-                if (!isNaN(dateObj.getTime())) {
-                    formattedDate = dateObj.toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    });
-                }
-            } else if (post.date) {
-                const dateObj = new Date(post.date);
-                if (!isNaN(dateObj.getTime())) {
-                    formattedDate = dateObj.toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    });
-                }
-            }
-        } catch (e) {
-            formattedDate = 'Recent Post';
-        }
-        
-        // Get image URL (with fallback)
-        let imageUrl = post.image || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80';
-        
-        // Get category
-        const category = post.category || 'General';
-        
-        // Get link (use Facebook link as fallback)
-        let linkUrl = post.link || `https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr`;
-        
-        // Get excerpt
-        let excerpt = post.excerpt || '';
-        if (!excerpt && post.content) {
-            // Strip HTML tags for excerpt
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = post.content;
-            const textContent = tempDiv.textContent || tempDiv.innerText || '';
-            excerpt = textContent.substring(0, 120) + (textContent.length > 120 ? '...' : '');
-        } else if (!excerpt) {
-            excerpt = 'Read more about this topic on our blog.';
-        }
-        
-        // Create blog card
-        const blogCard = document.createElement('div');
-        blogCard.className = 'blog-card';
-        blogCard.style.animation = `fadeInUp 0.5s ease ${index * 0.1}s forwards`;
-        blogCard.style.opacity = '0';
-        
-        blogCard.innerHTML = `
-            <div class="blog-image" style="position: relative; height: 200px; overflow: hidden; background: #f0f0f0;">
-                <img src="${imageUrl}" alt="${post.title || 'Blog Post'}" loading="lazy" 
-                     style="width: 100%; height: 100%; object-fit: cover;"
-                     onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'">
-                ${category ? `<span style="position: absolute; top: 12px; left: 12px; background: var(--primary-red); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600;">${category}</span>` : ''}
-                ${post.status === 'published' ? `<span style="position: absolute; top: 12px; right: 12px; background: rgba(40, 167, 69, 0.9); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.6rem; font-weight: 600;"><i class="fas fa-check-circle"></i> Published</span>` : ''}
-            </div>
-            <div class="blog-content">
-                <div class="blog-date">
-                    <i class="fas fa-calendar-alt" style="color: var(--primary-red); margin-right: 5px;"></i>
-                    ${formattedDate}
-                </div>
-                <h3 class="blog-title">${post.title || 'Untitled Post'}</h3>
-                <p class="blog-excerpt">${excerpt}</p>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
-                    <a href="${linkUrl}" class="btn btn-outline btn-small" target="_blank" rel="noopener noreferrer">
-                        Read More <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
-                    </a>
-                    ${post.author ? `<span style="font-size: 0.7rem; color: var(--medium-gray);"><i class="fas fa-user-edit"></i> ${post.author}</span>` : ''}
-                </div>
-            </div>
-        `;
-        
-        blogContainer.appendChild(blogCard);
-    });
-    
-    console.log(`✅ Rendered ${filteredPosts.length} blog posts`);
-}
-        
-
-// ============================================================
-// BLOG FILTER FUNCTIONALITY
-// ============================================================
-
-function setupBlogFilters() {
-    const filterButtons = document.querySelectorAll('.blog-filter-btn');
-    
-    filterButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            // Update active state
-            filterButtons.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            
-            // Get category
-            currentCategory = this.getAttribute('data-category');
-            console.log(`🔍 Filtering by category: ${currentCategory}`);
-            
-            // Re-render with filter
-            renderBlogPosts(allBlogPosts);
-        });
-    });
-}
-
-// ============================================================
 // DEFAULT BLOG POSTS (Fallback if API fails)
-// ============================================================
-
 const DEFAULT_BLOG_POSTS = [
     {
         title: 'Why Study Abroad: Benefits & Opportunities',
@@ -11427,54 +11196,235 @@ const DEFAULT_BLOG_POSTS = [
     }
 ];
 
-// ============================================================
-// ANIMATION STYLES
-// ============================================================
-
-// Add the fadeInUp animation to the page if not already present
-if (!document.getElementById('blogAnimationStyles')) {
-    const style = document.createElement('style');
-    style.id = 'blogAnimationStyles';
-    style.textContent = `
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .blog-filter-btn.active {
-            background: var(--primary-red) !important;
-            color: white !important;
-            border-color: var(--primary-red) !important;
-        }
-        
-        .blog-filter-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
+// Load blog posts from API - GLOBAL FUNCTION
+async function loadBlogPosts() {
+    const blogContainer = document.getElementById('dynamic-blog-container');
+    if (!blogContainer) {
+        console.log('⚠️ Blog container not found');
+        return;
+    }
+    
+    // Show loading state
+    blogContainer.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+            <div class="loading-spinner" style="display: inline-block; width: 40px; height: 40px; border-width: 4px;"></div>
+            <p style="margin-top: 15px; color: var(--medium-gray);">Loading blog posts...</p>
+        </div>
     `;
-    document.head.appendChild(style);
+    
+    try {
+        console.log('📡 Fetching blog posts from API...');
+        const response = await fetch(BLOG_API_URL);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('✅ API Response:', result);
+        
+        let posts = [];
+        
+        if (result && result.success && Array.isArray(result.blogs)) {
+            posts = result.blogs;
+            console.log(`📚 Found ${posts.length} blog posts in success.blogs`);
+        } else if (Array.isArray(result)) {
+            posts = result;
+            console.log(`📚 Found ${posts.length} blog posts in direct array`);
+        } else if (result && result.data && Array.isArray(result.data)) {
+            posts = result.data;
+            console.log(`📚 Found ${posts.length} blog posts in data array`);
+        } else {
+            console.warn('⚠️ Unknown response format:', result);
+            posts = [];
+        }
+        
+        allBlogPosts = posts.map(post => ({
+            id: post._id || post.id || Date.now(),
+            title: post.title || 'Untitled Post',
+            content: post.content || post.description || '',
+            excerpt: post.excerpt || post.summary || '',
+            category: post.category || post.tags?.[0] || 'General',
+            date: post.createdAt || post.date || post.publishedAt || new Date().toISOString(),
+            createdAt: post.createdAt || post.date || new Date().toISOString(),
+            image: post.image || post.featuredImage || post.thumbnail || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+            link: post.link || post.url || `https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr`,
+            status: post.status || 'published',
+            author: post.author || 'Admin',
+            slug: post.slug || post.title?.toLowerCase().replace(/\s+/g, '-') || 'post'
+        }));
+        
+        console.log(`✅ Processed ${allBlogPosts.length} blog posts for display`);
+        
+        if (allBlogPosts.length === 0) {
+            blogContainer.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--medium-gray);">
+                    <i class="fas fa-newspaper" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.3;"></i>
+                    <p>No blog posts available yet. Check back soon for updates!</p>
+                </div>
+            `;
+            return;
+        }
+        
+        renderBlogPosts(allBlogPosts);
+        
+    } catch (error) {
+        console.error('❌ Error loading blog posts:', error);
+        console.log('📝 Using default blog posts as fallback');
+        allBlogPosts = DEFAULT_BLOG_POSTS;
+        renderBlogPosts(allBlogPosts);
+    }
 }
 
-// ============================================================
-// INITIALIZE BLOG
-// ============================================================
-
-// Load blog posts when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
-    // Setup filter buttons
-    setupBlogFilters();
+// Render blog posts with optional category filter
+function renderBlogPosts(posts) {
+    const blogContainer = document.getElementById('dynamic-blog-container');
+    if (!blogContainer) return;
     
-    // Load blog posts after a short delay
+    let filteredPosts = posts;
+    if (currentCategory !== 'all') {
+        filteredPosts = posts.filter(post => 
+            post.category && post.category.toLowerCase() === currentCategory.toLowerCase()
+        );
+        console.log(`🔍 Filtered to ${filteredPosts.length} posts in category: ${currentCategory}`);
+    }
+    
+    if (!filteredPosts || filteredPosts.length === 0) {
+        blogContainer.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--medium-gray);">
+                <i class="fas fa-newspaper" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.3;"></i>
+                <p>No blog posts available in this category. Check back soon!</p>
+            </div>
+        `;
+        return;
+    }
+    
+    blogContainer.innerHTML = '';
+    
+    filteredPosts.forEach((post, index) => {
+        let formattedDate = 'Recent Post';
+        try {
+            if (post.createdAt) {
+                const dateObj = new Date(post.createdAt);
+                if (!isNaN(dateObj.getTime())) {
+                    formattedDate = dateObj.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                }
+            } else if (post.date) {
+                const dateObj = new Date(post.date);
+                if (!isNaN(dateObj.getTime())) {
+                    formattedDate = dateObj.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                }
+            }
+        } catch (e) {
+            formattedDate = 'Recent Post';
+        }
+        
+        let imageUrl = post.image || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80';
+        const category = post.category || 'General';
+        let linkUrl = post.link || `https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr`;
+        
+        let excerpt = post.excerpt || '';
+        if (!excerpt && post.content) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = post.content;
+            const textContent = tempDiv.textContent || tempDiv.innerText || '';
+            excerpt = textContent.substring(0, 120) + (textContent.length > 120 ? '...' : '');
+        } else if (!excerpt) {
+            excerpt = 'Read more about this topic on our blog.';
+        }
+        
+        const blogCard = document.createElement('div');
+        blogCard.className = 'blog-card';
+        blogCard.style.animation = `fadeInUp 0.5s ease ${index * 0.1}s forwards`;
+        blogCard.style.opacity = '0';
+        
+        blogCard.innerHTML = `
+            <div class="blog-image" style="position: relative; height: 200px; overflow: hidden; background: #f0f0f0;">
+                <img src="${imageUrl}" alt="${post.title || 'Blog Post'}" loading="lazy" 
+                     style="width: 100%; height: 100%; object-fit: cover;"
+                     onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'">
+                ${category ? `<span style="position: absolute; top: 12px; left: 12px; background: var(--primary-red); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600;">${category}</span>` : ''}
+                ${post.status === 'published' ? `<span style="position: absolute; top: 12px; right: 12px; background: rgba(40, 167, 69, 0.9); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.6rem; font-weight: 600;"><i class="fas fa-check-circle"></i> Published</span>` : ''}
+            </div>
+            <div class="blog-content">
+                <div class="blog-date">
+                    <i class="fas fa-calendar-alt" style="color: var(--primary-red); margin-right: 5px;"></i>
+                    ${formattedDate}
+                </div>
+                <h3 class="blog-title">${post.title || 'Untitled Post'}</h3>
+                <p class="blog-excerpt">${excerpt}</p>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
+                    <a href="${linkUrl}" class="btn btn-outline btn-small" target="_blank" rel="noopener noreferrer">
+                        Read More <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
+                    </a>
+                    ${post.author ? `<span style="font-size: 0.7rem; color: var(--medium-gray);"><i class="fas fa-user-edit"></i> ${post.author}</span>` : ''}
+                </div>
+            </div>
+        `;
+        
+        blogContainer.appendChild(blogCard);
+    });
+    
+    console.log(`✅ Rendered ${filteredPosts.length} blog posts`);
+}
+
+// Setup blog filters
+function setupBlogFilters() {
+    const filterButtons = document.querySelectorAll('.blog-filter-btn');
+    
+    filterButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            filterButtons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            currentCategory = this.getAttribute('data-category');
+            console.log(`🔍 Filtering by category: ${currentCategory}`);
+            
+            renderBlogPosts(allBlogPosts);
+        });
+    });
+}
+
+// Add animation styles if not present
+function addBlogAnimationStyles() {
+    if (!document.getElementById('blogAnimationStyles')) {
+        const style = document.createElement('style');
+        style.id = 'blogAnimationStyles';
+        style.textContent = `
+            @keyframes fadeInUp {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .blog-filter-btn.active {
+                background: var(--primary-red) !important;
+                color: white !important;
+                border-color: var(--primary-red) !important;
+            }
+            .blog-filter-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    addBlogAnimationStyles();
+    setupBlogFilters();
     setTimeout(loadBlogPosts, 500);
 });
 
-// Also load when blog section becomes visible (for single-page navigation)
+// Also load when blog section becomes visible
 if ('IntersectionObserver' in window) {
     const blogSection = document.getElementById('blog');
     if (blogSection) {
@@ -11483,7 +11433,6 @@ if ('IntersectionObserver' in window) {
             entries.forEach(entry => {
                 if (entry.isIntersecting && !hasLoaded) {
                     hasLoaded = true;
-                    // Only reload if container shows loading state
                     const container = document.getElementById('dynamic-blog-container');
                     if (container && container.children.length <= 1) {
                         loadBlogPosts();
@@ -11495,7 +11444,7 @@ if ('IntersectionObserver' in window) {
     }
 }
 
-// Refresh blog posts every 5 minutes (in case admin updates)
+// Refresh blog posts every 5 minutes
 setInterval(() => {
     const container = document.getElementById('dynamic-blog-container');
     if (container && container.children.length > 0) {
@@ -11507,9 +11456,11 @@ setInterval(() => {
             }
         }
     }
-}, 300000); // 5 minutes
+}, 300000);
 
 console.log('✅ Blog system initialized - connected to backend API');
+
+        
 
 // ==================== CAPTCHA VALIDATION ====================
 
