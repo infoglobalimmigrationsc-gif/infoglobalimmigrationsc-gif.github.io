@@ -6010,8 +6010,8 @@
                 </div>
             </div>
             
-            <!-- ⚠️ IMPORTANT: REMOVED action AND method attributes -->
-            <div class="contact-form">
+            <!-- ⚠️ IMPORTANT: NO action OR method attributes -->
+            <div class="contact-form" id="contactFormContainer">
                 <h3>Send us a Message</h3>
                 <form id="inquiryForm">
                     <div class="form-group">
@@ -6073,7 +6073,7 @@
                         <div class="form-error" id="messageError">Please enter your message</div>
                     </div>
                     
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;" id="contactSubmitBtn">
                         Submit Inquiry
                     </button>
                     
@@ -13573,6 +13573,6 @@ function drawWorldMap(ctx, w, h) {
         setTimeout(loadBlogPosts, 500);
     });
     </script>
-
+                   
 </body>
 </html>  
