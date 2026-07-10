@@ -11120,8 +11120,10 @@ function clearFieldError(field) {
             });
 
 
+
+
 // ============================================================
-// BLOG SECTION - CONNECTED TO BACKEND API
+// BLOG SECTION - CONNECTED TO BACKEND API (FIXED)
 // ============================================================
 
 const BLOG_API_URL = 'https://gisc-app-production.up.railway.app/api/blogs';
@@ -11155,21 +11157,67 @@ async function loadBlogPosts() {
         }
         
         const result = await response.json();
-        console.log('✅ Blog posts fetched:', result);
+        console.log('✅ API Response:', result);
+        
+        // ======== FIX: Handle BOTH response formats ========
+        // Your API returns { success: true, blogs: [...] }
+        // But also might return an array directly
+        
+        let posts = [];
         
         if (result && result.success && Array.isArray(result.blogs)) {
-            allBlogPosts = result.blogs;
-            console.log(`📚 Found ${allBlogPosts.length} blog posts from API`);
-            renderBlogPosts(allBlogPosts);
+            // Format: { success: true, blogs: [...] }
+            posts = result.blogs;
+            console.log(`📚 Found ${posts.length} blog posts in success.blogs`);
+        } else if (Array.isArray(result)) {
+            // Format: direct array
+            posts = result;
+            console.log(`📚 Found ${posts.length} blog posts in direct array`);
+        } else if (result && result.data && Array.isArray(result.data)) {
+            // Format: { data: [...] }
+            posts = result.data;
+            console.log(`📚 Found ${posts.length} blog posts in data array`);
         } else {
-            console.log('⚠️ No blogs in response, using defaults');
-            allBlogPosts = DEFAULT_BLOG_POSTS;
-            renderBlogPosts(allBlogPosts);
+            console.warn('⚠️ Unknown response format:', result);
+            posts = [];
         }
+        
+        // Map posts to a consistent format
+        allBlogPosts = posts.map(post => ({
+            id: post._id || post.id || Date.now(),
+            title: post.title || 'Untitled Post',
+            content: post.content || post.description || '',
+            excerpt: post.excerpt || post.summary || '',
+            category: post.category || post.tags?.[0] || 'General',
+            date: post.createdAt || post.date || post.publishedAt || new Date().toISOString(),
+            createdAt: post.createdAt || post.date || new Date().toISOString(),
+            image: post.image || post.featuredImage || post.thumbnail || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+            link: post.link || post.url || `https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr`,
+            status: post.status || 'published',
+            author: post.author || 'Admin',
+            slug: post.slug || post.title?.toLowerCase().replace(/\s+/g, '-') || 'post'
+        }));
+        
+        console.log(`✅ Processed ${allBlogPosts.length} blog posts for display`);
+        
+        if (allBlogPosts.length === 0) {
+            // Show a message when no posts are available
+            blogContainer.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--medium-gray);">
+                    <i class="fas fa-newspaper" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.3;"></i>
+                    <p>No blog posts available yet. Check back soon for updates!</p>
+                </div>
+            `;
+            return;
+        }
+        
+        renderBlogPosts(allBlogPosts);
         
     } catch (error) {
         console.error('❌ Error loading blog posts:', error);
         console.log('📝 Using default blog posts as fallback');
+        
+        // Use default posts as fallback
         allBlogPosts = DEFAULT_BLOG_POSTS;
         renderBlogPosts(allBlogPosts);
     }
@@ -11204,22 +11252,28 @@ function renderBlogPosts(posts) {
     blogContainer.innerHTML = '';
     
     // Render each post
-    filteredPosts.forEach(post => {
+    filteredPosts.forEach((post, index) => {
         // Format date
         let formattedDate = 'Recent Post';
         try {
             if (post.createdAt) {
-                formattedDate = new Date(post.createdAt).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                });
+                const dateObj = new Date(post.createdAt);
+                if (!isNaN(dateObj.getTime())) {
+                    formattedDate = dateObj.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                }
             } else if (post.date) {
-                formattedDate = new Date(post.date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                });
+                const dateObj = new Date(post.date);
+                if (!isNaN(dateObj.getTime())) {
+                    formattedDate = dateObj.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                }
             }
         } catch (e) {
             formattedDate = 'Recent Post';
@@ -11249,7 +11303,7 @@ function renderBlogPosts(posts) {
         // Create blog card
         const blogCard = document.createElement('div');
         blogCard.className = 'blog-card';
-        blogCard.style.animation = 'fadeInUp 0.5s ease forwards';
+        blogCard.style.animation = `fadeInUp 0.5s ease ${index * 0.1}s forwards`;
         blogCard.style.opacity = '0';
         
         blogCard.innerHTML = `
@@ -11277,15 +11331,11 @@ function renderBlogPosts(posts) {
         `;
         
         blogContainer.appendChild(blogCard);
-        
-        // Trigger animation with delay
-        setTimeout(() => {
-            blogCard.style.opacity = '1';
-        }, 100);
     });
     
     console.log(`✅ Rendered ${filteredPosts.length} blog posts`);
 }
+        
 
 // ============================================================
 // BLOG FILTER FUNCTIONALITY
