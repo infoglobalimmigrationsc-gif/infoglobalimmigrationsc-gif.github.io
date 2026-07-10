@@ -3609,12 +3609,8 @@
             display: none !important;
         }
     </style>
-     <!-- Glass System CSS - MUST be after all other CSS -->
+<!-- Glass System CSS - MUST be after all other CSS -->
 <link rel="stylesheet" href="css/glass-system.css">
-
-<!-- Make sure this is loaded before your main script -->
-<script src="components/glass-navbar.js" defer></script>
-<script src="js/frontend-blog.js" defer></script>
     
 </head>
 <body>
@@ -12669,29 +12665,17 @@ document.addEventListener('DOMContentLoaded', function() {
         <div id="globeParticles"></div>
     </div>
                     
-    <!-- ========== ADD THESE RIGHT HERE, BEFORE </body> ========== -->
-    <!-- Glass Navbar Component -->
-    <script src="components/glass-navbar.js"></script>
-    
-    <!-- Frontend Blog Loader -->
-    <script src="js/frontend-blog.js"></script>
-    
     <!-- Initialize Glass Components -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize glass navbar
-            if (typeof GlassNavbar !== 'undefined') {
-                new GlassNavbar();
-            }
-            
-            // Add glass class to all cards
-            document.querySelectorAll('.service-card, .testimonial, .blog-card, .portal-option, .team-member, .partner-logo, .contact-form, .fraud-report-form').forEach(el => {
-                el.classList.add('glass-card');
-            });
-            
-            console.log('✅ Glass components initialized');
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add glass class to all cards
+        document.querySelectorAll('.service-card, .testimonial, .blog-card, .portal-option, .team-member, .partner-logo, .contact-form, .fraud-report-form').forEach(el => {
+            el.classList.add('glass-card');
         });
-    </script>
+        
+        console.log('✅ Glass components initialized');
+    });
+</script>
 
     <!-- Simple Animated World Map - Background Only -->
     <script>
