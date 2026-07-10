@@ -1905,6 +1905,61 @@
             margin-bottom: 15px;
             flex-grow: 1;
         }
+
+        /* Blog Modal Styles */
+.blog-modal {
+    animation: fadeIn 0.3s ease;
+}
+
+.blog-modal > div {
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Blog card hover effect */
+.blog-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.blog-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+/* Blog content styling */
+.blog-content {
+    display: flex;
+    flex-direction: column;
+    height: 220px;
+}
+
+.blog-content .btn-outline {
+    transition: all 0.3s ease;
+}
+
+.blog-content .btn-outline:hover {
+    background: var(--primary-red) !important;
+    color: white !important;
+}
         
         /* Facebook Feed Styles */
         .facebook-feed {
@@ -13109,11 +13164,14 @@ function drawWorldMap(ctx, w, h) {
 
 
 
-     <!-- ============================================================
+         <!-- ============================================================
          BLOG SECTION - CONNECTED TO BACKEND API (FIXED)
          ============================================================ -->
     <script>
     // Load blog posts from API
+    var allBlogPosts = [];
+    var currentCategory = 'all';
+
     async function loadBlogPosts() {
         var blogContainer = document.getElementById('dynamic-blog-container');
         if (!blogContainer) {
@@ -13135,6 +13193,7 @@ function drawWorldMap(ctx, w, h) {
             console.log('API Response:', result);
             
             var posts = result.blogs || [];
+            allBlogPosts = posts;
             var container = document.getElementById('dynamic-blog-container');
             container.innerHTML = '';
             
@@ -13148,29 +13207,7 @@ function drawWorldMap(ctx, w, h) {
                 return;
             }
             
-            posts.forEach(function(post, index) {
-                var card = document.createElement('div');
-                card.className = 'blog-card';
-                card.style.animation = 'fadeInUp 0.5s ease ' + (index * 0.1) + 's forwards';
-                card.style.opacity = '0';
-                var imageUrl = post.image || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80';
-                var title = post.title || 'Untitled Post';
-                var date = post.date || 'Recent Post';
-                var excerpt = post.excerpt || 'Read more...';
-                var link = post.link || '#';
-                card.innerHTML = `
-                    <div class="blog-image" style="height: 200px; overflow: hidden; background: #f0f0f0;">
-                        <img src="${imageUrl}" alt="${title}" style="width: 100%; height: 100%; object-fit: cover;">
-                    </div>
-                    <div class="blog-content">
-                        <div class="blog-date">${date}</div>
-                        <h3 class="blog-title">${title}</h3>
-                        <p class="blog-excerpt">${excerpt}</p>
-                        <a href="${link}" class="btn btn-outline btn-small" target="_blank">Read More</a>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
+            renderBlogPosts(posts);
             console.log('✅ Rendered ' + posts.length + ' blog posts');
         } catch (error) {
             console.error('Error loading blog posts:', error);
@@ -13183,8 +13220,205 @@ function drawWorldMap(ctx, w, h) {
         }
     }
 
+    function renderBlogPosts(posts) {
+        var container = document.getElementById('dynamic-blog-container');
+        if (!container) return;
+        
+        // Filter by category if not 'all'
+        var filteredPosts = posts;
+        if (currentCategory !== 'all') {
+            filteredPosts = posts.filter(function(post) {
+                return post.category && post.category.toLowerCase() === currentCategory.toLowerCase();
+            });
+        }
+        
+        if (filteredPosts.length === 0) {
+            container.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--medium-gray);">
+                    <i class="fas fa-newspaper" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.3;"></i>
+                    <p>No blog posts available in this category. Check back soon!</p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = '';
+        
+        filteredPosts.forEach(function(post, index) {
+            var card = document.createElement('div');
+            card.className = 'blog-card';
+            card.style.animation = 'fadeInUp 0.5s ease ' + (index * 0.1) + 's forwards';
+            card.style.opacity = '0';
+            
+            var imageUrl = post.image || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80';
+            var title = post.title || 'Untitled Post';
+            var date = post.date || post.createdAt || 'Recent Post';
+            
+            // Format date
+            try {
+                var dateObj = new Date(date);
+                if (!isNaN(dateObj.getTime())) {
+                    date = dateObj.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                }
+            } catch(e) {
+                date = 'Recent Post';
+            }
+            
+            var excerpt = post.excerpt || '';
+            if (!excerpt && post.content) {
+                var tempDiv = document.createElement('div');
+                tempDiv.innerHTML = post.content;
+                var textContent = tempDiv.textContent || tempDiv.innerText || '';
+                excerpt = textContent.substring(0, 120) + (textContent.length > 120 ? '...' : '');
+            } else if (!excerpt) {
+                excerpt = 'Read more about this topic on our blog.';
+            }
+            
+            var category = post.category || 'General';
+            var link = post.link || '#';
+            var postId = post._id || post.id || index;
+            
+            card.innerHTML = `
+                <div class="blog-image" style="height: 200px; overflow: hidden; background: #f0f0f0; position: relative;">
+                    <img src="${imageUrl}" alt="${title}" style="width: 100%; height: 100%; object-fit: cover;">
+                    ${category ? `<span style="position: absolute; top: 12px; left: 12px; background: var(--primary-red); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600;">${category}</span>` : ''}
+                </div>
+                <div class="blog-content">
+                    <div class="blog-date">${date}</div>
+                    <h3 class="blog-title">${title}</h3>
+                    <p class="blog-excerpt">${excerpt}</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
+                        <button onclick="openBlogDetail('${encodeURIComponent(JSON.stringify(post))}')" class="btn btn-outline btn-small">
+                            Read More <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
+                        </button>
+                        ${post.author ? `<span style="font-size: 0.7rem; color: var(--medium-gray);"><i class="fas fa-user-edit"></i> ${post.author}</span>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(card);
+        });
+    }
+
+    // Open blog detail modal
+    function openBlogDetail(encodedPost) {
+        try {
+            var post = JSON.parse(decodeURIComponent(encodedPost));
+            
+            // Format date
+            var date = post.date || post.createdAt || 'Recent Post';
+            try {
+                var dateObj = new Date(date);
+                if (!isNaN(dateObj.getTime())) {
+                    date = dateObj.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                }
+            } catch(e) {
+                date = 'Recent Post';
+            }
+            
+            var imageUrl = post.image || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80';
+            var content = post.content || post.description || 'Full content not available.';
+            var category = post.category || 'General';
+            
+            // Create modal
+            var modal = document.createElement('div');
+            modal.className = 'blog-modal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.8);
+                z-index: 20000;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                animation: fadeIn 0.3s ease;
+                padding: 20px;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 16px; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; animation: slideUp 0.3s ease;">
+                    <button onclick="this.closest('.blog-modal').remove()" style="position: sticky; top: 10px; right: 10px; float: right; background: var(--primary-red); color: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer; margin: 10px 10px 0 0; z-index: 10; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <div style="padding: 0 30px 30px 30px; clear: both;">
+                        ${imageUrl ? `<img src="${imageUrl}" alt="${post.title}" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px; margin-bottom: 20px;">` : ''}
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;">
+                            <span style="background: var(--primary-red); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem;">${category}</span>
+                            <span style="color: var(--medium-gray); font-size: 0.9rem;"><i class="fas fa-calendar-alt"></i> ${date}</span>
+                            ${post.author ? `<span style="color: var(--medium-gray); font-size: 0.9rem;"><i class="fas fa-user-edit"></i> ${post.author}</span>` : ''}
+                        </div>
+                        <h2 style="color: var(--dark-gray); margin-bottom: 15px; font-size: 1.8rem;">${post.title || 'Untitled Post'}</h2>
+                        <div style="color: var(--dark-gray); line-height: 1.8; font-size: 1.05rem; white-space: pre-wrap; word-wrap: break-word;">
+                            ${content}
+                        </div>
+                        <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
+                            <h4 style="margin-bottom: 10px;">Share this article</h4>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(post.title || '')}" target="_blank" class="btn btn-small" style="background: #1877F2; color: white; border: none;">Facebook</a>
+                                <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title || '')}&url=${encodeURIComponent(window.location.href)}" target="_blank" class="btn btn-small" style="background: #1DA1F2; color: white; border: none;">Twitter</a>
+                                <a href="https://wa.me/?text=${encodeURIComponent(post.title + ' - ' + window.location.href)}" target="_blank" class="btn btn-small" style="background: #25D366; color: white; border: none;">WhatsApp</a>
+                                <a href="mailto:?subject=${encodeURIComponent(post.title || '')}&body=${encodeURIComponent('Check out this article: ' + window.location.href)}" class="btn btn-small" style="background: #EA4335; color: white; border: none;">Email</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Close on outside click
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+            
+            // Close on ESC key
+            var escHandler = function(e) {
+                if (e.key === 'Escape') {
+                    modal.remove();
+                    document.removeEventListener('keydown', escHandler);
+                }
+            };
+            document.addEventListener('keydown', escHandler);
+            
+        } catch(e) {
+            console.error('Error opening blog detail:', e);
+            alert('Could not load the full article. Please try again.');
+        }
+    }
+
+    // Setup blog filters
+    function setupBlogFilters() {
+        var filterButtons = document.querySelectorAll('.blog-filter-btn');
+        
+        filterButtons.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                filterButtons.forEach(function(b) {
+                    b.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                currentCategory = this.getAttribute('data-category');
+                renderBlogPosts(allBlogPosts);
+            });
+        });
+    }
+
     // Load blog posts when page loads
     document.addEventListener('DOMContentLoaded', function() {
+        setupBlogFilters();
         setTimeout(loadBlogPosts, 500);
     });
     </script>
