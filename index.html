@@ -5859,92 +5859,83 @@
                         </div>
                     </div>
                     
-                                        <div class="contact-form">
-                        <h3>Send us a Message</h3>
-                        <form id="inquiryForm">
-                            <div class="form-group">
-                                <label for="name">Full Name *</label>
-                                <input type="text" id="name" name="name" class="form-control" required>
-                                <div class="form-error" id="nameError">Please enter your full name</div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="email">Email Address *</label>
-                                <input type="email" id="email" name="email" class="form-control" required>
-                                <div class="form-error" id="emailError">Please enter a valid email address</div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="phone">Phone Number *</label>
-                                <input type="tel" id="phone" name="phone" class="form-control" required>
-                                <div class="form-error" id="phoneError">Please enter a valid phone number</div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="country">Country of Interest *</label>
-                                <select id="country" name="country" class="form-control" required>
-                                    <option value="">Select a country</option>
-                                    <option value="usa">United States</option>
-                                    <option value="canada">Canada</option>
-                                    <option value="australia">Australia</option>
-                                    <option value="germany">Germany</option>
-                                    <option value="sweden">Sweden</option>
-                                    <option value="switzerland">Switzerland</option>
-                                    <option value="uae">UAE</option>
-                                    <option value="other">Other</option>
-                                </select>
-                                <div class="form-error" id="countryError">Please select a country</div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>I'm interested in: *</label>
-                                <div style="display: flex; gap: 15px; margin-top: 8px;">
-                                    <div style="display: flex; align-items: center; gap: 5px;">
-                                        <input type="radio" id="study" name="interest" value="study" required>
-                                        <label for="study" style="display: inline;">Study</label>
-                                    </div>
-                                    
-                                    <div style="display: flex; align-items: center; gap: 5px;">
-                                        <input type="radio" id="work" name="interest" value="work">
-                                        <label for="work" style="display: inline;">Work</label>
-                                    </div>
-                                    <div style="display: flex; align-items: center; gap: 5px;">
-                                        <input type="radio" id="travel" name="interest" value="travel">
-                                        <label for="travel" style="display: inline;">Travel</label>
-                                    </div>
-                                </div>
-                                <div class="form-error" id="interestError">Please select an option</div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="message">Message *</label>
-                                <textarea id="message" name="message" class="form-control" required></textarea>
-                                <div class="form-error" id="messageError">Please enter your message</div>
-                            </div>
-                            
-                            <input type="hidden" name="form_type" value="contact_form">
-                            
-                            <button type="submit" class="btn btn-primary" style="width: 100%;">
-                                <span class="btn-text">Submit Inquiry</span>
-                                <span class="loading-spinner" style="display: none;"></span>
-                            </button>
-                            
-                            <div id="formSuccess" class="form-success" style="display: none;">
-                                <i class="fas fa-check-circle" style="font-size: 2rem; color: #28a745; margin-bottom: 10px;"></i>
-                                <p style="font-weight: 600;">Thank you for your inquiry!</p>
-                                <p>We will contact you shortly.</p>
-                            </div>
-                            
-                            <div id="formError" class="form-error" style="display: none; text-align: center; padding: 10px; background: #f8d7da; border-radius: 4px; color: #721c24;">
-                                <i class="fas fa-exclamation-circle"></i>
-                                <span id="formErrorMessage">Something went wrong. Please try again.</span>
-                            </div>
-                        </form>
-                    </div>
+                        <div class="contact-form">
+    <h3>Send us a Message</h3>
+    <!-- IMPORTANT: Remove action and method attributes -->
+    <form id="inquiryForm">
+        <div class="form-group">
+            <label for="name">Full Name *</label>
+            <input type="text" id="name" name="name" class="form-control" required>
+            <div class="form-error" id="nameError">Please enter your full name</div>
+        </div>
+        
+        <div class="form-group">
+            <label for="email">Email Address *</label>
+            <input type="email" id="email" name="email" class="form-control" required>
+            <div class="form-error" id="emailError">Please enter a valid email address</div>
+        </div>
+        
+        <div class="form-group">
+            <label for="phone">Phone Number *</label>
+            <input type="tel" id="phone" name="phone" class="form-control" required>
+            <div class="form-error" id="phoneError">Please enter a valid phone number</div>
+        </div>
+        
+        <div class="form-group">
+            <label for="country">Country of Interest *</label>
+            <select id="country" name="country" class="form-control" required>
+                <option value="">Select a country</option>
+                <option value="usa">United States</option>
+                <option value="canada">Canada</option>
+                <option value="australia">Australia</option>
+                <option value="germany">Germany</option>
+                <option value="sweden">Sweden</option>
+                <option value="switzerland">Switzerland</option>
+                <option value="uae">UAE</option>
+                <option value="other">Other</option>
+            </select>
+            <div class="form-error" id="countryError">Please select a country</div>
+        </div>
+        
+        <div class="form-group">
+            <label>I'm interested in: *</label>
+            <div style="display: flex; gap: 15px; margin-top: 8px;">
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    <input type="radio" id="study" name="interest" value="study" required>
+                    <label for="study" style="display: inline;">Study</label>
+                </div>
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    <input type="radio" id="work" name="interest" value="work">
+                    <label for="work" style="display: inline;">Work</label>
+                </div>
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    <input type="radio" id="travel" name="interest" value="travel">
+                    <label for="travel" style="display: inline;">Travel</label>
                 </div>
             </div>
-        </section>
-    </main>
+            <div class="form-error" id="interestError">Please select an option</div>
+        </div>
+        
+        <div class="form-group">
+            <label for="message">Message *</label>
+            <textarea id="message" name="message" class="form-control" required></textarea>
+            <div class="form-error" id="messageError">Please enter your message</div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%;">
+            Submit Inquiry
+        </button>
+        
+        <div id="formSuccess" class="form-success" style="display: none;">
+            <i class="fas fa-check-circle" style="font-size: 2rem; color: #28a745; margin-bottom: 10px;"></i>
+            <p style="font-weight: 600;">Thank you for your inquiry!</p>
+            <p>We will contact you shortly.</p>
+        </div>
+    </form>
+</div>
+</div>
+</div>
+</section>
 
     <!-- Footer -->
     <footer>
@@ -10851,176 +10842,113 @@ function clearFieldError(field) {
                 }
             });
             
-                        // ============================================================
-            // CONTACT FORM - Connected to Backend API
             // ============================================================
-            
-            // API URL for backend - DECLARED ONCE
-            const CONTACT_API_URL = 'https://gisc-app-production.up.railway.app/api/contacts';
-            
-            // Contact Form Validation and Submission
-            const inquiryForm = document.getElementById('inquiryForm');
-            if (inquiryForm) {
-                inquiryForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    
-                    let isValid = true;
-                    
-                    // Validate name
-                    const name = document.getElementById('name');
-                    const nameError = document.getElementById('nameError');
-                    if (!name.value.trim()) {
-                        nameError.style.display = 'block';
-                        isValid = false;
-                    } else {
-                        nameError.style.display = 'none';
-                    }
-                    
-                    // Validate email
-                    const email = document.getElementById('email');
-                    const emailError = document.getElementById('emailError');
-                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    if (!email.value.trim() || !emailRegex.test(email.value)) {
-                        emailError.style.display = 'block';
-                        isValid = false;
-                    } else {
-                        emailError.style.display = 'none';
-                    }
-                    
-                    // Validate phone
-                    const phone = document.getElementById('phone');
-                    const phoneError = document.getElementById('phoneError');
-                    if (!phone.value.trim()) {
-                        phoneError.style.display = 'block';
-                        isValid = false;
-                    } else {
-                        phoneError.style.display = 'none';
-                    }
-                    
-                    // Validate country
-                    const country = document.getElementById('country');
-                    const countryError = document.getElementById('countryError');
-                    if (!country.value) {
-                        countryError.style.display = 'block';
-                        isValid = false;
-                    } else {
-                        countryError.style.display = 'none';
-                    }
-                    
-                    // Validate interest
-                    const interest = document.querySelector('input[name="interest"]:checked');
-                    const interestError = document.getElementById('interestError');
-                    if (!interest) {
-                        interestError.style.display = 'block';
-                        isValid = false;
-                    } else {
-                        interestError.style.display = 'none';
-                    }
-                    
-                    // Validate message
-                    const message = document.getElementById('message');
-                    const messageError = document.getElementById('messageError');
-                    if (!message.value.trim()) {
-                        messageError.style.display = 'block';
-                        isValid = false;
-                    } else {
-                        messageError.style.display = 'none';
-                    }
-                    
-                    if (!isValid) {
-                        return;
-                    }
-                    
-                    // Show loading state
-                    const submitBtn = this.querySelector('button[type="submit"]');
-                    const btnText = submitBtn.querySelector('.btn-text');
-                    const spinner = submitBtn.querySelector('.loading-spinner');
-                    const successDiv = document.getElementById('formSuccess');
-                    const errorDiv = document.getElementById('formError');
-                    
-                    // Hide previous messages
-                    if (successDiv) successDiv.style.display = 'none';
-                    if (errorDiv) errorDiv.style.display = 'none';
-                    
-                    btnText.textContent = 'Submitting...';
-                    spinner.style.display = 'inline-block';
-                    submitBtn.disabled = true;
-                    
-                    // Prepare data for API
-                    const formData = {
-                        name: name.value.trim(),
-                        email: email.value.trim(),
-                        phone: phone.value.trim(),
-                        country: country.value,
-                        interest: interest.value,
-                        message: message.value.trim(),
-                        form_type: 'contact_form'
-                    };
-                    
-                    console.log('📤 Submitting contact form:', formData);
-                    
-                    // Send to backend API
-                    fetch(CONTACT_API_URL, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify(formData)
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(err => {
-                                throw new Error(err.message || 'Server error');
-                            });
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        console.log('✅ Contact form submitted successfully:', data);
-                        
-                        // Show success message
-                        if (successDiv) successDiv.style.display = 'block';
-                        
-                        // Form submission tracking for Google Analytics
-                        if (typeof gtag !== 'undefined') {
-                            gtag('event', 'form_submission', {
-                                'event_category': 'contact',
-                                'event_label': 'inquiry_form'
-                            });
-                        }
-                        
-                        // Reset form
-                        this.reset();
-                        
-                        // Hide success after 8 seconds
-                        setTimeout(() => {
-                            if (successDiv) successDiv.style.display = 'none';
-                        }, 8000);
-                    })
-                    .catch(error => {
-                        console.error('❌ Contact form error:', error);
-                        
-                        // Show error message
-                        const errorMsg = document.getElementById('formErrorMessage');
-                        if (errorMsg) {
-                            errorMsg.textContent = error.message || 'Something went wrong. Please try again or contact us directly.';
-                        }
-                        if (errorDiv) errorDiv.style.display = 'block';
-                        
-                        // Hide error after 8 seconds
-                        setTimeout(() => {
-                            if (errorDiv) errorDiv.style.display = 'none';
-                        }, 8000);
-                    })
-                    .finally(() => {
-                        // Reset button
-                        btnText.textContent = 'Submit Inquiry';
-                        spinner.style.display = 'none';
-                        submitBtn.disabled = false;
-                    });
+// CONTACT FORM - Complete Working Version
+// ============================================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    const inquiryForm = document.getElementById('inquiryForm');
+    
+    if (!inquiryForm) {
+        console.error('❌ Contact form not found!');
+        return;
+    }
+
+    // Remove any default form submission
+    inquiryForm.addEventListener('submit', function(e) {
+        // ⚠️ CRITICAL: Prevent page reload
+        e.preventDefault();
+        e.stopPropagation();
+        
+        console.log('📤 Form submission intercepted');
+        
+        // Get form data
+        const name = document.getElementById('name')?.value?.trim() || '';
+        const email = document.getElementById('email')?.value?.trim() || '';
+        const phone = document.getElementById('phone')?.value?.trim() || '';
+        const country = document.getElementById('country')?.value || '';
+        const interest = document.querySelector('input[name="interest"]:checked')?.value || '';
+        const message = document.getElementById('message')?.value?.trim() || '';
+        
+        // Validate
+        if (!name || !email || !phone || !country || !interest || !message) {
+            alert('Please fill in all required fields.');
+            return;
+        }
+        
+        // Validate email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            alert('Please enter a valid email address.');
+            return;
+        }
+        
+        // Prepare data
+        const formData = {
+            name: name,
+            email: email,
+            phone: phone,
+            country: country,
+            interest: interest,
+            message: message,
+            form_type: 'contact_form'
+        };
+        
+        console.log('📤 Sending data:', formData);
+        
+        // Show loading state
+        const submitBtn = inquiryForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Sending...';
+        submitBtn.disabled = true;
+        
+        // Send to API
+        fetch('https://gisc-app-production.up.railway.app/api/contacts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => {
+                    throw new Error(err.message || 'Server error');
                 });
             }
+            return response.json();
+        })
+        .then(data => {
+            console.log('✅ Success:', data);
+            
+            // Show success message
+            const successDiv = document.getElementById('formSuccess');
+            if (successDiv) {
+                successDiv.style.display = 'block';
+            }
+            
+            // Reset form
+            inquiryForm.reset();
+            
+            // Hide success after 5 seconds
+            setTimeout(() => {
+                if (successDiv) {
+                    successDiv.style.display = 'none';
+                }
+            }, 5000);
+        })
+        .catch(error => {
+            console.error('❌ Error:', error);
+            alert('Failed to send message: ' + error.message);
+        })
+        .finally(() => {
+            // Reset button
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        });
+    });
+});
             
             // Smooth Scrolling for Anchor Links
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
