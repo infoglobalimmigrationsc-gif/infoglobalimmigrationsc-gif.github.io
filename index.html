@@ -5159,25 +5159,44 @@
     </div>
 </section>
 
-        <!-- Blog Preview Section -->
-        <section id="blog" class="section blog-preview">
-            <div class="container">
-                <div class="section-title">
-                    <h2>Latest From Our Blog</h2>
-                    <p>Helpful resources and updates on immigration policies and study abroad opportunities</p>
-                </div>
-                
-                <div class="blog-grid" id="dynamic-blog-container">
-                    <!-- Blog posts will be dynamically loaded here from localStorage -->
-                </div>
-                
-                                <div style="text-align: center; margin-top: 40px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
-                    <a href="https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-                        <i class="fab fa-facebook" style="margin-right: 8px;"></i> View All Posts on Facebook
-                    </a>
-                </div>
+        <!-- Blog Preview Section - CONNECTED TO BACKEND API -->
+<section id="blog" class="section blog-preview">
+    <div class="container">
+        <div class="section-title">
+            <h2>Latest From Our Blog</h2>
+            <p>Helpful resources and updates on immigration policies and study abroad opportunities</p>
+        </div>
+        
+        <!-- Blog Categories Filter -->
+        <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 30px;">
+            <button class="btn btn-outline btn-small blog-filter-btn active" data-category="all">All</button>
+            <button class="btn btn-outline btn-small blog-filter-btn" data-category="Study Abroad">Study Abroad</button>
+            <button class="btn btn-outline btn-small blog-filter-btn" data-category="Visa Tips">Visa Tips</button>
+            <button class="btn btn-outline btn-small blog-filter-btn" data-category="Scholarships">Scholarships</button>
+            <button class="btn btn-outline btn-small blog-filter-btn" data-category="Immigration News">Immigration News</button>
+            <button class="btn btn-outline btn-small blog-filter-btn" data-category="Student Stories">Student Stories</button>
+            <button class="btn btn-outline btn-small blog-filter-btn" data-category="Travel Guides">Travel Guides</button>
+        </div>
+        
+        <!-- Blog Grid -->
+        <div class="blog-grid" id="dynamic-blog-container">
+            <!-- Blog posts will be dynamically loaded here from API -->
+            <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                <div class="loading-spinner" style="display: inline-block; width: 40px; height: 40px; border-width: 4px;"></div>
+                <p style="margin-top: 15px; color: var(--medium-gray);">Loading blog posts...</p>
             </div>
-        </section>
+        </div>
+        
+        <div style="text-align: center; margin-top: 40px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+            <a href="https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                <i class="fab fa-facebook" style="margin-right: 8px;"></i> View All Posts on Facebook
+            </a>
+            <button onclick="loadBlogPosts()" class="btn btn-outline">
+                <i class="fas fa-sync-alt" style="margin-right: 8px;"></i> Refresh Posts
+            </button>
+        </div>
+    </div>
+</section>
 
         <!-- Founder Section -->
 <section class="section founder">
@@ -11125,42 +11144,18 @@ function clearFieldError(field) {
             });
 
 
-            // ============================================================
-// BLOG SECTION - CONNECTED TO BACKEND API (FIXED)
+// ============================================================
+// BLOG SECTION - CONNECTED TO BACKEND API
 // ============================================================
 
 const BLOG_API_URL = 'https://gisc-app-production.up.railway.app/api/blogs';
 
-// Default fallback blog posts
-const DEFAULT_BLOG_POSTS = [
-    {
-        title: 'Why Study Abroad: Benefits & Opportunities',
-        excerpt: 'Discover the life-changing benefits of studying in a foreign country and how it can transform your career prospects.',
-        category: 'Study Abroad',
-        date: '2023-07-20',
-        link: 'https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr',
-        image: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
-    },
-    {
-        title: 'Why You Need a Professional Travel Agency',
-        excerpt: 'Learn how working with experienced travel consultants can save you time, money, and stress in your immigration journey.',
-        category: 'Travel Guides',
-        date: '2023-07-15',
-        link: 'https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr',
-        image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
-    },
-    {
-        title: 'Top 10 Visa Interview Tips for Success',
-        excerpt: 'Expert advice on how to prepare for your visa interview and increase your chances of approval.',
-        category: 'Visa Tips',
-        date: '2023-07-10',
-        link: 'https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr',
-        image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
-    }
-];
+// Track current filter
+let currentCategory = 'all';
+let allBlogPosts = [];
 
-// Function to fetch and display blog posts from backend API
-async function loadBlogPostsToWebsite() {
+// Load blog posts from API
+async function loadBlogPosts() {
     const blogContainer = document.getElementById('dynamic-blog-container');
     if (!blogContainer) {
         console.log('⚠️ Blog container not found');
@@ -11186,49 +11181,54 @@ async function loadBlogPostsToWebsite() {
         const result = await response.json();
         console.log('✅ Blog posts fetched:', result);
         
-        let posts = [];
-        
-        // Check if result has blogs array
-        if (result && result.blogs && Array.isArray(result.blogs)) {
-            posts = result.blogs;
-            console.log(`📚 Found ${posts.length} blog posts from API`);
+        if (result && result.success && Array.isArray(result.blogs)) {
+            allBlogPosts = result.blogs;
+            console.log(`📚 Found ${allBlogPosts.length} blog posts from API`);
+            renderBlogPosts(allBlogPosts);
         } else {
-            console.log('⚠️ No blogs array in response, using defaults');
-            posts = DEFAULT_BLOG_POSTS;
+            console.log('⚠️ No blogs in response, using defaults');
+            allBlogPosts = DEFAULT_BLOG_POSTS;
+            renderBlogPosts(allBlogPosts);
         }
-        
-        // If posts array is empty, use defaults
-        if (posts.length === 0) {
-            console.log('📝 No posts from API, using defaults');
-            posts = DEFAULT_BLOG_POSTS;
-        }
-        
-        // Render posts
-        renderBlogPosts(blogContainer, posts);
         
     } catch (error) {
         console.error('❌ Error loading blog posts:', error);
         console.log('📝 Using default blog posts as fallback');
-        renderBlogPosts(blogContainer, DEFAULT_BLOG_POSTS);
+        allBlogPosts = DEFAULT_BLOG_POSTS;
+        renderBlogPosts(allBlogPosts);
     }
 }
 
-// Helper function to render blog posts
-function renderBlogPosts(container, posts) {
-    // Clear container
-    container.innerHTML = '';
+// Render blog posts with optional category filter
+function renderBlogPosts(posts) {
+    const blogContainer = document.getElementById('dynamic-blog-container');
+    if (!blogContainer) return;
     
-    if (!posts || posts.length === 0) {
-        container.innerHTML = `
+    // Filter by category if not 'all'
+    let filteredPosts = posts;
+    if (currentCategory !== 'all') {
+        filteredPosts = posts.filter(post => 
+            post.category && post.category.toLowerCase() === currentCategory.toLowerCase()
+        );
+        console.log(`🔍 Filtered to ${filteredPosts.length} posts in category: ${currentCategory}`);
+    }
+    
+    // If no posts, show message
+    if (!filteredPosts || filteredPosts.length === 0) {
+        blogContainer.innerHTML = `
             <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--medium-gray);">
                 <i class="fas fa-newspaper" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.3;"></i>
-                <p>No blog posts available yet. Check back soon!</p>
+                <p>No blog posts available in this category. Check back soon!</p>
             </div>
         `;
         return;
     }
     
-    posts.forEach(post => {
+    // Clear container
+    blogContainer.innerHTML = '';
+    
+    // Render each post
+    filteredPosts.forEach(post => {
         // Format date
         let formattedDate = 'Recent Post';
         try {
@@ -11249,91 +11249,243 @@ function renderBlogPosts(container, posts) {
             formattedDate = 'Recent Post';
         }
         
-        // Get image URL
+        // Get image URL (with fallback)
         let imageUrl = post.image || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80';
         
         // Get category
         const category = post.category || 'General';
         
-        // Get link
+        // Get link (use Facebook link as fallback)
         let linkUrl = post.link || `https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr`;
         
         // Get excerpt
         let excerpt = post.excerpt || '';
         if (!excerpt && post.content) {
-            excerpt = post.content.substring(0, 120) + '...';
+            // Strip HTML tags for excerpt
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = post.content;
+            const textContent = tempDiv.textContent || tempDiv.innerText || '';
+            excerpt = textContent.substring(0, 120) + (textContent.length > 120 ? '...' : '');
         } else if (!excerpt) {
             excerpt = 'Read more about this topic on our blog.';
         }
         
+        // Create blog card
         const blogCard = document.createElement('div');
         blogCard.className = 'blog-card';
+        blogCard.style.animation = 'fadeInUp 0.5s ease forwards';
+        blogCard.style.opacity = '0';
+        
         blogCard.innerHTML = `
-            <div class="blog-image" style="position: relative;">
+            <div class="blog-image" style="position: relative; height: 200px; overflow: hidden; background: #f0f0f0;">
                 <img src="${imageUrl}" alt="${post.title || 'Blog Post'}" loading="lazy" 
+                     style="width: 100%; height: 100%; object-fit: cover;"
                      onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'">
                 ${category ? `<span style="position: absolute; top: 12px; left: 12px; background: var(--primary-red); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600;">${category}</span>` : ''}
+                ${post.status === 'published' ? `<span style="position: absolute; top: 12px; right: 12px; background: rgba(40, 167, 69, 0.9); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.6rem; font-weight: 600;"><i class="fas fa-check-circle"></i> Published</span>` : ''}
             </div>
             <div class="blog-content">
-                <div class="blog-date">${formattedDate}</div>
+                <div class="blog-date">
+                    <i class="fas fa-calendar-alt" style="color: var(--primary-red); margin-right: 5px;"></i>
+                    ${formattedDate}
+                </div>
                 <h3 class="blog-title">${post.title || 'Untitled Post'}</h3>
                 <p class="blog-excerpt">${excerpt}</p>
-                <a href="${linkUrl}" class="btn btn-outline btn-small" target="_blank" rel="noopener noreferrer">
-                    Read More <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
-                </a>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
+                    <a href="${linkUrl}" class="btn btn-outline btn-small" target="_blank" rel="noopener noreferrer">
+                        Read More <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
+                    </a>
+                    ${post.author ? `<span style="font-size: 0.7rem; color: var(--medium-gray);"><i class="fas fa-user-edit"></i> ${post.author}</span>` : ''}
+                </div>
             </div>
         `;
         
-        container.appendChild(blogCard);
+        blogContainer.appendChild(blogCard);
+        
+        // Trigger animation with delay
+        setTimeout(() => {
+            blogCard.style.opacity = '1';
+        }, 100);
     });
     
-    console.log(`✅ Rendered ${posts.length} blog posts`);
+    console.log(`✅ Rendered ${filteredPosts.length} blog posts`);
 }
 
-// Load blog posts when the page is ready
-document.addEventListener('DOMContentLoaded', function() {
-    // Load blog posts after a short delay
-    setTimeout(loadBlogPostsToWebsite, 800);
-});
-            
-           
-           // Also load when the blog section becomes visible (for single-page navigation)
-           // Observer to reload when blog section is scrolled to
-           if ('IntersectionObserver' in window) {
-               const blogSection = document.getElementById('blog');
-               if (blogSection) {
-                   const observer = new IntersectionObserver((entries) => {
-                       entries.forEach(entry => {
-                           if (entry.isIntersecting) {
-                               // Reload posts when blog section becomes visible
-                               // Only if container is empty or shows loading
-                               const container = document.getElementById('dynamic-blog-container');
-                               if (container && container.children.length <= 1) {
-                                   loadBlogPostsToWebsite();
-                               }
-                           }
-                       });
-                   }, { threshold: 0.1 });
-                   observer.observe(blogSection);
-               }
-           }
-           
-           // Refresh blog posts every 5 minutes (in case admin updates)
-           setInterval(() => {
-               const container = document.getElementById('dynamic-blog-container');
-               if (container && container.children.length > 0) {
-                   // Only refresh if the blog section is visible or near visible
-                   const blogSection = document.getElementById('blog');
-                   if (blogSection) {
-                       const rect = blogSection.getBoundingClientRect();
-                       if (rect.top < window.innerHeight + 200) {
-                           loadBlogPostsToWebsite();
-                       }
-                   }
-               }
-           }, 300000); // 5 minutes
+// ============================================================
+// BLOG FILTER FUNCTIONALITY
+// ============================================================
 
-        // ==================== CAPTCHA VALIDATION ====================
+function setupBlogFilters() {
+    const filterButtons = document.querySelectorAll('.blog-filter-btn');
+    
+    filterButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Update active state
+            filterButtons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Get category
+            currentCategory = this.getAttribute('data-category');
+            console.log(`🔍 Filtering by category: ${currentCategory}`);
+            
+            // Re-render with filter
+            renderBlogPosts(allBlogPosts);
+        });
+    });
+}
+
+// ============================================================
+// DEFAULT BLOG POSTS (Fallback if API fails)
+// ============================================================
+
+const DEFAULT_BLOG_POSTS = [
+    {
+        title: 'Why Study Abroad: Benefits & Opportunities',
+        excerpt: 'Discover the life-changing benefits of studying in a foreign country and how it can transform your career prospects.',
+        category: 'Study Abroad',
+        date: '2023-07-20',
+        link: 'https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr',
+        image: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+        status: 'published',
+        author: 'Admin'
+    },
+    {
+        title: 'Why You Need a Professional Travel Agency',
+        excerpt: 'Learn how working with experienced travel consultants can save you time, money, and stress in your immigration journey.',
+        category: 'Travel Guides',
+        date: '2023-07-15',
+        link: 'https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr',
+        image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+        status: 'published',
+        author: 'Admin'
+    },
+    {
+        title: 'Top 10 Visa Interview Tips for Success',
+        excerpt: 'Expert advice on how to prepare for your visa interview and increase your chances of approval.',
+        category: 'Visa Tips',
+        date: '2023-07-10',
+        link: 'https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr',
+        image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+        status: 'published',
+        author: 'Admin'
+    },
+    {
+        title: 'Scholarship Guide for International Students',
+        excerpt: 'Complete guide to finding and applying for scholarships to study abroad. Learn about eligibility, deadlines, and tips.',
+        category: 'Scholarships',
+        date: '2023-07-05',
+        link: 'https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr',
+        image: 'https://images.unsplash.com/photo-1523050854058-8df90110c7f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+        status: 'published',
+        author: 'Admin'
+    },
+    {
+        title: 'Latest Immigration Policy Updates 2024',
+        excerpt: 'Stay informed about the latest changes in immigration policies across major destinations.',
+        category: 'Immigration News',
+        date: '2023-06-28',
+        link: 'https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr',
+        image: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+        status: 'published',
+        author: 'Admin'
+    },
+    {
+        title: 'Student Success Story: From Liberia to Canada',
+        excerpt: 'Read the inspiring journey of a Liberian student who successfully secured admission and scholarship to study in Canada.',
+        category: 'Student Stories',
+        date: '2023-06-20',
+        link: 'https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr',
+        image: 'https://images.unsplash.com/photo-1523050854058-8df90110c7f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+        status: 'published',
+        author: 'Admin'
+    }
+];
+
+// ============================================================
+// ANIMATION STYLES
+// ============================================================
+
+// Add the fadeInUp animation to the page if not already present
+if (!document.getElementById('blogAnimationStyles')) {
+    const style = document.createElement('style');
+    style.id = 'blogAnimationStyles';
+    style.textContent = `
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .blog-filter-btn.active {
+            background: var(--primary-red) !important;
+            color: white !important;
+            border-color: var(--primary-red) !important;
+        }
+        
+        .blog-filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// ============================================================
+// INITIALIZE BLOG
+// ============================================================
+
+// Load blog posts when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Setup filter buttons
+    setupBlogFilters();
+    
+    // Load blog posts after a short delay
+    setTimeout(loadBlogPosts, 500);
+});
+
+// Also load when blog section becomes visible (for single-page navigation)
+if ('IntersectionObserver' in window) {
+    const blogSection = document.getElementById('blog');
+    if (blogSection) {
+        let hasLoaded = false;
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !hasLoaded) {
+                    hasLoaded = true;
+                    // Only reload if container shows loading state
+                    const container = document.getElementById('dynamic-blog-container');
+                    if (container && container.children.length <= 1) {
+                        loadBlogPosts();
+                    }
+                }
+            });
+        }, { threshold: 0.1 });
+        observer.observe(blogSection);
+    }
+}
+
+// Refresh blog posts every 5 minutes (in case admin updates)
+setInterval(() => {
+    const container = document.getElementById('dynamic-blog-container');
+    if (container && container.children.length > 0) {
+        const blogSection = document.getElementById('blog');
+        if (blogSection) {
+            const rect = blogSection.getBoundingClientRect();
+            if (rect.top < window.innerHeight + 200) {
+                loadBlogPosts();
+            }
+        }
+    }
+}, 300000); // 5 minutes
+
+console.log('✅ Blog system initialized - connected to backend API');
+
+// ==================== CAPTCHA VALIDATION ====================
 
 // Enable/disable submit button based on conditions
 function updateSubmitButtonState() {
