@@ -8,7 +8,176 @@
     <meta name="keywords" content="immigration consultants, study abroad, visa assistance, work permits, student visa, relocation services, travel consultation">
     <meta name="author" content="Global Immigration SC">
 
-
+    <!-- ============ ANTI-CONSOLE & SECURITY PROTECTION ============ -->
+<script>
+(function() {
+    'use strict';
+    
+    // ============================================================
+    // 1. CONSOLE DISABLE (Only in production)
+    // ============================================================
+    // Check if we're in production (not localhost or development)
+    const isProduction = window.location.hostname !== 'localhost' && 
+                        !window.location.hostname.includes('127.0.0.1') &&
+                        !window.location.hostname.includes('192.168.');
+    
+    if (isProduction) {
+        // Disable console methods
+        const noop = function() {};
+        const consoleMethods = ['log', 'info', 'warn', 'error', 'debug', 'trace', 'dir', 'table', 'group', 'groupEnd'];
+        consoleMethods.forEach(method => {
+            if (window.console && window.console[method]) {
+                window.console[method] = noop;
+            }
+        });
+        console.log = noop;
+        console.warn = noop;
+        console.error = noop;
+        console.info = noop;
+        console.debug = noop;
+        console.trace = noop;
+        
+        // Keep console.clear() visible for user experience
+        // But override if needed
+        // console.clear = function() { /* Do nothing */ };
+    }
+    
+    // ============================================================
+    // 2. DISABLE RIGHT-CLICK CONTEXT MENU
+    // ============================================================
+    // Only disable on production
+    if (isProduction) {
+        document.addEventListener('contextmenu', function(e) {
+            // Allow right-click on inputs, textareas, and select elements
+            const target = e.target;
+            const allowedTags = ['INPUT', 'TEXTAREA', 'SELECT'];
+            const isAllowed = allowedTags.includes(target.tagName);
+            
+            // Allow right-click on form elements (for copy/paste)
+            if (isAllowed || target.closest('input') || target.closest('textarea')) {
+                return true;
+            }
+            
+            e.preventDefault();
+            return false;
+        });
+    }
+    
+    // ============================================================
+    // 3. DISABLE KEYBOARD SHORTCUTS FOR DEV TOOLS
+    // ============================================================
+    document.addEventListener('keydown', function(e) {
+        // Only block in production
+        if (!isProduction) return true;
+        
+        // F12 key
+        if (e.key === 'F12') {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Ctrl+Shift+I (Dev Tools)
+        if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Ctrl+Shift+J (Console)
+        if (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j')) {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Ctrl+U (View Source)
+        if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Ctrl+S (Save Page)
+        if (e.ctrlKey && (e.key === 'S' || e.key === 's')) {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Ctrl+C (Copy) - Allow for user selection
+        // Ctrl+V (Paste) - Allow
+        
+        return true;
+    });
+    
+    // ============================================================
+    // 4. DETECT DEV TOOLS OPEN (Optional - Use with caution)
+    // ============================================================
+    // This detects if DevTools is open and can redirect
+    // Use this feature carefully as it can be intrusive
+    
+    /*
+    // Uncomment this section if you want dev tools detection
+    let devToolsOpen = false;
+    
+    // Method 1: Check element size difference
+    const checkDevTools = function() {
+        const threshold = 160;
+        const widthDiff = window.outerWidth - window.innerWidth;
+        const heightDiff = window.outerHeight - window.innerHeight;
+        
+        if (widthDiff > threshold || heightDiff > threshold) {
+            devToolsOpen = true;
+        } else {
+            devToolsOpen = false;
+        }
+    };
+    
+    // Check on resize
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(checkDevTools, 500);
+    });
+    
+    // Periodic check (every 3 seconds)
+    setInterval(function() {
+        if (devToolsOpen && isProduction) {
+            // Optional: Redirect or show warning
+            // window.location.href = '/';
+            // Or: alert('Developer tools detected!');
+        }
+        devToolsOpen = false;
+    }, 3000);
+    */
+    
+    // ============================================================
+    // 5. PREVENT IFRAME EMBEDDING (Clickjacking Protection)
+    // ============================================================
+    // Prevent your site from being embedded in iframes
+    // Uncomment to enable
+    /*
+    if (window.top !== window.self) {
+        window.top.location = window.self.location;
+    }
+    */
+    
+    // ============================================================
+    // 6. ALLOW ESSENTIAL FUNCTIONALITY
+    // ============================================================
+    // Ensure these essential features work:
+    // - Form submissions
+    // - API calls
+    // - Analytics
+    // - User interactions
+    
+    // Preserve console.error for debugging (optional)
+    // This allows critical errors to still be logged
+    if (isProduction && window.console) {
+        // Only override if we want to keep error logging
+        // console.error = console.error; // Keep as-is
+    }
+    
+    console.log('🔒 Security protection active (Production mode)');
+    
+})();
+</script>
 
 
         <!-- ============ LOADING SCREEN SAFETY OVERRIDE ============ -->
@@ -3960,9 +4129,9 @@
                     <li class="nav-cta"><a href="/portal/login.html" class="btn btn-primary btn-cta btn-cta-portal">
                         <i class="fas fa-user-check" aria-hidden="true"></i> Application Portal
                     </a></li>
-                    <li class="nav-cta"><a href="#" class="btn btn-live btn-cta btn-cta-live" id="liveSessionBtn">
-                        <i class="fas fa-video" aria-hidden="true"></i> Watch Live
-                    </a></li>
+                    <li class="nav-cta"><a href="https://youtube.com/@info.globalimmigrationsc?si=O-DxqL1jAMTFTE-V" target="_blank" class="btn btn-live btn-cta btn-cta-live" id="liveSessionBtn">
+    <i class="fas fa-video" aria-hidden="true"></i> Watch Live
+</a></li>
                 </ul>
             </nav>
         </div>
@@ -5859,9 +6028,10 @@
                         </div>
                     </div>
                     
-                        <div class="contact-form">
+                        <!-- Contact Section - REPLACE the entire contact-form div -->
+<div class="contact-form">
     <h3>Send us a Message</h3>
-    <!-- IMPORTANT: Remove action and method attributes -->
+    <!-- REMOVED action and method attributes -->
     <form id="inquiryForm">
         <div class="form-group">
             <label for="name">Full Name *</label>
@@ -5930,6 +6100,11 @@
             <i class="fas fa-check-circle" style="font-size: 2rem; color: #28a745; margin-bottom: 10px;"></i>
             <p style="font-weight: 600;">Thank you for your inquiry!</p>
             <p>We will contact you shortly.</p>
+        </div>
+        
+        <div id="formError" class="form-error" style="display: none; text-align: center; padding: 10px; background: #f8d7da; border-radius: 4px; color: #721c24; margin-top: 15px;">
+            <i class="fas fa-exclamation-circle"></i>
+            <span id="formErrorMessage">Something went wrong. Please try again.</span>
         </div>
     </form>
 </div>
@@ -10604,15 +10779,19 @@ function clearFieldError(field) {
             }
             
             // Live Session Modal
-            const liveSessionBtn = document.getElementById('liveSessionBtn');
-            const liveSessionModal = document.getElementById('liveSessionModal');
-            const registerModal = document.getElementById('registerModal');
-            const closeModalButtons = document.querySelectorAll('.close-modal');
-            
-            liveSessionBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                liveSessionModal.style.display = 'flex';
-            });
+const liveSessionBtn = document.getElementById('liveSessionBtn');
+const liveSessionModal = document.getElementById('liveSessionModal');
+const registerModal = document.getElementById('registerModal');
+const closeModalButtons = document.querySelectorAll('.close-modal');
+
+// Check if liveSessionBtn exists and is not already a direct link
+if (liveSessionBtn && !liveSessionBtn.href) {
+    liveSessionBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        // Open YouTube directly
+        window.open('https://youtube.com/@info.globalimmigrationsc?si=O-DxqL1jAMTFTE-V', '_blank');
+    });
+}
             
             document.getElementById('joinLive').addEventListener('click', function() {
                 window.open('https://youtube.com/@info.globalimmigrationsc?si=O-DxqL1jAMTFTE-V', '_blank');
@@ -10842,68 +11021,116 @@ function clearFieldError(field) {
                 }
             });
             
-            // ============================================================
-// CONTACT FORM - Complete Working Version
+             // ============================================================
+// CONTACT FORM - Connected to Backend API
 // ============================================================
 
-document.addEventListener('DOMContentLoaded', function() {
-    const inquiryForm = document.getElementById('inquiryForm');
-    
-    if (!inquiryForm) {
-        console.error('❌ Contact form not found!');
-        return;
-    }
+// API URL for backend - DECLARED ONCE
+const CONTACT_API_URL = 'https://gisc-app-production.up.railway.app/api/contacts';
 
-    // Remove any default form submission
+// Contact Form Validation and Submission
+const inquiryForm = document.getElementById('inquiryForm');
+if (inquiryForm) {
     inquiryForm.addEventListener('submit', function(e) {
-        // ⚠️ CRITICAL: Prevent page reload
         e.preventDefault();
-        e.stopPropagation();
         
-        console.log('📤 Form submission intercepted');
+        let isValid = true;
         
-        // Get form data
-        const name = document.getElementById('name')?.value?.trim() || '';
-        const email = document.getElementById('email')?.value?.trim() || '';
-        const phone = document.getElementById('phone')?.value?.trim() || '';
-        const country = document.getElementById('country')?.value || '';
-        const interest = document.querySelector('input[name="interest"]:checked')?.value || '';
-        const message = document.getElementById('message')?.value?.trim() || '';
-        
-        // Validate
-        if (!name || !email || !phone || !country || !interest || !message) {
-            alert('Please fill in all required fields.');
-            return;
+        // Validate name
+        const name = document.getElementById('name');
+        const nameError = document.getElementById('nameError');
+        if (!name.value.trim()) {
+            nameError.style.display = 'block';
+            isValid = false;
+        } else {
+            nameError.style.display = 'none';
         }
         
         // Validate email
+        const email = document.getElementById('email');
+        const emailError = document.getElementById('emailError');
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            alert('Please enter a valid email address.');
+        if (!email.value.trim() || !emailRegex.test(email.value)) {
+            emailError.style.display = 'block';
+            isValid = false;
+        } else {
+            emailError.style.display = 'none';
+        }
+        
+        // Validate phone
+        const phone = document.getElementById('phone');
+        const phoneError = document.getElementById('phoneError');
+        if (!phone.value.trim()) {
+            phoneError.style.display = 'block';
+            isValid = false;
+        } else {
+            phoneError.style.display = 'none';
+        }
+        
+        // Validate country
+        const country = document.getElementById('country');
+        const countryError = document.getElementById('countryError');
+        if (!country.value) {
+            countryError.style.display = 'block';
+            isValid = false;
+        } else {
+            countryError.style.display = 'none';
+        }
+        
+        // Validate interest
+        const interest = document.querySelector('input[name="interest"]:checked');
+        const interestError = document.getElementById('interestError');
+        if (!interest) {
+            interestError.style.display = 'block';
+            isValid = false;
+        } else {
+            interestError.style.display = 'none';
+        }
+        
+        // Validate message
+        const message = document.getElementById('message');
+        const messageError = document.getElementById('messageError');
+        if (!message.value.trim()) {
+            messageError.style.display = 'block';
+            isValid = false;
+        } else {
+            messageError.style.display = 'none';
+        }
+        
+        if (!isValid) {
             return;
         }
         
-        // Prepare data
+        // Show loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const btnText = submitBtn.querySelector('.btn-text');
+        const spinner = submitBtn.querySelector('.loading-spinner');
+        const successDiv = document.getElementById('formSuccess');
+        const errorDiv = document.getElementById('formError');
+        
+        // Hide previous messages
+        if (successDiv) successDiv.style.display = 'none';
+        if (errorDiv) errorDiv.style.display = 'none';
+        
+        btnText.textContent = 'Submitting...';
+        spinner.style.display = 'inline-block';
+        submitBtn.disabled = true;
+        
+        // Prepare data for API
         const formData = {
-            name: name,
-            email: email,
-            phone: phone,
-            country: country,
-            interest: interest,
-            message: message,
+            name: name.value.trim(),
+            email: email.value.trim(),
+            phone: phone.value.trim(),
+            country: country.value,
+            interest: interest.value,
+            message: message.value.trim(),
             form_type: 'contact_form'
         };
         
-        console.log('📤 Sending data:', formData);
+        console.log('📤 Submitting contact form:', formData);
         
-        // Show loading state
-        const submitBtn = inquiryForm.querySelector('button[type="submit"]');
-        const originalText = submitBtn.textContent;
-        submitBtn.textContent = 'Sending...';
-        submitBtn.disabled = true;
-        
-        // Send to API
-        fetch('https://gisc-app-production.up.railway.app/api/contacts', {
+        // Send to backend API
+        fetch(CONTACT_API_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -10920,35 +11147,50 @@ document.addEventListener('DOMContentLoaded', function() {
             return response.json();
         })
         .then(data => {
-            console.log('✅ Success:', data);
+            console.log('✅ Contact form submitted successfully:', data);
             
             // Show success message
-            const successDiv = document.getElementById('formSuccess');
-            if (successDiv) {
-                successDiv.style.display = 'block';
+            if (successDiv) successDiv.style.display = 'block';
+            
+            // Form submission tracking for Google Analytics
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'form_submission', {
+                    'event_category': 'contact',
+                    'event_label': 'inquiry_form'
+                });
             }
             
             // Reset form
-            inquiryForm.reset();
+            this.reset();
             
-            // Hide success after 5 seconds
+            // Hide success after 8 seconds
             setTimeout(() => {
-                if (successDiv) {
-                    successDiv.style.display = 'none';
-                }
-            }, 5000);
+                if (successDiv) successDiv.style.display = 'none';
+            }, 8000);
         })
         .catch(error => {
-            console.error('❌ Error:', error);
-            alert('Failed to send message: ' + error.message);
+            console.error('❌ Contact form error:', error);
+            
+            // Show error message
+            const errorMsg = document.getElementById('formErrorMessage');
+            if (errorMsg) {
+                errorMsg.textContent = error.message || 'Something went wrong. Please try again or contact us directly.';
+            }
+            if (errorDiv) errorDiv.style.display = 'block';
+            
+            // Hide error after 8 seconds
+            setTimeout(() => {
+                if (errorDiv) errorDiv.style.display = 'none';
+            }, 8000);
         })
         .finally(() => {
             // Reset button
-            submitBtn.textContent = originalText;
+            btnText.textContent = 'Submit Inquiry';
+            spinner.style.display = 'none';
             submitBtn.disabled = false;
         });
     });
-});
+}
             
             // Smooth Scrolling for Anchor Links
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
