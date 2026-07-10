@@ -8,7 +8,9 @@
     <meta name="keywords" content="immigration consultants, study abroad, visa assistance, work permits, student visa, relocation services, travel consultation">
     <meta name="author" content="Global Immigration SC">
 
-    <!-- ============ ANTI-CONSOLE & SECURITY PROTECTION ============ -->
+    // ============================================================
+// ANTI-CONSOLE & SECURITY PROTECTION (UPDATED)
+// ============================================================
 <script>
 (function() {
     'use strict';
@@ -19,42 +21,42 @@
     // Check if we're in production (not localhost or development)
     const isProduction = window.location.hostname !== 'localhost' && 
                         !window.location.hostname.includes('127.0.0.1') &&
-                        !window.location.hostname.includes('192.168.');
+                        !window.location.hostname.includes('192.168.') &&
+                        !window.location.hostname.includes('.test') &&
+                        !window.location.hostname.includes('.dev');
     
+    // Only disable console in production
     if (isProduction) {
-        // Disable console methods
+        // Keep ERROR and WARN for critical debugging, disable others
         const noop = function() {};
-        const consoleMethods = ['log', 'info', 'warn', 'error', 'debug', 'trace', 'dir', 'table', 'group', 'groupEnd'];
+        const consoleMethods = ['log', 'info', 'debug', 'trace', 'dir', 'table', 'group', 'groupEnd', 'time', 'timeEnd'];
+        
+        // Keep error and warn for debugging
         consoleMethods.forEach(method => {
             if (window.console && window.console[method]) {
                 window.console[method] = noop;
             }
         });
-        console.log = noop;
-        console.warn = noop;
-        console.error = noop;
-        console.info = noop;
-        console.debug = noop;
-        console.trace = noop;
         
-        // Keep console.clear() visible for user experience
-        // But override if needed
-        // console.clear = function() { /* Do nothing */ };
+        // Don't disable console.error or console.warn
+        // This helps with debugging issues
+        console.log('🔒 Console disabled'); // This won't show
     }
     
     // ============================================================
     // 2. DISABLE RIGHT-CLICK CONTEXT MENU
     // ============================================================
-    // Only disable on production
     if (isProduction) {
         document.addEventListener('contextmenu', function(e) {
             // Allow right-click on inputs, textareas, and select elements
             const target = e.target;
-            const allowedTags = ['INPUT', 'TEXTAREA', 'SELECT'];
-            const isAllowed = allowedTags.includes(target.tagName);
+            const allowedTags = ['INPUT', 'TEXTAREA', 'SELECT', 'OPTION'];
             
             // Allow right-click on form elements (for copy/paste)
-            if (isAllowed || target.closest('input') || target.closest('textarea')) {
+            if (allowedTags.includes(target.tagName) || 
+                target.closest('input') || 
+                target.closest('textarea') || 
+                target.closest('select')) {
                 return true;
             }
             
@@ -100,81 +102,17 @@
             return false;
         }
         
-        // Ctrl+C (Copy) - Allow for user selection
-        // Ctrl+V (Paste) - Allow
-        
         return true;
     });
     
     // ============================================================
-    // 4. DETECT DEV TOOLS OPEN (Optional - Use with caution)
-    // ============================================================
-    // This detects if DevTools is open and can redirect
-    // Use this feature carefully as it can be intrusive
-    
-    /*
-    // Uncomment this section if you want dev tools detection
-    let devToolsOpen = false;
-    
-    // Method 1: Check element size difference
-    const checkDevTools = function() {
-        const threshold = 160;
-        const widthDiff = window.outerWidth - window.innerWidth;
-        const heightDiff = window.outerHeight - window.innerHeight;
-        
-        if (widthDiff > threshold || heightDiff > threshold) {
-            devToolsOpen = true;
-        } else {
-            devToolsOpen = false;
-        }
-    };
-    
-    // Check on resize
-    let resizeTimeout;
-    window.addEventListener('resize', function() {
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(checkDevTools, 500);
-    });
-    
-    // Periodic check (every 3 seconds)
-    setInterval(function() {
-        if (devToolsOpen && isProduction) {
-            // Optional: Redirect or show warning
-            // window.location.href = '/';
-            // Or: alert('Developer tools detected!');
-        }
-        devToolsOpen = false;
-    }, 3000);
-    */
-    
-    // ============================================================
-    // 5. PREVENT IFRAME EMBEDDING (Clickjacking Protection)
-    // ============================================================
-    // Prevent your site from being embedded in iframes
-    // Uncomment to enable
-    /*
-    if (window.top !== window.self) {
-        window.top.location = window.self.location;
-    }
-    */
-    
-    // ============================================================
-    // 6. ALLOW ESSENTIAL FUNCTIONALITY
+    // 4. ALLOW ESSENTIAL FUNCTIONALITY
     // ============================================================
     // Ensure these essential features work:
     // - Form submissions
     // - API calls
     // - Analytics
     // - User interactions
-    
-    // Preserve console.error for debugging (optional)
-    // This allows critical errors to still be logged
-    if (isProduction && window.console) {
-        // Only override if we want to keep error logging
-        // console.error = console.error; // Keep as-is
-    }
-    
-    console.log('🔒 Security protection active (Production mode)');
     
 })();
 </script>
@@ -11003,175 +10941,135 @@ if (liveSessionBtn && !liveSessionBtn.href) {
             });
             
              // ============================================================
-// CONTACT FORM - Connected to Backend API
+// CONTACT FORM - GUARANTEED WORKING VERSION
 // ============================================================
 
-// API URL for backend - DECLARED ONCE
-const CONTACT_API_URL = 'https://gisc-app-production.up.railway.app/api/contacts';
-
-// Contact Form Validation and Submission
-const inquiryForm = document.getElementById('inquiryForm');
-if (inquiryForm) {
-    inquiryForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        let isValid = true;
-        
-        // Validate name
-        const name = document.getElementById('name');
-        const nameError = document.getElementById('nameError');
-        if (!name.value.trim()) {
-            nameError.style.display = 'block';
-            isValid = false;
-        } else {
-            nameError.style.display = 'none';
-        }
-        
-        // Validate email
-        const email = document.getElementById('email');
-        const emailError = document.getElementById('emailError');
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!email.value.trim() || !emailRegex.test(email.value)) {
-            emailError.style.display = 'block';
-            isValid = false;
-        } else {
-            emailError.style.display = 'none';
-        }
-        
-        // Validate phone
-        const phone = document.getElementById('phone');
-        const phoneError = document.getElementById('phoneError');
-        if (!phone.value.trim()) {
-            phoneError.style.display = 'block';
-            isValid = false;
-        } else {
-            phoneError.style.display = 'none';
-        }
-        
-        // Validate country
-        const country = document.getElementById('country');
-        const countryError = document.getElementById('countryError');
-        if (!country.value) {
-            countryError.style.display = 'block';
-            isValid = false;
-        } else {
-            countryError.style.display = 'none';
-        }
-        
-        // Validate interest
-        const interest = document.querySelector('input[name="interest"]:checked');
-        const interestError = document.getElementById('interestError');
-        if (!interest) {
-            interestError.style.display = 'block';
-            isValid = false;
-        } else {
-            interestError.style.display = 'none';
-        }
-        
-        // Validate message
-        const message = document.getElementById('message');
-        const messageError = document.getElementById('messageError');
-        if (!message.value.trim()) {
-            messageError.style.display = 'block';
-            isValid = false;
-        } else {
-            messageError.style.display = 'none';
-        }
-        
-        if (!isValid) {
+(function() {
+    // Wait for DOM to be ready
+    function initContactForm() {
+        const form = document.getElementById('inquiryForm');
+        if (!form) {
+            console.log('Contact form not found');
             return;
         }
         
-        // Show loading state
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const btnText = submitBtn.querySelector('.btn-text');
-        const spinner = submitBtn.querySelector('.loading-spinner');
-        const successDiv = document.getElementById('formSuccess');
-        const errorDiv = document.getElementById('formError');
+        console.log('Contact form found, attaching handler...');
         
-        // Hide previous messages
-        if (successDiv) successDiv.style.display = 'none';
-        if (errorDiv) errorDiv.style.display = 'none';
+        // Remove any existing submit handlers
+        const newForm = form.cloneNode(true);
+        form.parentNode.replaceChild(newForm, form);
         
-        btnText.textContent = 'Submitting...';
-        spinner.style.display = 'inline-block';
-        submitBtn.disabled = true;
+        // Get fresh reference
+        const freshForm = document.getElementById('inquiryForm');
         
-        // Prepare data for API
-        const formData = {
-            name: name.value.trim(),
-            email: email.value.trim(),
-            phone: phone.value.trim(),
-            country: country.value,
-            interest: interest.value,
-            message: message.value.trim(),
-            form_type: 'contact_form'
-        };
-        
-        console.log('📤 Submitting contact form:', formData);
-        
-        // Send to backend API
-        fetch(CONTACT_API_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(err => {
-                    throw new Error(err.message || 'Server error');
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('✅ Contact form submitted successfully:', data);
+        // Add submit handler
+        freshForm.addEventListener('submit', function(e) {
+            // CRITICAL: Prevent page reload
+            e.preventDefault();
+            e.stopPropagation();
             
-            // Show success message
-            if (successDiv) successDiv.style.display = 'block';
+            // Get form values
+            const name = document.getElementById('name')?.value?.trim() || '';
+            const email = document.getElementById('email')?.value?.trim() || '';
+            const phone = document.getElementById('phone')?.value?.trim() || '';
+            const country = document.getElementById('country')?.value || '';
+            const interest = document.querySelector('input[name="interest"]:checked')?.value || '';
+            const message = document.getElementById('message')?.value?.trim() || '';
             
-            // Form submission tracking for Google Analytics
-            if (typeof gtag !== 'undefined') {
-                gtag('event', 'form_submission', {
-                    'event_category': 'contact',
-                    'event_label': 'inquiry_form'
-                });
+            // Validate
+            if (!name || !email || !phone || !country || !interest || !message) {
+                alert('Please fill in all required fields.');
+                return;
             }
             
-            // Reset form
-            this.reset();
-            
-            // Hide success after 8 seconds
-            setTimeout(() => {
-                if (successDiv) successDiv.style.display = 'none';
-            }, 8000);
-        })
-        .catch(error => {
-            console.error('❌ Contact form error:', error);
-            
-            // Show error message
-            const errorMsg = document.getElementById('formErrorMessage');
-            if (errorMsg) {
-                errorMsg.textContent = error.message || 'Something went wrong. Please try again or contact us directly.';
+            // Validate email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert('Please enter a valid email address.');
+                return;
             }
-            if (errorDiv) errorDiv.style.display = 'block';
             
-            // Hide error after 8 seconds
-            setTimeout(() => {
-                if (errorDiv) errorDiv.style.display = 'none';
-            }, 8000);
-        })
-        .finally(() => {
-            // Reset button
-            btnText.textContent = 'Submit Inquiry';
-            spinner.style.display = 'none';
-            submitBtn.disabled = false;
+            // Prepare data
+            const formData = {
+                name: name,
+                email: email,
+                phone: phone,
+                country: country,
+                interest: interest,
+                message: message,
+                form_type: 'contact_form'
+            };
+            
+            // Show loading state
+            const submitBtn = freshForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Sending...';
+            submitBtn.disabled = true;
+            
+            // Hide previous messages
+            const successDiv = document.getElementById('formSuccess');
+            const errorDiv = document.getElementById('formError');
+            if (successDiv) successDiv.style.display = 'none';
+            if (errorDiv) errorDiv.style.display = 'none';
+            
+            // Send to API
+            fetch('https://gisc-app-production.up.railway.app/api/contacts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw new Error(err.message || 'Server error');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Show success message
+                if (successDiv) successDiv.style.display = 'block';
+                
+                // Reset form
+                freshForm.reset();
+                
+                // Hide success after 5 seconds
+                setTimeout(() => {
+                    if (successDiv) successDiv.style.display = 'none';
+                }, 5000);
+            })
+            .catch(error => {
+                const errorMsg = document.getElementById('formErrorMessage');
+                if (errorMsg) {
+                    errorMsg.textContent = error.message || 'Something went wrong. Please try again.';
+                }
+                if (errorDiv) errorDiv.style.display = 'block';
+                
+                // Hide error after 5 seconds
+                setTimeout(() => {
+                    if (errorDiv) errorDiv.style.display = 'none';
+                }, 5000);
+            })
+            .finally(() => {
+                // Reset button
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            });
         });
-    });
-}
+        
+        console.log('Contact form handler attached successfully');
+    }
+    
+    // Run when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initContactForm);
+    } else {
+        initContactForm();
+    }
+})();
             
             // Smooth Scrolling for Anchor Links
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
