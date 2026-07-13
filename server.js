@@ -1531,6 +1531,68 @@ app.delete('/api/admin/payments/delete', authenticateToken, async (req, res) => 
     }
 });
 
+// Add this route to handle multiple documents - FIXED database name
+app.post('/api/users/documents/multiple', async (req, res) => {
+    try {
+        const { uid, docType, document } = req.body;
+        
+        if (!uid || !docType || !document) {
+            return res.status(400).json({ success: false, message: 'Missing required fields' });
+        }
+        
+        // Use the same database name as the rest of your app
+        const collection = db.collection('applications');
+        
+        // Find the user's application
+        let application = await collection.findOne({ uid });
+        if (!application) {
+            // Try finding by userId
+            application = await collection.findOne({ userId: uid });
+            if (!application) {
+                return res.status(404).json({ success: false, message: 'Application not found for user' });
+            }
+        }
+        
+        // Get current documents
+        let currentDocs = application.documents || {};
+        let existing = currentDocs[docType] || [];
+        
+        // Ensure it's an array
+        if (!Array.isArray(existing)) {
+            existing = [];
+        }
+        
+        // Add new document
+        existing.push(document);
+        currentDocs[docType] = existing;
+        
+        // Update application
+        await collection.updateOne(
+            { _id: application._id },
+            { 
+                $set: { 
+                    documents: currentDocs, 
+                    updatedAt: new Date().toISOString() 
+                },
+                $push: {
+                    uploadHistory: {
+                        filename: document.fileName || 'Unknown',
+                        docType: docType,
+                        timestamp: new Date().toISOString(),
+                        status: 'submitted',
+                        fileId: document.fileId,
+                        fileUrl: document.fileUrl
+                    }
+                }
+            }
+        );
+        
+        res.json({ success: true, message: 'Document added successfully' });
+    } catch (error) {
+        console.error('Error adding multiple document:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
 // ============================================================
 // SERVE STATIC FILES - AT THE VERY END
 // ============================================================
