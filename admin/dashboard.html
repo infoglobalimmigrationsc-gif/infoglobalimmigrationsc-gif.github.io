@@ -2146,215 +2146,290 @@ async function loadPayments() {
         let allUsers = [];
 
         async function loadUsers() {
-            const debugEl = document.getElementById('userDebugInfo');
-            const tbody = document.getElementById('usersTableBody');
-            
-            try {
-                debugEl.innerHTML = '<span style="color: #ff0;">🔄 Fetching users from API...</span>';
-                
-                const result = await apiFetch('users');
-                allUsers = result.users || [];
-                
-                const appResult = await apiFetch('applications');
-                const apps = appResult.applications || [];
-                const appMap = {};
-                apps.forEach(app => {
-                    if (app.uid) appMap[app.uid] = app;
-                    if (app.userId) appMap[app.userId] = app;
-                });
-                
-                allUsers = allUsers.map(user => {
-                    const app = appMap[user.uid] || appMap[user.userId] || null;
-                    return {
-                        ...user,
-                        application: app,
-                        documentCount: app && app.documents ? Object.keys(app.documents).length : 0,
-                        appStatus: app ? app.status : 'No Application',
-                        documents: app ? app.documents || {} : {},
-                        paymentStatus: app?.paymentReceipt ? 
-                            (app.paymentReceipt.status === 'verified' ? 'paid' : 
-                             app.paymentReceipt.status === 'rejected' ? 'rejected' : 'pending') : 'due'
-                    };
-                });
-                
-                debugEl.innerHTML = `
-                    <span style="color: #0f0;">✅ Found ${allUsers.length} users in database</span>
-                    <span style="color: #ff0; margin-left: 15px;">📋 Users with applications: ${allUsers.filter(u => u.application).length}</span>
-                `;
+    const debugEl = document.getElementById('userDebugInfo');
+    const tbody = document.getElementById('usersTableBody');
+    
+    try {
+        debugEl.innerHTML = '<span style="color: #ff0;">🔄 Fetching users from API...</span>';
+        
+        const result = await apiFetch('users');
+        allUsers = result.users || [];
+        
+        const appResult = await apiFetch('applications');
+        const apps = appResult.applications || [];
+        const appMap = {};
+        apps.forEach(app => {
+            if (app.uid) appMap[app.uid] = app;
+            if (app.userId) appMap[app.userId] = app;
+        });
+        
+        allUsers = allUsers.map(user => {
+            const app = appMap[user.uid] || appMap[user.userId] || null;
+            return {
+                ...user,
+                application: app,
+                documentCount: app && app.documents ? Object.keys(app.documents).length : 0,
+                appStatus: app ? app.status : 'No Application',
+                documents: app ? app.documents || {} : {},
+                paymentStatus: app?.paymentReceipt ? 
+                    (app.paymentReceipt.status === 'verified' ? 'paid' : 
+                     app.paymentReceipt.status === 'rejected' ? 'rejected' : 'pending') : 'due',
+                // Include service fields from user data
+                serviceType: user.serviceType || 'Not selected',
+                serviceData: user.serviceData || {}
+            };
+        });
+        
+        debugEl.innerHTML = `
+            <span style="color: #0f0;">✅ Found ${allUsers.length} users in database</span>
+            <span style="color: #ff0; margin-left: 15px;">📋 Users with applications: ${allUsers.filter(u => u.application).length}</span>
+        `;
 
-                document.getElementById('userCountBadge').textContent = allUsers.length;
+        document.getElementById('userCountBadge').textContent = allUsers.length;
 
-                if (allUsers.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 30px; color: rgba(255,255,255,0.5);">No users found in database. Try "Sync from Firebase" or "Create Test User".</td></tr>`;
-                    return;
-                }
-
-                tbody.innerHTML = allUsers.map(user => `
-                    <tr>
-                        <td><strong>${user.name || 'Unknown'}</strong></td>
-                        <td>${user.email || 'No email'}</td>
-                        <td>${user.phone || 'N/A'}</td>
-                        <td>${user.countryOfInterest || 'N/A'}</td>
-                        <td>
-                            <span class="status-badge status-${user.appStatus || 'draft'}">
-                                ${(user.appStatus || 'No App').toUpperCase()}
-                            </span>
-                        </td>
-                        <td>
-                            <span style="color: #17a2b8; font-weight: 600;">${user.documentCount || 0}</span>
-                            ${user.documentCount > 0 ? `<span style="font-size: 0.6rem; color: rgba(255,255,255,0.3);"> docs</span>` : ''}
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-info" onclick="viewUserDetail('${user._id || user.id}')" title="View Full Details">
-                                <i class="fas fa-user-circle"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline" onclick="viewUser('${user._id || user.id}')" title="Quick View">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteUser('${user._id || user.id}')" title="Delete User">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `).join('');
-
-            } catch (error) {
-                console.error('Error loading users:', error);
-                debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 30px; color: rgba(255,255,255,0.5);">Error loading users: ${error.message}</td></tr>`;
-                showToast('Error loading users', 'error');
-            }
+        if (allUsers.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 30px; color: rgba(255,255,255,0.5);">No users found in database. Try "Sync from Firebase" or "Create Test User".</td></tr>`;
+            return;
         }
+
+        tbody.innerHTML = allUsers.map(user => `
+            <tr>
+                <td><strong>${user.name || 'Unknown'}</strong></td>
+                <td>${user.email || 'No email'}</td>
+                <td>${user.phone || 'N/A'}</td>
+                <td>${user.countryOfInterest || 'N/A'}</td>
+                <td>
+                    <span class="status-badge status-${user.appStatus || 'draft'}">
+                        ${(user.appStatus || 'No App').toUpperCase()}
+                    </span>
+                </td>
+                <td>
+                    <span style="color: #17a2b8; font-weight: 600;">${user.documentCount || 0}</span>
+                    ${user.documentCount > 0 ? `<span style="font-size: 0.6rem; color: rgba(255,255,255,0.3);"> docs</span>` : ''}
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-info" onclick="viewUserDetail('${user._id || user.id}')" title="View Full Details">
+                        <i class="fas fa-user-circle"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline" onclick="viewUser('${user._id || user.id}')" title="Quick View">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteUser('${user._id || user.id}')" title="Delete User">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+
+    } catch (error) {
+        console.error('Error loading users:', error);
+        debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 30px; color: rgba(255,255,255,0.5);">Error loading users: ${error.message}</td></tr>`;
+        showToast('Error loading users', 'error');
+    }
+}
 
         // ============================================================
         // VIEW USER DETAIL
         // ============================================================
         window.viewUserDetail = async (userId) => {
-            const modal = document.getElementById('userDetailModal');
-            const body = document.getElementById('userDetailBody');
-            const title = document.getElementById('userDetailTitle');
+    const modal = document.getElementById('userDetailModal');
+    const body = document.getElementById('userDetailBody');
+    const title = document.getElementById('userDetailTitle');
+    
+    modal.classList.add('active');
+    body.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner"></div><p style="margin-top: 10px; color: #666;">Loading user details...</p></div>';
+    
+    try {
+        const user = allUsers.find(u => u._id === userId || u.id === userId);
+        
+        if (!user) {
+            body.innerHTML = '<p style="color: red;">User not found</p>';
+            return;
+        }
+        
+        title.textContent = `${user.name || 'Unknown User'}`;
+        
+        const app = user.application || {};
+        const documents = app.documents || {};
+        const docCount = Object.keys(documents).length;
+        
+        // Format service data for display
+        let serviceDataHtml = '';
+        if (user.serviceType && user.serviceType !== 'Not selected') {
+            const serviceData = user.serviceData || {};
+            const serviceFieldsMap = {
+                study: [
+                    { key: 'programOfInterest', label: 'Program of Interest' },
+                    { key: 'highestQualification', label: 'Highest Qualification' },
+                    { key: 'preferredIntake', label: 'Preferred Intake' }
+                ],
+                work: [
+                    { key: 'jobIndustry', label: 'Industry' },
+                    { key: 'jobLevel', label: 'Job Level' },
+                    { key: 'workExperience', label: 'Work Experience' }
+                ],
+                visit: [
+                    { key: 'visitPurpose', label: 'Visit Purpose' },
+                    { key: 'visitDuration', label: 'Visit Duration' }
+                ],
+                immigration: [
+                    { key: 'immigrationType', label: 'Immigration Type' },
+                    { key: 'immigrationCountry', label: 'Target Country' }
+                ],
+                loan: [
+                    { key: 'loanAmount', label: 'Loan Amount' },
+                    { key: 'loanPurpose', label: 'Loan Purpose' }
+                ],
+                booking: [
+                    { key: 'bookingType', label: 'Booking Type' },
+                    { key: 'travelDates', label: 'Travel Dates' }
+                ],
+                translation: [
+                    { key: 'translationType', label: 'Translation Type' },
+                    { key: 'targetLanguage', label: 'Target Language' }
+                ],
+                insurance: [
+                    { key: 'insuranceType', label: 'Insurance Type' },
+                    { key: 'insuranceDuration', label: 'Insurance Duration' }
+                ],
+                exchange: [
+                    { key: 'exchangeProgram', label: 'Exchange Program' },
+                    { key: 'exchangeCountry', label: 'Exchange Country' }
+                ],
+                predeparture: [
+                    { key: 'orientationNeeds', label: 'Orientation Needs' },
+                    { key: 'airportPickup', label: 'Airport Pickup' }
+                ]
+            };
             
-            modal.classList.add('active');
-            body.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner"></div><p style="margin-top: 10px; color: #666;">Loading user details...</p></div>';
-            
-            try {
-                const user = allUsers.find(u => u._id === userId || u.id === userId);
-                
-                if (!user) {
-                    body.innerHTML = '<p style="color: red;">User not found</p>';
-                    return;
-                }
-                
-                title.textContent = `${user.name || 'Unknown User'}`;
-                
-                const app = user.application || {};
-                const documents = app.documents || {};
-                const docCount = Object.keys(documents).length;
-                
-                let docsHtml = '';
-                if (docCount > 0) {
-                    docsHtml = `
-                        <div style="margin-top: 15px;">
-                            <h4 style="color: var(--primary-red); margin-bottom: 10px;"><i class="fas fa-file-alt"></i> Documents (${docCount})</h4>
-                            <div class="doc-grid">
-                                ${Object.entries(documents).map(([key, doc]) => `
-                                    <div class="doc-card">
-                                        <div class="doc-icon"><i class="fas ${getDocIcon(key)}"></i></div>
-                                        <div class="doc-name">${formatDocName(key)}</div>
-                                        <div class="doc-status status-${doc.status || 'pending_review'}">${(doc.status || 'pending_review').toUpperCase()}</div>
-                                        ${doc.fileUrl ? `<a href="${doc.fileUrl}" target="_blank" class="btn btn-sm btn-primary" style="margin-top: 8px; font-size: 0.6rem;"><i class="fas fa-eye"></i> View</a>` : ''}
-                                        ${doc.fileName ? `<div style="font-size: 0.6rem; color: #666; margin-top: 5px;">${doc.fileName}</div>` : ''}
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    docsHtml = `
-                        <div style="margin-top: 15px; text-align: center; color: #999; padding: 20px; background: #f5f5f5; border-radius: 8px;">
-                            <i class="fas fa-file-alt" style="font-size: 2rem; opacity: 0.3;"></i>
-                            <p>No documents uploaded yet</p>
-                        </div>
-                    `;
-                }
-                
-                const receipt = app.paymentReceipt || null;
-                let paymentHtml = `
-                    <div style="margin-top: 15px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                        <h4 style="color: var(--primary-red); margin-bottom: 10px;"><i class="fas fa-credit-card"></i> Payment Status</h4>
-                        <div class="detail-row"><span class="detail-label">Status</span>
-                            <span class="detail-value">
-                                <span class="payment-status-badge ${user.paymentStatus || 'due'}">
-                                    ${(user.paymentStatus || 'due').toUpperCase()}
-                                </span>
-                            </span>
-                        </div>
-                        ${receipt ? `
-                            <div class="detail-row"><span class="detail-label">Receipt</span>
-                                <span class="detail-value">
-                                    <a href="${receipt.receiptUrl}" target="_blank" class="btn btn-sm btn-info">
-                                        <i class="fas fa-receipt"></i> View Receipt
-                                    </a>
-                                    <span style="margin-left: 10px; font-size: 0.7rem; color: #666;">${receipt.receiptFileName || ''}</span>
-                                </span>
-                            </div>
-                            <div class="detail-row"><span class="detail-label">Uploaded</span>
-                                <span class="detail-value">${receipt.uploadedAt ? new Date(receipt.uploadedAt).toLocaleDateString() : 'N/A'}</span>
-                            </div>
-                            ${receipt.rejectionReason ? `
-                                <div class="detail-row"><span class="detail-label">Rejection Reason</span>
-                                    <span class="detail-value" style="color: #dc3545;">${receipt.rejectionReason}</span>
-                                </div>
-                            ` : ''}
-                        ` : '<div class="detail-row"><span class="detail-label">Receipt</span><span class="detail-value">No receipt uploaded</span></div>'}
+            const fields = serviceFieldsMap[user.serviceType] || [];
+            let fieldHtml = fields.map(f => {
+                const value = serviceData[f.key] || 'N/A';
+                return `
+                    <div class="detail-row" style="padding-left: 20px;">
+                        <span class="detail-label" style="width: 160px; font-size: 0.8rem;">${f.label}</span>
+                        <span class="detail-value" style="font-size: 0.85rem;">${value}</span>
                     </div>
                 `;
-                
-                let historyHtml = '';
-                const uploadHistory = app.uploadHistory || [];
-                if (uploadHistory.length > 0) {
-                    historyHtml = `
-                        <div style="margin-top: 15px;">
-                            <h4 style="color: var(--primary-red); margin-bottom: 10px;"><i class="fas fa-history"></i> Upload History</h4>
-                            <div style="max-height: 150px; overflow-y: auto;">
-                                ${uploadHistory.slice(-5).reverse().map(item => `
-                                    <div style="display: flex; justify-content: space-between; padding: 6px 10px; border-bottom: 1px solid #eee; font-size: 0.8rem;">
-                                        <span>${item.filename}</span>
-                                        <span style="color: ${item.status === 'submitted' ? '#28a745' : '#dc3545'}; font-size: 0.7rem;">${item.status}</span>
-                                        <span style="color: #999; font-size: 0.6rem;">${item.timestamp ? new Date(item.timestamp).toLocaleDateString() : ''}</span>
-                                    </div>
-                                `).join('')}
+            }).join('');
+            
+            serviceDataHtml = `
+                <div style="margin-top: 15px; background: #f0f0f0; padding: 15px; border-radius: 8px;">
+                    <h4 style="color: var(--primary-red); margin-bottom: 10px;">
+                        <i class="fas fa-concierge-bell"></i> Service: ${user.serviceType.charAt(0).toUpperCase() + user.serviceType.slice(1)}
+                    </h4>
+                    ${fieldHtml || '<p style="color: #999; font-size: 0.8rem;">No additional service details provided</p>'}
+                </div>
+            `;
+        }
+        
+        let docsHtml = '';
+        if (docCount > 0) {
+            docsHtml = `
+                <div style="margin-top: 15px;">
+                    <h4 style="color: var(--primary-red); margin-bottom: 10px;"><i class="fas fa-file-alt"></i> Documents (${docCount})</h4>
+                    <div class="doc-grid">
+                        ${Object.entries(documents).map(([key, doc]) => `
+                            <div class="doc-card">
+                                <div class="doc-icon"><i class="fas ${getDocIcon(key)}"></i></div>
+                                <div class="doc-name">${formatDocName(key)}</div>
+                                <div class="doc-status status-${doc.status || 'pending_review'}">${(doc.status || 'pending_review').toUpperCase()}</div>
+                                ${doc.fileUrl ? `<a href="${doc.fileUrl}" target="_blank" class="btn btn-sm btn-primary" style="margin-top: 8px; font-size: 0.6rem;"><i class="fas fa-eye"></i> View</a>` : ''}
+                                ${doc.fileName ? `<div style="font-size: 0.6rem; color: #666; margin-top: 5px;">${doc.fileName}</div>` : ''}
                             </div>
-                        </div>
-                    `;
-                }
-                
-                body.innerHTML = `
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                        <div>
-                            <div class="detail-row"><span class="detail-label">Name</span><span class="detail-value">${user.name || 'Unknown'}</span></div>
-                            <div class="detail-row"><span class="detail-label">Email</span><span class="detail-value">${user.email || 'N/A'}</span></div>
-                            <div class="detail-row"><span class="detail-label">Phone</span><span class="detail-value">${user.phone || 'N/A'}</span></div>
-                            <div class="detail-row"><span class="detail-label">WhatsApp</span><span class="detail-value">${user.whatsapp || 'N/A'}</span></div>
-                        </div>
-                        <div>
-                            <div class="detail-row"><span class="detail-label">Country</span><span class="detail-value">${user.countryOfInterest || 'N/A'}</span></div>
-                            <div class="detail-row"><span class="detail-label">Citizenship</span><span class="detail-value">${user.citizenship || 'N/A'}</span></div>
-                            <div class="detail-row"><span class="detail-label">User Type</span><span class="detail-value">${user.userType || 'applicant'}</span></div>
-                            <div class="detail-row"><span class="detail-label">Application Status</span><span class="detail-value"><span class="status-badge status-${app.status || 'draft'}">${(app.status || 'draft').toUpperCase()}</span></span></div>
-                            <div class="detail-row"><span class="detail-label">Joined</span><span class="detail-value">${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</span></div>
-                        </div>
+                        `).join('')}
                     </div>
-                    ${paymentHtml}
-                    ${docsHtml}
-                    ${historyHtml}
-                `;
-                
-            } catch (error) {
-                console.error('Error loading user details:', error);
-                body.innerHTML = `<p style="color: red;">Error loading user details: ${error.message}</p>`;
-            }
-        };
+                </div>
+            `;
+        } else {
+            docsHtml = `
+                <div style="margin-top: 15px; text-align: center; color: #999; padding: 20px; background: #f5f5f5; border-radius: 8px;">
+                    <i class="fas fa-file-alt" style="font-size: 2rem; opacity: 0.3;"></i>
+                    <p>No documents uploaded yet</p>
+                </div>
+            `;
+        }
+        
+        const receipt = app.paymentReceipt || null;
+        let paymentHtml = `
+            <div style="margin-top: 15px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                <h4 style="color: var(--primary-red); margin-bottom: 10px;"><i class="fas fa-credit-card"></i> Payment Status</h4>
+                <div class="detail-row"><span class="detail-label">Status</span>
+                    <span class="detail-value">
+                        <span class="payment-status-badge ${user.paymentStatus || 'due'}">
+                            ${(user.paymentStatus || 'due').toUpperCase()}
+                        </span>
+                    </span>
+                </div>
+                ${receipt ? `
+                    <div class="detail-row"><span class="detail-label">Receipt</span>
+                        <span class="detail-value">
+                            <a href="${receipt.receiptUrl}" target="_blank" class="btn btn-sm btn-info">
+                                <i class="fas fa-receipt"></i> View Receipt
+                            </a>
+                            <span style="margin-left: 10px; font-size: 0.7rem; color: #666;">${receipt.receiptFileName || ''}</span>
+                        </span>
+                    </div>
+                    <div class="detail-row"><span class="detail-label">Uploaded</span>
+                        <span class="detail-value">${receipt.uploadedAt ? new Date(receipt.uploadedAt).toLocaleDateString() : 'N/A'}</span>
+                    </div>
+                    ${receipt.rejectionReason ? `
+                        <div class="detail-row"><span class="detail-label">Rejection Reason</span>
+                            <span class="detail-value" style="color: #dc3545;">${receipt.rejectionReason}</span>
+                        </div>
+                    ` : ''}
+                ` : '<div class="detail-row"><span class="detail-label">Receipt</span><span class="detail-value">No receipt uploaded</span></div>'}
+            </div>
+        `;
+        
+        let historyHtml = '';
+        const uploadHistory = app.uploadHistory || [];
+        if (uploadHistory.length > 0) {
+            historyHtml = `
+                <div style="margin-top: 15px;">
+                    <h4 style="color: var(--primary-red); margin-bottom: 10px;"><i class="fas fa-history"></i> Upload History</h4>
+                    <div style="max-height: 150px; overflow-y: auto;">
+                        ${uploadHistory.slice(-5).reverse().map(item => `
+                            <div style="display: flex; justify-content: space-between; padding: 6px 10px; border-bottom: 1px solid #eee; font-size: 0.8rem;">
+                                <span>${item.filename}</span>
+                                <span style="color: ${item.status === 'submitted' ? '#28a745' : '#dc3545'}; font-size: 0.7rem;">${item.status}</span>
+                                <span style="color: #999; font-size: 0.6rem;">${item.timestamp ? new Date(item.timestamp).toLocaleDateString() : ''}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        body.innerHTML = `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <div>
+                    <div class="detail-row"><span class="detail-label">Name</span><span class="detail-value">${user.name || 'Unknown'}</span></div>
+                    <div class="detail-row"><span class="detail-label">Email</span><span class="detail-value">${user.email || 'N/A'}</span></div>
+                    <div class="detail-row"><span class="detail-label">Phone</span><span class="detail-value">${user.phone || 'N/A'}</span></div>
+                    <div class="detail-row"><span class="detail-label">WhatsApp</span><span class="detail-value">${user.whatsapp || 'N/A'}</span></div>
+                </div>
+                <div>
+                    <div class="detail-row"><span class="detail-label">Country</span><span class="detail-value">${user.countryOfInterest || 'N/A'}</span></div>
+                    <div class="detail-row"><span class="detail-label">Citizenship</span><span class="detail-value">${user.citizenship || 'N/A'}</span></div>
+                    <div class="detail-row"><span class="detail-label">Service Type</span><span class="detail-value"><strong style="color: var(--primary-red);">${user.serviceType || 'Not selected'}</strong></span></div>
+                    <div class="detail-row"><span class="detail-label">User Type</span><span class="detail-value">${user.userType || 'applicant'}</span></div>
+                    <div class="detail-row"><span class="detail-label">Application Status</span><span class="detail-value"><span class="status-badge status-${app.status || 'draft'}">${(app.status || 'draft').toUpperCase()}</span></span></div>
+                    <div class="detail-row"><span class="detail-label">Joined</span><span class="detail-value">${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</span></div>
+                </div>
+            </div>
+            ${serviceDataHtml}
+            ${paymentHtml}
+            ${docsHtml}
+            ${historyHtml}
+        `;
+        
+    } catch (error) {
+        console.error('Error loading user details:', error);
+        body.innerHTML = `<p style="color: red;">Error loading user details: ${error.message}</p>`;
+    }
+};
 
         // ============================================================
         // HELPER FUNCTIONS
