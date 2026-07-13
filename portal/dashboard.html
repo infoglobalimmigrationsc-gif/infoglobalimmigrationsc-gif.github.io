@@ -1037,14 +1037,16 @@
     let isPollingActive = false;
     let unreadCount = 0;
     
-    const requiredDocs = [
-      { id: 'passport', name: 'Passport Copy', icon: 'fa-passport', required: true },
-      { id: 'academic_transcripts', name: 'Academic Transcripts', icon: 'fa-graduation-cap', required: true },
-      { id: 'academic_diploma', name: 'Academic Diploma', icon: 'fa-certificate', required: true },
-      { id: 'cv_resume', name: 'CV/Resume', icon: 'fa-file-alt', required: true },
-      { id: 'passport_photos', name: 'Passport Photos', icon: 'fa-camera', required: true },
-      { id: 'recommendation_letter', name: 'Recommendation Letter', icon: 'fa-envelope', required: false }
-    ];
+// UPDATED: Added other_documents with support for multiple files
+const requiredDocs = [
+    { id: 'passport', name: 'Passport Copy', icon: 'fa-passport', required: true },
+    { id: 'academic_transcripts', name: 'Academic Transcripts', icon: 'fa-graduation-cap', required: true },
+    { id: 'academic_diploma', name: 'Academic Diploma', icon: 'fa-certificate', required: true },
+    { id: 'cv_resume', name: 'CV/Resume', icon: 'fa-file-alt', required: true },
+    { id: 'passport_photos', name: 'Passport Photos', icon: 'fa-camera', required: true },
+    { id: 'recommendation_letter', name: 'Recommendation Letter', icon: 'fa-envelope', required: false },
+    { id: 'other_documents', name: 'Other Documents', icon: 'fa-folder', required: false, multiple: true }
+];
     
     // ============================================================
     // CONDITIONAL FIELD DEFINITIONS
@@ -1420,145 +1422,235 @@
     // RENDER DOCUMENTS
     // ============================================================
     function renderDocuments() {
-      const grid = document.getElementById('documentsGrid');
-      let completedCount = 0;
-      
-      grid.innerHTML = requiredDocs.map(doc => {
-        const uploaded = allDocuments[doc.id];
-        const status = uploaded?.status || 'missing';
-        const fileName = uploaded?.fileName || '';
-        const uploadedDate = uploaded?.uploadedAt ? new Date(uploaded.uploadedAt).toLocaleDateString() : '';
+    const grid = document.getElementById('documentsGrid');
+    let completedCount = 0;
+    
+    grid.innerHTML = requiredDocs.map(doc => {
+        let uploaded = allDocuments[doc.id];
+        let status = 'missing';
+        let fileName = '';
+        let uploadedDate = '';
+        let isMultiple = doc.multiple || false;
+        
+        if (uploaded) {
+            // Handle multiple files for other_documents
+            if (isMultiple && Array.isArray(uploaded)) {
+                const uploadedFiles = uploaded.filter(f => f && f.status !== 'missing');
+                if (uploadedFiles.length > 0) {
+                    status = uploadedFiles.some(f => f.status === 'approved' || f.status === 'pending_review') ? 'pending_review' : 'pending';
+                    // Show first file name
+                    fileName = uploadedFiles.length + ' file(s) uploaded';
+                    uploadedDate = uploadedFiles[0]?.uploadedAt ? new Date(uploadedFiles[0].uploadedAt).toLocaleDateString() : '';
+                    if (uploadedFiles.some(f => f.status === 'approved')) status = 'approved';
+                } else {
+                    status = 'missing';
+                }
+            } else if (uploaded.status && uploaded.status !== 'missing') {
+                status = uploaded.status;
+                fileName = uploaded.fileName || '';
+                uploadedDate = uploaded.uploadedAt ? new Date(uploaded.uploadedAt).toLocaleDateString() : '';
+            } else {
+                status = 'missing';
+            }
+        }
         
         if (status === 'approved' || status === 'pending_review') completedCount++;
         
+        // Check if this doc type has files to show
+        let fileListHtml = '';
+        if (isMultiple && uploaded && Array.isArray(uploaded) && uploaded.length > 0) {
+            fileListHtml = `
+                <div style="margin-top: 8px; max-height: 80px; overflow-y: auto; text-align: left; font-size: 0.6rem; color: rgba(255,255,255,0.4);">
+                    ${uploaded.map(f => `<div style="padding: 2px 4px; border-bottom: 1px solid rgba(255,255,255,0.05);">📄 ${f.fileName || 'file'} ${f.status === 'approved' ? '✅' : f.status === 'pending_review' ? '⏳' : ''}</div>`).join('')}
+                </div>
+            `;
+        }
+        
         return `
-          <div class="document-card" data-doc="${doc.id}">
-            <div class="doc-icon"><i class="fas ${doc.icon}"></i></div>
-            <h5>${doc.name} ${doc.required ? '<span style="color: var(--primary-red);">*</span>' : ''}</h5>
-            ${fileName ? `<p style="color: rgba(255,255,255,0.4); font-size: 0.65rem; margin: 3px 0;">${fileName}</p>` : ''}
-            ${uploadedDate ? `<p style="color: rgba(255,255,255,0.3); font-size: 0.6rem;">${uploadedDate}</p>` : ''}
-            <span class="doc-status status-${status}">${status.replace('_', ' ').toUpperCase()}</span>
-            <div style="margin-top: 10px;">
-              <button class="btn btn-primary btn-sm" onclick="uploadDocument('${doc.id}')">
-                <i class="fas fa-upload"></i> ${uploaded && status !== 'missing' ? 'Replace' : 'Upload'}
-              </button>
-              ${uploaded && uploaded.fileUrl ? `<button class="btn btn-outline btn-sm" onclick="viewDocument('${doc.id}')" style="margin-left: 5px;">
-                <i class="fas fa-eye"></i>
-              </button>` : ''}
+            <div class="document-card" data-doc="${doc.id}">
+                <div class="doc-icon"><i class="fas ${doc.icon}"></i></div>
+                <h5>${doc.name} ${doc.required ? '<span style="color: var(--primary-red);">*</span>' : ''}</h5>
+                ${fileName ? `<p style="color: rgba(255,255,255,0.4); font-size: 0.65rem; margin: 3px 0;">${fileName}</p>` : ''}
+                ${uploadedDate ? `<p style="color: rgba(255,255,255,0.3); font-size: 0.6rem;">${uploadedDate}</p>` : ''}
+                ${fileListHtml}
+                <span class="doc-status status-${status}">${status.replace('_', ' ').toUpperCase()}</span>
+                <div style="margin-top: 10px;">
+                    <button class="btn btn-primary btn-sm" onclick="uploadDocument('${doc.id}')">
+                        <i class="fas fa-upload"></i> ${uploaded && status !== 'missing' ? (isMultiple ? 'Add More' : 'Replace') : 'Upload'}
+                    </button>
+                    ${uploaded && status !== 'missing' ? `<button class="btn btn-outline btn-sm" onclick="viewDocument('${doc.id}')" style="margin-left: 5px;">
+                        <i class="fas fa-eye"></i>
+                    </button>` : ''}
+                </div>
             </div>
-          </div>
         `;
-      }).join('');
-      
-      document.getElementById('docsCompleted').textContent = completedCount + '/6';
-      document.getElementById('docBadge').textContent = completedCount;
-    }
+    }).join('');
+    
+    document.getElementById('docsCompleted').textContent = completedCount + '/6';
+    document.getElementById('docBadge').textContent = completedCount;
+}
     
     // ============================================================
     // UPLOAD DOCUMENT
     // ============================================================
     async function uploadDocument(docType) {
-      if (!currentUser) { showToast('Please log in first', 'error'); return; }
-      
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = '.pdf,.jpg,.jpeg,.png,.doc,.docx';
-      
-      input.onchange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        if (file.size > 10 * 1024 * 1024) {
-          showToast('File size must be less than 10MB', 'error');
-          return;
+    if (!currentUser) { showToast('Please log in first', 'error'); return; }
+    
+    // Check if this doc type allows multiple files
+    const docConfig = requiredDocs.find(d => d.id === docType);
+    const isMultiple = docConfig?.multiple || false;
+    
+    const input = document.createElement('input');
+    input.type = 'file';
+    if (isMultiple) {
+        input.multiple = true;
+    }
+    input.accept = '.pdf,.jpg,.jpeg,.png,.doc,.docx';
+    
+    input.onchange = async (e) => {
+        const files = Array.from(e.target.files);
+        if (!files || files.length === 0) return;
+        
+        // Check file sizes
+        const oversized = files.find(f => f.size > 10 * 1024 * 1024);
+        if (oversized) {
+            showToast('File size must be less than 10MB: ' + oversized.name, 'error');
+            return;
         }
         
-        showToast('Uploading ' + file.name + '...', 'info');
+        showToast(`Uploading ${files.length} file(s)...`, 'info');
         
         try {
-          const formData = new FormData();
-          formData.append('file', file);
-          formData.append('userId', currentUser.uid);
-          formData.append('docType', docType);
-          
-          const response = await fetch(`${API_URL}/upload`, {
-            method: 'POST',
-            body: formData
-          });
-          
-          if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Upload failed: ${response.status} - ${errorText}`);
-          }
-          
-          const result = await response.json();
-          if (!result.success) throw new Error(result.message || 'Upload failed');
-          
-          const metadata = {
-            uid: currentUser.uid,
-            docType: docType,
-            fileId: result.fileId,
-            fileName: result.fileName || file.name,
-            fileSize: result.fileSize || file.size,
-            fileType: result.fileType || file.type,
-            fileUrl: result.url,
-            status: 'pending_review',
-            uploadedAt: new Date().toISOString()
-          };
-          
-          let metaResponse = await fetch(`${API_URL}/users/documents`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(metadata)
-          });
-          
-          if (metaResponse.status === 404) {
-            await createUserInMongoDB();
-            metaResponse = await fetch(`${API_URL}/users/documents`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(metadata)
-            });
-          }
-          
-          if (metaResponse.status === 500) {
-            const errorData = await metaResponse.json();
-            if (errorData.message && errorData.message.includes('duplicate key')) {
-              await fetch(`${API_URL}/users/documents/upsert`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(metadata)
-              });
-            } else {
-              throw new Error(`Metadata save failed: ${errorData.message}`);
+            const uploadedFiles = [];
+            
+            for (const file of files) {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('userId', currentUser.uid);
+                formData.append('docType', docType);
+                
+                const response = await fetch(`${API_URL}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+                }
+                
+                const result = await response.json();
+                if (!result.success) throw new Error(result.message || 'Upload failed');
+                
+                const metadata = {
+                    uid: currentUser.uid,
+                    docType: docType,
+                    fileId: result.fileId,
+                    fileName: result.fileName || file.name,
+                    fileSize: result.fileSize || file.size,
+                    fileType: result.fileType || file.type,
+                    fileUrl: result.url,
+                    status: 'pending_review',
+                    uploadedAt: new Date().toISOString()
+                };
+                
+                // For multiple files, send as array
+                if (isMultiple) {
+                    // Get existing documents for this type
+                    const existing = allDocuments[docType] || [];
+                    const existingArray = Array.isArray(existing) ? existing : [];
+                    const newDoc = { ...metadata };
+                    
+                    const updateResponse = await fetch(`${API_URL}/users/documents/multiple`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            uid: currentUser.uid,
+                            docType: docType,
+                            document: newDoc
+                        })
+                    });
+                    
+                    if (!updateResponse.ok) throw new Error('Failed to save document metadata');
+                } else {
+                    // Single file - replace
+                    let metaResponse = await fetch(`${API_URL}/users/documents`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(metadata)
+                    });
+                    
+                    if (metaResponse.status === 404) {
+                        await createUserInMongoDB();
+                        metaResponse = await fetch(`${API_URL}/users/documents`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(metadata)
+                        });
+                    }
+                    
+                    if (metaResponse.status === 500) {
+                        const errorData = await metaResponse.json();
+                        if (errorData.message && errorData.message.includes('duplicate key')) {
+                            await fetch(`${API_URL}/users/documents/upsert`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(metadata)
+                            });
+                        } else {
+                            throw new Error(`Metadata save failed: ${errorData.message}`);
+                        }
+                    } else if (!metaResponse.ok) {
+                        const errorText = await metaResponse.text();
+                        throw new Error(`Metadata save failed: ${metaResponse.status} - ${errorText}`);
+                    }
+                }
+                
+                uploadedFiles.push(file.name);
             }
-          } else if (!metaResponse.ok) {
-            const errorText = await metaResponse.text();
-            throw new Error(`Metadata save failed: ${metaResponse.status} - ${errorText}`);
-          }
-          
-          showToast('Document uploaded successfully!', 'success');
-          await loadDashboardData();
-          
+            
+            showToast(`${uploadedFiles.length} file(s) uploaded successfully!`, 'success');
+            await loadDashboardData();
+            
         } catch (error) {
-          console.error('Upload error:', error);
-          showToast('Upload failed: ' + error.message, 'error');
+            console.error('Upload error:', error);
+            showToast('Upload failed: ' + error.message, 'error');
         }
-      };
-      
-      input.click();
-    }
+    };
+    
+    input.click();
+}
     
     // ============================================================
     // VIEW DOCUMENT
     // ============================================================
     function viewDocument(docType) {
-      const doc = allDocuments[docType];
-      if (doc && doc.fileUrl) { 
-        window.open(doc.fileUrl, '_blank'); 
-      } else { 
-        showToast('Document not found', 'error'); 
-      }
+    const doc = allDocuments[docType];
+    if (!doc) { showToast('Document not found', 'error'); return; }
+    
+    // Check if it's an array (multiple files)
+    if (Array.isArray(doc) && doc.length > 0) {
+        // Open the first file or show list
+        const files = doc.filter(f => f.fileUrl);
+        if (files.length === 0) { showToast('No files available', 'error'); return; }
+        if (files.length === 1) {
+            window.open(files[0].fileUrl, '_blank');
+        } else {
+            // Show list of files
+            let fileList = files.map((f, i) => 
+                `${i+1}. ${f.fileName || 'File ' + (i+1)} - <a href="${f.fileUrl}" target="_blank" style="color: #17a2b8;">View</a>`
+            ).join('\n');
+            alert(`📄 Other Documents (${files.length} files):\n\n${fileList}`);
+        }
+        return;
     }
+    
+    if (doc.fileUrl) { 
+        window.open(doc.fileUrl, '_blank'); 
+    } else { 
+        showToast('Document not found', 'error'); 
+    }
+}
     
     // ============================================================
     // BULK UPLOAD
