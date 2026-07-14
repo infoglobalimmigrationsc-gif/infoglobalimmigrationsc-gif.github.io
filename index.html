@@ -1140,109 +1140,8 @@
     }
 }
             
-            .main-nav.open {
-                right: 0;
-            }
-            
-            /* Mobile overlay */
-            .main-nav.open::before {
-                content: '';
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.3);
-                z-index: -1;
-                backdrop-filter: blur(4px);
-            }
-            
-            .nav-menu {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 2px;
-                width: 100%;
-            }
-            
-            .nav-menu > li {
-                width: 100%;
-                margin: 0;
-            }
-            
-            .nav-menu > li > a {
-                padding: 12px 16px;
-                font-size: 1rem;
-                border-radius: 10px;
-                justify-content: flex-start;
-            }
-            
-            .nav-menu > li > a.active::after {
-                display: none;
-            }
-            
-            .nav-menu > li > a.active {
-                background: rgba(227, 6, 19, 0.08);
-                border-left: 3px solid var(--primary-red);
-            }
-            
-            /* Mobile dropdown */
-            .dropdown-content {
-                position: static;
-                box-shadow: none;
-                border-radius: 10px;
-                margin: 4px 0 4px 16px;
-                background: rgba(0, 0, 0, 0.02);
-                padding: 4px 0;
-                border: none;
-                display: none;
-                animation: none;
-                width: auto;
-                min-width: auto;
-            }
-            
-            .dropdown.open .dropdown-content {
-                display: block;
-            }
-            
-            .dropdown-content a {
-                padding: 10px 16px;
-                font-size: 0.9rem;
-            }
-            
-            .dropdown-content a::before {
-                content: '•';
-                font-size: 1rem;
-            }
-            
-            .dropdown-toggle i {
-                margin-left: auto;
-            }
-            
-            /* Mobile CTA buttons */
-            .nav-cta {
-                margin: 8px 0 4px !important;
-                width: 100%;
-            }
-            
-            .nav-cta .btn-cta {
-                width: 100%;
-                justify-content: center;
-                padding: 14px 20px;
-                font-size: 1rem;
-                border-radius: 12px;
-            }
-            
-            .btn-cta-live {
-                animation: none;
-            }
-            
-            /* Mobile close button */
-            .main-nav .mobile-close {
-                display: flex !important;
-            }
-        }
 
-        /* Mobile Header Right Section */
+/* Mobile Header Right Section */
 .mobile-header-right {
     display: none;
     align-items: center;
@@ -14062,7 +13961,7 @@ function drawWorldMap(ctx, w, h) {
         }
     }
     
-    // ==========================================
+// ==========================================
 // REMINDER NOTIFICATION - IMPROVED VERSION
 // ==========================================
 function showReminderNotification() {
@@ -14072,22 +13971,37 @@ function showReminderNotification() {
     const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
     const isAndroid = /Android/.test(navigator.userAgent);
     const isChrome = /Chrome/.test(navigator.userAgent);
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    const isEdge = /Edg/.test(navigator.userAgent);
     
     let message = '';
     let icon = '';
+    let actionText = '';
     
     if (isIOS) {
-        message = '📱 Tap the Share button and select "Add to Home Screen"';
+        message = 'Tap the Share button and select "Add to Home Screen"';
         icon = 'fa-share-alt';
+        actionText = 'Tap Share → Add to Home Screen';
     } else if (isAndroid && isChrome) {
-        message = '📲 Tap the menu (⋮) and select "Install App" or "Add to Home screen"';
+        message = 'Tap the menu (⋮) and select "Install App" or "Add to Home screen"';
         icon = 'fa-download';
+        actionText = 'Open Chrome Menu → Install App';
     } else if (isAndroid) {
-        message = '📲 Use Chrome browser to install this app';
+        message = 'Install this app using Chrome browser for the best experience';
         icon = 'fa-chrome';
+        actionText = 'Open in Chrome → Install App';
+    } else if (isSafari) {
+        message = 'Tap the Share button and select "Add to Home Screen"';
+        icon = 'fa-share-alt';
+        actionText = 'Tap Share → Add to Home Screen';
+    } else if (isEdge) {
+        message = 'Click the Settings menu (⋯) and select "Install this site as an app"';
+        icon = 'fa-edge';
+        actionText = 'Settings → Install App';
     } else {
-        message = '📲 Use Chrome or Edge browser to install this app';
-        icon = 'fa-globe';
+        message = 'Install this app for quick access on your device';
+        icon = 'fa-download';
+        actionText = 'Install App';
     }
     
     const notification = document.createElement('div');
@@ -14113,20 +14027,23 @@ function showReminderNotification() {
     notification.innerHTML = `
         <div style="display: flex; align-items: center; gap: 14px;">
             <i class="fas ${icon}" style="color: var(--primary-red); font-size: 1.4rem;"></i>
-            <span style="flex: 1; text-align: left; line-height: 1.4;">${message}</span>
+            <div style="flex: 1; text-align: left; line-height: 1.4;">
+                <div style="font-weight: 600; font-size: 0.85rem;">📲 Install App</div>
+                <div style="font-size: 0.8rem; opacity: 0.8;">${message}</div>
+                <div style="font-size: 0.7rem; opacity: 0.6; margin-top: 3px;">${actionText}</div>
+            </div>
             <button onclick="this.closest('#installReminder').remove()" style="background: none; border: none; color: #999; font-size: 20px; cursor: pointer; padding: 4px 8px;">&times;</button>
         </div>
     `;
     
     document.body.appendChild(notification);
     
-    // Auto-dismiss after 8 seconds
+    // Auto-dismiss after 10 seconds
     setTimeout(function() {
         const el = document.getElementById('installReminder');
         if (el) el.remove();
-    }, 8000);
+    }, 10000);
 }
-    
     // ==========================================
     // EVENT LISTENERS
     // ==========================================
