@@ -977,27 +977,168 @@
         }
         
         @media (max-width: 768px) {
-            .mobile-toggle {
-                display: flex;
-            }
-            
-            .main-nav {
-                position: fixed;
-                top: 0;
-                right: -100%;
-                width: 85%;
-                max-width: 360px;
-                height: 100vh;
-                background: rgba(255, 255, 255, 0.97);
-                backdrop-filter: blur(20px);
-                -webkit-backdrop-filter: blur(20px);
-                padding: 80px 24px 30px;
-                overflow-y: auto;
-                transition: right 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-                box-shadow: -10px 0 40px rgba(0, 0, 0, 0.08);
-                z-index: 999;
-                border-left: 1px solid rgba(255, 255, 255, 0.2);
-            }
+    .mobile-toggle {
+        display: flex;
+    }
+    
+    .main-nav {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 85%;
+        max-width: 360px;
+        height: 100vh;
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        padding: 80px 24px 30px;
+        overflow-y: auto;
+        transition: right 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        box-shadow: -10px 0 40px rgba(0, 0, 0, 0.15);
+        z-index: 9999;
+        border-left: 1px solid rgba(255, 255, 255, 0.2);
+        /* CRITICAL: Ensure content is visible */
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
+    .main-nav.open {
+        right: 0;
+        /* Ensure content is visible when open */
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
+    /* Fix for mobile overlay - make sure it's behind the menu */
+    .main-nav.open::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: -1;
+        backdrop-filter: blur(4px);
+    }
+    
+    /* Ensure nav-menu is visible inside */
+    .main-nav .nav-menu {
+        display: flex !important;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 2px;
+        width: 100%;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative;
+        z-index: 10;
+    }
+    
+    .main-nav .nav-menu > li {
+        width: 100%;
+        margin: 0;
+        display: block !important;
+    }
+    
+    .main-nav .nav-menu > li > a {
+        padding: 12px 16px;
+        font-size: 1rem;
+        border-radius: 10px;
+        justify-content: flex-start;
+        color: var(--dark-gray);
+        display: flex !important;
+        align-items: center;
+        min-height: 44px;
+    }
+    
+    .main-nav .nav-menu > li > a.active::after {
+        display: none;
+    }
+    
+    .main-nav .nav-menu > li > a.active {
+        background: rgba(227, 6, 19, 0.08);
+        border-left: 3px solid var(--primary-red);
+    }
+    
+    /* Mobile dropdown */
+    .dropdown-content {
+        position: static;
+        box-shadow: none;
+        border-radius: 10px;
+        margin: 4px 0 4px 16px;
+        background: rgba(0, 0, 0, 0.02);
+        padding: 4px 0;
+        border: none;
+        display: none;
+        animation: none;
+        width: auto;
+        min-width: auto;
+    }
+    
+    .dropdown.open .dropdown-content {
+        display: block !important;
+    }
+    
+    .dropdown-content a {
+        padding: 10px 16px;
+        font-size: 0.9rem;
+        display: flex !important;
+        align-items: center;
+        min-height: 44px;
+    }
+    
+    .dropdown-content a::before {
+        content: '•';
+        font-size: 1rem;
+    }
+    
+    .dropdown-toggle i {
+        margin-left: auto;
+    }
+    
+    /* Mobile CTA buttons */
+    .nav-cta {
+        margin: 8px 0 4px !important;
+        width: 100%;
+    }
+    
+    .nav-cta .btn-cta {
+        width: 100%;
+        justify-content: center;
+        padding: 14px 20px;
+        font-size: 1rem;
+        border-radius: 12px;
+        display: flex !important;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .btn-cta-live {
+        animation: none;
+    }
+    
+    /* Mobile close button */
+    .main-nav .mobile-close {
+        display: flex !important;
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: none;
+        border: none;
+        font-size: 1.8rem;
+        cursor: pointer;
+        color: var(--dark-gray);
+        padding: 8px;
+        min-height: 44px;
+        min-width: 44px;
+        align-items: center;
+        justify-content: center;
+        z-index: 20;
+    }
+}
             
             .main-nav.open {
                 right: 0;
@@ -10853,47 +10994,82 @@ function clearFieldError(field) {
 
         
             
-            // Mobile Menu Toggle - Fixed version
-            document.querySelector('.mobile-toggle').addEventListener('click', function() {
-                const navMenu = document.querySelector('.nav-menu');
-                navMenu.classList.toggle('active');
-                
-                // Toggle icon between bars and times
-                const icon = this.querySelector('i');
-                if (navMenu.classList.contains('active')) {
-                    icon.classList.remove('fa-bars');
-                    icon.classList.add('fa-times');
-                } else {
-                    icon.classList.remove('fa-times');
-                    icon.classList.add('fa-bars');
-                }
-            });
+            // Mobile Menu Toggle - COMPLETELY FIXED VERSION
+const mobileToggle = document.querySelector('.mobile-toggle');
+const mainNav = document.querySelector('.main-nav');
+const mobileClose = document.querySelector('.mobile-close');
 
-            // Close mobile menu when clicking outside
-            document.addEventListener('click', function(e) {
-                const navMenu = document.querySelector('.nav-menu');
-                const mobileToggle = document.querySelector('.mobile-toggle');
-                
-                if (navMenu.classList.contains('active') && 
-                    !navMenu.contains(e.target) && 
-                    !mobileToggle.contains(e.target)) {
-                    navMenu.classList.remove('active');
-                    mobileToggle.querySelector('i').classList.remove('fa-times');
-                    mobileToggle.querySelector('i').classList.add('fa-bars');
-                }
-            });
+if (mobileToggle) {
+    mobileToggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isOpen = mainNav.classList.contains('open');
+        
+        if (isOpen) {
+            mainNav.classList.remove('open');
+            this.setAttribute('aria-expanded', 'false');
+            this.innerHTML = '<i class="fas fa-bars" aria-hidden="true"></i>';
+            document.body.style.overflow = '';
+        } else {
+            mainNav.classList.add('open');
+            this.setAttribute('aria-expanded', 'true');
+            this.innerHTML = '<i class="fas fa-times" aria-hidden="true"></i>';
+            document.body.style.overflow = 'hidden';
+        }
+    });
+}
 
-            // Dropdown menu for mobile - Fixed version
-            if (window.innerWidth <= 768) {
-                const dropdowns = document.querySelectorAll('.dropdown > a');
-                dropdowns.forEach(dropdownLink => {
-                    dropdownLink.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        const dropdown = this.parentElement;
-                        dropdown.classList.toggle('active');
-                    });
-                });
+// Close button in mobile menu
+if (mobileClose) {
+    mobileClose.addEventListener('click', function() {
+        mainNav.classList.remove('open');
+        if (mobileToggle) {
+            mobileToggle.setAttribute('aria-expanded', 'false');
+            mobileToggle.innerHTML = '<i class="fas fa-bars" aria-hidden="true"></i>';
+        }
+        document.body.style.overflow = '';
+    });
+}
+
+// Close mobile menu when clicking outside
+document.addEventListener('click', function(e) {
+    if (mainNav && mainNav.classList.contains('open')) {
+        const isClickInside = mainNav.contains(e.target) || 
+                             (mobileToggle && mobileToggle.contains(e.target));
+        if (!isClickInside) {
+            mainNav.classList.remove('open');
+            if (mobileToggle) {
+                mobileToggle.setAttribute('aria-expanded', 'false');
+                mobileToggle.innerHTML = '<i class="fas fa-bars" aria-hidden="true"></i>';
             }
+            document.body.style.overflow = '';
+        }
+    }
+});
+
+// Close on escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && mainNav && mainNav.classList.contains('open')) {
+        mainNav.classList.remove('open');
+        if (mobileToggle) {
+            mobileToggle.setAttribute('aria-expanded', 'false');
+            mobileToggle.innerHTML = '<i class="fas fa-bars" aria-hidden="true"></i>';
+        }
+        document.body.style.overflow = '';
+    }
+});
+
+// Dropdown menu for mobile
+if (window.innerWidth <= 768) {
+    const dropdowns = document.querySelectorAll('.dropdown > a');
+    dropdowns.forEach(dropdownLink => {
+        dropdownLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const dropdown = this.parentElement;
+            dropdown.classList.toggle('open');
+        });
+    });
+}
             
             // Live Session Modal
 const liveSessionBtn = document.getElementById('liveSessionBtn');
@@ -13887,42 +14063,69 @@ function drawWorldMap(ctx, w, h) {
     }
     
     // ==========================================
-    // REMINDER NOTIFICATION
-    // ==========================================
-    function showReminderNotification() {
-        const notification = document.createElement('div');
-        notification.style.cssText = `
-            position: fixed;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--dark-gray);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 12px;
-            z-index: 99999;
-            font-size: 0.9rem;
-            text-align: center;
-            max-width: 90%;
-            animation: slideUp 0.3s ease;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        `;
-        notification.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <i class="fas fa-info-circle" style="color: var(--primary-red);"></i>
-                <span>Use Chrome browser to install this app</span>
-                <button onclick="this.closest('div').remove()" style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">&times;</button>
-            </div>
-        `;
-        
-        document.body.appendChild(notification);
-        
-        setTimeout(function() {
-            if (notification.parentNode) {
-                notification.remove();
-            }
-        }, 5000);
+// REMINDER NOTIFICATION - IMPROVED VERSION
+// ==========================================
+function showReminderNotification() {
+    // Check if already showing
+    if (document.getElementById('installReminder')) return;
+    
+    const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+    const isAndroid = /Android/.test(navigator.userAgent);
+    const isChrome = /Chrome/.test(navigator.userAgent);
+    
+    let message = '';
+    let icon = '';
+    
+    if (isIOS) {
+        message = '📱 Tap the Share button and select "Add to Home Screen"';
+        icon = 'fa-share-alt';
+    } else if (isAndroid && isChrome) {
+        message = '📲 Tap the menu (⋮) and select "Install App" or "Add to Home screen"';
+        icon = 'fa-download';
+    } else if (isAndroid) {
+        message = '📲 Use Chrome browser to install this app';
+        icon = 'fa-chrome';
+    } else {
+        message = '📲 Use Chrome or Edge browser to install this app';
+        icon = 'fa-globe';
     }
+    
+    const notification = document.createElement('div');
+    notification.id = 'installReminder';
+    notification.style.cssText = `
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1a1a2e;
+        color: white;
+        padding: 16px 24px;
+        border-radius: 16px;
+        z-index: 99999;
+        font-size: 0.9rem;
+        text-align: center;
+        max-width: 90%;
+        min-width: 280px;
+        animation: slideUp 0.3s ease;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        border: 1px solid rgba(255,255,255,0.1);
+    `;
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 14px;">
+            <i class="fas ${icon}" style="color: var(--primary-red); font-size: 1.4rem;"></i>
+            <span style="flex: 1; text-align: left; line-height: 1.4;">${message}</span>
+            <button onclick="this.closest('#installReminder').remove()" style="background: none; border: none; color: #999; font-size: 20px; cursor: pointer; padding: 4px 8px;">&times;</button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-dismiss after 8 seconds
+    setTimeout(function() {
+        const el = document.getElementById('installReminder');
+        if (el) el.remove();
+    }, 8000);
+}
     
     // ==========================================
     // EVENT LISTENERS
