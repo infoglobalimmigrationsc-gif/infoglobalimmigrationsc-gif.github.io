@@ -1733,65 +1733,86 @@ const requiredDocs = [
     });
     
     async function handleBulkUpload(files) {
-      if (!currentUser) { showToast('Please log in first', 'error'); return; }
-      
-      const validFiles = files.filter(file => {
+    if (!currentUser) { showToast('Please log in first', 'error'); return; }
+    
+    const validFiles = files.filter(file => {
         const validTypes = ['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx'];
         const ext = '.' + file.name.split('.').pop().toLowerCase();
         if (!validTypes.includes(ext)) { showToast(file.name + ' - Unsupported file type', 'error'); return false; }
         if (file.size > 10 * 1024 * 1024) { showToast(file.name + ' - File too large (max 10MB)', 'error'); return false; }
         return true;
-      });
-      if (validFiles.length === 0) { showToast('No valid files to upload', 'error'); return; }
-      
-      showToast(`Uploading ${validFiles.length} files...`, 'info');
-      const progressBar = document.getElementById('bulkProgressBar');
-      const progressContainer = document.getElementById('bulkProgress');
-      progressContainer.style.display = 'block';
-      let uploaded = 0;
-      
-      for (const file of validFiles) {
+    });
+    if (validFiles.length === 0) { showToast('No valid files to upload', 'error'); return; }
+    
+    showToast(`Uploading ${validFiles.length} files...`, 'info');
+    const progressBar = document.getElementById('bulkProgressBar');
+    const progressContainer = document.getElementById('bulkProgress');
+    progressContainer.style.display = 'block';
+    let uploaded = 0;
+    
+    for (const file of validFiles) {
         try {
-          const docType = detectDocumentType(file.name);
-          const formData = new FormData();
-          formData.append('file', file);
-          formData.append('userId', currentUser.uid);
-          formData.append('docType', docType);
-          
-          const response = await fetch(`${API_URL}/upload`, { method: 'POST', body: formData });
-          if (!response.ok) throw new Error('Upload failed');
-          const result = await response.json();
-          if (!result.success) throw new Error(result.message || 'Upload failed');
-          
-          const metadata = {
-            uid: currentUser.uid,
-            docType: docType,
-            fileId: result.fileId,
-            fileName: result.fileName || file.name,
-            fileSize: result.fileSize || file.size,
-            fileType: result.fileType || file.type,
-            fileUrl: result.url,
-            status: 'pending_review',
-            uploadedAt: new Date().toISOString()
-          };
-          
-          await fetch(`${API_URL}/users/documents`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(metadata)
-          });
-          
-          uploaded++;
-          progressBar.style.width = (uploaded / validFiles.length) * 100 + '%';
+            const docType = detectDocumentType(file.name);
+            const isMultiple = docType === 'other_documents';
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('userId', currentUser.uid);
+            formData.append('docType', docType);
+            
+            const response = await fetch(`${API_URL}/upload`, { method: 'POST', body: formData });
+            if (!response.ok) throw new Error('Upload failed');
+            const result = await response.json();
+            if (!result.success) throw new Error(result.message || 'Upload failed');
+            
+            const metadata = {
+                uid: currentUser.uid,
+                docType: docType,
+                fileId: result.fileId,
+                fileName: result.fileName || file.name,
+                fileSize: result.fileSize || file.size,
+                fileType: result.fileType || file.type,
+                fileUrl: result.url,
+                status: 'pending_review',
+                uploadedAt: new Date().toISOString()
+            };
+            
+            // For other_documents, use the multiple endpoint to add to array
+            if (isMultiple) {
+                const updateResponse = await fetch(`${API_URL}/users/documents/multiple`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        uid: currentUser.uid,
+                        docType: docType,
+                        document: metadata
+                    })
+                });
+                
+                if (!updateResponse.ok) {
+                    const errorText = await updateResponse.text();
+                    throw new Error('Failed to save document metadata: ' + errorText);
+                }
+            } else {
+                // Single file - replace
+                await fetch(`${API_URL}/users/documents`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(metadata)
+                });
+            }
+            
+            uploaded++;
+            progressBar.style.width = (uploaded / validFiles.length) * 100 + '%';
         } catch (error) {
-          console.error('Upload error for ' + file.name, error);
-          showToast('Failed to upload ' + file.name, 'error');
+            console.error('Upload error for ' + file.name, error);
+            showToast('Failed to upload ' + file.name, 'error');
         }
-      }
-      setTimeout(() => { progressContainer.style.display = 'none'; progressBar.style.width = '0%'; }, 1000);
-      showToast(`${uploaded} of ${validFiles.length} files uploaded successfully!`, 'success');
-      await loadDashboardData();
     }
+    setTimeout(() => { progressContainer.style.display = 'none'; progressBar.style.width = '0%'; }, 1000);
+    showToast(`${uploaded} of ${validFiles.length} files uploaded successfully!`, 'success');
+    await loadDashboardData();
+}
     
     function detectDocumentType(filename) {
       const lower = filename.toLowerCase();
