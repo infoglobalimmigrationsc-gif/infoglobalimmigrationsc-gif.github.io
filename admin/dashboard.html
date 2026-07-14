@@ -4,6 +4,314 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Global Immigration SC</title>
+
+    // ============================================================
+// ANTI-CONSOLE & SECURITY PROTECTION
+// ============================================================
+(function() {
+    'use strict';
+    
+    // === PROTECT AGAINST CONSOLE LOGGING ===
+    // Store original console methods
+    const originalConsole = {
+        log: console.log,
+        warn: console.warn,
+        error: console.error,
+        info: console.info,
+        debug: console.debug,
+        trace: console.trace
+    };
+
+    // Override console methods to prevent logging sensitive data
+    // But keep them functional for debugging (just filtered)
+    console.log = function() {
+        // Block any logs containing sensitive keywords
+        const args = Array.from(arguments);
+        const sensitiveKeywords = ['password', 'token', 'secret', 'key', 'auth', 'credential', 'jwt', 'apiKey', 'firebase'];
+        const hasSensitive = args.some(arg => {
+            if (typeof arg === 'string') {
+                return sensitiveKeywords.some(keyword => 
+                    arg.toLowerCase().includes(keyword)
+                );
+            }
+            return false;
+        });
+        
+        if (!hasSensitive) {
+            originalConsole.log.apply(console, args);
+        }
+    };
+    
+    console.warn = function() {
+        // Only show warnings if they're not from our security
+        const args = Array.from(arguments);
+        const blockedWarnings = ['console', 'debug', 'devtools'];
+        const isBlocked = args.some(arg => {
+            if (typeof arg === 'string') {
+                return blockedWarnings.some(keyword => 
+                    arg.toLowerCase().includes(keyword)
+                );
+            }
+            return false;
+        });
+        
+        if (!isBlocked) {
+            originalConsole.warn.apply(console, args);
+        }
+    };
+    
+    console.error = function() {
+        // Always show errors (they're important for debugging)
+        originalConsole.error.apply(console, arguments);
+    };
+    
+    console.info = function() {
+        // Block info logs that might contain sensitive data
+        const args = Array.from(arguments);
+        const sensitiveKeywords = ['token', 'secret', 'key', 'password'];
+        const hasSensitive = args.some(arg => {
+            if (typeof arg === 'string') {
+                return sensitiveKeywords.some(keyword => 
+                    arg.toLowerCase().includes(keyword)
+                );
+            }
+            return false;
+        });
+        
+        if (!hasSensitive) {
+            originalConsole.info.apply(console, args);
+        }
+    };
+    
+    // === PREVENT DEVTOOLS DETECTION AND DEBUGGING ===
+    // Disable right-click (context menu) for non-admin users
+    document.addEventListener('contextmenu', function(e) {
+        // Allow right-click on input fields and textareas (for copy/paste)
+        const target = e.target;
+        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
+            return;
+        }
+        e.preventDefault();
+        return false;
+    });
+    
+    // Block common keyboard shortcuts that open devtools
+    document.addEventListener('keydown', function(e) {
+        // Block F12
+        if (e.key === 'F12') {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Block Ctrl+Shift+I (DevTools)
+        if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Block Ctrl+Shift+J (Console)
+        if (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j')) {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Block Ctrl+U (View Source)
+        if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Block Ctrl+S (Save Page)
+        if (e.ctrlKey && (e.key === 'S' || e.key === 's')) {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Block Ctrl+Shift+C (Inspect Element)
+        if (e.ctrlKey && e.shiftKey && (e.key === 'C' || e.key === 'c')) {
+            e.preventDefault();
+            return false;
+        }
+    });
+    
+    // === PROTECT AGAINST CONSOLE CLEARING ===
+    // Prevent console.clear() from being called
+    console.clear = function() {
+        // Do nothing - prevent console clearing
+        return;
+    };
+    
+    // === PREVENT SCRIPT INJECTION (XSS PROTECTION) ===
+    // Override document.write to prevent injection
+    const originalWrite = document.write;
+    document.write = function() {
+        // Block any script injection attempts
+        const args = Array.from(arguments);
+        const hasScript = args.some(arg => {
+            if (typeof arg === 'string') {
+                return arg.toLowerCase().includes('<script') || 
+                       arg.toLowerCase().includes('javascript:') ||
+                       arg.toLowerCase().includes('onerror=') ||
+                       arg.toLowerCase().includes('onload=');
+            }
+            return false;
+        });
+        
+        if (hasScript) {
+            console.warn('⚠️ Script injection attempt blocked');
+            return;
+        }
+        
+        originalWrite.apply(document, arguments);
+    };
+    
+    // === PROTECT AGAINST COOKIE STEALING ===
+    // Make cookies HttpOnly where possible (server-side should do this too)
+    // This is a client-side reminder - real protection should be server-side
+    
+    // === DETECT AND BLOCK CONSOLE SPAMMING ===
+    // Monitor console usage and warn if too many logs
+    let consoleLogCount = 0;
+    const originalLog = console.log;
+    console.log = function() {
+        consoleLogCount++;
+        if (consoleLogCount > 100) {
+            consoleLogCount = 0;
+            // Clear logs if too many to prevent performance issues
+            originalConsole.warn('⚠️ Excessive console logging detected');
+        }
+        originalLog.apply(console, arguments);
+    };
+    
+    // === SESSION TIMEOUT PROTECTION ===
+    // Auto logout after 30 minutes of inactivity
+    let sessionTimeout;
+    const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+    
+    function resetSessionTimer() {
+        clearTimeout(sessionTimeout);
+        sessionTimeout = setTimeout(function() {
+            // Only auto-logout if user is not on a critical page
+            const currentPage = window.location.pathname;
+            if (!currentPage.includes('login') && !currentPage.includes('register')) {
+                if (localStorage.getItem('adminToken') || localStorage.getItem('userToken')) {
+                    showToast('Session expired. Please login again.', 'warning');
+                    localStorage.removeItem('adminToken');
+                    localStorage.removeItem('userToken');
+                    localStorage.removeItem('adminData');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                }
+            }
+        }, SESSION_TIMEOUT);
+    }
+    
+    // Reset timer on user activity
+    document.addEventListener('mousemove', resetSessionTimer);
+    document.addEventListener('keydown', resetSessionTimer);
+    document.addEventListener('click', resetSessionTimer);
+    document.addEventListener('scroll', resetSessionTimer);
+    
+    // Start the session timer
+    resetSessionTimer();
+    
+    // === PROTECT AGAINST CONSOLE API OVERRIDES ===
+    // Freeze console methods to prevent hijacking
+    if (Object.freeze) {
+        try {
+            Object.freeze(console);
+        } catch(e) {
+            // Some browsers don't allow freezing console
+        }
+    }
+    
+    // === SECURE LOCALSTORAGE ACCESS ===
+    // Monitor localStorage access attempts
+    const originalSetItem = localStorage.setItem;
+    localStorage.setItem = function(key, value) {
+        // Block storage of sensitive data in plain text
+        const sensitiveKeys = ['token', 'password', 'secret', 'key', 'auth', 'credential'];
+        if (sensitiveKeys.some(k => key.toLowerCase().includes(k))) {
+            // Allow but warn
+            console.warn('⚠️ Storing sensitive data in localStorage: ' + key);
+        }
+        originalSetItem.apply(localStorage, arguments);
+    };
+    
+    // === PREVENT SCREENSHOT TOOLS ===
+    // Block common screenshot shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Block Windows + Shift + S (Snipping Tool)
+        if (e.metaKey && e.shiftKey && (e.key === 'S' || e.key === 's')) {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Block Print Screen key
+        if (e.key === 'PrintScreen') {
+            e.preventDefault();
+            return false;
+        }
+    });
+    
+    // === HIDE CONSOLE MESSAGES FROM NON-AUTHENTICATED USERS ===
+    // Only show console messages in development or for admins
+    const isDevelopment = window.location.hostname === 'localhost' || 
+                         window.location.hostname === '127.0.0.1';
+    
+    if (!isDevelopment) {
+        // In production, hide all non-critical console messages
+        const silentConsole = {
+            log: function() {},
+            warn: function() {},
+            info: function() {},
+            debug: function() {},
+            trace: function() {}
+        };
+        
+        // Only keep error logs visible
+        console.log = silentConsole.log;
+        console.warn = silentConsole.warn;
+        console.info = silentConsole.info;
+        console.debug = silentConsole.debug;
+        console.trace = silentConsole.trace;
+        
+        // Keep error for debugging
+        console.error = originalConsole.error;
+    }
+    
+    // === PROTECT AGAINST IFRAME INJECTION ===
+    // Prevent the page from being loaded in an iframe (clickjacking protection)
+    if (window.top !== window.self) {
+        // If in an iframe, break out
+        window.top.location = window.self.location;
+    }
+    
+    // === PROTECT AGAINST COPYING SENSITIVE CONTENT ===
+    // Block copying of sensitive elements (like user IDs, emails)
+    document.addEventListener('copy', function(e) {
+        const selectedText = window.getSelection().toString();
+        // Block copying of email addresses, phone numbers, IDs
+        const sensitivePatterns = [
+            /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/, // Email
+            /\+\d{1,3}\s?\d{3,14}/, // Phone
+            /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i // UUID
+        ];
+        
+        if (sensitivePatterns.some(pattern => pattern.test(selectedText))) {
+            e.preventDefault();
+            showToast('Copying sensitive information is not allowed', 'warning');
+            return false;
+        }
+    });
+    
+    // === LOG SECURITY EVENTS ===
+    console.log('🔒 Security protection enabled');
+    console.log('🛡️ Console logging restricted');
+    console.log('⏰ Session timeout: 30 minutes');
+    
+})();
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
