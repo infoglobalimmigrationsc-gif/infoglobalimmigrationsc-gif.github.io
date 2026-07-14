@@ -2325,31 +2325,59 @@ async function loadPayments() {
         }
         
         let docsHtml = '';
-        if (docCount > 0) {
-            docsHtml = `
-                <div style="margin-top: 15px;">
-                    <h4 style="color: var(--primary-red); margin-bottom: 10px;"><i class="fas fa-file-alt"></i> Documents (${docCount})</h4>
-                    <div class="doc-grid">
-                        ${Object.entries(documents).map(([key, doc]) => `
-                            <div class="doc-card">
-                                <div class="doc-icon"><i class="fas ${getDocIcon(key)}"></i></div>
-                                <div class="doc-name">${formatDocName(key)}</div>
-                                <div class="doc-status status-${doc.status || 'pending_review'}">${(doc.status || 'pending_review').toUpperCase()}</div>
-                                ${doc.fileUrl ? `<a href="${doc.fileUrl}" target="_blank" class="btn btn-sm btn-primary" style="margin-top: 8px; font-size: 0.6rem;"><i class="fas fa-eye"></i> View</a>` : ''}
-                                ${doc.fileName ? `<div style="font-size: 0.6rem; color: #666; margin-top: 5px;">${doc.fileName}</div>` : ''}
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-        } else {
-            docsHtml = `
-                <div style="margin-top: 15px; text-align: center; color: #999; padding: 20px; background: #f5f5f5; border-radius: 8px;">
-                    <i class="fas fa-file-alt" style="font-size: 2rem; opacity: 0.3;"></i>
-                    <p>No documents uploaded yet</p>
+if (docCount > 0) {
+    // Handle documents display with support for multiple files
+    let docCards = '';
+    
+    Object.entries(documents).forEach(([key, doc]) => {
+        // Check if this is a multiple document type (like other_documents)
+        if (key === 'other_documents' && Array.isArray(doc)) {
+            // Display each file in the array
+            doc.forEach((file, index) => {
+                if (file && file.fileName) {
+                    docCards += `
+                        <div class="doc-card" style="border-left: 3px solid var(--primary-red);">
+                            <div class="doc-icon"><i class="fas ${getDocIcon(key)}"></i></div>
+                            <div class="doc-name">${formatDocName(key)} ${doc.length > 1 ? '#' + (index + 1) : ''}</div>
+                            <div style="font-size: 0.7rem; color: #666; margin: 3px 0;">${file.fileName || 'Unknown'}</div>
+                            <div class="doc-status status-${file.status || 'pending_review'}">${(file.status || 'pending_review').toUpperCase()}</div>
+                            ${file.fileUrl ? `<a href="${file.fileUrl}" target="_blank" class="btn btn-sm btn-primary" style="margin-top: 8px; font-size: 0.6rem;"><i class="fas fa-eye"></i> View</a>` : ''}
+                            ${file.uploadedAt ? `<div style="font-size: 0.5rem; color: #999; margin-top: 4px;">${new Date(file.uploadedAt).toLocaleDateString()}</div>` : ''}
+                        </div>
+                    `;
+                }
+            });
+        } else if (doc && doc.fileName) {
+            // Single document
+            docCards += `
+                <div class="doc-card">
+                    <div class="doc-icon"><i class="fas ${getDocIcon(key)}"></i></div>
+                    <div class="doc-name">${formatDocName(key)}</div>
+                    <div style="font-size: 0.7rem; color: #666; margin: 3px 0;">${doc.fileName || 'Unknown'}</div>
+                    <div class="doc-status status-${doc.status || 'pending_review'}">${(doc.status || 'pending_review').toUpperCase()}</div>
+                    ${doc.fileUrl ? `<a href="${doc.fileUrl}" target="_blank" class="btn btn-sm btn-primary" style="margin-top: 8px; font-size: 0.6rem;"><i class="fas fa-eye"></i> View</a>` : ''}
+                    ${doc.uploadedAt ? `<div style="font-size: 0.5rem; color: #999; margin-top: 4px;">${new Date(doc.uploadedAt).toLocaleDateString()}</div>` : ''}
                 </div>
             `;
         }
+    });
+    
+    docsHtml = `
+        <div style="margin-top: 15px;">
+            <h4 style="color: var(--primary-red); margin-bottom: 10px;"><i class="fas fa-file-alt"></i> Documents (${docCount})</h4>
+            <div class="doc-grid">
+                ${docCards}
+            </div>
+        </div>
+    `;
+} else {
+    docsHtml = `
+        <div style="margin-top: 15px; text-align: center; color: #999; padding: 20px; background: #f5f5f5; border-radius: 8px;">
+            <i class="fas fa-file-alt" style="font-size: 2rem; opacity: 0.3;"></i>
+            <p>No documents uploaded yet</p>
+        </div>
+    `;
+}
         
         const receipt = app.paymentReceipt || null;
         let paymentHtml = `
@@ -2434,29 +2462,36 @@ async function loadPayments() {
         // ============================================================
         // HELPER FUNCTIONS
         // ============================================================
-        function getDocIcon(docType) {
-            const icons = {
-                'passport': 'fa-passport',
-                'academic_transcripts': 'fa-graduation-cap',
-                'proof_of_funds': 'fa-money-bill-wave',
-                'cv_resume': 'fa-file-alt',
-                'passport_photos': 'fa-camera',
-                'recommendation_letter': 'fa-envelope'
-            };
-            return icons[docType] || 'fa-file';
-        }
+        // ============================================================
+// HELPER FUNCTIONS - UPDATED
+// ============================================================
+function getDocIcon(docType) {
+    const icons = {
+        'passport': 'fa-passport',
+        'academic_transcripts': 'fa-graduation-cap',
+        'academic_diploma': 'fa-certificate',
+        'proof_of_funds': 'fa-money-bill-wave',
+        'cv_resume': 'fa-file-alt',
+        'passport_photos': 'fa-camera',
+        'recommendation_letter': 'fa-envelope',
+        'other_documents': 'fa-folder-open'
+    };
+    return icons[docType] || 'fa-file';
+}
 
-        function formatDocName(docType) {
-            const names = {
-                'passport': 'Passport',
-                'academic_transcripts': 'Transcripts',
-                'proof_of_funds': 'Proof of Funds',
-                'cv_resume': 'CV/Resume',
-                'passport_photos': 'Passport Photos',
-                'recommendation_letter': 'Recommendation Letter'
-            };
-            return names[docType] || docType.replace('_', ' ');
-        }
+function formatDocName(docType) {
+    const names = {
+        'passport': 'Passport Copy',
+        'academic_transcripts': 'Academic Transcripts',
+        'academic_diploma': 'Academic Diploma',
+        'proof_of_funds': 'Proof of Funds',
+        'cv_resume': 'CV/Resume',
+        'passport_photos': 'Passport Photos',
+        'recommendation_letter': 'Recommendation Letter',
+        'other_documents': 'Other Documents'
+    };
+    return names[docType] || docType.replace('_', ' ');
+}
 
         // ============================================================
         // CLOSE USER DETAIL MODAL
