@@ -1219,28 +1219,38 @@ const requiredDocs = [
         }
         
         appData = result.application || {};
-        allDocuments = appData.documents || {};
-        allNotifications = appData.notifications || [];
-        uploadHistory = appData.uploadHistory || [];
         
-        // IMPORTANT: Ensure other_documents is always an array
-        if (allDocuments.other_documents && !Array.isArray(allDocuments.other_documents)) {
-            allDocuments.other_documents = [allDocuments.other_documents];
-        }
-        if (!allDocuments.other_documents) {
-            allDocuments.other_documents = [];
+        // Get documents from appData
+        let docs = appData.documents || {};
+        
+        // IMPORTANT: For other_documents, always ensure it's an array
+        // Check if other_documents exists and is properly set
+        if (docs.other_documents) {
+            // If it's not an array, convert it
+            if (!Array.isArray(docs.other_documents)) {
+                docs.other_documents = [docs.other_documents];
+            }
+        } else {
+            docs.other_documents = [];
         }
         
         // Also ensure any other document type that might be an array is preserved
         // This is for safety - if you add more multi-document types in the future
-        Object.keys(allDocuments).forEach(key => {
+        Object.keys(docs).forEach(key => {
             const doc = requiredDocs.find(d => d.id === key);
-            if (doc?.multiple && !Array.isArray(allDocuments[key])) {
-                allDocuments[key] = allDocuments[key] ? [allDocuments[key]] : [];
+            if (doc?.multiple && !Array.isArray(docs[key])) {
+                docs[key] = docs[key] ? [docs[key]] : [];
             }
         });
         
+        allDocuments = docs;
+        allNotifications = appData.notifications || [];
+        uploadHistory = appData.uploadHistory || [];
+        
         unreadCount = allNotifications.filter(n => !n.read).length;
+        
+        console.log('📄 Loaded documents:', allDocuments);
+        console.log('📁 Other documents count:', allDocuments.other_documents?.length || 0);
         
         updateDashboardUI();
         renderDocuments();
@@ -1449,17 +1459,34 @@ const requiredDocs = [
         let uploadedDate = '';
         let isMultiple = doc.multiple || false;
         let fileCount = 0;
+        let filesList = [];
         
         if (uploaded) {
             // Handle multiple files for other_documents
             if (isMultiple && Array.isArray(uploaded)) {
-                const uploadedFiles = uploaded.filter(f => f && f.status !== 'missing');
+                // Filter out any invalid entries
+                const uploadedFiles = uploaded.filter(f => f && f.fileName);
                 fileCount = uploadedFiles.length;
+                
                 if (uploadedFiles.length > 0) {
-                    status = uploadedFiles.some(f => f.status === 'approved' || f.status === 'pending_review') ? 'pending_review' : 'pending';
+                    // Check status of all files
+                    const hasApproved = uploadedFiles.some(f => f.status === 'approved');
+                    const hasPendingReview = uploadedFiles.some(f => f.status === 'pending_review');
+                    const hasRejected = uploadedFiles.some(f => f.status === 'rejected');
+                    
+                    if (hasApproved) {
+                        status = 'approved';
+                    } else if (hasPendingReview) {
+                        status = 'pending_review';
+                    } else if (hasRejected) {
+                        status = 'rejected';
+                    } else {
+                        status = 'pending';
+                    }
+                    
                     fileName = uploadedFiles.length + ' file(s) uploaded';
                     uploadedDate = uploadedFiles[0]?.uploadedAt ? new Date(uploadedFiles[0].uploadedAt).toLocaleDateString() : '';
-                    if (uploadedFiles.some(f => f.status === 'approved')) status = 'approved';
+                    filesList = uploadedFiles;
                 } else {
                     status = 'missing';
                 }
@@ -1467,6 +1494,7 @@ const requiredDocs = [
                 status = uploaded.status;
                 fileName = uploaded.fileName || '';
                 uploadedDate = uploaded.uploadedAt ? new Date(uploaded.uploadedAt).toLocaleDateString() : '';
+                filesList = [uploaded];
                 fileCount = 1;
             } else {
                 status = 'missing';
@@ -1477,15 +1505,17 @@ const requiredDocs = [
         
         // Check if this doc type has files to show
         let fileListHtml = '';
-        if (isMultiple && uploaded && Array.isArray(uploaded) && uploaded.length > 0) {
-            const validFiles = uploaded.filter(f => f && f.fileName);
+        if (isMultiple && filesList && filesList.length > 0) {
+            const validFiles = filesList.filter(f => f && f.fileName);
             if (validFiles.length > 0) {
                 fileListHtml = `
                     <div style="margin-top: 8px; max-height: 100px; overflow-y: auto; text-align: left; font-size: 0.6rem; color: rgba(255,255,255,0.4);">
                         ${validFiles.map((f, index) => `
                             <div style="padding: 2px 4px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
                                 <span>📄 ${f.fileName || 'File ' + (index + 1)}</span>
-                                <span style="font-size: 0.5rem; color: ${f.status === 'approved' ? '#28a745' : '#ffc107'};">${f.status === 'approved' ? '✅' : f.status === 'pending_review' ? '⏳' : ''}</span>
+                                <span style="font-size: 0.5rem; color: ${f.status === 'approved' ? '#28a745' : f.status === 'pending_review' ? '#ffc107' : '#dc3545'};">
+                                    ${f.status === 'approved' ? '✅' : f.status === 'pending_review' ? '⏳' : '❌'}
+                                </span>
                             </div>
                         `).join('')}
                     </div>
@@ -1505,8 +1535,8 @@ const requiredDocs = [
                     <button class="btn btn-primary btn-sm" onclick="uploadDocument('${doc.id}')">
                         <i class="fas fa-upload"></i> ${uploaded && status !== 'missing' ? (isMultiple ? 'Add More' : 'Replace') : 'Upload'}
                     </button>
-                    ${uploaded && status !== 'missing' ? `<button class="btn btn-outline btn-sm" onclick="viewDocument('${doc.id}')" style="margin-left: 5px;">
-                        <i class="fas fa-eye"></i> ${isMultiple && Array.isArray(uploaded) && uploaded.length > 1 ? 'View All' : 'View'}
+                    ${uploaded && status !== 'missing' && filesList && filesList.length > 0 ? `<button class="btn btn-outline btn-sm" onclick="viewDocument('${doc.id}')" style="margin-left: 5px;">
+                        <i class="fas fa-eye"></i> ${isMultiple && filesList.length > 1 ? 'View All (' + filesList.length + ')' : 'View'}
                     </button>` : ''}
                 </div>
             </div>
