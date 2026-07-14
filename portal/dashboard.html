@@ -227,7 +227,87 @@
     }
     .section-title i { color: var(--primary-red); }
     .section-subtitle { color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-bottom: 20px; }
-    
+
+    /* Video Player - ADD THIS */
+.video-container {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto 25px auto;
+    border-radius: 16px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+.video-container iframe {
+    width: 100%;
+    height: 450px;
+    display: block;
+    border: none;
+}
+.video-thumbnail {
+    position: relative;
+    cursor: pointer;
+    width: 100%;
+    background: #000;
+}
+.video-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.85;
+    transition: opacity 0.3s ease;
+}
+.video-thumbnail:hover img {
+    opacity: 1;
+}
+.video-play-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    background: rgba(227, 6, 19, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 40px rgba(227, 6, 19, 0.3);
+}
+.video-play-btn i {
+    font-size: 2.5rem;
+    color: white;
+    margin-left: 6px;
+}
+.video-thumbnail:hover .video-play-btn {
+    transform: translate(-50%, -50%) scale(1.1);
+    background: var(--primary-red);
+    box-shadow: 0 0 60px rgba(227, 6, 19, 0.5);
+}
+.video-thumbnail .video-title {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+}
+@media (max-width: 768px) {
+    .video-container iframe { height: 250px; }
+    .video-play-btn { width: 60px; height: 60px; }
+    .video-play-btn i { font-size: 1.8rem; }
+    .video-thumbnail .video-title { font-size: 0.9rem; bottom: 12px; left: 12px; }
+}
+@media (max-width: 480px) {
+    .video-container iframe { height: 200px; }
+    .video-play-btn { width: 50px; height: 50px; }
+    .video-play-btn i { font-size: 1.5rem; }
+}
     /* Progress */
     .progress-container {
       background: rgba(255,255,255,0.15);
@@ -640,6 +720,25 @@
       <!-- Overview Section -->
       <div id="overview-section" class="dashboard-section active">
         <h2 class="section-title"><i class="fas fa-tachometer-alt"></i> Application Overview</h2>
+
+        <!-- Video Player - ADD THIS -->
+        <div class="video-container" id="videoContainer">
+            <div class="video-thumbnail" id="videoThumbnail" onclick="playVideo()">
+                <img src="https://img.youtube.com/vi/m-Z4ddcYWqA/maxresdefault.jpg" alt="Global Immigration SC - Video Guide" onerror="this.src='https://img.youtube.com/vi/m-Z4ddcYWqA/0.jpg'">
+                <div class="video-play-btn">
+                    <i class="fas fa-play"></i>
+                </div>
+                <div class="video-title">📺 Welcome to Global Immigration SC - Watch Our Guide</div>
+            </div>
+            <div id="videoPlayer" style="display: none;">
+                <iframe id="youtubeIframe" src="https://www.youtube.com/embed/m-Z4ddcYWqA?autoplay=1&rel=0" 
+                        title="Global Immigration SC Video Guide" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                </iframe>
+            </div>
+        </div>
         
         <div class="stats-grid">
           <div class="stat-card"><div class="stat-icon"><i class="fas fa-percentage"></i></div><h3 id="progressPercent">0%</h3><p>Complete</p></div>
@@ -2534,8 +2633,24 @@ Amount: $${parsedAmount.toFixed(2)}
     window.markAllRead = markAllRead;
     window.loadNotifications = loadDashboardData;
     
+        // ============================================================
+    // VIDEO PLAYER - ADD THIS
+    // ============================================================
+    function playVideo() {
+        const thumbnail = document.getElementById('videoThumbnail');
+        const player = document.getElementById('videoPlayer');
+        const iframe = document.getElementById('youtubeIframe');
+        
+        thumbnail.style.display = 'none';
+        player.style.display = 'block';
+        
+        // Reload iframe with autoplay
+        iframe.src = 'https://www.youtube.com/embed/m-Z4ddcYWqA?autoplay=1&rel=0';
+    }
+    
     console.log('✅ Dashboard loaded successfully');
     console.log('👤 User:', currentUser?.email);
   </script>
 </body>
 </html>
+
