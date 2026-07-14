@@ -1201,27 +1201,44 @@ const requiredDocs = [
     // LOAD DASHBOARD DATA FROM MONGODB
     // ============================================================
     async function loadDashboardData() {
-      try {
+    try {
         if (!currentUser) return;
         
         const response = await fetch(`${API_URL}/users/${currentUser.uid}/full`);
         if (!response.ok) {
-          console.log('⚠️ No application found, creating one...');
-          await createInitialApplication();
-          return;
+            console.log('⚠️ No application found, creating one...');
+            await createInitialApplication();
+            return;
         }
         
         const result = await response.json();
         if (!result.success) {
-          console.log('⚠️ No application found, creating one...');
-          await createInitialApplication();
-          return;
+            console.log('⚠️ No application found, creating one...');
+            await createInitialApplication();
+            return;
         }
         
         appData = result.application || {};
         allDocuments = appData.documents || {};
         allNotifications = appData.notifications || [];
         uploadHistory = appData.uploadHistory || [];
+        
+        // IMPORTANT: Ensure other_documents is always an array
+        if (allDocuments.other_documents && !Array.isArray(allDocuments.other_documents)) {
+            allDocuments.other_documents = [allDocuments.other_documents];
+        }
+        if (!allDocuments.other_documents) {
+            allDocuments.other_documents = [];
+        }
+        
+        // Also ensure any other document type that might be an array is preserved
+        // This is for safety - if you add more multi-document types in the future
+        Object.keys(allDocuments).forEach(key => {
+            const doc = requiredDocs.find(d => d.id === key);
+            if (doc?.multiple && !Array.isArray(allDocuments[key])) {
+                allDocuments[key] = allDocuments[key] ? [allDocuments[key]] : [];
+            }
+        });
         
         unreadCount = allNotifications.filter(n => !n.read).length;
         
@@ -1233,11 +1250,11 @@ const requiredDocs = [
         updatePaymentStats();
         loadPaymentReceipt();
         
-      } catch (error) {
+    } catch (error) {
         console.error('Error loading dashboard:', error);
         showToast('Error loading dashboard data', 'error');
-      }
     }
+}
     
     // ============================================================
     // CREATE INITIAL APPLICATION IN MONGODB
@@ -1431,14 +1448,15 @@ const requiredDocs = [
         let fileName = '';
         let uploadedDate = '';
         let isMultiple = doc.multiple || false;
+        let fileCount = 0;
         
         if (uploaded) {
             // Handle multiple files for other_documents
             if (isMultiple && Array.isArray(uploaded)) {
                 const uploadedFiles = uploaded.filter(f => f && f.status !== 'missing');
+                fileCount = uploadedFiles.length;
                 if (uploadedFiles.length > 0) {
                     status = uploadedFiles.some(f => f.status === 'approved' || f.status === 'pending_review') ? 'pending_review' : 'pending';
-                    // Show first file name
                     fileName = uploadedFiles.length + ' file(s) uploaded';
                     uploadedDate = uploadedFiles[0]?.uploadedAt ? new Date(uploadedFiles[0].uploadedAt).toLocaleDateString() : '';
                     if (uploadedFiles.some(f => f.status === 'approved')) status = 'approved';
@@ -1449,6 +1467,7 @@ const requiredDocs = [
                 status = uploaded.status;
                 fileName = uploaded.fileName || '';
                 uploadedDate = uploaded.uploadedAt ? new Date(uploaded.uploadedAt).toLocaleDateString() : '';
+                fileCount = 1;
             } else {
                 status = 'missing';
             }
@@ -1459,11 +1478,19 @@ const requiredDocs = [
         // Check if this doc type has files to show
         let fileListHtml = '';
         if (isMultiple && uploaded && Array.isArray(uploaded) && uploaded.length > 0) {
-            fileListHtml = `
-                <div style="margin-top: 8px; max-height: 80px; overflow-y: auto; text-align: left; font-size: 0.6rem; color: rgba(255,255,255,0.4);">
-                    ${uploaded.map(f => `<div style="padding: 2px 4px; border-bottom: 1px solid rgba(255,255,255,0.05);">📄 ${f.fileName || 'file'} ${f.status === 'approved' ? '✅' : f.status === 'pending_review' ? '⏳' : ''}</div>`).join('')}
-                </div>
-            `;
+            const validFiles = uploaded.filter(f => f && f.fileName);
+            if (validFiles.length > 0) {
+                fileListHtml = `
+                    <div style="margin-top: 8px; max-height: 100px; overflow-y: auto; text-align: left; font-size: 0.6rem; color: rgba(255,255,255,0.4);">
+                        ${validFiles.map((f, index) => `
+                            <div style="padding: 2px 4px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                                <span>📄 ${f.fileName || 'File ' + (index + 1)}</span>
+                                <span style="font-size: 0.5rem; color: ${f.status === 'approved' ? '#28a745' : '#ffc107'};">${f.status === 'approved' ? '✅' : f.status === 'pending_review' ? '⏳' : ''}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
         }
         
         return `
@@ -1479,7 +1506,7 @@ const requiredDocs = [
                         <i class="fas fa-upload"></i> ${uploaded && status !== 'missing' ? (isMultiple ? 'Add More' : 'Replace') : 'Upload'}
                     </button>
                     ${uploaded && status !== 'missing' ? `<button class="btn btn-outline btn-sm" onclick="viewDocument('${doc.id}')" style="margin-left: 5px;">
-                        <i class="fas fa-eye"></i>
+                        <i class="fas fa-eye"></i> ${isMultiple && Array.isArray(uploaded) && uploaded.length > 1 ? 'View All' : 'View'}
                     </button>` : ''}
                 </div>
             </div>
@@ -1521,8 +1548,6 @@ const requiredDocs = [
         showToast(`Uploading ${files.length} file(s)...`, 'info');
         
         try {
-            const uploadedFiles = [];
-            
             for (const file of files) {
                 const formData = new FormData();
                 formData.append('file', file);
@@ -1556,22 +1581,20 @@ const requiredDocs = [
                 
                 // For multiple files, send as array
                 if (isMultiple) {
-                    // Get existing documents for this type
-                    const existing = allDocuments[docType] || [];
-                    const existingArray = Array.isArray(existing) ? existing : [];
-                    const newDoc = { ...metadata };
-                    
                     const updateResponse = await fetch(`${API_URL}/users/documents/multiple`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             uid: currentUser.uid,
                             docType: docType,
-                            document: newDoc
+                            document: metadata
                         })
                     });
                     
-                    if (!updateResponse.ok) throw new Error('Failed to save document metadata');
+                    if (!updateResponse.ok) {
+                        const errorText = await updateResponse.text();
+                        throw new Error('Failed to save document metadata: ' + errorText);
+                    }
                 } else {
                     // Single file - replace
                     let metaResponse = await fetch(`${API_URL}/users/documents`, {
@@ -1605,11 +1628,11 @@ const requiredDocs = [
                         throw new Error(`Metadata save failed: ${metaResponse.status} - ${errorText}`);
                     }
                 }
-                
-                uploadedFiles.push(file.name);
             }
             
-            showToast(`${uploadedFiles.length} file(s) uploaded successfully!`, 'success');
+            showToast(`${files.length} file(s) uploaded successfully!`, 'success');
+            
+            // Force a full refresh of the dashboard data
             await loadDashboardData();
             
         } catch (error) {
