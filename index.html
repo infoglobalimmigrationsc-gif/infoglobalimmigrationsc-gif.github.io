@@ -1100,6 +1100,124 @@
                 display: flex !important;
             }
         }
+
+        /* Mobile Header Right Section */
+.mobile-header-right {
+    display: none;
+    align-items: center;
+    gap: 8px;
+}
+
+@media (max-width: 768px) {
+    .mobile-header-right {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .mobile-portal-link {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: var(--primary-red);
+        font-size: 0.6rem;
+        text-decoration: none;
+        padding: 4px 6px;
+        border-radius: 6px;
+        transition: background 0.2s ease;
+        min-height: 44px;
+        min-width: 44px;
+        justify-content: center;
+    }
+    
+    .mobile-portal-link i {
+        font-size: 1.1rem;
+        margin-bottom: 1px;
+    }
+    
+    .mobile-portal-link .portal-label {
+        font-size: 0.55rem;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+    }
+    
+    .mobile-portal-link:active {
+        background: rgba(227, 6, 19, 0.08);
+    }
+    
+    .mobile-install-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: linear-gradient(135deg, var(--primary-red) 0%, #b30000 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 4px 8px;
+        font-size: 0.6rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        min-height: 44px;
+        min-width: 44px;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(227, 6, 19, 0.3);
+    }
+    
+    .mobile-install-btn i {
+        font-size: 1.1rem;
+        margin-bottom: 1px;
+    }
+    
+    .mobile-install-btn .install-label {
+        font-size: 0.55rem;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+    }
+    
+    .mobile-install-btn:active {
+        transform: scale(0.95);
+    }
+    
+    .mobile-install-btn.installed {
+        background: #4CAF50;
+        box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+    }
+    
+    .mobile-install-btn.installed i {
+        animation: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .mobile-portal-link {
+        padding: 3px 4px;
+        min-height: 38px;
+        min-width: 38px;
+    }
+    
+    .mobile-portal-link i {
+        font-size: 0.9rem;
+    }
+    
+    .mobile-portal-link .portal-label {
+        font-size: 0.5rem;
+    }
+    
+    .mobile-install-btn {
+        padding: 3px 5px;
+        min-height: 38px;
+        min-width: 38px;
+        border-radius: 6px;
+    }
+    
+    .mobile-install-btn i {
+        font-size: 0.9rem;
+    }
+    
+    .mobile-install-btn .install-label {
+        font-size: 0.5rem;
+    }
+}
         
         /* Mobile close button (hidden by default) */
         .main-nav .mobile-close {
@@ -4083,58 +4201,76 @@
         <!-- Header - Advanced Professional MVP Design -->
     <header id="main-header">
         <div class="header-container container">
-            <div class="logo">
-                <a href="#home" aria-label="Global Immigration SC Home">
-                    <picture>
-                        <source srcset="GISC-LOGO.webp" type="image/webp">
-                        <source srcset="GISC-LOGO.png" type="image/png"> 
-                        <img src="GISC-LOGO.png" alt="Global Immigration SC Logo" onerror="this.onerror=null; this.style.display='none'; document.getElementById('header-logo-fallback').style.display='flex';">
-                    </picture>
-                    <div id="header-logo-fallback" class="image-fallback" style="display: none;">
-                        <i class="fas fa-globe-americas"></i>
-                        <p>Global Immigration SC</p>
-                    </div>
-                </a>
+    <div class="logo">
+        <a href="#home" aria-label="Global Immigration SC Home">
+            <picture>
+                <source srcset="GISC-LOGO.webp" type="image/webp">
+                <source srcset="GISC-LOGO.png" type="image/png"> 
+                <img src="GISC-LOGO.png" alt="Global Immigration SC Logo" onerror="this.onerror=null; this.style.display='none'; document.getElementById('header-logo-fallback').style.display='flex';">
+            </picture>
+            <div id="header-logo-fallback" class="image-fallback" style="display: none;">
+                <i class="fas fa-globe-americas"></i>
+                <p>Global Immigration SC</p>
             </div>
-            
-            <button class="mobile-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
-                <i class="fas fa-bars" aria-hidden="true"></i>
-            </button>
-            
-            <nav class="main-nav" aria-label="Main navigation">
-                <ul class="nav-menu">
-                    <li><a href="#home" class="nav-link active">Home</a></li>
-                    <li><a href="#about" class="nav-link">About Us</a></li>
-                    <li class="dropdown">
-                        <a href="#services" class="nav-link dropdown-toggle">
-                            Services <i class="fas fa-chevron-down" aria-hidden="true"></i>
-                        </a>
-                        <ul class="dropdown-content">
-                            <li><a href="#services">Business Trip Visa Application &amp; Planning</a></li>
-                            <li><a href="#services">Study Abroad Admissions &amp; Scholarship Support</a></li>
-                            <li><a href="#services">Visa Application &amp; Embassy Interview Coaching</a></li>
-                            <li><a href="#services">Work &amp; Immigration Assistance</a></li>
-                            <li><a href="#services">Student Loan &amp; Sponsorship</a></li>
-                            <li><a href="#services">Flight, Hotel &amp; Accommodation Booking</a></li>
-                            <li><a href="#services">Relocation Support &amp; Document Translation</a></li>
-                            <li><a href="#services">Travel Insurance &amp; Medical Clearance</a></li>
-                            <li><a href="#services">Educational &amp; Cultural Exchange Programs</a></li>
-                            <li><a href="#services">Pre-Departure Orientation &amp; Airport Pickup</a></li>
-                        </ul>
-                    </li>
-                    <li><a href="#destinations" class="nav-link">Destinations</a></li>
-                    <li><a href="#blog" class="nav-link">Blog</a></li>
-                    <li><a href="/admin/login.html" class="nav-link">Admin</a></li>
-                    <!-- CTA Buttons - Professional Styling -->
-                    <li class="nav-cta"><a href="/portal/login.html" class="btn btn-primary btn-cta btn-cta-portal">
-                        <i class="fas fa-user-check" aria-hidden="true"></i> Application Portal
-                    </a></li>
-                    <li class="nav-cta"><a href="https://youtube.com/@info.globalimmigrationsc?si=O-DxqL1jAMTFTE-V" target="_blank" class="btn btn-live btn-cta btn-cta-live" id="liveSessionBtn">
-    <i class="fas fa-video" aria-hidden="true"></i> Watch Live
-</a></li>
+        </a>
+    </div>
+    
+    <!-- Mobile Header Right Section - Application Portal + Install Button -->
+    <div class="mobile-header-right">
+        <!-- Application Portal Link (visible on mobile) -->
+        <a href="/portal/login.html" class="mobile-portal-link" aria-label="Application Portal">
+            <i class="fas fa-user-check" aria-hidden="true"></i>
+            <span class="portal-label">Portal</span>
+        </a>
+        
+        <!-- Install App Button (visible on mobile) -->
+        <button id="installAppBtn" class="mobile-install-btn" aria-label="Install App">
+            <i class="fas fa-download" aria-hidden="true"></i>
+            <span class="install-label">Install</span>
+        </button>
+        
+        <!-- Mobile Toggle -->
+        <button class="mobile-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
+            <i class="fas fa-bars" aria-hidden="true"></i>
+        </button>
+    </div>
+    
+    <nav class="main-nav" aria-label="Main navigation">
+        <button class="mobile-close" aria-label="Close navigation menu">
+            <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+        <ul class="nav-menu">
+            <li><a href="#home" class="nav-link active">Home</a></li>
+            <li><a href="#about" class="nav-link">About Us</a></li>
+            <li class="dropdown">
+                <a href="#services" class="nav-link dropdown-toggle">
+                    Services <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                </a>
+                <ul class="dropdown-content">
+                    <li><a href="#services">Business Trip Visa Application &amp; Planning</a></li>
+                    <li><a href="#services">Study Abroad Admissions &amp; Scholarship Support</a></li>
+                    <li><a href="#services">Visa Application &amp; Embassy Interview Coaching</a></li>
+                    <li><a href="#services">Work &amp; Immigration Assistance</a></li>
+                    <li><a href="#services">Student Loan &amp; Sponsorship</a></li>
+                    <li><a href="#services">Flight, Hotel &amp; Accommodation Booking</a></li>
+                    <li><a href="#services">Relocation Support &amp; Document Translation</a></li>
+                    <li><a href="#services">Travel Insurance &amp; Medical Clearance</a></li>
+                    <li><a href="#services">Educational &amp; Cultural Exchange Programs</a></li>
+                    <li><a href="#services">Pre-Departure Orientation &amp; Airport Pickup</a></li>
                 </ul>
-            </nav>
-        </div>
+            </li>
+            <li><a href="#destinations" class="nav-link">Destinations</a></li>
+            <li><a href="#blog" class="nav-link">Blog</a></li>
+            <li><a href="/admin/login.html" class="nav-link">Admin</a></li>
+            <li class="nav-cta"><a href="/portal/login.html" class="btn btn-primary btn-cta btn-cta-portal">
+                <i class="fas fa-user-check" aria-hidden="true"></i> Application Portal
+            </a></li>
+            <li class="nav-cta"><a href="https://youtube.com/@info.globalimmigrationsc?si=O-DxqL1jAMTFTE-V" target="_blank" class="btn btn-live btn-cta btn-cta-live" id="liveSessionBtn">
+                <i class="fas fa-video" aria-hidden="true"></i> Watch Live
+            </a></li>
+        </ul>
+    </nav>
+</div>
         
         <!-- Header Progress Bar (scroll indicator) -->
         <div class="header-progress" aria-hidden="true">
@@ -13573,6 +13709,294 @@ function drawWorldMap(ctx, w, h) {
         setTimeout(loadBlogPosts, 500);
     });
     </script>
-                   
+   <!-- ============================================================
+     INSTALL APP BUTTON - PWA Install for iPhone & Android
+     ============================================================ -->
+<script>
+(function() {
+    'use strict';
+    
+    const installBtn = document.getElementById('installAppBtn');
+    let deferredPrompt = null;
+    let isAppInstalled = false;
+    
+    // ==========================================
+    // CHECK IF APP IS ALREADY INSTALLED
+    // ==========================================
+    function checkIfInstalled() {
+        // Check if running in standalone mode (already installed)
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            isAppInstalled = true;
+            updateInstallButton(true);
+            return true;
+        }
+        
+        // Check if installed via beforeinstallprompt dismissal
+        if (localStorage.getItem('appInstalled') === 'true') {
+            isAppInstalled = true;
+            updateInstallButton(true);
+            return true;
+        }
+        
+        return false;
+    }
+    
+    // ==========================================
+    // UPDATE BUTTON STATE
+    // ==========================================
+    function updateInstallButton(installed) {
+        if (!installBtn) return;
+        
+        if (installed) {
+            installBtn.classList.add('installed');
+            installBtn.innerHTML = `
+                <i class="fas fa-check" aria-hidden="true"></i>
+                <span class="install-label">Installed</span>
+            `;
+            installBtn.disabled = true;
+        } else {
+            installBtn.classList.remove('installed');
+            installBtn.innerHTML = `
+                <i class="fas fa-download" aria-hidden="true"></i>
+                <span class="install-label">Install</span>
+            `;
+            installBtn.disabled = false;
+        }
+    }
+    
+    // ==========================================
+    // IOS INSTALL INSTRUCTIONS
+    // ==========================================
+    function showIOSInstructions() {
+        // Check if already showing
+        if (document.getElementById('iosInstallModal')) return;
+        
+        const isIPhone = /iPhone|iPad|iPod/.test(navigator.userAgent);
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        
+        if (!isIPhone || !isSafari) return;
+        
+        const modal = document.createElement('div');
+        modal.id = 'iosInstallModal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 99999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        `;
+        
+        modal.innerHTML = `
+            <div style="background: white; border-radius: 20px; max-width: 400px; width: 100%; padding: 30px; position: relative; animation: slideUp 0.3s ease;">
+                <button onclick="this.closest('#iosInstallModal').remove()" style="position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 24px; cursor: pointer; color: #999;">&times;</button>
+                <div style="text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 15px;">📱</div>
+                    <h3 style="color: var(--dark-gray); margin-bottom: 10px;">Install Global Immigration SC</h3>
+                    <p style="color: var(--medium-gray); margin-bottom: 20px;">Add this website to your home screen for easy access</p>
+                </div>
+                <div style="background: #f8f9fa; border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                        <div style="background: var(--primary-red); color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">1</div>
+                        <div>
+                            <strong>Tap the Share button</strong>
+                            <div style="font-size: 0.85rem; color: #666;">at the bottom of Safari</div>
+                        </div>
+                        <div style="font-size: 1.5rem; margin-left: auto;">⬆️</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                        <div style="background: var(--primary-red); color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">2</div>
+                        <div>
+                            <strong>Scroll down and tap</strong>
+                            <div style="font-size: 0.85rem; color: #666;">"Add to Home Screen"</div>
+                        </div>
+                        <div style="font-size: 1.5rem; margin-left: auto;">➕</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="background: var(--primary-red); color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">3</div>
+                        <div>
+                            <strong>Tap "Add"</strong>
+                            <div style="font-size: 0.85rem; color: #666;">to install on your home screen</div>
+                        </div>
+                        <div style="font-size: 1.5rem; margin-left: auto;">✅</div>
+                    </div>
+                </div>
+                <button onclick="this.closest('#iosInstallModal').remove()" class="btn btn-primary" style="width: 100%;">Got it!</button>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Close on outside click
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+    
+    // ==========================================
+    // MAIN INSTALL HANDLER
+    // ==========================================
+    function handleInstall() {
+        // Check if already installed
+        if (isAppInstalled) {
+            return;
+        }
+        
+        // Check if running in standalone mode
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            isAppInstalled = true;
+            updateInstallButton(true);
+            localStorage.setItem('appInstalled', 'true');
+            return;
+        }
+        
+        // iOS - show instructions
+        if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+            showIOSInstructions();
+            return;
+        }
+        
+        // Android / Chrome - use beforeinstallprompt
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(function(choiceResult) {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('User accepted the install prompt');
+                    isAppInstalled = true;
+                    updateInstallButton(true);
+                    localStorage.setItem('appInstalled', 'true');
+                } else {
+                    console.log('User dismissed the install prompt');
+                    // Show a gentle reminder
+                    showReminderNotification();
+                }
+                deferredPrompt = null;
+            });
+        } else {
+            // No deferred prompt - show a helpful message
+            showReminderNotification();
+        }
+    }
+    
+    // ==========================================
+    // REMINDER NOTIFICATION
+    // ==========================================
+    function showReminderNotification() {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--dark-gray);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            z-index: 99999;
+            font-size: 0.9rem;
+            text-align: center;
+            max-width: 90%;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        `;
+        notification.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <i class="fas fa-info-circle" style="color: var(--primary-red);"></i>
+                <span>Use Chrome browser to install this app</span>
+                <button onclick="this.closest('div').remove()" style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">&times;</button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(function() {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+    
+    // ==========================================
+    // EVENT LISTENERS
+    // ==========================================
+    
+    // Install button click
+    if (installBtn) {
+        installBtn.addEventListener('click', handleInstall);
+    }
+    
+    // PWA Install Prompt
+    window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        deferredPrompt = e;
+        console.log('Install prompt available');
+        
+        // Show install button if not installed
+        if (!isAppInstalled) {
+            updateInstallButton(false);
+        }
+    });
+    
+    // App installed
+    window.addEventListener('appinstalled', function(e) {
+        console.log('App installed successfully');
+        isAppInstalled = true;
+        updateInstallButton(true);
+        localStorage.setItem('appInstalled', 'true');
+        
+        // Show success notification
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            z-index: 99999;
+            font-size: 0.9rem;
+            text-align: center;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        `;
+        notification.innerHTML = '✅ Global Immigration SC installed successfully!';
+        document.body.appendChild(notification);
+        
+        setTimeout(function() {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 3000);
+    });
+    
+    // Check on load
+    checkIfInstalled();
+    
+    // Check on display mode change
+    window.matchMedia('(display-mode: standalone)').addEventListener('change', function(e) {
+        if (e.matches) {
+            isAppInstalled = true;
+            updateInstallButton(true);
+            localStorage.setItem('appInstalled', 'true');
+        }
+    });
+    
+    console.log('✅ Install button initialized');
+    console.log('   📱 iOS:', /iPhone|iPad|iPod/.test(navigator.userAgent));
+    console.log('   🤖 Android:', /Android/.test(navigator.userAgent));
+    console.log('   📦 Installed:', isAppInstalled);
+    
+})();
+</script>                
 </body>
 </html>  
