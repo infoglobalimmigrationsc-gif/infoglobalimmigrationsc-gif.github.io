@@ -1532,6 +1532,7 @@ app.delete('/api/admin/payments/delete', authenticateToken, async (req, res) => 
 });
 
 // Add this route to handle multiple documents - FIXED database name
+// Add this route to handle multiple documents - FIXED
 app.post('/api/users/documents/multiple', async (req, res) => {
     try {
         const { uid, docType, document } = req.body;
@@ -1540,13 +1541,12 @@ app.post('/api/users/documents/multiple', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Missing required fields' });
         }
         
-        // Use the same database name as the rest of your app
+        // Use the applications collection (not users)
         const collection = db.collection('applications');
         
         // Find the user's application
-        let application = await collection.findOne({ uid });
+        let application = await collection.findOne({ uid: uid });
         if (!application) {
-            // Try finding by userId
             application = await collection.findOne({ userId: uid });
             if (!application) {
                 return res.status(404).json({ success: false, message: 'Application not found for user' });
@@ -1587,7 +1587,9 @@ app.post('/api/users/documents/multiple', async (req, res) => {
             }
         );
         
-        res.json({ success: true, message: 'Document added successfully' });
+        console.log(`✅ Added document to ${docType} for user ${uid}. Total: ${existing.length} files`);
+        
+        res.json({ success: true, message: 'Document added successfully', count: existing.length });
     } catch (error) {
         console.error('Error adding multiple document:', error);
         res.status(500).json({ success: false, message: error.message });
