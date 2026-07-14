@@ -1532,7 +1532,6 @@ app.delete('/api/admin/payments/delete', authenticateToken, async (req, res) => 
 });
 
 // Add this route to handle multiple documents - FIXED database name
-// Add this route to handle multiple documents - FIXED
 app.post('/api/users/documents/multiple', async (req, res) => {
     try {
         const { uid, docType, document } = req.body;
@@ -1541,10 +1540,8 @@ app.post('/api/users/documents/multiple', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Missing required fields' });
         }
         
-        // Use the applications collection (not users)
         const collection = db.collection('applications');
         
-        // Find the user's application
         let application = await collection.findOne({ uid: uid });
         if (!application) {
             application = await collection.findOne({ userId: uid });
@@ -1553,20 +1550,16 @@ app.post('/api/users/documents/multiple', async (req, res) => {
             }
         }
         
-        // Get current documents
         let currentDocs = application.documents || {};
         let existing = currentDocs[docType] || [];
         
-        // Ensure it's an array
         if (!Array.isArray(existing)) {
             existing = [];
         }
         
-        // Add new document
         existing.push(document);
         currentDocs[docType] = existing;
         
-        // Update application
         await collection.updateOne(
             { _id: application._id },
             { 
@@ -1595,6 +1588,7 @@ app.post('/api/users/documents/multiple', async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 });
+
 // ============================================================
 // SERVE STATIC FILES - AT THE VERY END
 // ============================================================
