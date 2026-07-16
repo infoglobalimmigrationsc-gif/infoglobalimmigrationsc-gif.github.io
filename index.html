@@ -10750,41 +10750,92 @@ function clearFieldError(field) {
 
         
             
-            // Mobile Menu Toggle - COMPLETELY FIXED VERSION
-const mobileToggle = document.querySelector('.mobile-toggle');
-const mainNav = document.querySelector('.main-nav');
-const mobileClose = document.querySelector('.mobile-close');
-
-if (mobileToggle) {
-    mobileToggle.addEventListener('click', function(e) {
-        e.stopPropagation();
-        const isOpen = mainNav.classList.contains('open');
-        
-        if (isOpen) {
+// ============================================================
+// MOBILE MENU - COMPLETELY FIXED VERSION
+// ============================================================
+(function() {
+    'use strict';
+    
+    const mobileToggle = document.querySelector('.mobile-toggle');
+    const mainNav = document.querySelector('.main-nav');
+    const mobileClose = document.querySelector('.mobile-close');
+    
+    // Function to close menu
+    function closeMobileMenu() {
+        if (mainNav) {
             mainNav.classList.remove('open');
-            this.setAttribute('aria-expanded', 'false');
-            this.innerHTML = '<i class="fas fa-bars" aria-hidden="true"></i>';
-            document.body.style.overflow = '';
-        } else {
-            mainNav.classList.add('open');
-            this.setAttribute('aria-expanded', 'true');
-            this.innerHTML = '<i class="fas fa-times" aria-hidden="true"></i>';
-            document.body.style.overflow = 'hidden';
         }
-    });
-}
-
-// Close button in mobile menu
-if (mobileClose) {
-    mobileClose.addEventListener('click', function() {
-        mainNav.classList.remove('open');
         if (mobileToggle) {
             mobileToggle.setAttribute('aria-expanded', 'false');
             mobileToggle.innerHTML = '<i class="fas fa-bars" aria-hidden="true"></i>';
         }
         document.body.style.overflow = '';
+    }
+    
+    // Function to open menu
+    function openMobileMenu() {
+        if (mainNav) {
+            mainNav.classList.add('open');
+        }
+        if (mobileToggle) {
+            mobileToggle.setAttribute('aria-expanded', 'true');
+            mobileToggle.innerHTML = '<i class="fas fa-times" aria-hidden="true"></i>';
+        }
+        document.body.style.overflow = 'hidden';
+    }
+    
+    // Toggle button click
+    if (mobileToggle) {
+        mobileToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (mainNav && mainNav.classList.contains('open')) {
+                closeMobileMenu();
+            } else {
+                openMobileMenu();
+            }
+        });
+    }
+    
+    // Close button (X button) in mobile menu
+    if (mobileClose) {
+        mobileClose.addEventListener('click', function(e) {
+            e.stopPropagation();
+            closeMobileMenu();
+        });
+    }
+    
+    // Close when clicking outside
+    document.addEventListener('click', function(e) {
+        if (mainNav && mainNav.classList.contains('open')) {
+            const isClickInside = mainNav.contains(e.target) || 
+                                 (mobileToggle && mobileToggle.contains(e.target));
+            if (!isClickInside) {
+                closeMobileMenu();
+            }
+        }
     });
-}
+    
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && mainNav && mainNav.classList.contains('open')) {
+            closeMobileMenu();
+        }
+    });
+    
+    // Close on window resize (if switching to desktop)
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(function() {
+            if (window.innerWidth > 768 && mainNav && mainNav.classList.contains('open')) {
+                closeMobileMenu();
+            }
+        }, 250);
+    });
+    
+    console.log('✅ Mobile menu initialized');
+    
+})();
 
 // Close mobile menu when clicking outside
 document.addEventListener('click', function(e) {
