@@ -10751,133 +10751,54 @@ function clearFieldError(field) {
         
             
 // ============================================================
-// MOBILE MENU - ULTIMATE FIXED VERSION
+// MOBILE MENU - ULTRA SIMPLE FIX
 // ============================================================
-(function() {
-    'use strict';
+document.addEventListener('DOMContentLoaded', function() {
+    const toggle = document.querySelector('.mobile-toggle');
+    const nav = document.querySelector('.main-nav');
+    const closeBtn = document.querySelector('.mobile-close');
     
-    const mobileToggle = document.querySelector('.mobile-toggle');
-    const mainNav = document.querySelector('.main-nav');
-    const mobileClose = document.querySelector('.mobile-close');
-    
-    // Function to close menu
-    function closeMobileMenu() {
-        if (mainNav) {
-            mainNav.classList.remove('open');
-            mainNav.style.display = '';
-        }
-        if (mobileToggle) {
-            mobileToggle.setAttribute('aria-expanded', 'false');
-            mobileToggle.innerHTML = '<i class="fas fa-bars" aria-hidden="true"></i>';
-        }
-        document.body.style.overflow = '';
-        document.body.style.position = '';
-    }
-    
-    // Function to open menu
-    function openMobileMenu() {
-        if (mainNav) {
-            mainNav.classList.add('open');
-            mainNav.style.display = '';
-        }
-        if (mobileToggle) {
-            mobileToggle.setAttribute('aria-expanded', 'true');
-            mobileToggle.innerHTML = '<i class="fas fa-times" aria-hidden="true"></i>';
-        }
-        document.body.style.overflow = 'hidden';
-        document.body.style.position = 'fixed';
-        document.body.style.width = '100%';
-    }
-    
-    // Toggle button click - OPEN/CLOSE
-    if (mobileToggle) {
-        // Remove any existing listeners to prevent duplicates
-        const newToggle = mobileToggle.cloneNode(true);
-        mobileToggle.parentNode.replaceChild(newToggle, mobileToggle);
-        
-        newToggle.addEventListener('click', function(e) {
+    // Open menu
+    if (toggle) {
+        toggle.onclick = function(e) {
             e.stopPropagation();
-            e.preventDefault();
-            if (mainNav && mainNav.classList.contains('open')) {
-                closeMobileMenu();
+            nav.classList.toggle('open');
+            if (nav.classList.contains('open')) {
+                this.innerHTML = '<i class="fas fa-times"></i>';
+                document.body.style.overflow = 'hidden';
             } else {
-                openMobileMenu();
+                this.innerHTML = '<i class="fas fa-bars"></i>';
+                document.body.style.overflow = '';
             }
-        });
+        };
     }
     
-    // Close button (X button) in mobile menu - FIXED
-    if (mobileClose) {
-        // Remove any existing listeners to prevent duplicates
-        const newClose = mobileClose.cloneNode(true);
-        mobileClose.parentNode.replaceChild(newClose, mobileClose);
-        
-        newClose.addEventListener('click', function(e) {
+    // Close menu - DIRECT APPROACH
+    if (closeBtn) {
+        closeBtn.onclick = function(e) {
             e.stopPropagation();
             e.preventDefault();
-            console.log('X button clicked - closing menu'); // Debug log
-            closeMobileMenu();
-        });
+            nav.classList.remove('open');
+            if (toggle) {
+                toggle.innerHTML = '<i class="fas fa-bars"></i>';
+            }
+            document.body.style.overflow = '';
+        };
     }
     
-    // Close when clicking outside
-    document.addEventListener('click', function(e) {
-        if (mainNav && mainNav.classList.contains('open')) {
-            const isClickInside = mainNav.contains(e.target) || 
-                                 (mobileToggle && mobileToggle.contains(e.target));
-            if (!isClickInside) {
-                closeMobileMenu();
+    // Close on outside click
+    document.onclick = function(e) {
+        if (nav && nav.classList.contains('open')) {
+            if (!nav.contains(e.target) && !toggle.contains(e.target)) {
+                nav.classList.remove('open');
+                if (toggle) toggle.innerHTML = '<i class="fas fa-bars"></i>';
+                document.body.style.overflow = '';
             }
         }
-    });
+    };
     
-    // Close on Escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && mainNav && mainNav.classList.contains('open')) {
-            closeMobileMenu();
-        }
-    });
-    
-    // Close on window resize (if switching to desktop)
-    let resizeTimeout;
-    window.addEventListener('resize', function() {
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(function() {
-            if (window.innerWidth > 768 && mainNav && mainNav.classList.contains('open')) {
-                closeMobileMenu();
-            }
-        }, 250);
-    });
-    
-    console.log('✅ Mobile menu initialized - X button fixed!');
-})();
-
-// ============================================================
-// DROPDOWN MENU FOR MOBILE
-// ============================================================
-(function() {
-    if (window.innerWidth <= 768) {
-        const dropdowns = document.querySelectorAll('.dropdown > a');
-        dropdowns.forEach(function(dropdownLink) {
-            // Remove any existing listeners
-            const newLink = dropdownLink.cloneNode(true);
-            dropdownLink.parentNode.replaceChild(newLink, dropdownLink);
-            
-            newLink.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                const dropdown = this.parentElement;
-                // Close other dropdowns
-                document.querySelectorAll('.dropdown.open').forEach(function(d) {
-                    if (d !== dropdown) {
-                        d.classList.remove('open');
-                    }
-                });
-                dropdown.classList.toggle('open');
-            });
-        });
-    }
-})();
+    console.log('✅ Mobile menu fixed!');
+});
 
 // Close mobile menu when clicking outside
 document.addEventListener('click', function(e) {
