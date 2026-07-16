@@ -10751,70 +10751,72 @@ function clearFieldError(field) {
         
             
 // ============================================================
-// MOBILE MENU - FINAL FIXED VERSION
+// MOBILE MENU - ULTIMATE FIXED VERSION (WITH DEBUGGING)
 // ============================================================
 (function() {
     'use strict';
     
-    // Wait for DOM to be ready
+    console.log('🚀 Mobile menu script loaded');
+    
+    // Wait for DOM
     function initMobileMenu() {
-        // Get elements - using const to avoid conflicts
+        console.log('📱 Initializing mobile menu...');
+        
         const toggle = document.querySelector('.mobile-toggle');
         const nav = document.querySelector('.main-nav');
         const closeBtn = document.querySelector('.mobile-close');
         
-        // Exit if elements don't exist
+        // Debug: Log what we found
+        console.log('Toggle button found:', !!toggle);
+        console.log('Nav found:', !!nav);
+        console.log('Close button found:', !!closeBtn);
+        
         if (!toggle || !nav) {
-            console.warn('Mobile menu elements not found');
+            console.warn('⚠️ Mobile menu elements not found!');
             return;
         }
         
-        console.log('✅ Mobile menu found, initializing...');
-        
-        // ---------- CLOSE FUNCTION ----------
+        // ----- CLOSE FUNCTION -----
         function closeMenu() {
-            console.log('🔴 Closing mobile menu');
+            console.log('🔴 Closing menu');
             nav.classList.remove('open');
             
-            // Update toggle button
             if (toggle) {
                 toggle.innerHTML = '<i class="fas fa-bars" aria-hidden="true"></i>';
                 toggle.setAttribute('aria-expanded', 'false');
             }
             
-            // Reset body
             document.body.style.overflow = '';
             document.body.style.position = '';
             document.body.style.width = '';
             document.body.style.top = '';
         }
         
-        // ---------- OPEN FUNCTION ----------
+        // ----- OPEN FUNCTION -----
         function openMenu() {
-            console.log('🟢 Opening mobile menu');
+            console.log('🟢 Opening menu');
             nav.classList.add('open');
             
-            // Update toggle button
             if (toggle) {
                 toggle.innerHTML = '<i class="fas fa-times" aria-hidden="true"></i>';
                 toggle.setAttribute('aria-expanded', 'true');
             }
             
-            // Lock body scroll
             document.body.style.overflow = 'hidden';
             document.body.style.position = 'fixed';
             document.body.style.width = '100%';
             document.body.style.top = '-' + window.scrollY + 'px';
         }
         
-        // ---------- HAMBURGER BUTTON ----------
-        // Remove old event listeners by cloning
+        // ===== HAMBURGER BUTTON =====
+        // Remove old listeners by cloning
         const newToggle = toggle.cloneNode(true);
         toggle.parentNode.replaceChild(newToggle, toggle);
         
         newToggle.addEventListener('click', function(e) {
             e.stopPropagation();
             e.preventDefault();
+            console.log('🍔 Hamburger clicked');
             if (nav.classList.contains('open')) {
                 closeMenu();
             } else {
@@ -10822,56 +10824,58 @@ function clearFieldError(field) {
             }
         });
         
-        // ---------- X CLOSE BUTTON ----------
+        // ===== X CLOSE BUTTON - THE FIX =====
         if (closeBtn) {
-            // Remove old event listeners by cloning
+            // Remove old listeners by cloning
             const newClose = closeBtn.cloneNode(true);
             closeBtn.parentNode.replaceChild(newClose, closeBtn);
             
             newClose.addEventListener('click', function(e) {
                 e.stopPropagation();
                 e.preventDefault();
-                console.log('❌ X button clicked - closing menu');
+                console.log('❌ X button clicked!'); // This should appear in console
                 closeMenu();
             });
         } else {
-            console.warn('⚠️ X button not found!');
+            console.warn('⚠️ X button NOT FOUND in DOM!');
         }
         
-        // ---------- CLICK OUTSIDE TO CLOSE ----------
+        // ===== CLICK OUTSIDE =====
         document.addEventListener('click', function(e) {
             if (nav.classList.contains('open')) {
                 const isClickInside = nav.contains(e.target) || 
                                      (newToggle && newToggle.contains(e.target));
                 if (!isClickInside) {
+                    console.log('👆 Clicked outside - closing');
                     closeMenu();
                 }
             }
         });
         
-        // ---------- ESCAPE KEY TO CLOSE ----------
+        // ===== ESCAPE KEY =====
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape' && nav.classList.contains('open')) {
+                console.log('⌨️ Escape key pressed - closing');
                 closeMenu();
             }
         });
         
-        // ---------- RESIZE TO DESKTOP ----------
+        // ===== RESIZE =====
         let resizeTimeout;
         window.addEventListener('resize', function() {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(function() {
                 if (window.innerWidth > 768 && nav.classList.contains('open')) {
+                    console.log('📐 Resized to desktop - closing');
                     closeMenu();
                 }
             }, 250);
         });
         
-        // ---------- DROPDOWN TOGGLE FOR MOBILE ----------
+        // ===== DROPDOWNS =====
         function initDropdowns() {
             if (window.innerWidth <= 768) {
                 document.querySelectorAll('.dropdown > a').forEach(function(link) {
-                    // Remove old listeners
                     const newLink = link.cloneNode(true);
                     link.parentNode.replaceChild(newLink, link);
                     
@@ -10880,11 +10884,8 @@ function clearFieldError(field) {
                         e.stopPropagation();
                         const dropdown = this.parentElement;
                         
-                        // Close other dropdowns
                         document.querySelectorAll('.dropdown.open').forEach(function(d) {
-                            if (d !== dropdown) {
-                                d.classList.remove('open');
-                            }
+                            if (d !== dropdown) d.classList.remove('open');
                         });
                         
                         dropdown.classList.toggle('open');
@@ -10893,10 +10894,8 @@ function clearFieldError(field) {
             }
         }
         
-        // Initialize dropdowns
         initDropdowns();
         
-        // Re-initialize dropdowns on resize
         let dropdownResizeTimeout;
         window.addEventListener('resize', function() {
             clearTimeout(dropdownResizeTimeout);
@@ -10914,31 +10913,6 @@ function clearFieldError(field) {
     }
     
 })();
-
-// Close on escape key
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && mainNav && mainNav.classList.contains('open')) {
-        mainNav.classList.remove('open');
-        if (mobileToggle) {
-            mobileToggle.setAttribute('aria-expanded', 'false');
-            mobileToggle.innerHTML = '<i class="fas fa-bars" aria-hidden="true"></i>';
-        }
-        document.body.style.overflow = '';
-    }
-});
-
-// Dropdown menu for mobile
-if (window.innerWidth <= 768) {
-    const dropdowns = document.querySelectorAll('.dropdown > a');
-    dropdowns.forEach(dropdownLink => {
-        dropdownLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const dropdown = this.parentElement;
-            dropdown.classList.toggle('open');
-        });
-    });
-}
             
             // Live Session Modal
 const liveSessionBtn = document.getElementById('liveSessionBtn');
