@@ -10751,7 +10751,7 @@ function clearFieldError(field) {
         
             
 // ============================================================
-// MOBILE MENU - COMPLETELY FIXED VERSION
+// MOBILE MENU - ULTIMATE FIXED VERSION
 // ============================================================
 (function() {
     'use strict';
@@ -10764,30 +10764,40 @@ function clearFieldError(field) {
     function closeMobileMenu() {
         if (mainNav) {
             mainNav.classList.remove('open');
+            mainNav.style.display = '';
         }
         if (mobileToggle) {
             mobileToggle.setAttribute('aria-expanded', 'false');
             mobileToggle.innerHTML = '<i class="fas fa-bars" aria-hidden="true"></i>';
         }
         document.body.style.overflow = '';
+        document.body.style.position = '';
     }
     
     // Function to open menu
     function openMobileMenu() {
         if (mainNav) {
             mainNav.classList.add('open');
+            mainNav.style.display = '';
         }
         if (mobileToggle) {
             mobileToggle.setAttribute('aria-expanded', 'true');
             mobileToggle.innerHTML = '<i class="fas fa-times" aria-hidden="true"></i>';
         }
         document.body.style.overflow = 'hidden';
+        document.body.style.position = 'fixed';
+        document.body.style.width = '100%';
     }
     
-    // Toggle button click
+    // Toggle button click - OPEN/CLOSE
     if (mobileToggle) {
-        mobileToggle.addEventListener('click', function(e) {
+        // Remove any existing listeners to prevent duplicates
+        const newToggle = mobileToggle.cloneNode(true);
+        mobileToggle.parentNode.replaceChild(newToggle, mobileToggle);
+        
+        newToggle.addEventListener('click', function(e) {
             e.stopPropagation();
+            e.preventDefault();
             if (mainNav && mainNav.classList.contains('open')) {
                 closeMobileMenu();
             } else {
@@ -10798,9 +10808,14 @@ function clearFieldError(field) {
     
     // Close button (X button) in mobile menu - FIXED
     if (mobileClose) {
-        mobileClose.addEventListener('click', function(e) {
+        // Remove any existing listeners to prevent duplicates
+        const newClose = mobileClose.cloneNode(true);
+        mobileClose.parentNode.replaceChild(newClose, mobileClose);
+        
+        newClose.addEventListener('click', function(e) {
             e.stopPropagation();
             e.preventDefault();
+            console.log('X button clicked - closing menu'); // Debug log
             closeMobileMenu();
         });
     }
@@ -10834,7 +10849,34 @@ function clearFieldError(field) {
         }, 250);
     });
     
-    console.log('✅ Mobile menu initialized');
+    console.log('✅ Mobile menu initialized - X button fixed!');
+})();
+
+// ============================================================
+// DROPDOWN MENU FOR MOBILE
+// ============================================================
+(function() {
+    if (window.innerWidth <= 768) {
+        const dropdowns = document.querySelectorAll('.dropdown > a');
+        dropdowns.forEach(function(dropdownLink) {
+            // Remove any existing listeners
+            const newLink = dropdownLink.cloneNode(true);
+            dropdownLink.parentNode.replaceChild(newLink, dropdownLink);
+            
+            newLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const dropdown = this.parentElement;
+                // Close other dropdowns
+                document.querySelectorAll('.dropdown.open').forEach(function(d) {
+                    if (d !== dropdown) {
+                        d.classList.remove('open');
+                    }
+                });
+                dropdown.classList.toggle('open');
+            });
+        });
+    }
 })();
 
 // Close mobile menu when clicking outside
