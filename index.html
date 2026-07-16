@@ -10796,10 +10796,11 @@ function clearFieldError(field) {
         });
     }
     
-    // Close button (X button) in mobile menu
+    // Close button (X button) in mobile menu - FIXED
     if (mobileClose) {
         mobileClose.addEventListener('click', function(e) {
             e.stopPropagation();
+            e.preventDefault();
             closeMobileMenu();
         });
     }
@@ -10834,7 +10835,6 @@ function clearFieldError(field) {
     });
     
     console.log('✅ Mobile menu initialized');
-    
 })();
 
 // Close mobile menu when clicking outside
