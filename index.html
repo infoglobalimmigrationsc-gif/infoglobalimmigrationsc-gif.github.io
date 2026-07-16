@@ -10751,54 +10751,171 @@ function clearFieldError(field) {
         
             
 // ============================================================
-// MOBILE MENU - ULTRA SIMPLE FIX
+// MOBILE MENU - SINGLE CLEAN VERSION (FIXED X BUTTON)
 // ============================================================
-document.addEventListener('DOMContentLoaded', function() {
-    const toggle = document.querySelector('.mobile-toggle');
-    const nav = document.querySelector('.main-nav');
-    const closeBtn = document.querySelector('.mobile-close');
+(function() {
+    'use strict';
     
-    // Open menu
-    if (toggle) {
-        toggle.onclick = function(e) {
-            e.stopPropagation();
-            nav.classList.toggle('open');
-            if (nav.classList.contains('open')) {
-                this.innerHTML = '<i class="fas fa-times"></i>';
-                document.body.style.overflow = 'hidden';
-            } else {
-                this.innerHTML = '<i class="fas fa-bars"></i>';
-                document.body.style.overflow = '';
-            }
-        };
+    // Wait for DOM to be ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initMobileMenu);
+    } else {
+        initMobileMenu();
     }
     
-    // Close menu - DIRECT APPROACH
-    if (closeBtn) {
-        closeBtn.onclick = function(e) {
-            e.stopPropagation();
-            e.preventDefault();
-            nav.classList.remove('open');
+    function initMobileMenu() {
+        // Get elements
+        const toggle = document.querySelector('.mobile-toggle');
+        const nav = document.querySelector('.main-nav');
+        const closeBtn = document.querySelector('.mobile-close');
+        
+        // If elements don't exist, exit
+        if (!toggle || !nav) {
+            console.warn('Mobile menu elements not found');
+            return;
+        }
+        
+        // Function to open menu
+        function openMenu() {
+            nav.classList.add('open');
+            nav.style.display = 'block';
+            nav.style.visibility = 'visible';
+            nav.style.opacity = '1';
+            
             if (toggle) {
-                toggle.innerHTML = '<i class="fas fa-bars"></i>';
+                toggle.innerHTML = '<i class="fas fa-times" aria-hidden="true"></i>';
+                toggle.setAttribute('aria-expanded', 'true');
             }
+            
+            document.body.style.overflow = 'hidden';
+            document.body.style.position = 'fixed';
+            document.body.style.width = '100%';
+            document.body.style.top = '-' + window.scrollY + 'px';
+            
+            // Store scroll position
+            document.body.dataset.scrollY = window.scrollY;
+        }
+        
+        // Function to close menu
+        function closeMenu() {
+            nav.classList.remove('open');
+            // Don't hide completely, CSS handles the slide out
+            
+            if (toggle) {
+                toggle.innerHTML = '<i class="fas fa-bars" aria-hidden="true"></i>';
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+            
             document.body.style.overflow = '';
-        };
-    }
-    
-    // Close on outside click
-    document.onclick = function(e) {
-        if (nav && nav.classList.contains('open')) {
-            if (!nav.contains(e.target) && !toggle.contains(e.target)) {
-                nav.classList.remove('open');
-                if (toggle) toggle.innerHTML = '<i class="fas fa-bars"></i>';
-                document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
+            document.body.style.top = '';
+            
+            // Restore scroll position
+            if (document.body.dataset.scrollY) {
+                window.scrollTo(0, parseInt(document.body.dataset.scrollY) || 0);
+                delete document.body.dataset.scrollY;
             }
         }
-    };
+        
+        // ===== HAMBURGER BUTTON (Toggle) =====
+        // Remove any existing click listeners by cloning
+        const newToggle = toggle.cloneNode(true);
+        toggle.parentNode.replaceChild(newToggle, toggle);
+        
+        newToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            if (nav.classList.contains('open')) {
+                closeMenu();
+            } else {
+                openMenu();
+            }
+        });
+        
+        // ===== X CLOSE BUTTON - FIXED =====
+        if (closeBtn) {
+            // Remove any existing click listeners
+            const newClose = closeBtn.cloneNode(true);
+            closeBtn.parentNode.replaceChild(newClose, closeBtn);
+            
+            newClose.addEventListener('click', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                console.log('✅ X button clicked - closing menu');
+                closeMenu();
+            });
+        }
+        
+        // ===== CLICK OUTSIDE TO CLOSE =====
+        document.addEventListener('click', function(e) {
+            if (nav.classList.contains('open')) {
+                const isClickInside = nav.contains(e.target) || 
+                                     (newToggle && newToggle.contains(e.target));
+                if (!isClickInside) {
+                    closeMenu();
+                }
+            }
+        });
+        
+        // ===== ESCAPE KEY TO CLOSE =====
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && nav.classList.contains('open')) {
+                closeMenu();
+            }
+        });
+        
+        // ===== RESIZE TO DESKTOP =====
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(function() {
+                if (window.innerWidth > 768 && nav.classList.contains('open')) {
+                    closeMenu();
+                }
+            }, 250);
+        });
+        
+        // ===== DROPDOWN TOGGLE FOR MOBILE =====
+        function initDropdowns() {
+            if (window.innerWidth <= 768) {
+                document.querySelectorAll('.dropdown > a').forEach(function(link) {
+                    // Remove existing listeners
+                    const newLink = link.cloneNode(true);
+                    link.parentNode.replaceChild(newLink, link);
+                    
+                    newLink.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const dropdown = this.parentElement;
+                        
+                        // Close other dropdowns
+                        document.querySelectorAll('.dropdown.open').forEach(function(d) {
+                            if (d !== dropdown) {
+                                d.classList.remove('open');
+                            }
+                        });
+                        
+                        dropdown.classList.toggle('open');
+                    });
+                });
+            }
+        }
+        
+        // Initialize dropdowns
+        initDropdowns();
+        
+        // Re-initialize dropdowns on resize
+        let dropdownResizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(dropdownResizeTimeout);
+            dropdownResizeTimeout = setTimeout(initDropdowns, 300);
+        });
+        
+        console.log('✅ Mobile menu initialized - X button working!');
+    }
     
-    console.log('✅ Mobile menu fixed!');
-});
+})();
 
 // Close mobile menu when clicking outside
 document.addEventListener('click', function(e) {
