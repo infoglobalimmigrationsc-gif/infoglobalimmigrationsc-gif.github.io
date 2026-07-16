@@ -10751,75 +10751,64 @@ function clearFieldError(field) {
         
             
 // ============================================================
-// MOBILE MENU - SINGLE CLEAN VERSION (FIXED X BUTTON)
+// MOBILE MENU - FINAL FIXED VERSION
 // ============================================================
 (function() {
     'use strict';
     
     // Wait for DOM to be ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initMobileMenu);
-    } else {
-        initMobileMenu();
-    }
-    
     function initMobileMenu() {
-        // Get elements
+        // Get elements - using const to avoid conflicts
         const toggle = document.querySelector('.mobile-toggle');
         const nav = document.querySelector('.main-nav');
         const closeBtn = document.querySelector('.mobile-close');
         
-        // If elements don't exist, exit
+        // Exit if elements don't exist
         if (!toggle || !nav) {
             console.warn('Mobile menu elements not found');
             return;
         }
         
-        // Function to open menu
-        function openMenu() {
-            nav.classList.add('open');
-            nav.style.display = 'block';
-            nav.style.visibility = 'visible';
-            nav.style.opacity = '1';
-            
-            if (toggle) {
-                toggle.innerHTML = '<i class="fas fa-times" aria-hidden="true"></i>';
-                toggle.setAttribute('aria-expanded', 'true');
-            }
-            
-            document.body.style.overflow = 'hidden';
-            document.body.style.position = 'fixed';
-            document.body.style.width = '100%';
-            document.body.style.top = '-' + window.scrollY + 'px';
-            
-            // Store scroll position
-            document.body.dataset.scrollY = window.scrollY;
-        }
+        console.log('✅ Mobile menu found, initializing...');
         
-        // Function to close menu
+        // ---------- CLOSE FUNCTION ----------
         function closeMenu() {
+            console.log('🔴 Closing mobile menu');
             nav.classList.remove('open');
-            // Don't hide completely, CSS handles the slide out
             
+            // Update toggle button
             if (toggle) {
                 toggle.innerHTML = '<i class="fas fa-bars" aria-hidden="true"></i>';
                 toggle.setAttribute('aria-expanded', 'false');
             }
             
+            // Reset body
             document.body.style.overflow = '';
             document.body.style.position = '';
             document.body.style.width = '';
             document.body.style.top = '';
-            
-            // Restore scroll position
-            if (document.body.dataset.scrollY) {
-                window.scrollTo(0, parseInt(document.body.dataset.scrollY) || 0);
-                delete document.body.dataset.scrollY;
-            }
         }
         
-        // ===== HAMBURGER BUTTON (Toggle) =====
-        // Remove any existing click listeners by cloning
+        // ---------- OPEN FUNCTION ----------
+        function openMenu() {
+            console.log('🟢 Opening mobile menu');
+            nav.classList.add('open');
+            
+            // Update toggle button
+            if (toggle) {
+                toggle.innerHTML = '<i class="fas fa-times" aria-hidden="true"></i>';
+                toggle.setAttribute('aria-expanded', 'true');
+            }
+            
+            // Lock body scroll
+            document.body.style.overflow = 'hidden';
+            document.body.style.position = 'fixed';
+            document.body.style.width = '100%';
+            document.body.style.top = '-' + window.scrollY + 'px';
+        }
+        
+        // ---------- HAMBURGER BUTTON ----------
+        // Remove old event listeners by cloning
         const newToggle = toggle.cloneNode(true);
         toggle.parentNode.replaceChild(newToggle, toggle);
         
@@ -10833,21 +10822,23 @@ function clearFieldError(field) {
             }
         });
         
-        // ===== X CLOSE BUTTON - FIXED =====
+        // ---------- X CLOSE BUTTON ----------
         if (closeBtn) {
-            // Remove any existing click listeners
+            // Remove old event listeners by cloning
             const newClose = closeBtn.cloneNode(true);
             closeBtn.parentNode.replaceChild(newClose, closeBtn);
             
             newClose.addEventListener('click', function(e) {
                 e.stopPropagation();
                 e.preventDefault();
-                console.log('✅ X button clicked - closing menu');
+                console.log('❌ X button clicked - closing menu');
                 closeMenu();
             });
+        } else {
+            console.warn('⚠️ X button not found!');
         }
         
-        // ===== CLICK OUTSIDE TO CLOSE =====
+        // ---------- CLICK OUTSIDE TO CLOSE ----------
         document.addEventListener('click', function(e) {
             if (nav.classList.contains('open')) {
                 const isClickInside = nav.contains(e.target) || 
@@ -10858,14 +10849,14 @@ function clearFieldError(field) {
             }
         });
         
-        // ===== ESCAPE KEY TO CLOSE =====
+        // ---------- ESCAPE KEY TO CLOSE ----------
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape' && nav.classList.contains('open')) {
                 closeMenu();
             }
         });
         
-        // ===== RESIZE TO DESKTOP =====
+        // ---------- RESIZE TO DESKTOP ----------
         let resizeTimeout;
         window.addEventListener('resize', function() {
             clearTimeout(resizeTimeout);
@@ -10876,11 +10867,11 @@ function clearFieldError(field) {
             }, 250);
         });
         
-        // ===== DROPDOWN TOGGLE FOR MOBILE =====
+        // ---------- DROPDOWN TOGGLE FOR MOBILE ----------
         function initDropdowns() {
             if (window.innerWidth <= 768) {
                 document.querySelectorAll('.dropdown > a').forEach(function(link) {
-                    // Remove existing listeners
+                    // Remove old listeners
                     const newLink = link.cloneNode(true);
                     link.parentNode.replaceChild(newLink, link);
                     
@@ -10912,26 +10903,17 @@ function clearFieldError(field) {
             dropdownResizeTimeout = setTimeout(initDropdowns, 300);
         });
         
-        console.log('✅ Mobile menu initialized - X button working!');
+        console.log('✅ Mobile menu fully initialized!');
+    }
+    
+    // Run when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initMobileMenu);
+    } else {
+        initMobileMenu();
     }
     
 })();
-
-// Close mobile menu when clicking outside
-document.addEventListener('click', function(e) {
-    if (mainNav && mainNav.classList.contains('open')) {
-        const isClickInside = mainNav.contains(e.target) || 
-                             (mobileToggle && mobileToggle.contains(e.target));
-        if (!isClickInside) {
-            mainNav.classList.remove('open');
-            if (mobileToggle) {
-                mobileToggle.setAttribute('aria-expanded', 'false');
-                mobileToggle.innerHTML = '<i class="fas fa-bars" aria-hidden="true"></i>';
-            }
-            document.body.style.overflow = '';
-        }
-    }
-});
 
 // Close on escape key
 document.addEventListener('keydown', function(e) {
