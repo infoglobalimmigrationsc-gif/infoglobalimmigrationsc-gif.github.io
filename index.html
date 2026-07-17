@@ -5634,7 +5634,8 @@
     </div>
 </section>
 
-        <!-- Report Fraud Section - FIXED VERSION -->
+<!-- Replace the entire Report Fraud section with this fixed version -->
+<!-- Report Fraud Section - FIXED VERSION -->
 <section id="report-fraud" class="section report-fraud">
     <div class="container">
         <div class="section-title">
@@ -5646,7 +5647,7 @@
         </div>
 
         <!-- Open Form Button -->
-        <div style="text-align: center; margin: 30px 0;">
+        <div style="text-align: center; margin: 30px 0;" id="reportButtonContainer">
             <button id="openReportFormBtn" class="btn btn-primary" style="padding: 16px 40px; font-size: 1.1rem;">
                 <i class="fas fa-flag" style="margin-right: 10px;"></i> Report Fraud Now
             </button>
@@ -11477,15 +11478,12 @@ async function quickStatusUpdate(docType, action) {
 
 
 // ============================================================
-// REPORT FRAUD FORM - COMPLETE FUNCTIONALITY WITH GOOGLE SHEETS
+// REPORT FRAUD FORM - FIXED OPEN/CLOSE FUNCTIONALITY
 // ============================================================
-
 document.addEventListener('DOMContentLoaded', function() {
     'use strict';
     
-    // ==========================================
-    // DOM REFERENCES
-    // ==========================================
+    // DOM References
     const openBtn = document.getElementById('openReportFormBtn');
     const closeBtn = document.getElementById('closeReportForm');
     const formContainer = document.getElementById('reportFormContainer');
@@ -11496,22 +11494,39 @@ document.addEventListener('DOMContentLoaded', function() {
     const progressSteps = document.querySelectorAll('.progress-step');
     const progressFill = document.querySelector('.progress-fill');
     
-    let uploadedFiles = [];
     let currentStep = 1;
     const totalSteps = 4;
+    let uploadedFiles = [];
 
     // ==========================================
-    // OPEN / CLOSE FORM
+    // OPEN FORM - FIXED
     // ==========================================
     if (openBtn) {
-        openBtn.addEventListener('click', function() {
+        // Remove any existing listeners to prevent duplicates
+        const newOpenBtn = openBtn.cloneNode(true);
+        openBtn.parentNode.replaceChild(newOpenBtn, openBtn);
+        
+        newOpenBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🔓 Report Fraud button clicked - opening form');
+            
             formContainer.style.display = 'block';
             successDiv.style.display = 'none';
             goToStep(1);
-            formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            // Scroll to form
+            setTimeout(function() {
+                formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
         });
+    } else {
+        console.error('❌ openReportFormBtn not found in DOM');
     }
 
+    // ==========================================
+    // CLOSE FORM
+    // ==========================================
     if (closeBtn) {
         closeBtn.addEventListener('click', function() {
             formContainer.style.display = 'none';
@@ -11812,7 +11827,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ==========================================
-    // SUBMIT FORM - USES YOUR EXISTING submitToGoogleSheets
+    // SUBMIT FORM
     // ==========================================
     if (submitBtn) {
         submitBtn.addEventListener('click', async function() {
@@ -11856,7 +11871,7 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             
             try {
-                // Use the EXISTING submitToGoogleSheets function (defined elsewhere in your code)
+                // Use the existing submitToGoogleSheets function
                 const result = await submitToGoogleSheets(formData);
                 
                 if (result.status === 'success') {
@@ -11902,7 +11917,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Make resetReportForm available globally for the "Submit Another Report" button
+    // Make resetReportForm available globally
     window.resetReportForm = function() {
         resetForm();
         successDiv.style.display = 'none';
@@ -11922,8 +11937,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    console.log('✅ Report Fraud form initialized with Google Sheets integration');
-});
+    console.log('✅ Report Fraud form fully initialized');
+}); 
 
      
 
