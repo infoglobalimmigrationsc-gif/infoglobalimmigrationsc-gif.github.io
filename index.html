@@ -8,7 +8,176 @@
     <meta name="keywords" content="immigration consultants, study abroad, visa assistance, work permits, student visa, relocation services, travel consultation">
     <meta name="author" content="Global Immigration SC">
 
-   
+    <!-- ============ ANTI-CONSOLE & SECURITY PROTECTION ============ -->
+<script>
+(function() {
+    'use strict';
+    
+    // ============================================================
+    // 1. CONSOLE DISABLE (Only in production)
+    // ============================================================
+    // Check if we're in production (not localhost or development)
+    const isProduction = window.location.hostname !== 'localhost' && 
+                        !window.location.hostname.includes('127.0.0.1') &&
+                        !window.location.hostname.includes('192.168.');
+    
+    if (isProduction) {
+        // Disable console methods
+        const noop = function() {};
+        const consoleMethods = ['log', 'info', 'warn', 'error', 'debug', 'trace', 'dir', 'table', 'group', 'groupEnd'];
+        consoleMethods.forEach(method => {
+            if (window.console && window.console[method]) {
+                window.console[method] = noop;
+            }
+        });
+        console.log = noop;
+        console.warn = noop;
+        console.error = noop;
+        console.info = noop;
+        console.debug = noop;
+        console.trace = noop;
+        
+        // Keep console.clear() visible for user experience
+        // But override if needed
+        // console.clear = function() { /* Do nothing */ };
+    }
+    
+    // ============================================================
+    // 2. DISABLE RIGHT-CLICK CONTEXT MENU
+    // ============================================================
+    // Only disable on production
+    if (isProduction) {
+        document.addEventListener('contextmenu', function(e) {
+            // Allow right-click on inputs, textareas, and select elements
+            const target = e.target;
+            const allowedTags = ['INPUT', 'TEXTAREA', 'SELECT'];
+            const isAllowed = allowedTags.includes(target.tagName);
+            
+            // Allow right-click on form elements (for copy/paste)
+            if (isAllowed || target.closest('input') || target.closest('textarea')) {
+                return true;
+            }
+            
+            e.preventDefault();
+            return false;
+        });
+    }
+    
+    // ============================================================
+    // 3. DISABLE KEYBOARD SHORTCUTS FOR DEV TOOLS
+    // ============================================================
+    document.addEventListener('keydown', function(e) {
+        // Only block in production
+        if (!isProduction) return true;
+        
+        // F12 key
+        if (e.key === 'F12') {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Ctrl+Shift+I (Dev Tools)
+        if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Ctrl+Shift+J (Console)
+        if (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j')) {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Ctrl+U (View Source)
+        if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Ctrl+S (Save Page)
+        if (e.ctrlKey && (e.key === 'S' || e.key === 's')) {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Ctrl+C (Copy) - Allow for user selection
+        // Ctrl+V (Paste) - Allow
+        
+        return true;
+    });
+    
+    // ============================================================
+    // 4. DETECT DEV TOOLS OPEN (Optional - Use with caution)
+    // ============================================================
+    // This detects if DevTools is open and can redirect
+    // Use this feature carefully as it can be intrusive
+    
+    /*
+    // Uncomment this section if you want dev tools detection
+    let devToolsOpen = false;
+    
+    // Method 1: Check element size difference
+    const checkDevTools = function() {
+        const threshold = 160;
+        const widthDiff = window.outerWidth - window.innerWidth;
+        const heightDiff = window.outerHeight - window.innerHeight;
+        
+        if (widthDiff > threshold || heightDiff > threshold) {
+            devToolsOpen = true;
+        } else {
+            devToolsOpen = false;
+        }
+    };
+    
+    // Check on resize
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(checkDevTools, 500);
+    });
+    
+    // Periodic check (every 3 seconds)
+    setInterval(function() {
+        if (devToolsOpen && isProduction) {
+            // Optional: Redirect or show warning
+            // window.location.href = '/';
+            // Or: alert('Developer tools detected!');
+        }
+        devToolsOpen = false;
+    }, 3000);
+    */
+    
+    // ============================================================
+    // 5. PREVENT IFRAME EMBEDDING (Clickjacking Protection)
+    // ============================================================
+    // Prevent your site from being embedded in iframes
+    // Uncomment to enable
+    /*
+    if (window.top !== window.self) {
+        window.top.location = window.self.location;
+    }
+    */
+    
+    // ============================================================
+    // 6. ALLOW ESSENTIAL FUNCTIONALITY
+    // ============================================================
+    // Ensure these essential features work:
+    // - Form submissions
+    // - API calls
+    // - Analytics
+    // - User interactions
+    
+    // Preserve console.error for debugging (optional)
+    // This allows critical errors to still be logged
+    if (isProduction && window.console) {
+        // Only override if we want to keep error logging
+        // console.error = console.error; // Keep as-is
+    }
+    
+    console.log('🔒 Security protection active (Production mode)');
+    
+})();
+</script>
 
 
     
@@ -3686,6 +3855,28 @@
     
 </head>
 <body>
+
+
+    <!-- Quick fix for Report Fraud button -->
+<script>
+// Emergency fix - make sure the button works even if other scripts fail
+(function() {
+    document.addEventListener('DOMContentLoaded', function() {
+        var btn = document.getElementById('openReportFormBtn');
+        var container = document.getElementById('reportFormContainer');
+        if (btn && container) {
+            // Ensure the button works
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                container.style.display = 'block';
+                console.log('Button clicked - form opened');
+            });
+        }
+    });
+})();
+</script>
+    
     <!-- ===== EMERGENCY LOADING SCREEN KILLER - FIXED ===== -->
     <script>
         // THIS MUST RUN BEFORE ANY OTHER SCRIPTS
@@ -11320,7 +11511,7 @@ async function submitToGoogleSheets(formData) {
     try {
         console.log('📤 Submitting to Google Sheets:', formData);
         
-        // Replace with your Google Apps Script Web App URL
+        // Use the same Google Apps Script URL as your newsletter
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbybjc4zzbjlAVqTzxHOWw_jP_hc-afK-7vwfWy81wXeFePimUak6zvRgy3IqAo27sVkXw/exec';
         
         const response = await fetch(SCRIPT_URL, {
@@ -11332,7 +11523,6 @@ async function submitToGoogleSheets(formData) {
             body: JSON.stringify(formData)
         });
         
-        // With no-cors, we can't read the response, so we assume success
         console.log('✅ Report submitted to Google Sheets');
         return { status: 'success', message: 'Report submitted successfully' };
         
@@ -11378,8 +11568,11 @@ document.addEventListener('DOMContentLoaded', function() {
             e.stopPropagation();
             console.log('🔓 Report Fraud button clicked - opening form');
             
+            // Show the form container
             formContainer.style.display = 'block';
             successDiv.style.display = 'none';
+            
+            // Reset to step 1
             goToStep(1);
             
             // Scroll to form
@@ -11389,6 +11582,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     } else {
         console.error('❌ openReportFormBtn not found in DOM');
+        // Try to find it by selector as fallback
+        const btn = document.querySelector('#openReportFormBtn');
+        if (btn) {
+            console.log('Found button via querySelector, attaching event...');
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                formContainer.style.display = 'block';
+                successDiv.style.display = 'none';
+                goToStep(1);
+                setTimeout(function() {
+                    formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            });
+        }
     }
 
     // ==========================================
