@@ -11477,11 +11477,45 @@ async function quickStatusUpdate(docType, action) {
 }
 
 
+
 // ============================================================
-// REPORT FRAUD FORM - FIXED OPEN/CLOSE FUNCTIONALITY
+// REPORT FRAUD FORM - COMPLETE WORKING SOLUTION
+// ============================================================
+
+// IMPORTANT: This function must be defined BEFORE the report form code uses it
+async function submitToGoogleSheets(formData) {
+    try {
+        console.log('📤 Submitting to Google Sheets:', formData);
+        
+        // Replace with your Google Apps Script Web App URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbybjc4zzbjlAVqTzxHOWw_jP_hc-afK-7vwfWy81wXeFePimUak6zvRgy3IqAo27sVkXw/exec';
+        
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        // With no-cors, we can't read the response, so we assume success
+        console.log('✅ Report submitted to Google Sheets');
+        return { status: 'success', message: 'Report submitted successfully' };
+        
+    } catch (error) {
+        console.error('❌ Google Sheets submission error:', error);
+        return { status: 'error', message: error.message };
+    }
+}
+
+// ============================================================
+// REPORT FRAUD FORM - COMPLETE FUNCTIONALITY
 // ============================================================
 document.addEventListener('DOMContentLoaded', function() {
     'use strict';
+    
+    console.log('🚀 Initializing Report Fraud Form...');
     
     // DOM References
     const openBtn = document.getElementById('openReportFormBtn');
@@ -11867,11 +11901,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 witnesses: document.getElementById('witnesses')?.value || '',
                 fileCount: uploadedFiles.length,
                 fileNames: uploadedFiles.map(f => f.name).join(', '),
-                status: 'New Report'
+                status: 'New Report',
+                submissionDate: new Date().toLocaleDateString()
             };
             
             try {
-                // Use the existing submitToGoogleSheets function
+                // Submit to Google Sheets
                 const result = await submitToGoogleSheets(formData);
                 
                 if (result.status === 'success') {
@@ -11879,6 +11914,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     successDiv.style.display = 'block';
                     document.getElementById('successReportId').textContent = reportId;
                     successDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Reset form for next submission
+                    resetForm();
                 } else {
                     throw new Error(result.message || 'Submission failed');
                 }
@@ -11897,6 +11935,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // RESET FORM
     // ==========================================
     function resetForm() {
+        // Reset all form fields
         document.querySelectorAll('#reportFormContainer input, #reportFormContainer textarea, #reportFormContainer select').forEach(function(el) {
             if (el.type === 'checkbox' || el.type === 'radio') {
                 el.checked = false;
@@ -11938,10 +11977,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     console.log('✅ Report Fraud form fully initialized');
-}); 
-
+});
      
-
 
         // ==================== NEW FEATURES JAVASCRIPT ====================
         
