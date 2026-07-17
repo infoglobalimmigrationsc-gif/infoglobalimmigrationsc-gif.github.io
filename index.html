@@ -10748,103 +10748,114 @@ function clearFieldError(field) {
             setTimeout(hideLoadingScreen, 4000);
 
 
-        // ============================================================
-// MOBILE MENU - SIMPLE & GUARANTEED (X BUTTON FIX)
+// ============================================================
+// MOBILE MENU - SIMPLE & GUARANTEED (FIXED VERSION)
 // ============================================================
 document.addEventListener('DOMContentLoaded', function() {
     'use strict';
     
-    console.log('✅ Simple mobile menu loaded');
+    console.log('✅ Mobile menu loaded (FIXED VERSION)');
     
     const toggle = document.querySelector('.mobile-toggle');
     const nav = document.querySelector('.main-nav');
     const closeBtn = document.querySelector('.mobile-close');
-    
-    // Close function
-    function closeMenu() {
-        nav.classList.remove('open');
-        if (toggle) {
-            toggle.innerHTML = '<i class="fas fa-bars"></i>';
-        }
-        document.body.style.overflow = '';
-        document.body.style.position = '';
-        document.body.style.width = '';
-        document.body.style.top = '';
-    }
-    
-    // Open function
+    const body = document.body;
+    let scrollY = 0;
+
+    // --- Core Functions ---
     function openMenu() {
         nav.classList.add('open');
         if (toggle) {
-            toggle.innerHTML = '<i class="fas fa-times"></i>';
+            toggle.innerHTML = '<i class="fas fa-times" aria-hidden="true"></i>';
+            toggle.setAttribute('aria-expanded', 'true');
         }
-        document.body.style.overflow = 'hidden';
-        document.body.style.position = 'fixed';
-        document.body.style.width = '100%';
-        document.body.style.top = '-' + window.scrollY + 'px';
+        // Save scroll position and prevent body scroll
+        scrollY = window.scrollY;
+        body.style.position = 'fixed';
+        body.style.top = `-${scrollY}px`;
+        body.style.width = '100%';
+        body.style.overflow = 'hidden';
+        console.log('✅ Menu opened');
     }
-    
-    // Hamburger
+
+    function closeMenu() {
+        nav.classList.remove('open');
+        if (toggle) {
+            toggle.innerHTML = '<i class="fas fa-bars" aria-hidden="true"></i>';
+            toggle.setAttribute('aria-expanded', 'false');
+        }
+        // Restore body scroll
+        body.style.position = '';
+        body.style.top = '';
+        body.style.width = '';
+        body.style.overflow = '';
+        window.scrollTo(0, scrollY);
+        console.log('✅ Menu closed');
+    }
+
+    function toggleMenu() {
+        if (nav.classList.contains('open')) {
+            closeMenu();
+        } else {
+            openMenu();
+        }
+    }
+
+    // --- Event Listeners ---
+
+    // 1. Hamburger Icon
     if (toggle) {
         toggle.addEventListener('click', function(e) {
             e.stopPropagation();
-            if (nav.classList.contains('open')) {
-                closeMenu();
-            } else {
-                openMenu();
-            }
+            toggleMenu();
         });
     }
-    
-    // X BUTTON - DIRECT APPROACH
+
+    // 2. X Button - Now uses the 'closeMenu' function directly
     if (closeBtn) {
         closeBtn.addEventListener('click', function(e) {
             e.stopPropagation();
             e.preventDefault();
-            console.log('❌ X clicked - closing menu!');
-            closeMenu();
+            console.log('❌ X button clicked - closing menu');
+            closeMenu(); // This now works because it's in the same scope
         });
     }
-    
-    // Outside click
+
+    // 3. Click outside to close
     document.addEventListener('click', function(e) {
         if (nav.classList.contains('open')) {
-            if (!nav.contains(e.target) && !toggle.contains(e.target)) {
+            const isClickInsideNav = nav.contains(e.target);
+            const isClickOnToggle = toggle && toggle.contains(e.target);
+            if (!isClickInsideNav && !isClickOnToggle) {
                 closeMenu();
             }
         }
     });
-    
-    // Escape key
+
+    // 4. Escape key to close
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && nav.classList.contains('open')) {
             closeMenu();
         }
     });
-    
-    // Resize
+
+    // 5. Auto-close on resize to desktop
     window.addEventListener('resize', function() {
         if (window.innerWidth > 768 && nav.classList.contains('open')) {
             closeMenu();
         }
     });
-    
-    // Mobile dropdowns
-    if (window.innerWidth <= 768) {
-        document.querySelectorAll('.dropdown > a').forEach(function(link) {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                const dropdown = this.parentElement;
-                document.querySelectorAll('.dropdown.open').forEach(function(d) {
-                    if (d !== dropdown) d.classList.remove('open');
-                });
-                dropdown.classList.toggle('open');
-            });
+
+    // 6. Close menu when a nav link is clicked (for better UX)
+    document.querySelectorAll('.nav-menu a').forEach(function(link) {
+        link.addEventListener('click', function() {
+            if (window.innerWidth <= 768 && nav.classList.contains('open')) {
+                closeMenu();
+            }
         });
-    }
-    
-    console.log('✅ Mobile menu ready!');
+    });
+
+    console.log('✅ Mobile menu setup complete');
 });
             
 
