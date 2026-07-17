@@ -9030,8 +9030,6 @@ function collectFormData(reportId) {
     return formData;
 }
 
-throw new Error('Failed to submit report: ' + error.message);
-
 // === ADD THIS FUNCTION TO RESET THE FORM ===
 function resetReportForm() {
     document.querySelector('.fraud-report-form').style.display = 'block';
@@ -9066,7 +9064,6 @@ function resetReportForm() {
     
     console.log('Form reset successfully');
 }
-
 
 // === UPDATE YOUR SUBMIT REPORT FUNCTION ===
 async function submitReportForm() {
