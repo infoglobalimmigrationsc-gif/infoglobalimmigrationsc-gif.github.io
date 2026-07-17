@@ -976,7 +976,7 @@
             }
         }
         
-        @media (max-width: 768px) {
+    @media (max-width: 768px) {
     .mobile-toggle {
         display: flex;
     }
@@ -997,18 +997,12 @@
         box-shadow: -10px 0 40px rgba(0, 0, 0, 0.15);
         z-index: 9999;
         border-left: 1px solid rgba(255, 255, 255, 0.2);
-        /* CRITICAL: Ensure content is visible */
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
+        /* REMOVED: display: block !important; visibility: visible !important; opacity: 1 !important; */
     }
     
     .main-nav.open {
         right: 0;
-        /* Ensure content is visible when open */
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
+        /* Only need to show when open */
     }
     
     /* Fix for mobile overlay - make sure it's behind the menu */
@@ -1024,8 +1018,8 @@
         backdrop-filter: blur(4px);
     }
     
-    /* Ensure nav-menu is visible inside */
-    .main-nav .nav-menu {
+    /* Ensure nav-menu is visible inside when menu is open */
+    .main-nav.open .nav-menu {
         display: flex !important;
         flex-direction: column;
         align-items: stretch;
@@ -10762,17 +10756,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const body = document.body;
     let scrollY = 0;
 
-    // --- Core Functions ---
     function openMenu() {
         nav.classList.add('open');
         if (toggle) {
             toggle.innerHTML = '<i class="fas fa-times" aria-hidden="true"></i>';
             toggle.setAttribute('aria-expanded', 'true');
         }
-        // Save scroll position and prevent body scroll
         scrollY = window.scrollY;
         body.style.position = 'fixed';
-        body.style.top = `-${scrollY}px`;
+        body.style.top = '-' + scrollY + 'px';
         body.style.width = '100%';
         body.style.overflow = 'hidden';
         console.log('✅ Menu opened');
@@ -10784,7 +10776,6 @@ document.addEventListener('DOMContentLoaded', function() {
             toggle.innerHTML = '<i class="fas fa-bars" aria-hidden="true"></i>';
             toggle.setAttribute('aria-expanded', 'false');
         }
-        // Restore body scroll
         body.style.position = '';
         body.style.top = '';
         body.style.width = '';
@@ -10793,60 +10784,52 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ Menu closed');
     }
 
-    function toggleMenu() {
-        if (nav.classList.contains('open')) {
-            closeMenu();
-        } else {
-            openMenu();
-        }
-    }
-
-    // --- Event Listeners ---
-
-    // 1. Hamburger Icon
+    // Hamburger
     if (toggle) {
         toggle.addEventListener('click', function(e) {
             e.stopPropagation();
-            toggleMenu();
+            if (nav.classList.contains('open')) {
+                closeMenu();
+            } else {
+                openMenu();
+            }
         });
     }
 
-    // 2. X Button - Now uses the 'closeMenu' function directly
+    // X Button - DIRECT FIX
     if (closeBtn) {
         closeBtn.addEventListener('click', function(e) {
             e.stopPropagation();
             e.preventDefault();
-            console.log('❌ X button clicked - closing menu');
-            closeMenu(); // This now works because it's in the same scope
+            console.log('❌ X clicked - closing menu!');
+            closeMenu();
         });
     }
 
-    // 3. Click outside to close
+    // Click outside
     document.addEventListener('click', function(e) {
         if (nav.classList.contains('open')) {
-            const isClickInsideNav = nav.contains(e.target);
-            const isClickOnToggle = toggle && toggle.contains(e.target);
-            if (!isClickInsideNav && !isClickOnToggle) {
+            if (!nav.contains(e.target) && !toggle.contains(e.target)) {
                 closeMenu();
             }
         }
     });
 
-    // 4. Escape key to close
+    // Escape key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && nav.classList.contains('open')) {
             closeMenu();
         }
     });
 
-    // 5. Auto-close on resize to desktop
+    // Auto-close on resize
     window.addEventListener('resize', function() {
         if (window.innerWidth > 768 && nav.classList.contains('open')) {
             closeMenu();
         }
     });
 
-    // 6. Close menu when a nav link is clicked (for better UX)
+    // Close when clicking a nav link
     document.querySelectorAll('.nav-menu a').forEach(function(link) {
         link.addEventListener('click', function() {
             if (window.innerWidth <= 768 && nav.classList.contains('open')) {
@@ -10855,7 +10838,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    console.log('✅ Mobile menu setup complete');
+    console.log('✅ Mobile menu ready!');
 });
             
 
