@@ -5659,373 +5659,791 @@
 </section>
 
 <!-- Replace the entire Report Fraud section with this fixed version -->
-<!-- Report Fraud Section - FIXED VERSION -->
+
+<!-- ============================================================
+     REPORT FRAUD - COMPLETE MVP SYSTEM
+     ============================================================ -->
+
+<!-- Report Fraud Section -->
 <section id="report-fraud" class="section report-fraud">
     <div class="container">
         <div class="section-title">
             <h2>REPORT IT — Report Travel/Immigration Fraud</h2>
             <p>If you suspect a travel or visa scam, report it here with your evidence. All reports are reviewed confidentially. <strong>False accusations are illegal and may result in legal action.</strong></p>
-            <p style="font-size: 0.9rem; margin-top: 10px;">
-                <a href="#privacy-policy" style="color: var(--primary-red);">Privacy Policy & Legal Terms</a>
-            </p>
         </div>
 
         <!-- Open Form Button -->
-        <div style="text-align: center; margin: 30px 0;" id="reportButtonContainer">
+        <div style="text-align: center; margin: 30px 0;">
             <button id="openReportFormBtn" class="btn btn-primary" style="padding: 16px 40px; font-size: 1.1rem;">
                 <i class="fas fa-flag" style="margin-right: 10px;"></i> Report Fraud Now
             </button>
-            <p style="margin-top: 15px; color: var(--medium-gray); font-size: 0.9rem;">
-                Your report will be treated with strict confidentiality
-            </p>
-        </div>
-
-        <!-- Social Share Section -->
-        <div class="social-share-section" style="text-align: center; margin: 30px 0; padding: 20px; background: #f8f9fa; border-radius: 10px;">
-            <h4 style="margin-bottom: 15px; color: var(--primary-red);">Help Others - Share This Resource</h4>
-            <p style="margin-bottom: 20px; color: var(--medium-gray);">Share this fraud reporting tool to help others avoid immigration scams</p>
-            <div class="social-share-buttons" style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
-                <a href="https://www.facebook.com/sharer/sharer.php?u=https://globalimmigrationsclr.com/#report-fraud&quote=Report%20immigration%20and%20travel%20fraud%20with%20Global%20Immigration%20SC%20-%20Help%20protect%20others%20from%20scams" target="_blank" class="social-share-btn" style="background: #1877F2; color: white; padding: 10px 16px; border-radius: 6px; text-decoration: none; display: flex; align-items: center; gap: 6px; font-weight: 500; font-size: 0.9rem;">
-                    <i class="fab fa-facebook-f"></i> Facebook
-                </a>
-                <a href="https://twitter.com/intent/tweet?text=Report%20immigration%20and%20travel%20fraud%20with%20Global%20Immigration%20SC%20-%20Help%20protect%20others%20from%20scams&url=https://globalimmigrationsclr.com/#report-fraud" target="_blank" class="social-share-btn" style="background: #1DA1F2; color: white; padding: 10px 16px; border-radius: 6px; text-decoration: none; display: flex; align-items: center; gap: 6px; font-weight: 500; font-size: 0.9rem;">
-                    <i class="fab fa-twitter"></i> Twitter
-                </a>
-                <a href="https://wa.me/?text=Report%20immigration%20fraud%20and%20travel%20scams%20with%20Global%20Immigration%20SC%3A%20https%3A%2F%2Fglobalimmigrationsclr.com%2F%23report-fraud%20%23StopImmigrationFraud" target="_blank" class="social-share-btn" style="background: #25D366; color: white; padding: 10px 16px; border-radius: 6px; text-decoration: none; display: flex; align-items: center; gap: 6px; font-weight: 500; font-size: 0.9rem;">
-                    <i class="fab fa-whatsapp"></i> WhatsApp
-                </a>
-                <a href="mailto:?subject=Report Immigration Fraud - Global Immigration SC&body=Check out this fraud reporting tool to help protect others from immigration scams: https://globalimmigrationsclr.com/#report-fraud" class="social-share-btn" style="background: #EA4335; color: white; padding: 10px 16px; border-radius: 6px; text-decoration: none; display: flex; align-items: center; gap: 6px; font-weight: 500; font-size: 0.9rem;">
-                    <i class="fas fa-envelope"></i> Email
-                </a>
-            </div>
-        </div>
-
-        <!-- Fraud Report Form Container (Hidden by default) -->
-        <div id="reportFormContainer" style="display: none; max-width: 800px; margin: 0 auto; background: var(--light-gray); padding: 30px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
-            
-            <!-- Close Form Button -->
-            <div style="text-align: right; margin-bottom: 15px;">
-                <button id="closeReportForm" class="btn btn-outline btn-small" style="padding: 8px 16px;">
-                    <i class="fas fa-times"></i> Close Form
-                </button>
-            </div>
-
-            <!-- Progress Steps -->
-            <div class="form-progress">
-                <div class="progress-steps">
-                    <div class="progress-step active" data-step="1">
-                        <div class="step-indicator">1</div>
-                        <span>Basic Info</span>
-                    </div>
-                    <div class="progress-step" data-step="2">
-                        <div class="step-indicator">2</div>
-                        <span>Incident Details</span>
-                    </div>
-                    <div class="progress-step" data-step="3">
-                        <div class="step-indicator">3</div>
-                        <span>Evidence</span>
-                    </div>
-                    <div class="progress-step" data-step="4">
-                        <div class="step-indicator">4</div>
-                        <span>Review & Submit</span>
-                    </div>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 25%;"></div>
-                </div>
-            </div>
-
-            <!-- Step 1: Basic Information -->
-            <div class="form-step active" id="step-1">
-                <h3>Step 1: Your Information</h3>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="reporterName">Full Name *</label>
-                        <input type="text" id="reporterName" class="form-control" required>
-                        <div class="form-error" id="reporterNameError">Please enter your full name</div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="reporterEmail">Email Address *</label>
-                        <input type="email" id="reporterEmail" class="form-control" required>
-                        <div class="form-error" id="reporterEmailError">Please enter a valid email address</div>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="reporterPhone">Phone / WhatsApp</label>
-                        <input type="tel" id="reporterPhone" class="form-control">
-                        <div class="form-error" id="reporterPhoneError">Please enter a valid phone number</div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Preferred Contact Method *</label>
-                        <div class="radio-group">
-                            <label class="radio-option">
-                                <input type="radio" name="contactMethod" value="email" required>
-                                <span class="radio-checkmark"></span>
-                                Email
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="contactMethod" value="whatsapp">
-                                <span class="radio-checkmark"></span>
-                                WhatsApp
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="contactMethod" value="phone">
-                                <span class="radio-checkmark"></span>
-                                Phone Call
-                            </label>
-                        </div>
-                        <div class="form-error" id="contactMethodError">Please select preferred contact method</div>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="checkbox-option">
-                        <input type="checkbox" id="anonymousReport">
-                        <span class="checkmark"></span>
-                        I wish to remain anonymous (your name will be hidden from public outputs)
-                    </label>
-                </div>
-                
-                <div class="form-navigation">
-                    <button type="button" class="btn btn-primary next-step" data-next="2">Next: Incident Details <i class="fas fa-arrow-right"></i></button>
-                </div>
-            </div>
-
-            <!-- Step 2: Incident Details -->
-            <div class="form-step" id="step-2">
-                <h3>Step 2: Incident Details</h3>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="incidentCountry">Country of Incident *</label>
-                        <select id="incidentCountry" class="form-control" required>
-                            <option value="">Select Country</option>
-                            <option value="usa">United States</option>
-                            <option value="canada">Canada</option>
-                            <option value="uk">United Kingdom</option>
-                            <option value="australia">Australia</option>
-                            <option value="germany">Germany</option>
-                            <option value="liberia">Liberia</option>
-                            <option value="ghana">Ghana</option>
-                            <option value="nigeria">Nigeria</option>
-                            <option value="other">Other</option>
-                        </select>
-                        <div class="form-error" id="incidentCountryError">Please select country</div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="incidentCity">City / Location</label>
-                        <input type="text" id="incidentCity" class="form-control">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="suspectName">Suspected Agency/Person Name *</label>
-                    <input type="text" id="suspectName" class="form-control" required>
-                    <div class="form-error" id="suspectNameError">Please enter the name of suspected agency/person</div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="suspectWebsite">Suspected Agency Website/Social Links</label>
-                        <input type="url" id="suspectWebsite" class="form-control" placeholder="https://">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="suspectContact">Suspect Contact Info (phone/email)</label>
-                        <input type="text" id="suspectContact" class="form-control">
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="incidentDateFrom">Incident Start Date *</label>
-                        <input type="date" id="incidentDateFrom" class="form-control" required>
-                        <div class="form-error" id="incidentDateFromError">Please select start date</div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="incidentDateTo">Incident End Date (if ongoing, leave blank)</label>
-                        <input type="date" id="incidentDateTo" class="form-control">
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="amountPaid">Amount Paid (if any)</label>
-                        <div class="amount-input">
-                            <select id="currency" class="currency-select">
-                                <option value="USD">USD</option>
-                                <option value="LRD">LRD</option>
-                                <option value="EUR">EUR</option>
-                                <option value="GBP">GBP</option>
-                            </select>
-                            <input type="number" id="amountPaid" class="form-control" min="0" step="0.01" placeholder="0.00">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Payment Method(s)</label>
-                        <div class="checkbox-group">
-                            <label class="checkbox-option">
-                                <input type="checkbox" name="paymentMethod" value="bank_transfer">
-                                <span class="checkmark"></span>
-                                Bank Transfer
-                            </label>
-                            <label class="checkbox-option">
-                                <input type="checkbox" name="paymentMethod" value="mobile_money">
-                                <span class="checkmark"></span>
-                                Mobile Money
-                            </label>
-                            <label class="checkbox-option">
-                                <input type="checkbox" name="paymentMethod" value="cash">
-                                <span class="checkmark"></span>
-                                Cash
-                            </label>
-                            <label class="checkbox-option">
-                                <input type="checkbox" name="paymentMethod" value="card">
-                                <span class="checkmark"></span>
-                                Card
-                            </label>
-                            <label class="checkbox-option">
-                                <input type="checkbox" name="paymentMethod" value="other">
-                                <span class="checkmark"></span>
-                                Other
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="form-navigation">
-                    <button type="button" class="btn btn-outline prev-step" data-prev="1"><i class="fas fa-arrow-left"></i> Previous</button>
-                    <button type="button" class="btn btn-primary next-step" data-next="3">Next: Evidence <i class="fas fa-arrow-right"></i></button>
-                </div>
-            </div>
-
-            <!-- Step 3: Evidence Upload -->
-            <div class="form-step" id="step-3">
-                <h3>Step 3: Evidence & Details</h3>
-                
-                <div class="form-group">
-                    <label for="complaintSummary">Short Summary of Complaint *</label>
-                    <textarea id="complaintSummary" class="form-control" maxlength="1000" required placeholder="Brief summary of what happened (max 1000 characters)"></textarea>
-                    <div class="char-counter"><span id="summaryChars">0</span>/1000 characters</div>
-                    <div class="form-error" id="complaintSummaryError">Please provide a summary</div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="detailedDescription">Detailed Description & Timeline *</label>
-                    <textarea id="detailedDescription" class="form-control" maxlength="3000" required placeholder="Detailed timeline and description of events (max 3000 characters)"></textarea>
-                    <div class="char-counter"><span id="descriptionChars">0</span>/3000 characters</div>
-                    <div class="form-error" id="detailedDescriptionError">Please provide detailed description</div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="witnesses">Witnesses (names & contacts)</label>
-                    <textarea id="witnesses" class="form-control" placeholder="List any witnesses with their contact information"></textarea>
-                </div>
-                
-                <!-- File Upload Area -->
-                <div class="form-group">
-                    <label>Upload Evidence * <small>(Required - screenshots, receipts, contracts, etc.)</small></label>
-                    <div class="upload-area" id="evidenceUploadArea">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <h4>Drop files here or click to upload</h4>
-                        <p>Supported formats: JPG, PNG, PDF, DOC, DOCX, XLSX, MP4 (max 20MB per file, 100MB total)</p>
-                        <p><small>Videos must be under 60 seconds. All files are virus-scanned.</small></p>
-                        <input type="file" id="evidenceFiles" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xlsx,.mp4" style="display: none;">
-                        <div class="upload-progress">
-                            <div class="upload-progress-bar" id="evidenceProgress"></div>
-                        </div>
-                    </div>
-                    <div class="file-previews" id="filePreviews"></div>
-                    <div class="form-error" id="evidenceError">Please upload at least one evidence file</div>
-                </div>
-                
-                <div class="form-navigation">
-                    <button type="button" class="btn btn-outline prev-step" data-prev="2"><i class="fas fa-arrow-left"></i> Previous</button>
-                    <button type="button" class="btn btn-primary next-step" data-next="4">Review & Submit <i class="fas fa-arrow-right"></i></button>
-                </div>
-            </div>
-
-            <!-- Step 4: Review & Submit -->
-            <div class="form-step" id="step-4">
-                <h3>Step 4: Review & Submit</h3>
-                
-                <div class="review-section">
-                    <h4>Please review your report</h4>
-                    <div id="reviewContent"></div>
-                </div>
-                
-                <!-- Legal Disclaimer -->
-                <div class="legal-disclaimer">
-                    <div class="disclaimer-warning">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <strong>LEGAL DISCLAIMER</strong>
-                    </div>
-                    <p>Only genuine cases of fraudulent acts should be reported. Filing false reports or falsely accusing others is a criminal offense and may result in legal action against the reporter. By submitting this form you confirm the accuracy of your report and consent to GISC storing and processing this information for investigation and legal referral purposes.</p>
-                </div>
-                
-                <!-- Consent Checkbox -->
-                <div class="form-group">
-                    <label class="checkbox-option required">
-                        <input type="checkbox" id="legalConsent" required>
-                        <span class="checkmark"></span>
-                        I confirm the information I submit is true to the best of my knowledge. I understand false reporting may lead to legal action. *
-                    </label>
-                    <div class="form-error" id="legalConsentError">You must agree to continue</div>
-                </div>
-
-                <!-- Security Check -->
-                <div class="form-group">
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;">
-                        <p><strong>Security Check</strong></p>
-                        <p>To prove you're human, please type "I AM HUMAN" in the box below:</p>
-                        <input type="text" id="humanVerification" class="form-control" placeholder="Type: I AM HUMAN" style="text-align: center; max-width: 200px; margin: 0 auto;">
-                        <div class="form-error" id="captchaError" style="display: none;">Please type "I AM HUMAN" exactly as shown</div>
-                    </div>
-                </div>
-
-                <div class="form-navigation">
-                    <button type="button" class="btn btn-outline prev-step" data-prev="3"><i class="fas fa-arrow-left"></i> Previous</button>
-                    <button type="button" class="btn btn-primary" id="submitReportBtn">
-                        <span class="btn-text"><i class="fas fa-paper-plane"></i> Submit Report</span>
-                        <span class="loading-spinner" style="display: none;"></span>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Success Message (Hidden by default) -->
-        <div id="reportSuccess" class="form-success" style="display: none; max-width: 800px; margin: 20px auto;">
-            <div class="success-content">
-                <i class="fas fa-check-circle"></i>
-                <h3>Report Submitted Successfully!</h3>
-                <p>Your report <strong id="successReportId">[Report ID]</strong> has been received.</p>
-                <p>We are reviewing your submission and will keep you updated. If legal action is needed, we will contact you for next steps.</p>
-                <div class="success-details">
-                    <p><strong>What to expect:</strong></p>
-                    <ul>
-                        <li>Acknowledgement within 48 hours</li>
-                        <li>Initial review within 5-14 business days</li>
-                        <li>Updates via your preferred contact method</li>
-                    </ul>
-                </div>
-                <div class="contact-info">
-                    <p><strong>For urgent matters:</strong></p>
-                    <p>WhatsApp: +231 770562292 | Email: infoglobalimmigrationsc@gmail.com</p>
-                </div>
-                <button class="btn btn-outline" onclick="resetReportForm()">Submit Another Report</button>
-            </div>
         </div>
     </div>
 </section>
 
+<!-- ============================================================
+     FRAUD REPORT MODAL - POPUP VERSION
+     ============================================================ -->
+<div id="fraudModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 99999; justify-content: center; align-items: center; padding: 20px; overflow-y: auto;">
+    <div style="background: white; border-radius: 16px; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 30px; position: relative; animation: slideUp 0.3s ease; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+        
+        <!-- Close Button -->
+        <button id="closeFraudModal" style="position: sticky; top: 0; float: right; background: var(--primary-red); color: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center;">
+            <i class="fas fa-times"></i>
+        </button>
+        
+        <div style="clear: both;"></div>
+
+        <h2 style="color: var(--dark-gray); margin-bottom: 20px; text-align: center; font-size: 1.8rem;">
+            <i class="fas fa-flag" style="color: var(--primary-red);"></i> Report Fraud
+        </h2>
+
+        <!-- Progress Steps -->
+        <div class="form-progress" style="margin-bottom: 30px;">
+            <div class="progress-steps" style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <div class="progress-step active" data-step="1" style="text-align: center; flex: 1;">
+                    <div class="step-indicator" style="width: 35px; height: 35px; border-radius: 50%; background: var(--primary-red); color: white; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-weight: bold;">1</div>
+                    <span style="font-size: 0.8rem;">Basic Info</span>
+                </div>
+                <div class="progress-step" data-step="2" style="text-align: center; flex: 1;">
+                    <div class="step-indicator" style="width: 35px; height: 35px; border-radius: 50%; background: #ddd; color: #999; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-weight: bold;">2</div>
+                    <span style="font-size: 0.8rem;">Incident</span>
+                </div>
+                <div class="progress-step" data-step="3" style="text-align: center; flex: 1;">
+                    <div class="step-indicator" style="width: 35px; height: 35px; border-radius: 50%; background: #ddd; color: #999; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-weight: bold;">3</div>
+                    <span style="font-size: 0.8rem;">Evidence</span>
+                </div>
+                <div class="progress-step" data-step="4" style="text-align: center; flex: 1;">
+                    <div class="step-indicator" style="width: 35px; height: 35px; border-radius: 50%; background: #ddd; color: #999; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-weight: bold;">4</div>
+                    <span style="font-size: 0.8rem;">Submit</span>
+                </div>
+            </div>
+            <div class="progress-bar" style="height: 6px; background: #eee; border-radius: 3px; overflow: hidden;">
+                <div class="progress-fill" style="height: 100%; width: 25%; background: var(--primary-red); transition: width 0.3s ease;"></div>
+            </div>
+        </div>
+
+        <!-- Step 1: Basic Information -->
+        <div class="form-step active" id="step-1">
+            <h3 style="margin-bottom: 20px;">Your Information</h3>
+            
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label for="reporterName">Full Name *</label>
+                    <input type="text" id="reporterName" class="form-control" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px;" required>
+                    <div class="form-error" style="color: red; font-size: 0.85rem; display: none;" id="reporterNameError">Please enter your full name</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="reporterEmail">Email Address *</label>
+                    <input type="email" id="reporterEmail" class="form-control" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px;" required>
+                    <div class="form-error" style="color: red; font-size: 0.85rem; display: none;" id="reporterEmailError">Please enter a valid email</div>
+                </div>
+            </div>
+            
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+                <div class="form-group">
+                    <label for="reporterPhone">Phone / WhatsApp</label>
+                    <input type="tel" id="reporterPhone" class="form-control" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px;">
+                </div>
+                
+                <div class="form-group">
+                    <label>Preferred Contact *</label>
+                    <div style="display: flex; gap: 15px; margin-top: 5px;">
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="radio" name="contactMethod" value="email" checked> Email
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="radio" name="contactMethod" value="whatsapp"> WhatsApp
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="radio" name="contactMethod" value="phone"> Phone
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group" style="margin-top: 15px;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" id="anonymousReport"> 
+                    <span>I wish to remain anonymous</span>
+                </label>
+            </div>
+            
+            <div class="form-navigation" style="display: flex; justify-content: flex-end; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
+                <button type="button" class="btn btn-primary next-step" data-next="2">Next <i class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
+
+        <!-- Step 2: Incident Details -->
+        <div class="form-step" id="step-2" style="display: none;">
+            <h3 style="margin-bottom: 20px;">Incident Details</h3>
+            
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label for="incidentCountry">Country *</label>
+                    <select id="incidentCountry" class="form-control" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px;" required>
+                        <option value="">Select</option>
+                        <option value="usa">United States</option>
+                        <option value="canada">Canada</option>
+                        <option value="uk">United Kingdom</option>
+                        <option value="australia">Australia</option>
+                        <option value="germany">Germany</option>
+                        <option value="liberia">Liberia</option>
+                        <option value="ghana">Ghana</option>
+                        <option value="nigeria">Nigeria</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <div class="form-error" style="color: red; font-size: 0.85rem; display: none;" id="incidentCountryError">Please select a country</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="incidentCity">City</label>
+                    <input type="text" id="incidentCity" class="form-control" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px;">
+                </div>
+            </div>
+            
+            <div class="form-group" style="margin-top: 15px;">
+                <label for="suspectName">Suspected Agency/Person *</label>
+                <input type="text" id="suspectName" class="form-control" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px;" required>
+                <div class="form-error" style="color: red; font-size: 0.85rem; display: none;" id="suspectNameError">Please enter the suspect name</div>
+            </div>
+            
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+                <div class="form-group">
+                    <label for="suspectWebsite">Website/Social</label>
+                    <input type="url" id="suspectWebsite" class="form-control" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px;" placeholder="https://">
+                </div>
+                
+                <div class="form-group">
+                    <label for="suspectContact">Contact Info</label>
+                    <input type="text" id="suspectContact" class="form-control" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px;">
+                </div>
+            </div>
+            
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+                <div class="form-group">
+                    <label for="incidentDateFrom">Start Date *</label>
+                    <input type="date" id="incidentDateFrom" class="form-control" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px;" required>
+                    <div class="form-error" style="color: red; font-size: 0.85rem; display: none;" id="incidentDateFromError">Please select a date</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="incidentDateTo">End Date (optional)</label>
+                    <input type="date" id="incidentDateTo" class="form-control" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px;">
+                </div>
+            </div>
+            
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+                <div class="form-group">
+                    <label for="amountPaid">Amount Paid</label>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="currency" style="padding: 12px; border: 1px solid #ddd; border-radius: 6px;">
+                            <option value="USD">USD</option>
+                            <option value="LRD">LRD</option>
+                            <option value="EUR">EUR</option>
+                            <option value="GBP">GBP</option>
+                        </select>
+                        <input type="number" id="amountPaid" class="form-control" style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 6px;" min="0" step="0.01" placeholder="0.00">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Payment Method(s)</label>
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 5px;">
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" name="paymentMethod" value="bank_transfer"> Bank
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" name="paymentMethod" value="mobile_money"> Mobile Money
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" name="paymentMethod" value="cash"> Cash
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" name="paymentMethod" value="card"> Card
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" name="paymentMethod" value="other"> Other
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-navigation" style="display: flex; justify-content: space-between; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
+                <button type="button" class="btn btn-outline prev-step" data-prev="1"><i class="fas fa-arrow-left"></i> Back</button>
+                <button type="button" class="btn btn-primary next-step" data-next="3">Next <i class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
+
+        <!-- Step 3: Evidence -->
+        <div class="form-step" id="step-3" style="display: none;">
+            <h3 style="margin-bottom: 20px;">Evidence & Details</h3>
+            
+            <div class="form-group">
+                <label for="complaintSummary">Short Summary *</label>
+                <textarea id="complaintSummary" class="form-control" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; min-height: 80px;" maxlength="1000" required placeholder="Brief summary (max 1000 characters)"></textarea>
+                <div style="text-align: right; font-size: 0.8rem; color: #999;"><span id="summaryChars">0</span>/1000</div>
+                <div class="form-error" style="color: red; font-size: 0.85rem; display: none;" id="complaintSummaryError">Please provide a summary</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="detailedDescription">Detailed Description *</label>
+                <textarea id="detailedDescription" class="form-control" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; min-height: 120px;" maxlength="3000" required placeholder="Detailed timeline and description (max 3000 characters)"></textarea>
+                <div style="text-align: right; font-size: 0.8rem; color: #999;"><span id="descriptionChars">0</span>/3000</div>
+                <div class="form-error" style="color: red; font-size: 0.85rem; display: none;" id="detailedDescriptionError">Please provide a detailed description</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="witnesses">Witnesses</label>
+                <textarea id="witnesses" class="form-control" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; min-height: 60px;" placeholder="List witnesses with contact info"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Upload Evidence *</label>
+                <div id="evidenceUploadArea" style="border: 2px dashed #ddd; border-radius: 8px; padding: 30px; text-align: center; cursor: pointer; transition: all 0.3s ease; background: #fafafa;">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 2.5rem; color: var(--primary-red); margin-bottom: 10px;"></i>
+                    <p><strong>Drop files here or click to upload</strong></p>
+                    <p style="font-size: 0.85rem; color: #999;">JPG, PNG, PDF, DOC, DOCX, XLSX, MP4 (max 20MB each)</p>
+                    <input type="file" id="evidenceFiles" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xlsx,.mp4" style="display: none;">
+                </div>
+                <div id="filePreviews" style="margin-top: 15px;"></div>
+                <div class="form-error" style="color: red; font-size: 0.85rem; display: none;" id="evidenceError">Please upload at least one evidence file</div>
+            </div>
+            
+            <div class="form-navigation" style="display: flex; justify-content: space-between; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
+                <button type="button" class="btn btn-outline prev-step" data-prev="2"><i class="fas fa-arrow-left"></i> Back</button>
+                <button type="button" class="btn btn-primary next-step" data-next="4">Review <i class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
+
+        <!-- Step 4: Review & Submit -->
+        <div class="form-step" id="step-4" style="display: none;">
+            <h3 style="margin-bottom: 20px;">Review & Submit</h3>
+            
+            <div id="reviewContent" style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; max-height: 300px; overflow-y: auto;">
+                <!-- Review content loaded dynamically -->
+            </div>
+            
+            <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <p style="color: #856404; font-weight: bold; margin-bottom: 5px;"><i class="fas fa-exclamation-triangle"></i> Legal Disclaimer</p>
+                <p style="color: #856404; font-size: 0.9rem;">Only genuine cases of fraud should be reported. False accusations may result in legal action.</p>
+            </div>
+            
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" id="legalConsent" required> 
+                    <span>I confirm this report is true to the best of my knowledge. I understand false reporting may lead to legal action. *</span>
+                </label>
+                <div class="form-error" style="color: red; font-size: 0.85rem; display: none;" id="legalConsentError">You must agree to continue</div>
+            </div>
+            
+            <div class="form-group" style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;">
+                <p><strong>Security Check</strong></p>
+                <p style="font-size: 0.9rem;">Type "I AM HUMAN" below:</p>
+                <input type="text" id="humanVerification" class="form-control" style="width: 200px; margin: 0 auto; text-align: center; padding: 12px; border: 1px solid #ddd; border-radius: 6px;" placeholder="I AM HUMAN">
+                <div class="form-error" style="color: red; font-size: 0.85rem; display: none;" id="captchaError">Please type "I AM HUMAN" exactly</div>
+            </div>
+            
+            <div class="form-navigation" style="display: flex; justify-content: space-between; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
+                <button type="button" class="btn btn-outline prev-step" data-prev="3"><i class="fas fa-arrow-left"></i> Back</button>
+                <button type="button" class="btn btn-primary" id="submitReportBtn">
+                    <span class="btn-text"><i class="fas fa-paper-plane"></i> Submit Report</span>
+                    <span class="loading-spinner" style="display: none;"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Success Message -->
+        <div id="reportSuccess" style="display: none; text-align: center; padding: 40px;">
+            <i class="fas fa-check-circle" style="font-size: 4rem; color: #4CAF50; margin-bottom: 20px;"></i>
+            <h3 style="color: #4CAF50; margin-bottom: 15px;">Report Submitted Successfully!</h3>
+            <p>Your report <strong id="successReportId">[Report ID]</strong> has been received.</p>
+            <p style="color: #666; margin-top: 10px;">We will review your submission and contact you within 48 hours.</p>
+            <button class="btn btn-outline" onclick="resetReportForm()" style="margin-top: 20px;">Submit Another Report</button>
+            <button class="btn btn-primary" onclick="document.getElementById('fraudModal').style.display='none'" style="margin-top: 20px; margin-left: 10px;">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============================================================
+// FRAUD REPORT - COMPLETE MVP SYSTEM
+// ============================================================
+
+// Google Sheets submission
+async function submitToGoogleSheets(formData) {
+    try {
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbybjc4zzbjlAVqTzxHOWw_jP_hc-afK-7vwfWy81wXeFePimUak6zvRgy3IqAo27sVkXw/exec';
+        await fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+        return { status: 'success', message: 'Report submitted' };
+    } catch (error) {
+        return { status: 'error', message: error.message };
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    'use strict';
+    
+    // DOM Elements
+    const modal = document.getElementById('fraudModal');
+    const openBtn = document.getElementById('openReportFormBtn');
+    const closeBtn = document.getElementById('closeFraudModal');
+    const submitBtn = document.getElementById('submitReportBtn');
+    const nextButtons = document.querySelectorAll('.next-step');
+    const prevButtons = document.querySelectorAll('.prev-step');
+    const progressSteps = document.querySelectorAll('.progress-step');
+    const progressFill = document.querySelector('.progress-fill');
+    const successDiv = document.getElementById('reportSuccess');
+    
+    // Get all form steps by ID
+    const step1 = document.getElementById('step-1');
+    const step2 = document.getElementById('step-2');
+    const step3 = document.getElementById('step-3');
+    const step4 = document.getElementById('step-4');
+    const allSteps = [step1, step2, step3, step4];
+    
+    let currentStep = 1;
+    let uploadedFiles = [];
+
+    // ==========================================
+    // OPEN MODAL
+    // ==========================================
+    if (openBtn) {
+        openBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            goToStep(1);
+            resetForm();
+        });
+    }
+
+    // ==========================================
+    // CLOSE MODAL
+    // ==========================================
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        });
+    }
+
+    // Close on outside click
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    });
+
+    // ==========================================
+    // STEP NAVIGATION - FIXED
+    // ==========================================
+    function goToStep(step) {
+        // Skip validation when going backwards
+        if (step > currentStep) {
+            if (!validateStep(currentStep)) {
+                return;
+            }
+        }
+        
+        currentStep = step;
+        
+        // Show/hide steps using their IDs
+        allSteps.forEach(function(el, index) {
+            if (el) {
+                el.style.display = (index + 1 === step) ? 'block' : 'none';
+            }
+        });
+        
+        // Update progress indicators
+        progressSteps.forEach(function(el, index) {
+            const num = index + 1;
+            const indicator = el.querySelector('.step-indicator');
+            if (num <= step) {
+                el.classList.add('active');
+                if (indicator) {
+                    indicator.style.background = 'var(--primary-red)';
+                    indicator.style.color = 'white';
+                }
+            } else {
+                el.classList.remove('active');
+                if (indicator) {
+                    indicator.style.background = '#ddd';
+                    indicator.style.color = '#999';
+                }
+            }
+        });
+        
+        // Update progress bar
+        if (progressFill) {
+            progressFill.style.width = ((step - 1) / 3 * 100) + '%';
+        }
+        
+        // Update review content
+        if (step === 4) {
+            updateReviewContent();
+        }
+        
+        // Scroll to top of modal
+        const modalContent = modal.querySelector('div > div');
+        if (modalContent) {
+            modalContent.scrollTop = 0;
+        }
+    }
+
+    // Next/Prev button handlers
+    nextButtons.forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const nextStep = parseInt(this.getAttribute('data-next'));
+            goToStep(nextStep);
+        });
+    });
+
+    prevButtons.forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const prevStep = parseInt(this.getAttribute('data-prev'));
+            goToStep(prevStep);
+        });
+    });
+
+    // ==========================================
+    // VALIDATION - FIXED
+    // ==========================================
+    function validateStep(step) {
+        // Get the step element by ID
+        const stepElement = document.getElementById('step-' + step);
+        if (!stepElement) return true;
+        
+        const inputs = stepElement.querySelectorAll('input[required], select[required], textarea[required]');
+        let isValid = true;
+        
+        inputs.forEach(function(input) {
+            const errorEl = document.getElementById(input.id + 'Error');
+            if (!input.value.trim()) {
+                if (errorEl) errorEl.style.display = 'block';
+                input.style.borderColor = 'var(--primary-red)';
+                isValid = false;
+            } else {
+                if (errorEl) errorEl.style.display = 'none';
+                input.style.borderColor = '#ddd';
+            }
+        });
+        
+        // Step 4 special validation
+        if (step === 4) {
+            const legalConsent = document.getElementById('legalConsent');
+            const humanInput = document.getElementById('humanVerification');
+            
+            if (!legalConsent.checked) {
+                document.getElementById('legalConsentError').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('legalConsentError').style.display = 'none';
+            }
+            
+            if (!humanInput || humanInput.value.trim().toUpperCase() !== 'I AM HUMAN') {
+                document.getElementById('captchaError').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('captchaError').style.display = 'none';
+            }
+        }
+        
+        // Step 3 special validation
+        if (step === 3) {
+            if (uploadedFiles.length === 0) {
+                document.getElementById('evidenceError').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('evidenceError').style.display = 'none';
+            }
+        }
+        
+        return isValid;
+    }
+
+    // ==========================================
+    // FILE UPLOAD
+    // ==========================================
+    const uploadArea = document.getElementById('evidenceUploadArea');
+    const fileInput = document.getElementById('evidenceFiles');
+    const filePreviews = document.getElementById('filePreviews');
+
+    if (uploadArea) {
+        uploadArea.addEventListener('click', function() { fileInput.click(); });
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.style.borderColor = 'var(--primary-red)';
+            this.style.background = '#fff0f0';
+        });
+        uploadArea.addEventListener('dragleave', function() {
+            this.style.borderColor = '#ddd';
+            this.style.background = '#fafafa';
+        });
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#ddd';
+            this.style.background = '#fafafa';
+            if (e.dataTransfer.files.length > 0) {
+                handleFiles(Array.from(e.dataTransfer.files));
+            }
+        });
+    }
+
+    if (fileInput) {
+        fileInput.addEventListener('change', function(e) {
+            if (this.files.length > 0) {
+                handleFiles(Array.from(this.files));
+            }
+        });
+    }
+
+    function handleFiles(files) {
+        const validTypes = ['.jpg', '.jpeg', '.png', '.pdf', '.doc', '.docx', '.xlsx', '.mp4'];
+        const maxSize = 20 * 1024 * 1024;
+        
+        files.forEach(function(file) {
+            const ext = '.' + file.name.split('.').pop().toLowerCase();
+            if (!validTypes.includes(ext)) {
+                alert('File type ' + ext + ' is not supported.');
+                return;
+            }
+            if (file.size > maxSize) {
+                alert('File ' + file.name + ' is too large. Max 20MB.');
+                return;
+            }
+            if (uploadedFiles.length >= 10) {
+                alert('Maximum 10 files allowed.');
+                return;
+            }
+            uploadedFiles.push(file);
+            addFilePreview(file);
+        });
+        updateUploadArea();
+    }
+
+    function addFilePreview(file) {
+        if (!filePreviews) return;
+        const preview = document.createElement('div');
+        preview.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 8px; background: white;';
+        preview.innerHTML = `
+            <div>
+                <div style="font-weight: 500;">${file.name}</div>
+                <div style="font-size: 0.8rem; color: #999;">${formatFileSize(file.size)}</div>
+            </div>
+            <button type="button" data-filename="${file.name}" style="background: var(--primary-red); color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-size: 0.8rem;">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        preview.querySelector('button').addEventListener('click', function() {
+            const filename = this.getAttribute('data-filename');
+            uploadedFiles = uploadedFiles.filter(function(f) { return f.name !== filename; });
+            preview.remove();
+            updateUploadArea();
+        });
+        filePreviews.appendChild(preview);
+    }
+
+    function updateUploadArea() {
+        if (!uploadArea) return;
+        if (uploadedFiles.length > 0) {
+            uploadArea.innerHTML = `
+                <i class="fas fa-check-circle" style="font-size: 2.5rem; color: #4CAF50; margin-bottom: 10px;"></i>
+                <p><strong>${uploadedFiles.length} file(s) ready</strong></p>
+                <p style="font-size: 0.85rem; color: #999;">Click to add more files</p>
+                <input type="file" id="evidenceFiles" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xlsx,.mp4" style="display: none;">
+            `;
+            const newFileInput = uploadArea.querySelector('#evidenceFiles');
+            if (newFileInput) {
+                newFileInput.addEventListener('change', function(e) {
+                    if (this.files.length > 0) handleFiles(Array.from(this.files));
+                });
+            }
+        }
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // ==========================================
+    // CHARACTER COUNTERS
+    // ==========================================
+    document.getElementById('complaintSummary').addEventListener('input', function() {
+        document.getElementById('summaryChars').textContent = this.value.length;
+    });
+    document.getElementById('detailedDescription').addEventListener('input', function() {
+        document.getElementById('descriptionChars').textContent = this.value.length;
+    });
+
+    // ==========================================
+    // REVIEW CONTENT
+    // ==========================================
+    function updateReviewContent() {
+        const reviewContent = document.getElementById('reviewContent');
+        if (!reviewContent) return;
+        
+        const data = {
+            'Full Name': document.getElementById('reporterName')?.value || 'Not provided',
+            'Email': document.getElementById('reporterEmail')?.value || 'Not provided',
+            'Phone': document.getElementById('reporterPhone')?.value || 'Not provided',
+            'Anonymous': document.getElementById('anonymousReport')?.checked ? 'Yes' : 'No',
+            'Country': document.getElementById('incidentCountry')?.value || 'Not selected',
+            'City': document.getElementById('incidentCity')?.value || 'Not provided',
+            'Suspect Agency/Person': document.getElementById('suspectName')?.value || 'Not provided',
+            'Incident From': document.getElementById('incidentDateFrom')?.value || 'Not provided',
+            'Incident To': document.getElementById('incidentDateTo')?.value || 'Ongoing',
+            'Amount Paid': document.getElementById('amountPaid')?.value ? '$' + document.getElementById('amountPaid').value : 'Not provided',
+            'Files': uploadedFiles.length + ' file(s) uploaded'
+        };
+        
+        reviewContent.innerHTML = Object.entries(data).map(function([label, value]) {
+            return `<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
+                <span style="font-weight: 600; color: #555;">${label}</span>
+                <span>${value}</span>
+            </div>`;
+        }).join('');
+    }
+
+    // ==========================================
+    // SUBMIT
+    // ==========================================
+    if (submitBtn) {
+        submitBtn.addEventListener('click', async function() {
+            if (!validateStep(4)) return;
+            
+            const btnText = this.querySelector('.btn-text');
+            const spinner = this.querySelector('.loading-spinner');
+            
+            btnText.textContent = 'Submitting...';
+            spinner.style.display = 'inline-block';
+            this.disabled = true;
+            
+            const reportId = 'FR-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6);
+            
+            const formData = {
+                reportId: reportId,
+                timestamp: new Date().toISOString(),
+                reporterName: document.getElementById('reporterName')?.value || '',
+                reporterEmail: document.getElementById('reporterEmail')?.value || '',
+                reporterPhone: document.getElementById('reporterPhone')?.value || '',
+                contactMethod: document.querySelector('input[name="contactMethod"]:checked')?.value || '',
+                anonymousReport: document.getElementById('anonymousReport')?.checked || false,
+                incidentCountry: document.getElementById('incidentCountry')?.value || '',
+                incidentCity: document.getElementById('incidentCity')?.value || '',
+                suspectName: document.getElementById('suspectName')?.value || '',
+                suspectWebsite: document.getElementById('suspectWebsite')?.value || '',
+                suspectContact: document.getElementById('suspectContact')?.value || '',
+                incidentDateFrom: document.getElementById('incidentDateFrom')?.value || '',
+                incidentDateTo: document.getElementById('incidentDateTo')?.value || '',
+                currency: document.getElementById('currency')?.value || 'USD',
+                amountPaid: document.getElementById('amountPaid')?.value || '0',
+                paymentMethods: Array.from(document.querySelectorAll('input[name="paymentMethod"]:checked')).map(cb => cb.value).join(', '),
+                complaintSummary: document.getElementById('complaintSummary')?.value || '',
+                detailedDescription: document.getElementById('detailedDescription')?.value || '',
+                witnesses: document.getElementById('witnesses')?.value || '',
+                fileCount: uploadedFiles.length,
+                fileNames: uploadedFiles.map(f => f.name).join(', '),
+                status: 'New Report'
+            };
+            
+            try {
+                const result = await submitToGoogleSheets(formData);
+                if (result.status === 'success') {
+                    allSteps.forEach(function(el) {
+                        if (el) el.style.display = 'none';
+                    });
+                    successDiv.style.display = 'block';
+                    document.getElementById('successReportId').textContent = reportId;
+                    resetForm();
+                } else {
+                    throw new Error(result.message || 'Submission failed');
+                }
+            } catch (error) {
+                alert('Error submitting report: ' + error.message);
+            } finally {
+                btnText.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Report';
+                spinner.style.display = 'none';
+                this.disabled = false;
+            }
+        });
+    }
+
+    // ==========================================
+    // RESET
+    // ==========================================
+    function resetForm() {
+        document.querySelectorAll('#fraudModal input, #fraudModal textarea, #fraudModal select').forEach(function(el) {
+            if (el.type === 'checkbox' || el.type === 'radio') {
+                el.checked = false;
+            } else if (el.type !== 'file') {
+                el.value = '';
+            }
+            el.style.borderColor = '#ddd';
+        });
+        uploadedFiles = [];
+        if (filePreviews) filePreviews.innerHTML = '';
+        updateUploadArea();
+        goToStep(1);
+        document.querySelectorAll('.form-error').forEach(function(el) {
+            el.style.display = 'none';
+        });
+        document.getElementById('legalConsent').checked = false;
+        document.getElementById('humanVerification').value = '';
+        successDiv.style.display = 'none';
+    }
+
+    window.resetReportForm = function() {
+        resetForm();
+        successDiv.style.display = 'none';
+        allSteps.forEach(function(el, index) {
+            if (el) {
+                el.style.display = index === 0 ? 'block' : 'none';
+            }
+        });
+        goToStep(1);
+    };
+
+    // ==========================================
+    // ESC KEY
+    // ==========================================
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    });
+
+    console.log('✅ Fraud Report MVP System initialized');
+});
+</script>
+
+<style>
+/* Animation */
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+</style>
+
+        
         <!-- Contact Section -->
 <section id="contact" class="section contact">
     <div class="container">
