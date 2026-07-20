@@ -11797,39 +11797,58 @@ async function quickStatusUpdate(docType, action) {
 // FRAUD REPORT - COMPLETE WORKING SYSTEM
 // ============================================================
 
-// Google Sheets submission
+// ============================================================
+// GOOGLE SHEETS SUBMISSION - FIXED
+// ============================================================
 async function submitToGoogleSheets(formData) {
     try {
-        // YOUR NEW DEPLOYMENT URL - REPLACE WITH YOUR ACTUAL URL
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwo7OkMyoZuizM8dQJFcczdygmZOBtz1LMn91yuKFvmSV0JOgYZAkjceJp81Ky3ZZI/exec';
+        console.log('📤 Submitting to Google Sheets:', formData);
         
-        console.log('📤 Submitting to Google Sheets...');
+        // YOUR DEPLOYMENT URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwo7OkMyoZuizM8dQJFcczdygmZOBtz1LMn91yuKFvmSV0JOgYZAkjceJp81Ky3ZZI/exec';
         
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
-            mode: 'cors',
             headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(formData)
         });
         
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        // Get the response text first
+        const responseText = await response.text();
+        console.log('📥 Raw response:', responseText);
+        
+        // Try to parse as JSON
+        let result;
+        try {
+            result = JSON.parse(responseText);
+        } catch (parseError) {
+            console.error('Failed to parse JSON response:', responseText);
+            // If we got any response, it might still be successful
+            if (responseText.includes('success')) {
+                return { status: 'success', message: 'Report submitted' };
+            }
+            throw new Error('Invalid response from server');
         }
         
-        const result = await response.json();
         console.log('✅ Server response:', result);
         
         if (result.status === 'success') {
-            return { status: 'success', message: 'Report submitted successfully', reportId: result.reportId };
+            return { status: 'success', message: result.message || 'Report submitted successfully' };
         } else {
             throw new Error(result.message || 'Submission failed');
         }
         
     } catch (error) {
         console.error('❌ Submission error:', error);
+        // If the error is a network error, provide a user-friendly message
+        if (error.message === 'Failed to fetch') {
+            return { 
+                status: 'error', 
+                message: 'Network error. Please check your connection and try again.' 
+            };
+        }
         return { status: 'error', message: error.message };
     }
 }
