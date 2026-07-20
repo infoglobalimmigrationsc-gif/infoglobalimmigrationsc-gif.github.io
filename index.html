@@ -11792,117 +11792,98 @@ async function quickStatusUpdate(docType, action) {
 
 
 
-// ============================================================
-// REPORT FRAUD FORM - COMPLETE WORKING SOLUTION
+
+            // ============================================================
+// FRAUD REPORT - COMPLETE WORKING SYSTEM
 // ============================================================
 
-// IMPORTANT: This function must be defined BEFORE the report form code uses it
+// Google Sheets submission
 async function submitToGoogleSheets(formData) {
     try {
-        console.log('📤 Submitting to Google Sheets:', formData);
+        // YOUR NEW DEPLOYMENT URL - REPLACE WITH YOUR ACTUAL URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwo7OkMyoZuizM8dQJFcczdygmZOBtz1LMn91yuKFvmSV0JOgYZAkjceJp81Ky3ZZI/exec';
         
-        // Use the same Google Apps Script URL as your newsletter
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbybjc4zzbjlAVqTzxHOWw_jP_hc-afK-7vwfWy81wXeFePimUak6zvRgy3IqAo27sVkXw/exec';
+        console.log('📤 Submitting to Google Sheets...');
         
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
-            mode: 'no-cors',
+            mode: 'cors',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
             body: JSON.stringify(formData)
         });
         
-        console.log('✅ Report submitted to Google Sheets');
-        return { status: 'success', message: 'Report submitted successfully' };
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('✅ Server response:', result);
+        
+        if (result.status === 'success') {
+            return { status: 'success', message: 'Report submitted successfully', reportId: result.reportId };
+        } else {
+            throw new Error(result.message || 'Submission failed');
+        }
         
     } catch (error) {
-        console.error('❌ Google Sheets submission error:', error);
+        console.error('❌ Submission error:', error);
         return { status: 'error', message: error.message };
     }
 }
 
-// ============================================================
-// REPORT FRAUD FORM - COMPLETE FUNCTIONALITY
-// ============================================================
+// Main form controller
 document.addEventListener('DOMContentLoaded', function() {
     'use strict';
     
-    console.log('🚀 Initializing Report Fraud Form...');
+    console.log('🚀 Report Fraud System initialized');
     
-    // DOM References
+    const modal = document.getElementById('fraudModal');
     const openBtn = document.getElementById('openReportFormBtn');
-    const closeBtn = document.getElementById('closeReportForm');
-    const formContainer = document.getElementById('reportFormContainer');
-    const successDiv = document.getElementById('reportSuccess');
+    const closeBtn = document.getElementById('closeFraudModal');
     const submitBtn = document.getElementById('submitReportBtn');
-    const nextButtons = document.querySelectorAll('.next-step');
-    const prevButtons = document.querySelectorAll('.prev-step');
-    const progressSteps = document.querySelectorAll('.progress-step');
-    const progressFill = document.querySelector('.progress-fill');
+    const progressFill = document.getElementById('progressFill');
+    const successDiv = document.getElementById('reportSuccess');
+    const reviewContent = document.getElementById('reviewContent');
     
     let currentStep = 1;
-    const totalSteps = 4;
-    let uploadedFiles = [];
 
     // ==========================================
-    // OPEN FORM - FIXED
+    // OPEN MODAL
     // ==========================================
     if (openBtn) {
-        // Remove any existing listeners to prevent duplicates
-        const newOpenBtn = openBtn.cloneNode(true);
-        openBtn.parentNode.replaceChild(newOpenBtn, openBtn);
-        
-        newOpenBtn.addEventListener('click', function(e) {
+        openBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            e.stopPropagation();
-            console.log('🔓 Report Fraud button clicked - opening form');
-            
-            // Show the form container
-            formContainer.style.display = 'block';
-            successDiv.style.display = 'none';
-            
-            // Reset to step 1
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            resetForm();
             goToStep(1);
-            
-            // Scroll to form
-            setTimeout(function() {
-                formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 100);
         });
-    } else {
-        console.error('❌ openReportFormBtn not found in DOM');
-        // Try to find it by selector as fallback
-        const btn = document.querySelector('#openReportFormBtn');
-        if (btn) {
-            console.log('Found button via querySelector, attaching event...');
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                formContainer.style.display = 'block';
-                successDiv.style.display = 'none';
-                goToStep(1);
-                setTimeout(function() {
-                    formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 100);
-            });
-        }
     }
 
     // ==========================================
-    // CLOSE FORM
+    // CLOSE MODAL
     // ==========================================
     if (closeBtn) {
         closeBtn.addEventListener('click', function() {
-            formContainer.style.display = 'none';
-            resetForm();
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
         });
     }
+
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    });
 
     // ==========================================
     // STEP NAVIGATION
     // ==========================================
-    function goToStep(step) {
+    window.goToStep = function(step) {
         if (step > currentStep) {
             if (!validateStep(currentStep)) {
                 return;
@@ -11912,64 +11893,83 @@ document.addEventListener('DOMContentLoaded', function() {
         currentStep = step;
         
         document.querySelectorAll('.form-step').forEach(function(el, index) {
-            el.classList.toggle('active', index + 1 === step);
+            el.style.display = (index + 1 === step) ? 'block' : 'none';
         });
         
-        progressSteps.forEach(function(el, index) {
-            const stepNum = index + 1;
-            el.classList.toggle('active', stepNum <= step);
+        document.querySelectorAll('.progress-step').forEach(function(el, index) {
+            const num = index + 1;
+            const indicator = el.querySelector('div:first-child');
+            if (num <= step) {
+                indicator.style.background = 'var(--primary-red)';
+                indicator.style.color = 'white';
+            } else {
+                indicator.style.background = '#ddd';
+                indicator.style.color = '#999';
+            }
         });
         
-        const progress = ((step - 1) / (totalSteps - 1)) * 100;
         if (progressFill) {
-            progressFill.style.width = progress + '%';
+            progressFill.style.width = ((step - 1) / 3 * 100) + '%';
         }
         
         if (step === 4) {
             updateReviewContent();
         }
         
-        formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    nextButtons.forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            const nextStep = parseInt(this.getAttribute('data-next'));
-            if (validateStep(currentStep)) {
-                goToStep(nextStep);
-            }
-        });
-    });
-
-    prevButtons.forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            const prevStep = parseInt(this.getAttribute('data-prev'));
-            goToStep(prevStep);
-        });
-    });
+        const modalContent = modal.querySelector('div > div');
+        if (modalContent) {
+            modalContent.scrollTop = 0;
+        }
+    };
 
     // ==========================================
-    // STEP VALIDATION
+    // VALIDATION
     // ==========================================
     function validateStep(step) {
-        const stepElement = document.getElementById('step-' + step);
-        const inputs = stepElement.querySelectorAll('input[required], select[required], textarea[required]');
+        const stepMap = {
+            1: ['reporterName', 'reporterEmail'],
+            2: ['incidentCountry', 'suspectName', 'incidentDateFrom'],
+            3: ['complaintSummary', 'detailedDescription'],
+            4: ['legalConsent', 'humanVerification']
+        };
+        
+        const fields = stepMap[step] || [];
         let isValid = true;
         
-        inputs.forEach(function(input) {
-            const errorId = input.id + 'Error';
-            const errorEl = document.getElementById(errorId);
+        fields.forEach(function(fieldId) {
+            const input = document.getElementById(fieldId);
+            const errorEl = document.getElementById(fieldId + 'Error');
             
-            if (!input.value.trim()) {
+            if (fieldId === 'legalConsent') {
+                if (!input || !input.checked) {
+                    if (errorEl) errorEl.style.display = 'block';
+                    isValid = false;
+                } else {
+                    if (errorEl) errorEl.style.display = 'none';
+                }
+                return;
+            }
+            
+            if (fieldId === 'humanVerification') {
+                if (!input || input.value.trim().toUpperCase() !== 'I AM HUMAN') {
+                    if (errorEl) errorEl.style.display = 'block';
+                    isValid = false;
+                } else {
+                    if (errorEl) errorEl.style.display = 'none';
+                }
+                return;
+            }
+            
+            if (!input || !input.value.trim()) {
                 if (errorEl) errorEl.style.display = 'block';
-                input.style.borderColor = 'var(--primary-red)';
+                if (input) input.style.borderColor = 'var(--primary-red)';
                 isValid = false;
             } else {
                 if (errorEl) errorEl.style.display = 'none';
-                input.style.borderColor = '#ddd';
+                if (input) input.style.borderColor = '#ddd';
             }
             
-            if (input.type === 'email' && input.value.trim()) {
+            if (fieldId === 'reporterEmail' && input && input.value.trim()) {
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!emailRegex.test(input.value)) {
                     if (errorEl) {
@@ -11982,189 +11982,23 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        if (step === 4) {
-            const legalConsent = document.getElementById('legalConsent');
-            const humanInput = document.getElementById('humanVerification');
-            
-            if (!legalConsent.checked) {
-                document.getElementById('legalConsentError').style.display = 'block';
-                isValid = false;
-            } else {
-                document.getElementById('legalConsentError').style.display = 'none';
-            }
-            
-            if (!humanInput || humanInput.value.trim().toUpperCase() !== 'I AM HUMAN') {
-                document.getElementById('captchaError').style.display = 'block';
-                isValid = false;
-            } else {
-                document.getElementById('captchaError').style.display = 'none';
-            }
-        }
-        
-        if (step === 3) {
-            if (uploadedFiles.length === 0) {
-                document.getElementById('evidenceError').style.display = 'block';
-                isValid = false;
-            } else {
-                document.getElementById('evidenceError').style.display = 'none';
-            }
-        }
-        
         return isValid;
-    }
-
-    // ==========================================
-    // FILE UPLOAD
-    // ==========================================
-    const uploadArea = document.getElementById('evidenceUploadArea');
-    const fileInput = document.getElementById('evidenceFiles');
-    const filePreviews = document.getElementById('filePreviews');
-
-    if (uploadArea) {
-        uploadArea.addEventListener('click', function() {
-            if (fileInput) fileInput.click();
-        });
-
-        uploadArea.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            this.classList.add('dragover');
-        });
-
-        uploadArea.addEventListener('dragleave', function() {
-            this.classList.remove('dragover');
-        });
-
-        uploadArea.addEventListener('drop', function(e) {
-            e.preventDefault();
-            this.classList.remove('dragover');
-            if (e.dataTransfer.files.length > 0) {
-                handleFiles(Array.from(e.dataTransfer.files));
-            }
-        });
-    }
-
-    if (fileInput) {
-        fileInput.addEventListener('change', function(e) {
-            if (this.files.length > 0) {
-                handleFiles(Array.from(this.files));
-            }
-        });
-    }
-
-    function handleFiles(files) {
-        const validTypes = ['.jpg', '.jpeg', '.png', '.pdf', '.doc', '.docx', '.xlsx', '.mp4'];
-        const maxSize = 20 * 1024 * 1024;
-        
-        files.forEach(function(file) {
-            const extension = '.' + file.name.split('.').pop().toLowerCase();
-            
-            if (!validTypes.includes(extension)) {
-                alert('File type ' + extension + ' is not supported.');
-                return;
-            }
-            
-            if (file.size > maxSize) {
-                alert('File ' + file.name + ' is too large. Maximum size is 20MB.');
-                return;
-            }
-            
-            if (uploadedFiles.length >= 10) {
-                alert('Maximum 10 files allowed.');
-                return;
-            }
-            
-            uploadedFiles.push(file);
-            addFilePreview(file);
-        });
-        
-        updateUploadArea();
-    }
-
-    function addFilePreview(file) {
-        if (!filePreviews) return;
-        
-        const preview = document.createElement('div');
-        preview.className = 'file-preview';
-        preview.innerHTML = `
-            <div class="file-preview-info">
-                <div class="file-preview-name">${file.name}</div>
-                <div class="file-preview-size">${formatFileSize(file.size)}</div>
-            </div>
-            <button type="button" class="file-preview-remove" data-filename="${file.name}">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
-        
-        preview.querySelector('.file-preview-remove').addEventListener('click', function() {
-            const filename = this.getAttribute('data-filename');
-            uploadedFiles = uploadedFiles.filter(function(f) {
-                return f.name !== filename;
-            });
-            preview.remove();
-            updateUploadArea();
-        });
-        
-        filePreviews.appendChild(preview);
-    }
-
-    function updateUploadArea() {
-        if (!uploadArea) return;
-        
-        if (uploadedFiles.length > 0) {
-            uploadArea.innerHTML = `
-                <i class="fas fa-check-circle" style="color: #4CAF50;"></i>
-                <p>${uploadedFiles.length} file(s) ready for upload</p>
-                <p class="upload-info">Click to add more files or drag and drop</p>
-                <input type="file" id="evidenceFiles" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xlsx,.mp4" style="display: none;">
-            `;
-            const newFileInput = uploadArea.querySelector('#evidenceFiles');
-            if (newFileInput) {
-                newFileInput.addEventListener('change', function(e) {
-                    if (this.files.length > 0) {
-                        handleFiles(Array.from(this.files));
-                    }
-                });
-            }
-        }
-    }
-
-    function formatFileSize(bytes) {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
 
     // ==========================================
     // CHARACTER COUNTERS
     // ==========================================
-    const summaryTextarea = document.getElementById('complaintSummary');
-    const detailTextarea = document.getElementById('detailedDescription');
-
-    if (summaryTextarea) {
-        summaryTextarea.addEventListener('input', function() {
-            const counter = document.getElementById('summaryChars');
-            if (counter) {
-                counter.textContent = this.value.length;
-            }
-        });
-    }
-
-    if (detailTextarea) {
-        detailTextarea.addEventListener('input', function() {
-            const counter = document.getElementById('descriptionChars');
-            if (counter) {
-                counter.textContent = this.value.length;
-            }
-        });
-    }
+    document.getElementById('complaintSummary').addEventListener('input', function() {
+        document.getElementById('summaryChars').textContent = this.value.length;
+    });
+    document.getElementById('detailedDescription').addEventListener('input', function() {
+        document.getElementById('descriptionChars').textContent = this.value.length;
+    });
 
     // ==========================================
     // REVIEW CONTENT
     // ==========================================
     function updateReviewContent() {
-        const reviewContent = document.getElementById('reviewContent');
         if (!reviewContent) return;
         
         const data = {
@@ -12175,30 +12009,29 @@ document.addEventListener('DOMContentLoaded', function() {
             'Country': document.getElementById('incidentCountry')?.value || 'Not selected',
             'City': document.getElementById('incidentCity')?.value || 'Not provided',
             'Suspect Agency/Person': document.getElementById('suspectName')?.value || 'Not provided',
+            'Website/Social': document.getElementById('suspectWebsite')?.value || 'Not provided',
+            'Suspect Contact': document.getElementById('suspectContact')?.value || 'Not provided',
             'Incident From': document.getElementById('incidentDateFrom')?.value || 'Not provided',
             'Incident To': document.getElementById('incidentDateTo')?.value || 'Ongoing',
             'Amount Paid': document.getElementById('amountPaid')?.value ? '$' + document.getElementById('amountPaid').value : 'Not provided',
-            'Files': uploadedFiles.length + ' file(s) uploaded'
+            'Payment Methods': Array.from(document.querySelectorAll('input[name="paymentMethod"]:checked')).map(cb => cb.value).join(', ') || 'Not provided',
+            'Summary': document.getElementById('complaintSummary')?.value || 'Not provided'
         };
         
         reviewContent.innerHTML = Object.entries(data).map(function([label, value]) {
-            return `
-                <div class="review-item">
-                    <div class="review-label">${label}</div>
-                    <div class="review-value">${value}</div>
-                </div>
-            `;
+            return `<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
+                <span style="font-weight: 600; color: #555;">${label}</span>
+                <span>${value || 'Not provided'}</span>
+            </div>`;
         }).join('');
     }
 
     // ==========================================
-    // SUBMIT FORM
+    // SUBMIT - FIXED
     // ==========================================
     if (submitBtn) {
         submitBtn.addEventListener('click', async function() {
-            if (!validateStep(4)) {
-                return;
-            }
+            if (!validateStep(4)) return;
             
             const btnText = this.querySelector('.btn-text');
             const spinner = this.querySelector('.loading-spinner');
@@ -12212,6 +12045,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const formData = {
                 reportId: reportId,
                 timestamp: new Date().toISOString(),
+                submissionDate: new Date().toLocaleDateString(),
                 reporterName: document.getElementById('reporterName')?.value || '',
                 reporterEmail: document.getElementById('reporterEmail')?.value || '',
                 reporterPhone: document.getElementById('reporterPhone')?.value || '',
@@ -12230,34 +12064,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 complaintSummary: document.getElementById('complaintSummary')?.value || '',
                 detailedDescription: document.getElementById('detailedDescription')?.value || '',
                 witnesses: document.getElementById('witnesses')?.value || '',
-                fileCount: uploadedFiles.length,
-                fileNames: uploadedFiles.map(f => f.name).join(', '),
-                status: 'New Report',
-                submissionDate: new Date().toLocaleDateString()
+                fileCount: '0',
+                fileNames: 'N/A',
+                status: 'New Report'
             };
             
+            console.log('📤 Submitting form data:', formData);
+            
             try {
-                // Submit to Google Sheets
                 const result = await submitToGoogleSheets(formData);
                 
+                console.log('📥 Submission result:', result);
+                
                 if (result.status === 'success') {
-                    formContainer.style.display = 'none';
+                    document.querySelectorAll('.form-step').forEach(function(el) {
+                        el.style.display = 'none';
+                    });
                     successDiv.style.display = 'block';
                     document.getElementById('successReportId').textContent = reportId;
-                    successDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    
-                    // Reset form for next submission
-                    resetForm();
+                    console.log('✅ Report submitted successfully! ID:', reportId);
                 } else {
                     throw new Error(result.message || 'Submission failed');
                 }
             } catch (error) {
-                console.error('Submission error:', error);
-                alert('Error submitting report: ' + error.message);
+                console.error('❌ Submission error:', error);
+                alert('Error submitting report: ' + error.message + '\nPlease try again or contact us directly.');
             } finally {
                 btnText.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Report';
                 spinner.style.display = 'none';
-                submitBtn.disabled = false;
+                this.disabled = false;
             }
         });
     }
@@ -12265,50 +12100,41 @@ document.addEventListener('DOMContentLoaded', function() {
     // ==========================================
     // RESET FORM
     // ==========================================
-    function resetForm() {
-        // Reset all form fields
-        document.querySelectorAll('#reportFormContainer input, #reportFormContainer textarea, #reportFormContainer select').forEach(function(el) {
+    window.resetReportForm = function() {
+        document.querySelectorAll('#fraudModal input, #fraudModal textarea, #fraudModal select').forEach(function(el) {
             if (el.type === 'checkbox' || el.type === 'radio') {
                 el.checked = false;
-            } else {
+            } else if (el.type !== 'file') {
                 el.value = '';
             }
             el.style.borderColor = '#ddd';
         });
-        
-        uploadedFiles = [];
-        if (filePreviews) filePreviews.innerHTML = '';
-        updateUploadArea();
-        
-        goToStep(1);
-        
+        document.getElementById('legalConsent').checked = false;
+        document.getElementById('humanVerification').value = '';
+        successDiv.style.display = 'none';
         document.querySelectorAll('.form-error').forEach(function(el) {
             el.style.display = 'none';
         });
-    }
-
-    // Make resetReportForm available globally
-    window.resetReportForm = function() {
-        resetForm();
-        successDiv.style.display = 'none';
-        formContainer.style.display = 'block';
         goToStep(1);
     };
 
+    function resetForm() {
+        window.resetReportForm();
+    }
+
     // ==========================================
-    // KEYBOARD SHORTCUTS
+    // ESC KEY
     // ==========================================
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            if (formContainer.style.display === 'block') {
-                formContainer.style.display = 'none';
-                resetForm();
-            }
+        if (e.key === 'Escape' && modal.style.display === 'flex') {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
         }
     });
 
-    console.log('✅ Report Fraud form fully initialized');
+    console.log('✅ Fraud Report system ready');
 });
+
      
 
         // ==================== NEW FEATURES JAVASCRIPT ====================
