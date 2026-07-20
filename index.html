@@ -5959,20 +5959,44 @@
 // FRAUD REPORT - COMPLETE MVP SYSTEM (FULLY WORKING)
 // ============================================================
 
-// ==========================================
-// GOOGLE SHEETS SUBMISSION
-// ==========================================
+// ============================================================
+// GOOGLE SHEETS SUBMISSION - FIXED VERSION
+// ============================================================
 async function submitToGoogleSheets(formData) {
     try {
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbybjc4zzbjlAVqTzxHOWw_jP_hc-afK-7vwfWy81wXeFePimUak6zvRgy3IqAo27sVkXw/exec';
+        console.log('📤 Submitting to Google Sheets:', formData);
+        
+        // YOUR NEW DEPLOYMENT URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwo7OkMyoZuizM8dQJFcczdygmZOBtz1LMn91yuKFvmSV0JOgYZAkjceJp81Ky3ZZI/exec';
+        
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
+            mode: 'cors', // Changed from 'no-cors' to 'cors'
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
             body: JSON.stringify(formData)
         });
-        return { status: 'success', message: 'Report submitted' };
+        
+        // Check if response is ok
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Server error: ${response.status} - ${errorText}`);
+        }
+        
+        // Parse the JSON response
+        const result = await response.json();
+        console.log('✅ Server response:', result);
+        
+        if (result.status === 'success') {
+            return { status: 'success', message: result.message, reportId: result.reportId };
+        } else {
+            throw new Error(result.message || 'Submission failed');
+        }
+        
     } catch (error) {
+        console.error('❌ Google Sheets submission error:', error);
         return { status: 'error', message: error.message };
     }
 }
