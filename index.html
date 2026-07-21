@@ -5790,18 +5790,18 @@
 // ============================================================
 
 // ============================================================
-// GOOGLE SHEETS SUBMISSION - FIXED VERSION
+// GOOGLE SHEETS SUBMISSION - WORKING VERSION
 // ============================================================
 async function submitToGoogleSheets(formData) {
     try {
         console.log('📤 Submitting to Google Sheets:', formData);
         
-        // YOUR NEW DEPLOYMENT URL - PLEASE VERIFY THIS IS CORRECT
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwo7OkMyoZuizM8dQJFcczdygmZOBtz1LMn91yuKFvmSV0JOgYZAkjceJp81Ky3ZZI/exec';
+        // ⚠️ UPDATE THIS WITH YOUR NEW DEPLOYMENT URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxTb_h0wprk96ePpImZQJ6U90kezj_J4iRzFj5uxMBy2a9-Z6QI40I2e4_CR9Gjn2yn/exec';
         
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
-            mode: 'cors', // Changed from 'no-cors' to 'cors'
+            mode: 'cors',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
