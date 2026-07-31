@@ -5785,51 +5785,7 @@
 </div>
 
 <script>
-// ============================================================
-// FRAUD REPORT - COMPLETE MVP SYSTEM (FULLY WORKING)
-// ============================================================
 
-// ============================================================
-// GOOGLE SHEETS SUBMISSION - WORKING VERSION
-// ============================================================
-async function submitToGoogleSheets(formData) {
-    try {
-        console.log('📤 Submitting to Google Sheets:', formData);
-        
-        // ⚠️ UPDATE THIS WITH YOUR NEW DEPLOYMENT URL
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxTb_h0wprk96ePpImZQJ6U90kezj_J4iRzFj5uxMBy2a9-Z6QI40I2e4_CR9Gjn2yn/exec';
-        
-        const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        });
-        
-        // Check if response is ok
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Server error: ${response.status} - ${errorText}`);
-        }
-        
-        // Parse the JSON response
-        const result = await response.json();
-        console.log('✅ Server response:', result);
-        
-        if (result.status === 'success') {
-            return { status: 'success', message: result.message, reportId: result.reportId };
-        } else {
-            throw new Error(result.message || 'Submission failed');
-        }
-        
-    } catch (error) {
-        console.error('❌ Google Sheets submission error:', error);
-        return { status: 'error', message: error.message };
-    }
-}
 
 // ==========================================
 // MAIN FORM CONTROLLER
@@ -11623,7 +11579,7 @@ async function quickStatusUpdate(docType, action) {
 
 
 
-            // ============================================================
+// ============================================================
 // FRAUD REPORT - COMPLETE WORKING SYSTEM
 // ============================================================
 
@@ -11635,7 +11591,7 @@ async function submitToGoogleSheets(formData) {
         console.log('📤 Submitting to Google Sheets:', formData);
         
         // YOUR DEPLOYMENT URL
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwo7OkMyoZuizM8dQJFcczdygmZOBtz1LMn91yuKFvmSV0JOgYZAkjceJp81Ky3ZZI/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxTb_h0wprk96ePpImZQJ6U90kezj_J4iRzFj5uxMBy2a9-Z6QI40I2e4_CR9Gjn2yn/exec';
         
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
