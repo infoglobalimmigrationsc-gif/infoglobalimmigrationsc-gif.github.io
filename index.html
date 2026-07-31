@@ -5126,44 +5126,45 @@
             </div>
         </section>
 
-        <!-- Blog Preview Section -->
-        <section id="blog" class="section blog-preview">
-            <div class="container">
-                <div class="section-title">
-                    <h2>Latest From Our Blog</h2>
-                    <p>Helpful resources and updates on immigration policies and study abroad opportunities</p>
-                </div>
-                
-                <!-- Blog Categories Filter -->
-                <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 30px;">
-                    <button class="btn btn-outline btn-small blog-filter-btn active" data-category="all">All</button>
-                    <button class="btn btn-outline btn-small blog-filter-btn" data-category="Study Abroad">Study Abroad</button>
-                    <button class="btn btn-outline btn-small blog-filter-btn" data-category="Visa Tips">Visa Tips</button>
-                    <button class="btn btn-outline btn-small blog-filter-btn" data-category="Scholarships">Scholarships</button>
-                    <button class="btn btn-outline btn-small blog-filter-btn" data-category="Immigration News">Immigration News</button>
-                    <button class="btn btn-outline btn-small blog-filter-btn" data-category="Student Stories">Student Stories</button>
-                    <button class="btn btn-outline btn-small blog-filter-btn" data-category="Travel Guides">Travel Guides</button>
-                </div>
-                
-                <!-- Blog Grid -->
-                <div class="blog-grid" id="dynamic-blog-container">
-                    <!-- Blog posts will be dynamically loaded here from API -->
-                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-                        <div class="loading-spinner" style="display: inline-block; width: 40px; height: 40px; border-width: 4px;"></div>
-                        <p style="margin-top: 15px; color: var(--medium-gray);">Loading blog posts...</p>
-                    </div>
-                </div>
-                
-                <div style="text-align: center; margin-top: 40px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
-                    <a href="https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-                        <i class="fab fa-facebook" style="margin-right: 8px;"></i> View All Posts on Facebook
-                    </a>
-                    <button onclick="loadBlogPosts()" class="btn btn-outline">
-                        <i class="fas fa-sync-alt" style="margin-right: 8px;"></i> Refresh Posts
-                    </button>
-                </div>
+<!-- Blog Preview Section - CONNECTED TO BACKEND API -->
+<section id="blog" class="section blog-preview">
+    <div class="container">
+        <div class="section-title">
+            <h2>Latest From Our Blog</h2>
+            <p>Helpful resources and updates on immigration policies and study abroad opportunities</p>
+        </div>
+        
+        <!-- Blog Categories Filter -->
+        <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 30px;">
+            <button class="btn btn-outline btn-small blog-filter-btn active" data-category="all">All</button>
+            <button class="btn btn-outline btn-small blog-filter-btn" data-category="Study Abroad">Study Abroad</button>
+            <button class="btn btn-outline btn-small blog-filter-btn" data-category="Visa Tips">Visa Tips</button>
+            <button class="btn btn-outline btn-small blog-filter-btn" data-category="Scholarships">Scholarships</button>
+            <button class="btn btn-outline btn-small blog-filter-btn" data-category="Immigration News">Immigration News</button>
+            <button class="btn btn-outline btn-small blog-filter-btn" data-category="Student Stories">Student Stories</button>
+            <button class="btn btn-outline btn-small blog-filter-btn" data-category="Travel Guides">Travel Guides</button>
+        </div>
+        
+        <!-- Blog Grid -->
+        <div class="blog-grid" id="dynamic-blog-container">
+            <!-- Blog posts will be dynamically loaded here from API -->
+            <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                <div class="loading-spinner" style="display: inline-block; width: 40px; height: 40px; border-width: 4px;"></div>
+                <p style="margin-top: 15px; color: var(--medium-gray);">Loading blog posts...</p>
             </div>
-        </section>
+        </div>
+        
+        <div style="text-align: center; margin-top: 40px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+            <a href="https://www.facebook.com/share/16ZuMVLV3g/?mibextid=wwXIfr" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                <i class="fab fa-facebook" style="margin-right: 8px;"></i> View All Posts on Facebook
+            </a>
+            <button onclick="loadBlogPosts()" class="btn btn-outline">
+                <i class="fas fa-sync-alt" style="margin-right: 8px;"></i> Refresh Posts
+            </button>
+        </div>
+    </div>
+</section>
+
 
         <!-- Founder Section -->
         <section class="section founder">
