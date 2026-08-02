@@ -618,6 +618,95 @@ app.get('/api/admin/contacts', authenticateToken, async (req, res) => {
     }
 });
 
+// ============================================================
+// ADMIN CONTACT STATUS UPDATE
+// ============================================================
+app.patch('/api/admin/contacts/:id/status', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        
+        if (!status) {
+            return res.status(400).json({ success: false, message: 'Status is required' });
+        }
+        
+        const validStatuses = ['new', 'read', 'replied', 'archived'];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({ success: false, message: 'Invalid status' });
+        }
+        
+        const result = await db.collection('contacts').updateOne(
+            { _id: new ObjectId(id) },
+            { 
+                $set: { 
+                    status: status,
+                    updatedAt: new Date()
+                }
+            }
+        );
+        
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Contact not found' });
+        }
+        
+        console.log(`📩 Contact ${id} status updated to: ${status}`);
+        res.json({ success: true, message: 'Status updated successfully' });
+        
+    } catch (error) {
+        console.error('Error updating contact status:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
+// ADMIN CONTACT REPLY
+// ============================================================
+app.post('/api/admin/contacts/:id/reply', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { message, subject } = req.body;
+        
+        if (!message) {
+            return res.status(400).json({ success: false, message: 'Reply message is required' });
+        }
+        
+        const contact = await db.collection('contacts').findOne({ _id: new ObjectId(id) });
+        if (!contact) {
+            return res.status(404).json({ success: false, message: 'Contact not found' });
+        }
+        
+        // Store reply in contact record
+        await db.collection('contacts').updateOne(
+            { _id: new ObjectId(id) },
+            {
+                $set: {
+                    status: 'replied',
+                    repliedAt: new Date(),
+                    replyMessage: message,
+                    replySubject: subject || 'Re: Your inquiry to Global Immigration SC',
+                    repliedBy: req.user?.email || 'admin',
+                    updatedAt: new Date()
+                }
+            }
+        );
+        
+        console.log(`📧 Reply sent to ${contact.email} for contact ${id}`);
+        res.json({ 
+            success: true, 
+            message: 'Reply sent successfully',
+            reply: {
+                to: contact.email,
+                subject: subject || 'Re: Your inquiry to Global Immigration SC',
+                message: message
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error sending reply:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 app.delete('/api/admin/contacts/:id', authenticateToken, async (req, res) => {
     try {
         const result = await db.collection('contacts').deleteOne({ _id: new ObjectId(req.params.id) });
