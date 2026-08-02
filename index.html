@@ -1994,7 +1994,7 @@
             background-color: #128C7E;
         }
         
-        /* Blog Preview Section */
+        /* Blog Preview Section - FIXED CSS */
         .blog-preview {
             background-color: var(--primary-white);
             padding: 80px 0;
@@ -2007,26 +2007,38 @@
             margin-top: 40px;
         }
         
+        /* FIX: Blog card - solid background, no glassmorphism conflicts */
         .blog-card {
-            background-color: var(--light-gray);
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease;
+            background: #FFFFFF !important;
+            border-radius: 12px !important;
+            overflow: hidden !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+            transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+            border: 1px solid #e8e8e8 !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: flex !important;
+            flex-direction: column !important;
+            height: 100% !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            background-color: #FFFFFF !important;
         }
         
         .blog-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-6px) !important;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12) !important;
         }
         
         .blog-image {
             height: 200px;
             overflow: hidden;
-            background-color: var(--medium-gray);
+            background-color: #f0f0f0;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
+            flex-shrink: 0;
+            position: relative;
         }
         
         .blog-image img {
@@ -2034,91 +2046,105 @@
             height: 100%;
             object-fit: cover;
             transition: transform 0.5s ease;
+            display: block;
         }
         
         .blog-card:hover .blog-image img {
             transform: scale(1.05);
         }
         
+        /* FIX: Blog content - auto height, visible text */
         .blog-content {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            height: 220px;
+            padding: 20px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            height: auto !important;
+            min-height: 180px !important;
+            flex: 1 !important;
+            background: #FFFFFF !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
         }
         
         .blog-date {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--medium-gray);
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            opacity: 1 !important;
+            visibility: visible !important;
         }
         
         .blog-title {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
+            font-weight: 600;
             margin-bottom: 10px;
             color: var(--dark-gray);
+            opacity: 1 !important;
+            visibility: visible !important;
+            line-height: 1.3;
         }
         
         .blog-excerpt {
             color: var(--medium-gray);
+            font-size: 0.95rem;
             margin-bottom: 15px;
             flex-grow: 1;
+            opacity: 1 !important;
+            visibility: visible !important;
+            line-height: 1.5;
+        }
+        
+        .blog-content .btn-outline {
+            transition: all 0.3s ease;
+            align-self: flex-start;
+        }
+        
+        .blog-content .btn-outline:hover {
+            background: var(--primary-red) !important;
+            color: white !important;
         }
 
         /* Blog Modal Styles */
-.blog-modal {
-    animation: fadeIn 0.3s ease;
-}
+        .blog-modal {
+            animation: fadeIn 0.3s ease;
+        }
 
-.blog-modal > div {
-    animation: slideUp 0.3s ease;
-}
+        .blog-modal > div {
+            animation: slideUp 0.3s ease;
+        }
 
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
 
-/* Blog card hover effect */
-.blog-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.blog-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-}
-
-/* Blog content styling */
-.blog-content {
-    display: flex;
-    flex-direction: column;
-    height: 220px;
-}
-
-.blog-content .btn-outline {
-    transition: all 0.3s ease;
-}
-
-.blog-content .btn-outline:hover {
-    background: var(--primary-red) !important;
-    color: white !important;
-}
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
         
         /* Facebook Feed Styles */
         .facebook-feed {
@@ -5246,7 +5272,7 @@
     </div>
 </section>
 
-                <!-- Blog Preview Section - CONNECTED TO BACKEND API -->
+                <!-- Blog Preview Section - CONNECTED TO BACKEND API (FIXED) -->
 <section id="blog" class="section blog-preview">
     <div class="container">
         <div class="section-title">
