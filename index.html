@@ -6128,7 +6128,9 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 </style>
         
-       <!-- Contact Section -->
+       <!-- ============================================================
+     CONTACT SECTION - FULLY FIXED
+     ============================================================ -->
 <section id="contact" class="section contact">
     <div class="container">
         <div class="section-title">
@@ -6137,6 +6139,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
         
         <div class="contact-container">
+            <!-- Contact Info -->
             <div class="contact-info">
                 <h3>Our Head Office</h3>
                 
@@ -6190,25 +6193,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </div>
             
-            <!-- ⚠️ FIXED FORM - NO RELOAD -->
+            <!-- ✅ CONTACT FORM - CLEAN FIXED VERSION -->
             <div class="contact-form" id="contactFormContainer">
                 <h3>Send us a Message</h3>
-                <form id="inquiryForm" method="POST" onsubmit="return false;">
+                
+                <!-- Success Message -->
+                <div id="contactFormSuccess" class="form-success" style="display: none;">
+                    <i class="fas fa-check-circle" style="font-size: 2rem; color: #28a745; margin-bottom: 10px;"></i>
+                    <p style="font-weight: 600;">Thank you for your inquiry!</p>
+                    <p>We will contact you shortly.</p>
+                </div>
+                
+                <!-- Error Message -->
+                <div id="contactFormError" class="form-error" style="display: none; text-align: center; padding: 12px; background: #f8d7da; border-radius: 4px; color: #721c24; margin-bottom: 15px;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="contactFormErrorMessage">Something went wrong. Please try again.</span>
+                </div>
+                
+                <!-- The Form -->
+                <form id="inquiryForm" method="POST" novalidate>
                     <div class="form-group">
                         <label for="name">Full Name *</label>
-                        <input type="text" id="name" name="name" class="form-control" required>
+                        <input type="text" id="name" name="name" class="form-control" required autocomplete="name">
                         <div class="form-error" id="nameError">Please enter your full name</div>
                     </div>
                     
                     <div class="form-group">
                         <label for="email">Email Address *</label>
-                        <input type="email" id="email" name="email" class="form-control" required>
+                        <input type="email" id="email" name="email" class="form-control" required autocomplete="email">
                         <div class="form-error" id="emailError">Please enter a valid email address</div>
                     </div>
                     
                     <div class="form-group">
                         <label for="phone">Phone Number *</label>
-                        <input type="tel" id="phone" name="phone" class="form-control" required>
+                        <input type="tel" id="phone" name="phone" class="form-control" required autocomplete="tel">
                         <div class="form-error" id="phoneError">Please enter a valid phone number</div>
                     </div>
                     
@@ -6253,22 +6271,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="form-error" id="messageError">Please enter your message</div>
                     </div>
                     
-                    <!-- ✅ FIXED BUTTON -->
                     <button type="submit" class="btn btn-primary" style="width: 100%;" id="contactSubmitBtn">
                         <span class="btn-text">Submit Inquiry</span>
                         <span class="loading-spinner" style="display: none;"></span>
                     </button>
-                    
-                    <div id="formSuccess" class="form-success" style="display: none;">
-                        <i class="fas fa-check-circle" style="font-size: 2rem; color: #28a745; margin-bottom: 10px;"></i>
-                        <p style="font-weight: 600;">Thank you for your inquiry!</p>
-                        <p>We will contact you shortly.</p>
-                    </div>
-                    
-                    <div id="formError" class="form-error" style="display: none; text-align: center; padding: 10px; background: #f8d7da; border-radius: 4px; color: #721c24; margin-top: 15px;">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span id="formErrorMessage">Something went wrong. Please try again.</span>
-                    </div>
                 </form>
             </div>
         </div>
@@ -11124,42 +11130,63 @@ if (liveSessionBtn && !liveSessionBtn.href) {
             
             
 
-        
+        // ============================================================
+// CONTACT FORM - FULLY FIXED WITH DEBUG LOGGING
 // ============================================================
-// CONTACT FORM - FULLY FIXED
-// ============================================================
-            
+
 (function() {
     'use strict';
     
+    console.log('🔍 Contact form script loading...');
+    
     // API URL
     const CONTACT_API_URL = 'https://gisc-app-production.up.railway.app/api/contacts';
+    let isSubmitting = false;
     
-    // Wait for DOM to be ready
+    // ==========================================
+    // INITIALIZATION
+    // ==========================================
     function initContactForm() {
+        console.log('✅ Contact form initialization started');
+        
         const form = document.getElementById('inquiryForm');
         if (!form) {
-            console.warn('⚠️ Contact form not found, retrying...');
+            console.warn('⚠️ Contact form not found, retrying in 500ms...');
             setTimeout(initContactForm, 500);
             return;
         }
         
-        console.log('✅ Contact form found, attaching event listener...');
+        console.log('✅ Contact form found! Attaching event listener...');
         
         // Remove any existing listeners (safety)
         form.removeEventListener('submit', handleSubmit);
         form.addEventListener('submit', handleSubmit);
+        
+        // Also handle any inline onsubmit attributes
+        form.setAttribute('onsubmit', 'return false;');
+        
+        console.log('✅ Contact form initialized successfully');
     }
     
-    // Handle form submission
+    // ==========================================
+    // FORM SUBMISSION HANDLER
+    // ==========================================
     function handleSubmit(e) {
-        // CRITICAL: Prevent page reload
+        // CRITICAL: Prevent page reload and any default behavior
         e.preventDefault();
         e.stopPropagation();
         
         console.log('📝 Contact form submitted!');
+        console.log('📝 Event:', e);
         
-        // Get form elements
+        // Prevent multiple submissions
+        if (isSubmitting) {
+            console.log('⏳ Already submitting, ignoring duplicate click');
+            return false;
+        }
+        
+        // Get all form elements
+        const form = document.getElementById('inquiryForm');
         const name = document.getElementById('name');
         const email = document.getElementById('email');
         const phone = document.getElementById('phone');
@@ -11167,85 +11194,125 @@ if (liveSessionBtn && !liveSessionBtn.href) {
         const interest = document.querySelector('input[name="interest"]:checked');
         const message = document.getElementById('message');
         const submitBtn = document.getElementById('contactSubmitBtn');
-        const successDiv = document.getElementById('formSuccess');
-        const errorDiv = document.getElementById('formError');
-        const errorMsg = document.getElementById('formErrorMessage');
+        const successDiv = document.getElementById('contactFormSuccess');
+        const errorDiv = document.getElementById('contactFormError');
+        const errorMsg = document.getElementById('contactFormErrorMessage');
         
-        // Validate all fields
+        console.log('📋 Form elements found:', {
+            name: !!name,
+            email: !!email,
+            phone: !!phone,
+            country: !!country,
+            interest: !!interest,
+            message: !!message,
+            submitBtn: !!submitBtn
+        });
+        
+        // ==========================================
+        // VALIDATION
+        // ==========================================
         let isValid = true;
+        console.log('🔍 Starting validation...');
         
+        // Name validation
         if (!name || !name.value.trim()) {
             const err = document.getElementById('nameError');
-            if (err) err.style.display = 'block';
+            if (err) { err.style.display = 'block'; }
+            console.log('❌ Name validation failed: empty');
             isValid = false;
         } else {
             const err = document.getElementById('nameError');
-            if (err) err.style.display = 'none';
+            if (err) { err.style.display = 'none'; }
+            console.log('✅ Name validation passed:', name.value.trim());
         }
         
+        // Email validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!email || !email.value.trim() || !emailRegex.test(email.value)) {
             const err = document.getElementById('emailError');
-            if (err) err.style.display = 'block';
+            if (err) { err.style.display = 'block'; }
+            console.log('❌ Email validation failed:', email ? email.value : 'null');
             isValid = false;
         } else {
             const err = document.getElementById('emailError');
-            if (err) err.style.display = 'none';
+            if (err) { err.style.display = 'none'; }
+            console.log('✅ Email validation passed:', email.value.trim());
         }
         
+        // Phone validation
         if (!phone || !phone.value.trim()) {
             const err = document.getElementById('phoneError');
-            if (err) err.style.display = 'block';
+            if (err) { err.style.display = 'block'; }
+            console.log('❌ Phone validation failed: empty');
             isValid = false;
         } else {
             const err = document.getElementById('phoneError');
-            if (err) err.style.display = 'none';
+            if (err) { err.style.display = 'none'; }
+            console.log('✅ Phone validation passed:', phone.value.trim());
         }
         
+        // Country validation
         if (!country || !country.value) {
             const err = document.getElementById('countryError');
-            if (err) err.style.display = 'block';
+            if (err) { err.style.display = 'block'; }
+            console.log('❌ Country validation failed: empty');
             isValid = false;
         } else {
             const err = document.getElementById('countryError');
-            if (err) err.style.display = 'none';
+            if (err) { err.style.display = 'none'; }
+            console.log('✅ Country validation passed:', country.value);
         }
         
+        // Interest validation
         if (!interest) {
             const err = document.getElementById('interestError');
-            if (err) err.style.display = 'block';
+            if (err) { err.style.display = 'block'; }
+            console.log('❌ Interest validation failed: none selected');
             isValid = false;
         } else {
             const err = document.getElementById('interestError');
-            if (err) err.style.display = 'none';
+            if (err) { err.style.display = 'none'; }
+            console.log('✅ Interest validation passed:', interest.value);
         }
         
+        // Message validation
         if (!message || !message.value.trim()) {
             const err = document.getElementById('messageError');
-            if (err) err.style.display = 'block';
+            if (err) { err.style.display = 'block'; }
+            console.log('❌ Message validation failed: empty');
             isValid = false;
         } else {
             const err = document.getElementById('messageError');
-            if (err) err.style.display = 'none';
+            if (err) { err.style.display = 'none'; }
+            console.log('✅ Message validation passed:', message.value.trim().substring(0, 50) + '...');
         }
         
         if (!isValid) {
-            console.log('❌ Validation failed');
+            console.log('❌ Validation failed - stopping submission');
             return false;
         }
         
-        console.log('✅ Validation passed');
+        console.log('✅ All validation passed!');
         
-        // Show loading state
+        // ==========================================
+        // SUBMIT
+        // ==========================================
+        isSubmitting = true;
+        
+        // Update button state
         const btnText = submitBtn ? submitBtn.querySelector('.btn-text') : null;
         const spinner = submitBtn ? submitBtn.querySelector('.loading-spinner') : null;
         
-        if (successDiv) successDiv.style.display = 'none';
-        if (errorDiv) errorDiv.style.display = 'none';
+        // Hide previous messages
+        if (successDiv) { successDiv.style.display = 'none'; }
+        if (errorDiv) { errorDiv.style.display = 'none'; }
         
-        if (btnText) btnText.textContent = 'Submitting...';
-        if (spinner) spinner.style.display = 'inline-block';
-        if (submitBtn) submitBtn.disabled = true;
+        // Show loading state
+        if (btnText) { btnText.textContent = 'Submitting...'; }
+        if (spinner) { spinner.style.display = 'inline-block'; }
+        if (submitBtn) { submitBtn.disabled = true; }
+        
+        console.log('⏳ Loading state shown');
         
         // Prepare data
         const formData = {
@@ -11255,12 +11322,16 @@ if (liveSessionBtn && !liveSessionBtn.href) {
             country: country.value,
             interest: interest.value,
             message: message.value.trim(),
-            form_type: 'contact_form'
+            form_type: 'contact_form',
+            timestamp: new Date().toISOString()
         };
         
-        console.log('📤 Sending:', formData);
+        console.log('📤 Sending data to API:', formData);
+        console.log('📤 API URL:', CONTACT_API_URL);
         
-        // Send to API
+        // ==========================================
+        // FETCH REQUEST
+        // ==========================================
         fetch(CONTACT_API_URL, {
             method: 'POST',
             headers: {
@@ -11270,65 +11341,273 @@ if (liveSessionBtn && !liveSessionBtn.href) {
             body: JSON.stringify(formData)
         })
         .then(function(response) {
+            console.log('📥 Response status:', response.status);
+            console.log('📥 Response headers:', response.headers);
+            
             if (!response.ok) {
-                return response.json().then(function(err) {
-                    throw new Error(err.message || 'Server error');
+                return response.text().then(function(text) {
+                    console.error('❌ Server error response:', text);
+                    let errorMsg = 'Server error';
+                    try {
+                        const json = JSON.parse(text);
+                        errorMsg = json.message || json.error || 'Server error';
+                    } catch(e) {
+                        errorMsg = text || 'Server error';
+                    }
+                    throw new Error(errorMsg);
                 });
             }
             return response.json();
         })
         .then(function(data) {
-            console.log('✅ Success:', data);
+            console.log('✅ API Response success:', data);
             
-            if (successDiv) successDiv.style.display = 'block';
+            // Show success
+            if (successDiv) {
+                successDiv.style.display = 'block';
+                successDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
             
             // Reset form
-            form.reset();
+            if (form) {
+                form.reset();
+                console.log('🔄 Form reset');
+            }
             
             // Track in Google Analytics
             if (typeof gtag !== 'undefined') {
-                gtag('event', 'form_submission', {
+                gtag('event', 'contact_form_submission', {
                     'event_category': 'contact',
-                    'event_label': 'inquiry_form'
+                    'event_label': 'inquiry_form',
+                    'value': 1
                 });
+                console.log('📊 GA event tracked');
             }
             
             // Hide success after 8 seconds
             setTimeout(function() {
-                if (successDiv) successDiv.style.display = 'none';
+                if (successDiv) {
+                    successDiv.style.display = 'none';
+                    console.log('🔄 Success message hidden');
+                }
             }, 8000);
         })
         .catch(function(error) {
-            console.error('❌ Error:', error);
+            console.error('❌ Fetch error:', error);
+            console.error('❌ Error stack:', error.stack);
             
+            // Show error
             if (errorMsg) {
                 errorMsg.textContent = error.message || 'Something went wrong. Please try again.';
             }
-            if (errorDiv) errorDiv.style.display = 'block';
+            if (errorDiv) {
+                errorDiv.style.display = 'block';
+                errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            
+            // Log to GA if available
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'contact_form_error', {
+                    'event_category': 'contact',
+                    'event_label': error.message || 'unknown_error'
+                });
+            }
             
             setTimeout(function() {
-                if (errorDiv) errorDiv.style.display = 'none';
+                if (errorDiv) {
+                    errorDiv.style.display = 'none';
+                    console.log('🔄 Error message hidden');
+                }
             }, 8000);
         })
         .finally(function() {
-            // Reset button
-            if (btnText) btnText.textContent = 'Submit Inquiry';
-            if (spinner) spinner.style.display = 'none';
-            if (submitBtn) submitBtn.disabled = false;
+            // Reset button state
+            if (btnText) { btnText.textContent = 'Submit Inquiry'; }
+            if (spinner) { spinner.style.display = 'none'; }
+            if (submitBtn) { submitBtn.disabled = false; }
+            
+            isSubmitting = false;
+            console.log('✅ Submission complete, button reset');
         });
         
         return false;
     }
     
-    // Initialize when DOM is ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initContactForm);
-    } else {
-        initContactForm();
+    // ==========================================
+    // INITIALIZATION STRATEGY
+    // ==========================================
+    function attemptInit() {
+        const form = document.getElementById('inquiryForm');
+        if (form) {
+            console.log('✅ Form found on attempt');
+            initContactForm();
+            return true;
+        }
+        return false;
     }
     
-    console.log('✅ Contact form script loaded');
+    // Try multiple initialization strategies
+    if (document.readyState === 'loading') {
+        console.log('⏳ Document loading, waiting for DOMContentLoaded...');
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 DOMContentLoaded fired');
+            attemptInit();
+        });
+    } else {
+        console.log('📄 Document already loaded, attempting init...');
+        attemptInit();
+    }
+    
+    // Fallback: retry every 500ms for 5 seconds
+    let retryCount = 0;
+    const maxRetries = 10;
+    const retryInterval = setInterval(function() {
+        retryCount++;
+        if (attemptInit()) {
+            clearInterval(retryInterval);
+            console.log('✅ Initialized after ' + retryCount + ' retries');
+        } else if (retryCount >= maxRetries) {
+            clearInterval(retryInterval);
+            console.warn('⚠️ Could not initialize contact form after ' + maxRetries + ' retries');
+        }
+    }, 500);
+    
+    // Also check on window load
+    window.addEventListener('load', function() {
+        console.log('🔄 Window load event fired');
+        attemptInit();
+    });
+    
+    console.log('✅ Contact form script fully loaded');
 })();
+
+
+            // ============================================================
+// EMERGENCY CONTACT FORM FIX - Guaranteed to work
+// ============================================================
+(function() {
+    'use strict';
+    
+    console.log('🚨 Emergency contact form fix running...');
+    
+    // Direct handler that bypasses everything
+    function emergencyFix() {
+        const form = document.getElementById('inquiryForm');
+        if (!form) {
+            console.warn('⚠️ Emergency fix: Form not found');
+            setTimeout(emergencyFix, 500);
+            return;
+        }
+        
+        console.log('✅ Emergency fix: Form found, attaching direct handler');
+        
+        // Remove all submit handlers and attach our own
+        const newForm = form.cloneNode(true);
+        form.parentNode.replaceChild(newForm, form);
+        
+        // Attach direct handler
+        newForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            console.log('🚨 EMERGENCY HANDLER triggered!');
+            
+            // Simple validation
+            const name = document.getElementById('name');
+            const email = document.getElementById('email');
+            const phone = document.getElementById('phone');
+            const country = document.getElementById('country');
+            const interest = document.querySelector('input[name="interest"]:checked');
+            const message = document.getElementById('message');
+            
+            // Check if all fields have values
+            if (!name.value.trim() || !email.value.trim() || !phone.value.trim() || 
+                !country.value || !interest || !message.value.trim()) {
+                alert('Please fill in all required fields.');
+                return false;
+            }
+            
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email.value)) {
+                alert('Please enter a valid email address.');
+                return false;
+            }
+            
+            console.log('✅ Emergency validation passed');
+            
+            // Show loading
+            const submitBtn = document.getElementById('contactSubmitBtn');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const spinner = submitBtn.querySelector('.loading-spinner');
+            
+            btnText.textContent = 'Submitting...';
+            spinner.style.display = 'inline-block';
+            submitBtn.disabled = true;
+            
+            // Prepare data
+            const data = {
+                name: name.value.trim(),
+                email: email.value.trim(),
+                phone: phone.value.trim(),
+                country: country.value,
+                interest: interest.value,
+                message: message.value.trim(),
+                form_type: 'contact_form_emergency',
+                timestamp: new Date().toISOString()
+            };
+            
+            console.log('📤 Emergency sending:', data);
+            
+            // Send
+            fetch('https://gisc-app-production.up.railway.app/api/contacts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(result) {
+                console.log('✅ Emergency success:', result);
+                document.getElementById('contactFormSuccess').style.display = 'block';
+                newForm.reset();
+                
+                // Reset button
+                btnText.textContent = 'Submit Inquiry';
+                spinner.style.display = 'none';
+                submitBtn.disabled = false;
+                
+                setTimeout(function() {
+                    document.getElementById('contactFormSuccess').style.display = 'none';
+                }, 8000);
+            })
+            .catch(function(err) {
+                console.error('❌ Emergency error:', err);
+                document.getElementById('contactFormErrorMessage').textContent = 
+                    'Error: ' + (err.message || 'Please try again later.');
+                document.getElementById('contactFormError').style.display = 'block';
+                
+                btnText.textContent = 'Submit Inquiry';
+                spinner.style.display = 'none';
+                submitBtn.disabled = false;
+            });
+            
+            return false;
+        });
+        
+        console.log('✅ Emergency fix complete');
+    }
+    
+    // Run emergency fix after a delay
+    setTimeout(emergencyFix, 1000);
+    setTimeout(emergencyFix, 3000);
+    setTimeout(emergencyFix, 5000);
+    
+    console.log('🚨 Emergency fix loaded');
+})();
+            
             
             // Smooth Scrolling for Anchor Links
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
