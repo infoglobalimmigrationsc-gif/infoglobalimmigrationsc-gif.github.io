@@ -11206,14 +11206,209 @@ if (liveSessionBtn && !liveSessionBtn.href) {
             
 
         
-        // CRITICAL: Return false to prevent default form submission
-    return false;
-}
+        // ============================================================
+// CONTACT FORM - FULLY FIXED
+// ============================================================
+(function() {
+    'use strict';
     
-    console.log('✅ Contact form initialized successfully');
-} else {
-    console.error('❌ Contact form not found');
-}
+    // API URL
+    const CONTACT_API_URL = 'https://gisc-app-production.up.railway.app/api/contacts';
+    
+    // Wait for DOM to be ready
+    function initContactForm() {
+        const form = document.getElementById('inquiryForm');
+        if (!form) {
+            console.warn('⚠️ Contact form not found, retrying...');
+            setTimeout(initContactForm, 500);
+            return;
+        }
+        
+        console.log('✅ Contact form found, attaching event listener...');
+        
+        // Remove any existing listeners (safety)
+        form.removeEventListener('submit', handleSubmit);
+        form.addEventListener('submit', handleSubmit);
+    }
+    
+    // Handle form submission
+    function handleSubmit(e) {
+        // CRITICAL: Prevent page reload
+        e.preventDefault();
+        e.stopPropagation();
+        
+        console.log('📝 Contact form submitted!');
+        
+        // Get form elements
+        const name = document.getElementById('name');
+        const email = document.getElementById('email');
+        const phone = document.getElementById('phone');
+        const country = document.getElementById('country');
+        const interest = document.querySelector('input[name="interest"]:checked');
+        const message = document.getElementById('message');
+        const submitBtn = document.getElementById('contactSubmitBtn');
+        const successDiv = document.getElementById('formSuccess');
+        const errorDiv = document.getElementById('formError');
+        const errorMsg = document.getElementById('formErrorMessage');
+        
+        // Validate all fields
+        let isValid = true;
+        
+        if (!name || !name.value.trim()) {
+            const err = document.getElementById('nameError');
+            if (err) err.style.display = 'block';
+            isValid = false;
+        } else {
+            const err = document.getElementById('nameError');
+            if (err) err.style.display = 'none';
+        }
+        
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email || !email.value.trim() || !emailRegex.test(email.value)) {
+            const err = document.getElementById('emailError');
+            if (err) err.style.display = 'block';
+            isValid = false;
+        } else {
+            const err = document.getElementById('emailError');
+            if (err) err.style.display = 'none';
+        }
+        
+        if (!phone || !phone.value.trim()) {
+            const err = document.getElementById('phoneError');
+            if (err) err.style.display = 'block';
+            isValid = false;
+        } else {
+            const err = document.getElementById('phoneError');
+            if (err) err.style.display = 'none';
+        }
+        
+        if (!country || !country.value) {
+            const err = document.getElementById('countryError');
+            if (err) err.style.display = 'block';
+            isValid = false;
+        } else {
+            const err = document.getElementById('countryError');
+            if (err) err.style.display = 'none';
+        }
+        
+        if (!interest) {
+            const err = document.getElementById('interestError');
+            if (err) err.style.display = 'block';
+            isValid = false;
+        } else {
+            const err = document.getElementById('interestError');
+            if (err) err.style.display = 'none';
+        }
+        
+        if (!message || !message.value.trim()) {
+            const err = document.getElementById('messageError');
+            if (err) err.style.display = 'block';
+            isValid = false;
+        } else {
+            const err = document.getElementById('messageError');
+            if (err) err.style.display = 'none';
+        }
+        
+        if (!isValid) {
+            console.log('❌ Validation failed');
+            return false;
+        }
+        
+        console.log('✅ Validation passed');
+        
+        // Show loading state
+        const btnText = submitBtn ? submitBtn.querySelector('.btn-text') : null;
+        const spinner = submitBtn ? submitBtn.querySelector('.loading-spinner') : null;
+        
+        if (successDiv) successDiv.style.display = 'none';
+        if (errorDiv) errorDiv.style.display = 'none';
+        
+        if (btnText) btnText.textContent = 'Submitting...';
+        if (spinner) spinner.style.display = 'inline-block';
+        if (submitBtn) submitBtn.disabled = true;
+        
+        // Prepare data
+        const formData = {
+            name: name.value.trim(),
+            email: email.value.trim(),
+            phone: phone.value.trim(),
+            country: country.value,
+            interest: interest.value,
+            message: message.value.trim(),
+            form_type: 'contact_form'
+        };
+        
+        console.log('📤 Sending:', formData);
+        
+        // Send to API
+        fetch(CONTACT_API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(function(response) {
+            if (!response.ok) {
+                return response.json().then(function(err) {
+                    throw new Error(err.message || 'Server error');
+                });
+            }
+            return response.json();
+        })
+        .then(function(data) {
+            console.log('✅ Success:', data);
+            
+            if (successDiv) successDiv.style.display = 'block';
+            
+            // Reset form
+            form.reset();
+            
+            // Track in Google Analytics
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'form_submission', {
+                    'event_category': 'contact',
+                    'event_label': 'inquiry_form'
+                });
+            }
+            
+            // Hide success after 8 seconds
+            setTimeout(function() {
+                if (successDiv) successDiv.style.display = 'none';
+            }, 8000);
+        })
+        .catch(function(error) {
+            console.error('❌ Error:', error);
+            
+            if (errorMsg) {
+                errorMsg.textContent = error.message || 'Something went wrong. Please try again.';
+            }
+            if (errorDiv) errorDiv.style.display = 'block';
+            
+            setTimeout(function() {
+                if (errorDiv) errorDiv.style.display = 'none';
+            }, 8000);
+        })
+        .finally(function() {
+            // Reset button
+            if (btnText) btnText.textContent = 'Submit Inquiry';
+            if (spinner) spinner.style.display = 'none';
+            if (submitBtn) submitBtn.disabled = false;
+        });
+        
+        return false;
+    }
+    
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initContactForm);
+    } else {
+        initContactForm();
+    }
+    
+    console.log('✅ Contact form script loaded');
+})();
             
             // Smooth Scrolling for Anchor Links
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
