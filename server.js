@@ -720,6 +720,18 @@ app.delete('/api/admin/contacts/:id', authenticateToken, async (req, res) => {
 });
 
 // ============================================================
+// CONTACT - OPTIONS Preflight (CORS)
+// ============================================================
+app.options('/api/contacts', (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
+    res.sendStatus(200);
+});
+
+
+
+// ============================================================
 // PUBLIC CONTACT SUBMISSION (No auth required)
 // ============================================================
 app.post('/api/contacts', async (req, res) => {
