@@ -11122,93 +11122,13 @@ if (liveSessionBtn && !liveSessionBtn.href) {
                 });
             });
             
-            // Session Registration Form
-            document.getElementById('sessionForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                let isValid = true;
-                
-                // Validate name
-                const name = document.getElementById('sessionName');
-                const nameError = document.getElementById('sessionNameError');
-                if (!name.value.trim()) {
-                    nameError.style.display = 'block';
-                    isValid = false;
-                } else {
-                    nameError.style.display = 'none';
-                }
-                
-                // Validate email
-                const email = document.getElementById('sessionEmail');
-                const emailError = document.getElementById('sessionEmailError');
-                if (!email.value.trim() || !validateEmail(email.value)) {
-                    emailError.style.display = 'block';
-                    isValid = false;
-                } else {
-                    emailError.style.display = 'none';
-                }
-                
-                if (isValid) {
-                    // Show loading state
-                    const submitBtn = this.querySelector('button[type="submit"]');
-                    const btnText = submitBtn.querySelector('.btn-text');
-                    const spinner = submitBtn.querySelector('.loading-spinner');
-                    
-                    btnText.textContent = 'Sending...';
-                    spinner.style.display = 'inline-block';
-                    submitBtn.disabled = true;
-                    
-                    // Create FormData object
-                    const formData = new FormData(this);
-                    
-                    // Send form data using Fetch API
-                    fetch(this.action, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                            // Show success message
-                            document.getElementById('sessionSuccess').style.display = 'block';
-                            
-                            // Form submission tracking for Google Analytics
-                            gtag('event', 'form_submission', {
-                                'event_category': 'session',
-                                'event_label': 'session_registration'
-                            });
-                            
-                            // Reset form
-                            this.reset();
-                        } else {
-                            throw new Error('Form submission failed');
-                        }
-                    })
-                    .catch(error => {
-                        alert('There was a problem with your registration. Please try again or contact us directly.');
-                    })
-                    .finally(() => {
-                        // Reset button
-                        btnText.textContent = 'Send Registration';
-                        spinner.style.display = 'none';
-                        submitBtn.disabled = false;
-                        
-                        // Hide success message after 5 seconds
-                        setTimeout(() => {
-                            document.getElementById('sessionSuccess').style.display = 'none';
-                            registerModal.style.display = 'none';
-                        }, 5000);
-                    });
-                }
-            });
             
 
         
-        // ============================================================
+// ============================================================
 // CONTACT FORM - FULLY FIXED
 // ============================================================
+            
 (function() {
     'use strict';
     
