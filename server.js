@@ -756,7 +756,7 @@ app.get('/api/agent/applicants/:applicantId', authenticateAgent, async (req, res
     }
 });
 
-// Create new applicant
+// Create new applicant - WITH USER ACCOUNT CREATION
 app.post('/api/agent/applicants', authenticateAgent, async (req, res) => {
     try {
         const agentId = req.agent.agentId;
@@ -805,8 +805,68 @@ app.post('/api/agent/applicants', authenticateAgent, async (req, res) => {
         // Generate unique Applicant ID
         const applicantId = await generateApplicantId();
         
+        // ============================================================
+        // STEP 1: CREATE USER ACCOUNT
+        // ============================================================
+        // Check if user already exists in users collection
+        const existingUser = await db.collection('users').findOne({ email: email.toLowerCase() });
+        let userId = null;
+        let passwordGenerated = null;
+        
+        if (existingUser) {
+            // User exists, use existing ID
+            userId = existingUser.uid || existingUser._id.toString();
+        } else {
+            // Generate a unique UID for the user
+            const uid = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            userId = uid;
+            
+            // Generate a temporary password
+            passwordGenerated = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-4).toUpperCase();
+            const hashedPassword = await bcrypt.hash(passwordGenerated, 10);
+            
+            // Create user record
+            const userData = {
+                uid: uid,
+                name: fullName,
+                email: email.toLowerCase(),
+                phone: phone || '',
+                whatsapp: phone || '',
+                countryOfInterest: countryOfInterest || '',
+                userType: 'applicant',
+                accountStatus: 'active',
+                password: hashedPassword,
+                resetToken: null,
+                resetTokenExpiry: null,
+                // Education fields (populated from applicant data)
+                highest_qualification: highestQualification || '',
+                intended_programme: programmeInterest || '',
+                preferred_intake: '',
+                education_budget: '',
+                scholarship_required: false,
+                createdAt: new Date(),
+                updatedAt: new Date()
+            };
+            
+            await db.collection('users').insertOne(userData);
+            
+            // Log user creation
+            await db.collection('audit_logs').insertOne({
+                action: 'USER_CREATED_FROM_AGENT',
+                agentId: agentId,
+                agentEmail: agent.email,
+                userId: uid,
+                userEmail: email.toLowerCase(),
+                timestamp: new Date()
+            });
+        }
+        
+        // ============================================================
+        // STEP 2: CREATE APPLICANT RECORD
+        // ============================================================
         const applicantData = {
             applicantId,
+            userId: userId, // Link to user account
             agentId: agentId,
             agentReferralCode: agent.referralCode,
             fullName,
@@ -830,15 +890,19 @@ app.post('/api/agent/applicants', authenticateAgent, async (req, res) => {
             paymentStatus: 'No Payment',
             commissionStatus: 'No Commission',
             assignedCounselor: null,
+            documents: [],
             createdAt: new Date(),
             updatedAt: new Date()
         };
         
         const result = await db.collection('applicants').insertOne(applicantData);
         
-        // Create application record
+        // ============================================================
+        // STEP 3: CREATE APPLICATION RECORD
+        // ============================================================
         const applicationData = {
             applicantId: applicantId,
+            userId: userId,
             agentId: agentId,
             agentReferralCode: agent.referralCode,
             applicantName: fullName,
@@ -877,7 +941,51 @@ app.post('/api/agent/applicants', authenticateAgent, async (req, res) => {
         
         await db.collection('applications').insertOne(applicationData);
         
-        // Update agent stats
+        // ============================================================
+        // STEP 4: CREATE INITIAL PAYMENT RECORD
+        // ============================================================
+        // Create a payment record for the service fee
+        const packageFees = {
+            'Study Abroad': 150,
+            'Work Abroad': 200,
+            'Visit Visa': 100,
+            'Immigration': 250,
+            'Student Loan': 100,
+            'Accommodation Booking': 50,
+            'Translation Services': 75,
+            'Insurance': 50,
+            'Exchange Program': 150,
+            'Pre-departure Orientation': 50
+        };
+        
+        const initialFee = packageFees[serviceRequested] || 100;
+        
+        const paymentRecord = {
+            amount: initialFee,
+            status: 'pending',
+            description: `Initial service fee for ${serviceRequested}`,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            packageName: serviceRequested,
+            paymentMethod: null,
+            paymentReference: null
+        };
+        
+        await db.collection('applications').updateOne(
+            { applicantId: applicantId },
+            { 
+                $push: { payments: paymentRecord },
+                $set: { 
+                    totalServiceFee: initialFee,
+                    amountRemaining: initialFee,
+                    updatedAt: new Date()
+                }
+            }
+        );
+        
+        // ============================================================
+        // STEP 5: UPDATE AGENT STATS
+        // ============================================================
         await db.collection('agents').updateOne(
             { _id: agent._id },
             { 
@@ -886,20 +994,42 @@ app.post('/api/agent/applicants', authenticateAgent, async (req, res) => {
             }
         );
         
-        // Log the action
+        // ============================================================
+        // STEP 6: CREATE NOTIFICATION FOR AGENT
+        // ============================================================
+        await db.collection('agent_notifications').insertOne({
+            agentId: agentId,
+            title: 'New Applicant Registered',
+            message: `You have successfully registered ${fullName} (${applicantId}). A user account has been created with email ${email}.${passwordGenerated ? ` Temporary password: ${passwordGenerated}` : ''}`,
+            type: 'applicant',
+            read: false,
+            createdAt: new Date(),
+            link: `/applicants`
+        });
+        
+        // ============================================================
+        // STEP 7: LOG THE ACTION
+        // ============================================================
         await db.collection('audit_logs').insertOne({
-            action: 'APPLICANT_REGISTERED',
+            action: 'APPLICANT_REGISTERED_WITH_USER',
             agentId: agentId,
             agentEmail: agent.email,
             applicantId: applicantId,
             applicantName: fullName,
-            timestamp: new Date()
+            userId: userId,
+            timestamp: new Date(),
+            passwordGenerated: passwordGenerated ? true : false
         });
         
+        // ============================================================
+        // STEP 8: RESPONSE
+        // ============================================================
         res.json({
             success: true,
-            message: 'Applicant registered successfully',
+            message: `Applicant registered successfully. ${passwordGenerated ? `User account created with temporary password: ${passwordGenerated}. Please share this with the applicant.` : 'User account already exists.'}`,
             applicantId: applicantId,
+            userId: userId,
+            passwordGenerated: passwordGenerated,
             applicant: applicantData
         });
         
@@ -1159,26 +1289,39 @@ app.get('/api/agent/applications/:applicantId', authenticateAgent, async (req, r
 // AGENT PAYMENT TRACKING
 // ============================================================
 
-// Get payments for agent's applicants
+// Get payments for agent's applicants - ENHANCED
 app.get('/api/agent/payments', authenticateAgent, async (req, res) => {
     try {
         const agentId = req.agent.agentId;
         
-        const applications = await db.collection('applications')
+        // Get all applicants for this agent
+        const applicants = await db.collection('applicants')
             .find({ agentId: agentId })
+            .toArray();
+        
+        const applicantIds = applicants.map(a => a.applicantId);
+        
+        // Get applications for these applicants
+        const applications = await db.collection('applications')
+            .find({ applicantId: { $in: applicantIds } })
             .toArray();
         
         const payments = [];
         
         for (const app of applications) {
+            // Get applicant info
+            const applicant = applicants.find(a => a.applicantId === app.applicantId);
+            
+            // Include payments from application
             if (app.payments && app.payments.length > 0) {
                 for (const payment of app.payments) {
                     payments.push({
                         ...payment,
                         applicantId: app.applicantId,
-                        applicantName: app.applicantName,
+                        applicantName: app.applicantName || applicant?.fullName || 'Unknown',
                         service: app.service,
-                        packageName: app.packageName || 'Standard'
+                        packageName: app.packageName || 'Standard',
+                        email: app.email || applicant?.email || 'N/A'
                     });
                 }
             }
@@ -1189,23 +1332,44 @@ app.get('/api/agent/payments', authenticateAgent, async (req, res) => {
                     ...app.paymentReceipt,
                     type: 'receipt',
                     applicantId: app.applicantId,
-                    applicantName: app.applicantName,
+                    applicantName: app.applicantName || applicant?.fullName || 'Unknown',
                     service: app.service,
-                    packageName: app.packageName || 'Standard'
+                    packageName: app.packageName || 'Standard',
+                    email: app.email || applicant?.email || 'N/A'
                 });
+            }
+        }
+        
+        // Also include applicant-level payment status
+        for (const applicant of applicants) {
+            if (applicant.paymentStatus && applicant.paymentStatus !== 'No Payment') {
+                // Check if we already have a payment for this applicant
+                const hasPayment = payments.some(p => p.applicantId === applicant.applicantId);
+                if (!hasPayment) {
+                    payments.push({
+                        applicantId: applicant.applicantId,
+                        applicantName: applicant.fullName,
+                        email: applicant.email,
+                        service: applicant.serviceRequested,
+                        amount: 0,
+                        status: applicant.paymentStatus.toLowerCase(),
+                        description: `Payment status: ${applicant.paymentStatus}`,
+                        createdAt: applicant.updatedAt || applicant.createdAt
+                    });
+                }
             }
         }
         
         // Sort by date
         payments.sort((a, b) => {
-            const dateA = a.uploadedAt || a.createdAt || a.pendingAt || a.confirmedAt || '';
-            const dateB = b.uploadedAt || b.createdAt || b.pendingAt || b.confirmedAt || '';
+            const dateA = a.uploadedAt || a.createdAt || a.pendingAt || a.confirmedAt || a.updatedAt || '';
+            const dateB = b.uploadedAt || b.createdAt || b.pendingAt || b.confirmedAt || b.updatedAt || '';
             return new Date(dateB) - new Date(dateA);
         });
         
         // Calculate totals
         const totalPaid = payments
-            .filter(p => p.status === 'completed' || p.status === 'verified')
+            .filter(p => p.status === 'completed' || p.status === 'verified' || p.status === 'paid')
             .reduce((sum, p) => sum + (p.amount || 0), 0);
             
         const totalPending = payments
@@ -3221,6 +3385,15 @@ app.put('/api/admin/payments/confirm', authenticateToken, async (req, res) => {
         const receipt = application.paymentReceipt || {};
         const amount = receipt.amount || 0;
 
+        // Get applicant to update payment status
+        const applicant = await db.collection('applicants').findOne({ userId: uid });
+        if (applicant) {
+            await db.collection('applicants').updateOne(
+                { userId: uid },
+                { $set: { paymentStatus: 'Payment Verified', updatedAt: new Date() } }
+            );
+        }
+
         const updatedReceipt = { ...receipt, status: 'verified', verifiedAt: new Date().toISOString(), verifiedBy: req.user?.email || 'admin' };
         const pendingPaymentIndex = application.payments?.findIndex(p => p.status === 'pending') || -1;
         
@@ -3229,7 +3402,10 @@ app.put('/api/admin/payments/confirm', authenticateToken, async (req, res) => {
                 paymentReceipt: updatedReceipt,
                 status: 'payment_confirmed',
                 updatedAt: new Date(),
-                'applicationStages.payment': { completed: true, status: 'completed', completedAt: new Date().toISOString() }
+                'applicationStages.payment': { completed: true, status: 'completed', completedAt: new Date().toISOString() },
+                paymentStatus: 'Paid',
+                amountReceived: (application.amountReceived || 0) + amount,
+                amountRemaining: Math.max(0, (application.totalServiceFee || 0) - ((application.amountReceived || 0) + amount))
             }
         };
 
@@ -3255,6 +3431,20 @@ app.put('/api/admin/payments/confirm', authenticateToken, async (req, res) => {
         }
 
         await db.collection('applications').updateOne({ uid: uid }, updateQuery);
+
+        // Create notification for agent if there's an agent associated
+        if (applicant && applicant.agentId) {
+            await db.collection('agent_notifications').insertOne({
+                agentId: applicant.agentId,
+                title: 'Payment Verified',
+                message: `Payment of $${amount.toFixed(2)} has been verified for ${applicant.fullName || applicant.applicantId}.`,
+                type: 'payment',
+                read: false,
+                createdAt: new Date(),
+                link: `/payments`
+            });
+        }
+
         res.json({ success: true, message: 'Payment confirmed successfully', amount: amount });
     } catch (error) {
         console.error('Error confirming payment:', error);
