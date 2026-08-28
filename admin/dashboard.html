@@ -698,9 +698,25 @@
                     <span class="badge" id="programmeCount">0</span>
                 </a>
                 <a href="#" data-section="service-requests">
-                    <i class="fas fa-concierge-bell"></i> Service Requests
-                    <span class="badge" id="serviceReqCount">0</span>
-                </a>
+    <i class="fas fa-concierge-bell"></i> Service Requests
+    <span class="badge" id="serviceReqCount">0</span>
+</a>
+<!-- ===== NEW AGENT SECTIONS ===== -->
+<a href="#" data-section="agents">
+    <i class="fas fa-user-tie"></i> Agents
+    <span class="badge" id="agentCountBadge">0</span>
+</a>
+<a href="#" data-section="agent-applicants">
+    <i class="fas fa-user-graduate"></i> Agent Applicants
+    <span class="badge" id="agentApplicantCount">0</span>
+</a>
+<a href="#" data-section="agent-commissions">
+    <i class="fas fa-coins"></i> Agent Commissions
+    <span class="badge" id="commissionCount">0</span>
+</a>
+<a href="#" data-section="agent-settlements">
+    <i class="fas fa-file-invoice"></i> Settlements
+</a>
             </nav>
 
             <div class="sidebar-footer">
@@ -972,6 +988,173 @@
                     <div id="serviceRequestsList"><div class="empty-state"><i class="fas fa-inbox"></i><p>No service requests yet</p></div></div>
                 </div>
             </section>
+
+
+            <!-- ============================================================ -->
+<!-- AGENT MANAGEMENT SECTIONS -->
+<!-- ============================================================ -->
+
+<!-- Agents Section -->
+<section id="agents-section" class="admin-section">
+    <div class="section-header">
+        <h1><i class="fas fa-user-tie"></i> Agent Management</h1>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn btn-primary" onclick="openAgentRegistration()"><i class="fas fa-user-plus"></i> Register Agent</button>
+            <button class="btn btn-outline" onclick="loadAgents()"><i class="fas fa-sync-alt"></i> Refresh</button>
+        </div>
+    </div>
+    <div class="stats-grid small">
+        <div class="stat-card"><h3 id="totalAgents">0</h3><p>Total Agents</p></div>
+        <div class="stat-card"><h3 id="pendingAgents">0</h3><p>Pending</p></div>
+        <div class="stat-card"><h3 id="approvedAgents">0</h3><p>Approved</p></div>
+        <div class="stat-card"><h3 id="activeAgents">0</h3><p>Active</p></div>
+    </div>
+    <div class="glass-container">
+        <div class="debug-info" id="agentDebugInfo"><span style="color: #ff0;">🔍 Debug: Loading agents...</span></div>
+        <div class="table-wrapper">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Agent ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Referrals</th>
+                        <th>Commission</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="agentsTableBody"><tr><td colspan="8" style="text-align: center; padding: 30px;">Loading agents...</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- Agent Applicants Section -->
+<section id="agent-applicants-section" class="admin-section">
+    <div class="section-header">
+        <h1><i class="fas fa-user-graduate"></i> Agent Applicants</h1>
+        <span style="color: rgba(255,255,255,0.5);" id="agentApplicantTotal">0 total</span>
+    </div>
+    <div class="glass-container">
+        <div class="debug-info" id="agentApplicantDebugInfo"><span style="color: #ff0;">🔍 Debug: Loading agent applicants...</span></div>
+        <div class="search-bar">
+            <input type="text" id="searchAgentApplicants" class="glass-input" placeholder="Search by name, email, or ID...">
+            <select id="filterAgentApplicantStatus" class="glass-input">
+                <option value="all">All Status</option>
+                <option value="Registered">Registered</option>
+                <option value="Under Assessment">Under Assessment</option>
+                <option value="Qualified">Qualified</option>
+                <option value="Package Selected">Package Selected</option>
+                <option value="Agreement Pending">Agreement Pending</option>
+                <option value="Payment Pending">Payment Pending</option>
+                <option value="Payment Verified">Payment Verified</option>
+                <option value="Application Preparation">Application Preparation</option>
+                <option value="Application Submitted">Application Submitted</option>
+                <option value="Admission Processing">Admission Processing</option>
+                <option value="Visa Processing">Visa Processing</option>
+                <option value="Completed">Completed</option>
+                <option value="Rejected">Rejected</option>
+                <option value="Withdrawn">Withdrawn</option>
+            </select>
+            <button class="btn btn-outline" onclick="loadAgentApplicants()"><i class="fas fa-search"></i></button>
+        </div>
+        <div class="table-wrapper">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Applicant ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Agent</th>
+                        <th>Status</th>
+                        <th>Payment</th>
+                        <th>Commission</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="agentApplicantsTableBody"><tr><td colspan="8" style="text-align: center; padding: 30px;">Loading applicants...</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- Agent Commissions Section -->
+<section id="agent-commissions-section" class="admin-section">
+    <div class="section-header">
+        <h1><i class="fas fa-coins"></i> Agent Commissions</h1>
+        <span style="color: rgba(255,255,255,0.5);" id="commissionTotal">0 total</span>
+    </div>
+    <div class="stats-grid small">
+        <div class="stat-card"><h3>$<span id="totalCommissionEarned">0.00</span></h3><p>Total Earned</p></div>
+        <div class="stat-card"><h3>$<span id="totalCommissionPaid">0.00</span></h3><p>Paid</p></div>
+        <div class="stat-card"><h3>$<span id="totalCommissionPending">0.00</span></h3><p>Pending</p></div>
+        <div class="stat-card"><h3>$<span id="totalCommissionReversed">0.00</span></h3><p>Reversed</p></div>
+    </div>
+    <div class="glass-container">
+        <div class="debug-info" id="commissionDebugInfo"><span style="color: #ff0;">🔍 Debug: Loading commissions...</span></div>
+        <div class="search-bar">
+            <select id="filterCommissionStatus" class="glass-input">
+                <option value="all">All Status</option>
+                <option value="Pending">Pending</option>
+                <option value="Eligible">Eligible</option>
+                <option value="Settled">Settled</option>
+                <option value="Paid">Paid</option>
+                <option value="Reversed">Reversed</option>
+            </select>
+            <select id="filterCommissionAgent" class="glass-input">
+                <option value="all">All Agents</option>
+            </select>
+            <button class="btn btn-primary" onclick="processCommissionModal()"><i class="fas fa-calculator"></i> Process Commission</button>
+            <button class="btn btn-success" onclick="generateSettlement()"><i class="fas fa-file-invoice"></i> Generate Settlement</button>
+        </div>
+        <div class="table-wrapper">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Agent</th>
+                        <th>Applicant</th>
+                        <th>Package</th>
+                        <th>Amount</th>
+                        <th>Commission</th>
+                        <th>Rate</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="commissionsTableBody"><tr><td colspan="8" style="text-align: center; padding: 30px;">Loading commissions...</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- Agent Settlements Section -->
+<section id="agent-settlements-section" class="admin-section">
+    <div class="section-header">
+        <h1><i class="fas fa-file-invoice"></i> Commission Settlements</h1>
+        <span style="color: rgba(255,255,255,0.5);" id="settlementTotal">0 total</span>
+    </div>
+    <div class="glass-container">
+        <div class="debug-info" id="settlementDebugInfo"><span style="color: #ff0;">🔍 Debug: Loading settlements...</span></div>
+        <div class="table-wrapper">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Settlement ID</th>
+                        <th>Agent</th>
+                        <th>Period</th>
+                        <th>Total Amount</th>
+                        <th>Status</th>
+                        <th>Generated</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="settlementsTableBody"><tr><td colspan="7" style="text-align: center; padding: 30px;">Loading settlements...</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+</section>
 
             <!-- ===== MODALS ===== -->
             
@@ -1252,18 +1435,23 @@
                 if (targetSection) targetSection.classList.add('active');
 
                 const loaders = {
-                    'users': loadUsers,
-                    'applications': loadApplications,
-                    'contacts': loadContacts,
-                    'blog': loadBlogPosts,
-                    'notifications': loadNotifications,
-                    'payments': loadPayments,
-                    'opportunities': loadOpportunities,
-                    'scholarships': loadScholarships,
-                    'universities': loadUniversities,
-                    'programmes': loadProgrammes,
-                    'service-requests': loadServiceRequests
-                };
+    'users': loadUsers,
+    'applications': loadApplications,
+    'contacts': loadContacts,
+    'blog': loadBlogPosts,
+    'notifications': loadNotifications,
+    'payments': loadPayments,
+    'opportunities': loadOpportunities,
+    'scholarships': loadScholarships,
+    'universities': loadUniversities,
+    'programmes': loadProgrammes,
+    'service-requests': loadServiceRequests,
+    // ===== NEW AGENT LOADERS =====
+    'agents': loadAgents,
+    'agent-applicants': loadAgentApplicants,
+    'agent-commissions': loadAgentCommissions,
+    'agent-settlements': loadAgentSettlements
+};
                 if (loaders[section]) loaders[section]();
 
                 document.getElementById('sidebar').classList.remove('open');
@@ -1638,6 +1826,329 @@
                 showToast('Error deleting payment: ' + error.message, 'error');
             }
         };
+
+        // ============================================================
+// AGENT MANAGEMENT FUNCTIONS
+// ============================================================
+
+// Load Agents
+async function loadAgents() {
+    const debugEl = document.getElementById('agentDebugInfo');
+    const tbody = document.getElementById('agentsTableBody');
+    
+    try {
+        debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading agents...</span>';
+        const result = await apiFetch('agents');
+        const agents = result.agents || [];
+        
+        const total = agents.length;
+        const pending = agents.filter(a => a.status === 'Pending').length;
+        const approved = agents.filter(a => a.status === 'Approved').length;
+        const active = agents.filter(a => a.status === 'Approved' && a.lastLogin).length;
+        
+        document.getElementById('totalAgents').textContent = total;
+        document.getElementById('pendingAgents').textContent = pending;
+        document.getElementById('approvedAgents').textContent = approved;
+        document.getElementById('activeAgents').textContent = active;
+        document.getElementById('agentCountBadge').textContent = total;
+        
+        debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${total} agents</span>`;
+        
+        if (agents.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px;">No agents found</td></tr>`;
+            return;
+        }
+        
+        tbody.innerHTML = agents.map(agent => `
+            <tr>
+                <td><strong>${agent.agentId || 'N/A'}</strong></td>
+                <td>${agent.fullName || 'Unknown'}</td>
+                <td>${agent.email || 'N/A'}</td>
+                <td>${agent.agentCategory || 'N/A'}</td>
+                <td><span class="status-badge status-${agent.status ? agent.status.toLowerCase() : 'pending'}">${agent.status || 'Pending'}</span></td>
+                <td>${agent.totalReferrals || 0}</td>
+                <td>$${(agent.totalCommissionEarned || 0).toFixed(2)}</td>
+                <td>
+                    <button class="btn btn-sm btn-info" onclick="viewAgent('${agent.agentId}')"><i class="fas fa-eye"></i></button>
+                    <button class="btn btn-sm btn-primary" onclick="editAgent('${agent.agentId}')"><i class="fas fa-edit"></i></button>
+                    <select onchange="updateAgentStatus('${agent.agentId}', this.value)" class="glass-input" style="width: auto; padding: 4px 8px; font-size: 0.7rem; min-width: 100px;">
+                        <option value="Pending" ${agent.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                        <option value="Approved" ${agent.status === 'Approved' ? 'selected' : ''}>Approved</option>
+                        <option value="Suspended" ${agent.status === 'Suspended' ? 'selected' : ''}>Suspended</option>
+                        <option value="Inactive" ${agent.status === 'Inactive' ? 'selected' : ''}>Inactive</option>
+                        <option value="Terminated" ${agent.status === 'Terminated' ? 'selected' : ''}>Terminated</option>
+                    </select>
+                </td>
+            </tr>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Error loading agents:', error);
+        debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px;">Error loading agents: ${error.message}</td></tr>`;
+    }
+}
+
+// Load Agent Applicants
+async function loadAgentApplicants() {
+    const debugEl = document.getElementById('agentApplicantDebugInfo');
+    const tbody = document.getElementById('agentApplicantsTableBody');
+    
+    try {
+        debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading agent applicants...</span>';
+        const result = await apiFetch('agent-applicants');
+        const applicants = result.applicants || [];
+        
+        document.getElementById('agentApplicantTotal').textContent = `${applicants.length} total`;
+        document.getElementById('agentApplicantCount').textContent = applicants.length;
+        
+        debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${applicants.length} agent applicants</span>`;
+        
+        if (applicants.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px;">No agent applicants found</td></tr>`;
+            return;
+        }
+        
+        tbody.innerHTML = applicants.map(app => `
+            <tr>
+                <td><strong>${app.applicantId || 'N/A'}</strong></td>
+                <td>${app.fullName || 'Unknown'}</td>
+                <td>${app.email || 'N/A'}</td>
+                <td>${app.agentName || app.agentId || 'N/A'}</td>
+                <td><span class="status-badge status-${app.status ? app.status.toLowerCase().replace(/ /g, '_') : 'registered'}">${app.status || 'Registered'}</span></td>
+                <td><span class="payment-status-badge ${app.paymentStatus ? app.paymentStatus.toLowerCase() : 'due'}">${app.paymentStatus || 'No Payment'}</span></td>
+                <td>${app.commissionStatus || 'No Commission'}</td>
+                <td>
+                    <button class="btn btn-sm btn-info" onclick="viewAgentApplicant('${app.applicantId}')"><i class="fas fa-eye"></i></button>
+                    <button class="btn btn-sm btn-primary" onclick="editAgentApplicant('${app.applicantId}')"><i class="fas fa-edit"></i></button>
+                </td>
+            </tr>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Error loading agent applicants:', error);
+        debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px;">Error loading applicants: ${error.message}</td></tr>`;
+    }
+}
+
+// Load Agent Commissions
+async function loadAgentCommissions() {
+    const debugEl = document.getElementById('commissionDebugInfo');
+    const tbody = document.getElementById('commissionsTableBody');
+    
+    try {
+        debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading commissions...</span>';
+        const result = await apiFetch('agent-commissions');
+        const commissions = result.commissions || [];
+        const summary = result.summary || {};
+        
+        document.getElementById('totalCommissionEarned').textContent = (summary.totalEarned || 0).toFixed(2);
+        document.getElementById('totalCommissionPaid').textContent = (summary.totalPaid || 0).toFixed(2);
+        document.getElementById('totalCommissionPending').textContent = (summary.totalPending || 0).toFixed(2);
+        document.getElementById('totalCommissionReversed').textContent = (summary.totalReversed || 0).toFixed(2);
+        document.getElementById('commissionTotal').textContent = `${commissions.length} total`;
+        document.getElementById('commissionCount').textContent = commissions.length;
+        
+        // Populate agent filter dropdown
+        const agentSelect = document.getElementById('filterCommissionAgent');
+        const agents = await apiFetch('agents');
+        const agentList = agents.agents || [];
+        agentSelect.innerHTML = '<option value="all">All Agents</option>' + 
+            agentList.map(a => `<option value="${a.agentId}">${a.fullName} (${a.agentId})</option>`).join('');
+        
+        debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${commissions.length} commissions</span>`;
+        
+        if (commissions.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px;">No commissions found</td></tr>`;
+            return;
+        }
+        
+        tbody.innerHTML = commissions.map(c => `
+            <tr>
+                <td>${c.agentName || c.agentId || 'N/A'}</td>
+                <td>${c.applicantName || c.applicantId || 'N/A'}</td>
+                <td>${c.packageName || 'N/A'}</td>
+                <td>$${(c.amountReceived || 0).toFixed(2)}</td>
+                <td><strong>$${(c.commissionAmount || 0).toFixed(2)}</strong></td>
+                <td>${(c.rate || 0) * 100}%</td>
+                <td><span class="status-badge status-${c.status ? c.status.toLowerCase() : 'pending'}">${c.status || 'Pending'}</span></td>
+                <td>
+                    ${c.status === 'Eligible' ? `<button class="btn btn-sm btn-success" onclick="reverseCommission('${c._id}')"><i class="fas fa-undo"></i> Reverse</button>` : ''}
+                    ${c.status === 'Reversed' ? `<span style="color: #dc3545;">Reversed</span>` : ''}
+                </td>
+            </tr>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Error loading commissions:', error);
+        debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px;">Error loading commissions: ${error.message}</td></tr>`;
+    }
+}
+
+// Load Agent Settlements
+async function loadAgentSettlements() {
+    const debugEl = document.getElementById('settlementDebugInfo');
+    const tbody = document.getElementById('settlementsTableBody');
+    
+    try {
+        debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading settlements...</span>';
+        const result = await apiFetch('agent-settlements');
+        const settlements = result.settlements || [];
+        
+        document.getElementById('settlementTotal').textContent = `${settlements.length} total`;
+        
+        debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${settlements.length} settlements</span>`;
+        
+        if (settlements.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 30px;">No settlements found</td></tr>`;
+            return;
+        }
+        
+        tbody.innerHTML = settlements.map(s => `
+            <tr>
+                <td><strong>${s._id ? s._id.toString().slice(-8) : 'N/A'}</strong></td>
+                <td>${s.agentName || s.agentId || 'N/A'}</td>
+                <td>${s.periodStart ? new Date(s.periodStart).toLocaleDateString() : 'N/A'} - ${s.periodEnd ? new Date(s.periodEnd).toLocaleDateString() : 'N/A'}</td>
+                <td><strong>$${(s.totalAmount || 0).toFixed(2)}</strong></td>
+                <td><span class="status-badge status-${s.status ? s.status.toLowerCase() : 'pending'}">${s.status || 'Pending'}</span></td>
+                <td>${s.generatedAt ? new Date(s.generatedAt).toLocaleDateString() : 'N/A'}</td>
+                <td>
+                    ${s.status === 'Pending' ? `<button class="btn btn-sm btn-success" onclick="markSettlementPaid('${s._id}')"><i class="fas fa-check"></i> Mark Paid</button>` : ''}
+                    <button class="btn btn-sm btn-info" onclick="viewSettlement('${s._id}')"><i class="fas fa-eye"></i></button>
+                </td>
+            </tr>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Error loading settlements:', error);
+        debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 30px;">Error loading settlements: ${error.message}</td></tr>`;
+    }
+}
+
+// ============================================================
+// AGENT ACTION FUNCTIONS
+// ============================================================
+
+// Update Agent Status
+window.updateAgentStatus = async (agentId, status) => {
+    try {
+        await apiFetch(`agents/${agentId}/status`, { 
+            method: 'PUT', 
+            body: JSON.stringify({ status }) 
+        });
+        showToast(`Agent status updated to: ${status}`, 'success');
+        loadAgents();
+    } catch (error) {
+        console.error('Error updating agent status:', error);
+        showToast('Error updating agent status', 'error');
+    }
+};
+
+// View Agent
+window.viewAgent = async (agentId) => {
+    try {
+        const result = await apiFetch(`agents/${agentId}`);
+        const agent = result.agent;
+        alert(`👤 Agent Details\n\nName: ${agent.fullName}\nID: ${agent.agentId}\nEmail: ${agent.email}\nCategory: ${agent.agentCategory}\nStatus: ${agent.status}\nReferrals: ${agent.totalReferrals || 0}\nCommission Earned: $${(agent.totalCommissionEarned || 0).toFixed(2)}`);
+    } catch (error) {
+        console.error('Error viewing agent:', error);
+        showToast('Error loading agent details', 'error');
+    }
+};
+
+// Edit Agent
+window.editAgent = async (agentId) => {
+    showToast('Edit agent functionality coming soon', 'info');
+};
+
+// Open Agent Registration
+window.openAgentRegistration = () => {
+    showToast('Agent registration form coming soon', 'info');
+};
+
+// View Agent Applicant
+window.viewAgentApplicant = async (applicantId) => {
+    try {
+        const result = await apiFetch(`agent-applicants/${applicantId}`);
+        const applicant = result.applicant;
+        alert(`👤 Applicant Details\n\nName: ${applicant.fullName}\nID: ${applicant.applicantId}\nEmail: ${applicant.email}\nStatus: ${applicant.status}\nAgent: ${applicant.agentId}\nPayment Status: ${applicant.paymentStatus}\nCommission Status: ${applicant.commissionStatus}`);
+    } catch (error) {
+        console.error('Error viewing applicant:', error);
+        showToast('Error loading applicant details', 'error');
+    }
+};
+
+// Edit Agent Applicant
+window.editAgentApplicant = async (applicantId) => {
+    showToast('Edit applicant functionality coming soon', 'info');
+};
+
+// Reverse Commission
+window.reverseCommission = async (commissionId) => {
+    const reason = prompt('Enter reason for reversing this commission:');
+    if (reason === null) return;
+    if (!confirm('Are you sure you want to reverse this commission?')) return;
+    
+    try {
+        await apiFetch(`commissions/${commissionId}/reverse`, {
+            method: 'PUT',
+            body: JSON.stringify({ reason: reason || 'Admin reversal' })
+        });
+        showToast('Commission reversed successfully', 'success');
+        loadAgentCommissions();
+    } catch (error) {
+        console.error('Error reversing commission:', error);
+        showToast('Error reversing commission', 'error');
+    }
+};
+
+// Process Commission Modal
+window.processCommissionModal = () => {
+    showToast('Process commission form coming soon', 'info');
+};
+
+// Generate Settlement
+window.generateSettlement = () => {
+    const agentId = prompt('Enter Agent ID to generate settlement for:');
+    if (!agentId) return;
+    
+    // Show confirmation with amount
+    showToast('Generating settlement...', 'info');
+    // This will be implemented with the backend API
+};
+
+// Mark Settlement as Paid
+window.markSettlementPaid = async (settlementId) => {
+    const paymentRef = prompt('Enter payment reference number:');
+    if (paymentRef === null) return;
+    
+    try {
+        await apiFetch(`settlements/${settlementId}/pay`, {
+            method: 'PUT',
+            body: JSON.stringify({ paymentReference: paymentRef || `PAY-${Date.now()}` })
+        });
+        showToast('Settlement marked as paid', 'success');
+        loadAgentSettlements();
+    } catch (error) {
+        console.error('Error marking settlement paid:', error);
+        showToast('Error marking settlement paid', 'error');
+    }
+};
+
+// View Settlement
+window.viewSettlement = async (settlementId) => {
+    try {
+        const result = await apiFetch(`settlements/${settlementId}`);
+        const settlement = result.settlement;
+        alert(`📄 Settlement Details\n\nID: ${settlementId}\nAgent: ${settlement.agentName || settlement.agentId}\nTotal: $${(settlement.totalAmount || 0).toFixed(2)}\nStatus: ${settlement.status}\nPeriod: ${settlement.periodStart ? new Date(settlement.periodStart).toLocaleDateString() : 'N/A'} - ${settlement.periodEnd ? new Date(settlement.periodEnd).toLocaleDateString() : 'N/A'}\nGenerated: ${settlement.generatedAt ? new Date(settlement.generatedAt).toLocaleDateString() : 'N/A'}\n${settlement.paymentReference ? `Payment Ref: ${settlement.paymentReference}` : ''}`);
+    } catch (error) {
+        console.error('Error viewing settlement:', error);
+        showToast('Error loading settlement details', 'error');
+    }
+};
 
         // ============================================================
         // LOAD NOTIFICATIONS
