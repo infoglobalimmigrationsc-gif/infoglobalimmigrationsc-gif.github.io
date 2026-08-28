@@ -4037,6 +4037,420 @@ app.delete('/api/admin/service-requests/:id', authenticateToken, async (req, res
     }
 });
 
+
+// ============================================================
+// AGENT REPORTING
+// ============================================================
+
+// Agent performance report
+app.get('/api/agent/performance', authenticateAgent, async (req, res) => {
+    try {
+        const agentId = req.agent.agentId;
+        
+        // Get agent data
+        const agent = await db.collection('agents').findOne({ _id: new ObjectId(req.agent.id) });
+        if (!agent) {
+            return res.status(404).json({ success: false, message: 'Agent not found' });
+        }
+        
+        // Get all applicants
+        const applicants = await db.collection('applicants')
+            .find({ agentId: agentId })
+            .toArray();
+        
+        // Get all applications
+        const applicantIds = applicants.map(a => a.applicantId);
+        const applications = await db.collection('applications')
+            .find({ applicantId: { $in: applicantIds } })
+            .toArray();
+        
+        // Get all commissions
+        const commissions = await db.collection('commissions')
+            .find({ agentId: agentId })
+            .toArray();
+        
+        // Calculate metrics
+        const totalApplicants = applicants.length;
+        const qualifiedApplicants = applicants.filter(a => a.status === 'Qualified').length;
+        const successfulApplications = applications.filter(a => a.status === 'Completed').length;
+        
+        // Monthly breakdown
+        const monthlyData = [];
+        const now = new Date();
+        for (let i = 0; i < 6; i++) {
+            const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+            
+            const monthApplicants = applicants.filter(a => {
+                const date = new Date(a.createdAt);
+                return date >= monthStart && date <= monthEnd;
+            });
+            
+            const monthCommissions = commissions.filter(c => {
+                const date = new Date(c.createdAt);
+                return date >= monthStart && date <= monthEnd;
+            });
+            
+            const monthRevenue = monthCommissions.reduce((sum, c) => sum + c.eligibleRevenue, 0);
+            const monthCommission = monthCommissions.reduce((sum, c) => sum + c.commissionAmount, 0);
+            
+            monthlyData.push({
+                month: monthStart.toLocaleString('default', { month: 'short', year: 'numeric' }),
+                applicants: monthApplicants.length,
+                revenue: monthRevenue,
+                commission: monthCommission
+            });
+        }
+        
+        // Performance level calculation
+        const successCount = successfulApplications;
+        let performanceLevel = 'Registered Agent';
+        let nextLevel = 'ACTIVE AGENT';
+        let nextLevelThreshold = 3;
+        let progressToNext = 0;
+        
+        if (successCount >= 25) {
+            performanceLevel = 'ELITE AGENT';
+            nextLevel = 'ELITE+';
+            nextLevelThreshold = 30;
+            progressToNext = Math.min((successCount - 25) / 5 * 100, 100);
+        } else if (successCount >= 10) {
+            performanceLevel = 'PREMIUM AGENT';
+            nextLevel = 'ELITE AGENT';
+            nextLevelThreshold = 25;
+            progressToNext = (successCount - 10) / 15 * 100;
+        } else if (successCount >= 3) {
+            performanceLevel = 'ACTIVE AGENT';
+            nextLevel = 'PREMIUM AGENT';
+            nextLevelThreshold = 10;
+            progressToNext = (successCount - 3) / 7 * 100;
+        } else {
+            performanceLevel = 'REGISTERED AGENT';
+            nextLevel = 'ACTIVE AGENT';
+            nextLevelThreshold = 3;
+            progressToNext = successCount / 3 * 100;
+        }
+        
+        // Bonus eligibility
+        let bonuses = [];
+        if (successCount >= 5) bonuses.push({ type: 'Milestone Bonus', amount: 50, achieved: true });
+        if (successCount >= 10) bonuses.push({ type: 'Milestone Bonus', amount: 150, achieved: true });
+        if (successCount >= 20) bonuses.push({ type: 'Milestone Bonus', amount: 350, achieved: true });
+        if (successCount >= 30) bonuses.push({ type: 'Elite Bonus', amount: 500, achieved: successCount >= 30 });
+        
+        // Commission breakdown by package
+        const packageBreakdown = {};
+        for (const c of commissions) {
+            if (c.packageName) {
+                if (!packageBreakdown[c.packageName]) {
+                    packageBreakdown[c.packageName] = {
+                        count: 0,
+                        totalCommission: 0,
+                        totalRevenue: 0
+                    };
+                }
+                packageBreakdown[c.packageName].count++;
+                packageBreakdown[c.packageName].totalCommission += c.commissionAmount;
+                packageBreakdown[c.packageName].totalRevenue += c.eligibleRevenue;
+            }
+        }
+        
+        res.json({
+            success: true,
+            performance: {
+                agent: {
+                    name: agent.fullName,
+                    agentId: agent.agentId,
+                    category: agent.agentCategory,
+                    status: agent.status,
+                    joinedDate: agent.createdAt
+                },
+                metrics: {
+                    totalApplicants,
+                    qualifiedApplicants,
+                    successfulApplications,
+                    conversionRate: totalApplicants > 0 ? (qualifiedApplicants / totalApplicants * 100) : 0,
+                    successRate: qualifiedApplicants > 0 ? (successfulApplications / qualifiedApplicants * 100) : 0
+                },
+                level: {
+                    current: performanceLevel,
+                    next: nextLevel,
+                    threshold: nextLevelThreshold,
+                    progress: Math.min(progressToNext, 100)
+                },
+                commissions: {
+                    totalEarned: commissions.reduce((sum, c) => sum + (c.status === 'Reversed' ? 0 : c.commissionAmount), 0),
+                    totalPaid: commissions.filter(c => c.status === 'Paid' || c.status === 'Settled').reduce((sum, c) => sum + c.commissionAmount, 0),
+                    totalPending: commissions.filter(c => c.status === 'Pending' || c.status === 'Eligible').reduce((sum, c) => sum + c.commissionAmount, 0),
+                    totalReversed: commissions.filter(c => c.status === 'Reversed').reduce((sum, c) => sum + c.commissionAmount, 0)
+                },
+                monthlyData: monthlyData.reverse(),
+                packageBreakdown: Object.keys(packageBreakdown).map(name => ({
+                    package: name,
+                    ...packageBreakdown[name]
+                })),
+                bonuses: bonuses
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching performance:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Admin: Agent performance report
+app.get('/api/admin/reports/agent-performance', authenticateToken, async (req, res) => {
+    try {
+        const { agentId, period } = req.query;
+        
+        const query = {};
+        if (agentId) query.agentId = agentId;
+        
+        const agents = await db.collection('agents')
+            .find(query)
+            .toArray();
+        
+        const results = [];
+        
+        for (const agent of agents) {
+            const applicants = await db.collection('applicants')
+                .find({ agentId: agent.agentId })
+                .toArray();
+            
+            const applicantIds = applicants.map(a => a.applicantId);
+            const applications = await db.collection('applications')
+                .find({ applicantId: { $in: applicantIds } })
+                .toArray();
+            
+            const commissions = await db.collection('commissions')
+                .find({ agentId: agent.agentId })
+                .toArray();
+            
+            results.push({
+                agent: {
+                    id: agent.agentId,
+                    name: agent.fullName,
+                    email: agent.email,
+                    category: agent.agentCategory,
+                    status: agent.status,
+                    joinedDate: agent.createdAt
+                },
+                metrics: {
+                    totalApplicants: applicants.length,
+                    qualifiedApplicants: applicants.filter(a => a.status === 'Qualified').length,
+                    successfulApplications: applications.filter(a => a.status === 'Completed').length,
+                    totalRevenue: commissions.reduce((sum, c) => sum + c.eligibleRevenue, 0),
+                    totalCommission: commissions.reduce((sum, c) => sum + (c.status === 'Reversed' ? 0 : c.commissionAmount), 0),
+                    pendingCommission: commissions.filter(c => c.status === 'Eligible' || c.status === 'Pending').reduce((sum, c) => sum + c.commissionAmount, 0),
+                    paidCommission: commissions.filter(c => c.status === 'Paid' || c.status === 'Settled').reduce((sum, c) => sum + c.commissionAmount, 0)
+                }
+            });
+        }
+        
+        res.json({ success: true, reports: results });
+    } catch (error) {
+        console.error('Error generating agent performance report:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Admin: Commission report
+app.get('/api/admin/reports/commission', authenticateToken, async (req, res) => {
+    try {
+        const { agentId, status, startDate, endDate } = req.query;
+        
+        const query = {};
+        if (agentId) query.agentId = agentId;
+        if (status) query.status = status;
+        if (startDate || endDate) {
+            query.createdAt = {};
+            if (startDate) query.createdAt.$gte = new Date(startDate);
+            if (endDate) query.createdAt.$lte = new Date(endDate);
+        }
+        
+        const commissions = await db.collection('commissions')
+            .find(query)
+            .sort({ createdAt: -1 })
+            .toArray();
+        
+        // Enrich with agent and applicant names
+        const enriched = [];
+        for (const c of commissions) {
+            const agent = await db.collection('agents').findOne({ agentId: c.agentId });
+            const applicant = await db.collection('applicants').findOne({ applicantId: c.applicantId });
+            enriched.push({
+                ...c,
+                agentName: agent ? agent.fullName : 'Unknown Agent',
+                applicantName: applicant ? applicant.fullName : 'Unknown Applicant'
+            });
+        }
+        
+        // Summary
+        const summary = {
+            totalAmount: enriched.reduce((sum, c) => sum + (c.status === 'Reversed' ? 0 : c.commissionAmount), 0),
+            totalEligible: enriched.filter(c => c.status === 'Eligible').reduce((sum, c) => sum + c.commissionAmount, 0),
+            totalPaid: enriched.filter(c => c.status === 'Paid' || c.status === 'Settled').reduce((sum, c) => sum + c.commissionAmount, 0),
+            totalReversed: enriched.filter(c => c.status === 'Reversed').reduce((sum, c) => sum + c.commissionAmount, 0),
+            count: enriched.length
+        };
+        
+        res.json({
+            success: true,
+            commissions: enriched,
+            summary: summary
+        });
+    } catch (error) {
+        console.error('Error generating commission report:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Admin: Applicant acquisition report
+app.get('/api/admin/reports/applicant-acquisition', authenticateToken, async (req, res) => {
+    try {
+        const { agentId, startDate, endDate } = req.query;
+        
+        const query = {};
+        if (agentId) query.agentId = agentId;
+        if (startDate || endDate) {
+            query.createdAt = {};
+            if (startDate) query.createdAt.$gte = new Date(startDate);
+            if (endDate) query.createdAt.$lte = new Date(endDate);
+        }
+        
+        const applicants = await db.collection('applicants')
+            .find(query)
+            .toArray();
+        
+        // Group by agent
+        const agentGroups = {};
+        for (const a of applicants) {
+            if (!agentGroups[a.agentId]) {
+                agentGroups[a.agentId] = {
+                    agentId: a.agentId,
+                    agentReferralCode: a.agentReferralCode || 'N/A',
+                    count: 0,
+                    applicants: []
+                };
+            }
+            agentGroups[a.agentId].count++;
+            agentGroups[a.agentId].applicants.push(a);
+        }
+        
+        // Get agent names
+        const agentIds = Object.keys(agentGroups);
+        const agents = await db.collection('agents')
+            .find({ agentId: { $in: agentIds } })
+            .toArray();
+        const agentMap = {};
+        for (const a of agents) {
+            agentMap[a.agentId] = a.fullName;
+        }
+        
+        const results = Object.keys(agentGroups).map(agentId => ({
+            agentId: agentId,
+            agentName: agentMap[agentId] || 'Unknown Agent',
+            referralCode: agentGroups[agentId].agentReferralCode,
+            count: agentGroups[agentId].count,
+            applicants: agentGroups[agentId].applicants
+        }));
+        
+        results.sort((a, b) => b.count - a.count);
+        
+        res.json({
+            success: true,
+            results: results,
+            totalApplicants: applicants.length,
+            totalAgents: results.length
+        });
+    } catch (error) {
+        console.error('Error generating applicant acquisition report:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
+// AGENT RESOURCES
+// ============================================================
+
+// Get resources for agent
+app.get('/api/agent/resources', authenticateAgent, async (req, res) => {
+    try {
+        const resources = await db.collection('agent_resources')
+            .find({ status: 'published' })
+            .sort({ createdAt: -1 })
+            .toArray();
+        
+        res.json({ success: true, resources });
+    } catch (error) {
+        console.error('Error fetching resources:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Admin: Manage resources
+app.get('/api/admin/resources', authenticateToken, async (req, res) => {
+    try {
+        const resources = await db.collection('agent_resources')
+            .find({})
+            .sort({ createdAt: -1 })
+            .toArray();
+        res.json({ success: true, resources });
+    } catch (error) {
+        console.error('Error fetching resources:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.post('/api/admin/resources', authenticateToken, async (req, res) => {
+    try {
+        const resource = {
+            ...req.body,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+        const result = await db.collection('agent_resources').insertOne(resource);
+        res.json({ success: true, id: result.insertedId, resource });
+    } catch (error) {
+        console.error('Error creating resource:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.put('/api/admin/resources/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updateData = { ...req.body, updatedAt: new Date() };
+        delete updateData._id;
+        delete updateData.createdAt;
+        
+        const result = await db.collection('agent_resources').updateOne(
+            { _id: new ObjectId(id) },
+            { $set: updateData }
+        );
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Resource not found' });
+        }
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error updating resource:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.delete('/api/admin/resources/:id', authenticateToken, async (req, res) => {
+    try {
+        const result = await db.collection('agent_resources').deleteOne({ _id: new ObjectId(req.params.id) });
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Resource not found' });
+        }
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error deleting resource:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // ============================================================
 // SERVE STATIC FILES - AT THE VERY END
 // ============================================================
