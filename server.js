@@ -4037,6 +4037,388 @@ app.delete('/api/admin/service-requests/:id', authenticateToken, async (req, res
     }
 });
 
+// ============================================================
+// ADMIN AGENT MANAGEMENT
+// ============================================================
+
+// Get all agents
+app.get('/api/admin/agents', authenticateToken, async (req, res) => {
+    try {
+        const agents = await db.collection('agents')
+            .find({})
+            .sort({ createdAt: -1 })
+            .toArray();
+        
+        // Remove sensitive data
+        const sanitizedAgents = agents.map(agent => {
+            delete agent.password;
+            delete agent.resetToken;
+            delete agent.resetTokenExpiry;
+            return agent;
+        });
+        
+        res.json({ success: true, agents: sanitizedAgents });
+    } catch (error) {
+        console.error('Error fetching agents:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Get single agent
+app.get('/api/admin/agents/:agentId', authenticateToken, async (req, res) => {
+    try {
+        const { agentId } = req.params;
+        
+        const agent = await db.collection('agents').findOne({ agentId: agentId });
+        if (!agent) {
+            return res.status(404).json({ success: false, message: 'Agent not found' });
+        }
+        
+        delete agent.password;
+        delete agent.resetToken;
+        delete agent.resetTokenExpiry;
+        
+        res.json({ success: true, agent });
+    } catch (error) {
+        console.error('Error fetching agent:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Update agent status
+app.put('/api/admin/agents/:agentId/status', authenticateToken, async (req, res) => {
+    try {
+        const { agentId } = req.params;
+        const { status } = req.body;
+        
+        const validStatuses = ['Pending', 'Approved', 'Suspended', 'Inactive', 'Terminated'];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({ success: false, message: 'Invalid status' });
+        }
+        
+        const agent = await db.collection('agents').findOne({ agentId: agentId });
+        if (!agent) {
+            return res.status(404).json({ success: false, message: 'Agent not found' });
+        }
+        
+        // If approving, set dateApproved and generate password
+        const updateData = {
+            status: status,
+            updatedAt: new Date()
+        };
+        
+        if (status === 'Approved' && agent.status !== 'Approved') {
+            updateData.dateApproved = new Date();
+            
+            // Generate a temporary password if none exists
+            if (!agent.password) {
+                const tempPassword = Math.random().toString(36).slice(-8);
+                updateData.password = await bcrypt.hash(tempPassword, 10);
+                
+                // Log the temp password (in production, send via email)
+                console.log(`🔑 Temporary password for ${agent.email}: ${tempPassword}`);
+            }
+        }
+        
+        const result = await db.collection('agents').updateOne(
+            { agentId: agentId },
+            { $set: updateData }
+        );
+        
+        // Log the action
+        await db.collection('audit_logs').insertOne({
+            action: 'AGENT_STATUS_UPDATED',
+            agentId: agentId,
+            agentEmail: agent.email,
+            oldStatus: agent.status,
+            newStatus: status,
+            updatedBy: req.user?.email || 'admin',
+            timestamp: new Date()
+        });
+        
+        // Create notification for agent
+        await db.collection('agent_notifications').insertOne({
+            agentId: agentId,
+            title: `Account Status Updated to ${status}`,
+            message: `Your GISC Agent account status has been updated to: ${status}.${status === 'Approved' ? ' You can now log in and start submitting applicants.' : ''}`,
+            type: 'account',
+            read: false,
+            createdAt: new Date(),
+            link: '/profile'
+        });
+        
+        res.json({ success: true, message: `Agent status updated to ${status}` });
+    } catch (error) {
+        console.error('Error updating agent status:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+
+// ============================================================
+// ADMIN AGENT APPLICANTS
+// ============================================================
+
+// Get all agent applicants (with agent info)
+app.get('/api/admin/agent-applicants', authenticateToken, async (req, res) => {
+    try {
+        const { search, status, agentId } = req.query;
+        
+        const query = {};
+        if (status && status !== 'all') {
+            query.status = status;
+        }
+        if (agentId && agentId !== 'all') {
+            query.agentId = agentId;
+        }
+        if (search) {
+            query.$or = [
+                { fullName: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: 'i' } },
+                { applicantId: { $regex: search, $options: 'i' } }
+            ];
+        }
+        
+        const applicants = await db.collection('applicants')
+            .find(query)
+            .sort({ createdAt: -1 })
+            .toArray();
+        
+        // Enrich with agent names
+        const enrichedApplicants = [];
+        for (const app of applicants) {
+            const agent = await db.collection('agents').findOne({ agentId: app.agentId });
+            enrichedApplicants.push({
+                ...app,
+                agentName: agent ? agent.fullName : 'Unknown Agent'
+            });
+        }
+        
+        res.json({ success: true, applicants: enrichedApplicants, count: enrichedApplicants.length });
+    } catch (error) {
+        console.error('Error fetching agent applicants:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Get single agent applicant (with full details)
+app.get('/api/admin/agent-applicants/:applicantId', authenticateToken, async (req, res) => {
+    try {
+        const { applicantId } = req.params;
+        
+        const applicant = await db.collection('applicants').findOne({ applicantId: applicantId });
+        if (!applicant) {
+            return res.status(404).json({ success: false, message: 'Applicant not found' });
+        }
+        
+        const agent = await db.collection('agents').findOne({ agentId: applicant.agentId });
+        const application = await db.collection('applications').findOne({ applicantId: applicantId });
+        
+        res.json({
+            success: true,
+            applicant: {
+                ...applicant,
+                agentName: agent ? agent.fullName : 'Unknown Agent'
+            },
+            application: application || null
+        });
+    } catch (error) {
+        console.error('Error fetching applicant:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Update agent applicant status (admin only)
+app.put('/api/admin/agent-applicants/:applicantId', authenticateToken, async (req, res) => {
+    try {
+        const { applicantId } = req.params;
+        const { status, applicationStage, paymentStatus, assignedCounselor } = req.body;
+        
+        const applicant = await db.collection('applicants').findOne({ applicantId: applicantId });
+        if (!applicant) {
+            return res.status(404).json({ success: false, message: 'Applicant not found' });
+        }
+        
+        const updateData = { updatedAt: new Date() };
+        if (status) updateData.status = status;
+        if (applicationStage) updateData.applicationStage = applicationStage;
+        if (paymentStatus) updateData.paymentStatus = paymentStatus;
+        if (assignedCounselor !== undefined) updateData.assignedCounselor = assignedCounselor;
+        
+        await db.collection('applicants').updateOne(
+            { applicantId: applicantId },
+            { $set: updateData }
+        );
+        
+        // Update application status if changed
+        if (status) {
+            await db.collection('applications').updateOne(
+                { applicantId: applicantId },
+                { 
+                    $set: { 
+                        status: status,
+                        stage: applicationStage || status,
+                        updatedAt: new Date()
+                    }
+                }
+            );
+        }
+        
+        // Log the action
+        await db.collection('audit_logs').insertOne({
+            action: 'APPLICANT_STATUS_UPDATED',
+            agentId: applicant.agentId,
+            applicantId: applicantId,
+            applicantName: applicant.fullName,
+            oldStatus: applicant.status,
+            newStatus: status || applicant.status,
+            updatedBy: req.user?.email || 'admin',
+            timestamp: new Date()
+        });
+        
+        res.json({ success: true, message: 'Applicant updated successfully' });
+    } catch (error) {
+        console.error('Error updating applicant:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
+// ADMIN COMMISSIONS (Full list with filters)
+// ============================================================
+
+// Get all commissions with filters
+app.get('/api/admin/agent-commissions', authenticateToken, async (req, res) => {
+    try {
+        const { status, agentId, applicantId, startDate, endDate } = req.query;
+        
+        const query = {};
+        if (status && status !== 'all') {
+            query.status = status;
+        }
+        if (agentId && agentId !== 'all') {
+            query.agentId = agentId;
+        }
+        if (applicantId) {
+            query.applicantId = applicantId;
+        }
+        if (startDate || endDate) {
+            query.createdAt = {};
+            if (startDate) query.createdAt.$gte = new Date(startDate);
+            if (endDate) query.createdAt.$lte = new Date(endDate);
+        }
+        
+        const commissions = await db.collection('commissions')
+            .find(query)
+            .sort({ createdAt: -1 })
+            .toArray();
+        
+        // Enrich with agent and applicant names
+        const enriched = [];
+        for (const c of commissions) {
+            const agent = await db.collection('agents').findOne({ agentId: c.agentId });
+            const applicant = await db.collection('applicants').findOne({ applicantId: c.applicantId });
+            enriched.push({
+                ...c,
+                agentName: agent ? agent.fullName : 'Unknown Agent',
+                applicantName: applicant ? applicant.fullName : 'Unknown Applicant'
+            });
+        }
+        
+        // Calculate summary
+        const summary = {
+            totalEarned: enriched
+                .filter(c => c.status === 'Eligible' || c.status === 'Paid' || c.status === 'Settled')
+                .reduce((sum, c) => sum + c.commissionAmount, 0),
+            totalPaid: enriched
+                .filter(c => c.status === 'Paid' || c.status === 'Settled')
+                .reduce((sum, c) => sum + c.commissionAmount, 0),
+            totalPending: enriched
+                .filter(c => c.status === 'Pending' || c.status === 'Eligible')
+                .reduce((sum, c) => sum + c.commissionAmount, 0),
+            totalReversed: enriched
+                .filter(c => c.status === 'Reversed')
+                .reduce((sum, c) => sum + c.commissionAmount, 0)
+        };
+        
+        res.json({ 
+            success: true, 
+            commissions: enriched,
+            summary: summary,
+            count: enriched.length 
+        });
+    } catch (error) {
+        console.error('Error fetching commissions:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
+// ADMIN SETTLEMENTS
+// ============================================================
+
+// Get all settlements with filters
+app.get('/api/admin/agent-settlements', authenticateToken, async (req, res) => {
+    try {
+        const { agentId, status } = req.query;
+        
+        const query = {};
+        if (agentId && agentId !== 'all') {
+            query.agentId = agentId;
+        }
+        if (status && status !== 'all') {
+            query.status = status;
+        }
+        
+        const settlements = await db.collection('commission_settlements')
+            .find(query)
+            .sort({ generatedAt: -1 })
+            .toArray();
+        
+        // Enrich with agent names
+        const enriched = [];
+        for (const s of settlements) {
+            const agent = await db.collection('agents').findOne({ agentId: s.agentId });
+            enriched.push({
+                ...s,
+                agentName: agent ? agent.fullName : 'Unknown Agent'
+            });
+        }
+        
+        res.json({ success: true, settlements: enriched, count: enriched.length });
+    } catch (error) {
+        console.error('Error fetching settlements:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Get single settlement
+app.get('/api/admin/agent-settlements/:settlementId', authenticateToken, async (req, res) => {
+    try {
+        const { settlementId } = req.params;
+        
+        const settlement = await db.collection('commission_settlements').findOne({
+            _id: new ObjectId(settlementId)
+        });
+        
+        if (!settlement) {
+            return res.status(404).json({ success: false, message: 'Settlement not found' });
+        }
+        
+        const agent = await db.collection('agents').findOne({ agentId: settlement.agentId });
+        
+        res.json({
+            success: true,
+            settlement: {
+                ...settlement,
+                agentName: agent ? agent.fullName : 'Unknown Agent'
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching settlement:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
 
 // ============================================================
 // AGENT REPORTING
