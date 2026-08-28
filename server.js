@@ -2750,13 +2750,22 @@ app.post('/api/admin/sync-users', authenticateToken, async (req, res) => {
 // ADMIN APPLICATIONS - ENHANCED WITH POPULATION
 // ============================================================
 
+// ============================================================
+// ADMIN APPLICATIONS - ENHANCED WITH POPULATION
+// ============================================================
+
 app.get('/api/admin/applications', authenticateToken, async (req, res) => {
     try {
         const applications = await db.collection('applications').find({}).toArray();
         
-        // Get all applicant IDs
+        console.log('📋 Total applications found:', applications.length);
+        
+        // Get all applicant IDs and agent IDs
         const applicantIds = applications.map(a => a.applicantId).filter(Boolean);
         const agentIds = applications.map(a => a.agentId).filter(Boolean);
+        
+        console.log('📋 Applicant IDs from applications:', applicantIds);
+        console.log('📋 Agent IDs from applications:', agentIds);
         
         // Fetch applicants and agents
         let applicants = [];
@@ -2766,11 +2775,13 @@ app.get('/api/admin/applications', authenticateToken, async (req, res) => {
                 applicants = await db.collection('applicants')
                     .find({ applicantId: { $in: applicantIds } })
                     .toArray();
+                console.log('👤 Found applicants:', applicants.map(a => a.applicantId));
             }
             if (agentIds.length > 0) {
                 agents = await db.collection('agents')
                     .find({ agentId: { $in: agentIds } })
                     .toArray();
+                console.log('🤝 Found agents:', agents.map(a => ({ agentId: a.agentId, name: a.fullName })));
             }
         } catch (e) {
             console.warn('Could not fetch related data:', e);
@@ -2782,21 +2793,71 @@ app.get('/api/admin/applications', authenticateToken, async (req, res) => {
         const agentMap = {};
         agents.forEach(a => { agentMap[a.agentId] = a; });
         
+        // Log any missing agents
+        const missingAgentIds = agentIds.filter(id => !agentMap[id]);
+        if (missingAgentIds.length > 0) {
+            console.warn('⚠️ Missing agents for IDs:', missingAgentIds);
+        }
+        
         // Enrich applications
         const enrichedApps = applications.map(app => {
             const applicant = applicantMap[app.applicantId];
             const agent = agentMap[app.agentId];
+            
+            // If agent not found by direct match, try to find by email or name
+            let agentName = app.agentName || 'Unknown';
+            let agentIdDisplay = app.agentId || 'Unknown';
+            
+            if (agent) {
+                agentName = agent.fullName;
+                agentIdDisplay = agent.agentId;
+            } else if (app.agentId) {
+                // Try to find agent by email from the applicants collection
+                if (applicant && applicant.agentId) {
+                    const altAgent = agentMap[applicant.agentId];
+                    if (altAgent) {
+                        agentName = altAgent.fullName;
+                        agentIdDisplay = altAgent.agentId;
+                    }
+                }
+                
+                // If still not found, try to find by looking up the agent from the applicants collection
+                if (agentName === 'Unknown') {
+                    // Check if there's an agent with this ID in the applicants collection
+                    const applicantWithAgent = applicants.find(a => a.agentId === app.agentId);
+                    if (applicantWithAgent) {
+                        // Try to find the agent by the applicant's agent ID
+                        const agentFromApplicant = agentMap[applicantWithAgent.agentId];
+                        if (agentFromApplicant) {
+                            agentName = agentFromApplicant.fullName;
+                            agentIdDisplay = agentFromApplicant.agentId;
+                        }
+                    }
+                }
+            }
+            
+            // If applicant has agentId but application doesn't, use applicant's agent
+            if (applicant && applicant.agentId && !app.agentId) {
+                const altAgent = agentMap[applicant.agentId];
+                if (altAgent) {
+                    agentName = altAgent.fullName;
+                    agentIdDisplay = altAgent.agentId;
+                }
+            }
+            
             return {
                 ...app,
-                applicantName: applicant ? applicant.fullName : (app.applicantName || 'Unknown'),
-                applicantEmail: applicant ? applicant.email : (app.email || 'N/A'),
-                applicantPhone: applicant ? applicant.phone : (app.phone || 'N/A'),
-                agentName: agent ? agent.fullName : (app.agentName || 'Unknown'),
-                agentIdDisplay: agent ? agent.agentId : (app.agentId || 'Unknown'),
+                applicantName: applicant ? applicant.fullName : (app.applicantName || app.personalInfo?.name || 'Unknown'),
+                applicantEmail: applicant ? applicant.email : (app.email || app.personalInfo?.email || 'N/A'),
+                applicantPhone: applicant ? applicant.phone : (app.phone || app.personalInfo?.phone || 'N/A'),
+                agentName: agentName,
+                agentIdDisplay: agentIdDisplay,
                 applicantStatus: applicant ? applicant.status : 'Unknown',
                 paymentStatus: app.paymentStatus || applicant?.paymentStatus || 'No Payment'
             };
         });
+        
+        console.log('✅ Enriched applications count:', enrichedApps.length);
         
         res.json({ success: true, applications: enrichedApps });
     } catch (error) {
@@ -4773,6 +4834,8 @@ app.get('/api/admin/agent-applicants', authenticateToken, async (req, res) => {
             .sort({ createdAt: -1 })
             .toArray();
         
+        console.log('👤 Agent applicants found:', applicants.length);
+        
         // Get applications for document counts
         const applicantIds = applicants.map(a => a.applicantId);
         const applications = await db.collection('applications')
@@ -4783,10 +4846,18 @@ app.get('/api/admin/agent-applicants', authenticateToken, async (req, res) => {
             appMap[app.applicantId] = app;
         });
         
+        // Get all agent IDs from applicants
+        const agentIds = applicants.map(a => a.agentId).filter(Boolean);
+        const agents = await db.collection('agents')
+            .find({ agentId: { $in: agentIds } })
+            .toArray();
+        const agentMap = {};
+        agents.forEach(a => { agentMap[a.agentId] = a; });
+        
         // Enrich with agent names and document counts
         const enrichedApplicants = [];
         for (const app of applicants) {
-            const agent = await db.collection('agents').findOne({ agentId: app.agentId });
+            const agent = agentMap[app.agentId];
             const application = appMap[app.applicantId] || null;
             
             // Count documents
@@ -4803,11 +4874,13 @@ app.get('/api/admin/agent-applicants', authenticateToken, async (req, res) => {
             
             enrichedApplicants.push({
                 ...app,
-                agentName: agent ? agent.fullName : 'Unknown Agent',
+                agentName: agent ? agent.fullName : (app.agentName || 'Unknown Agent'),
                 docCount: docCount,
                 application: application
             });
         }
+        
+        console.log('✅ Enriched applicants count:', enrichedApplicants.length);
         
         res.json({ success: true, applicants: enrichedApplicants, count: enrichedApplicants.length });
     } catch (error) {
