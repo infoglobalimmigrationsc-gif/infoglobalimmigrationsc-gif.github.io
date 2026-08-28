@@ -4037,6 +4037,8 @@ app.delete('/api/admin/service-requests/:id', authenticateToken, async (req, res
     }
 });
 
+
+
 // ============================================================
 // ADMIN AGENT MANAGEMENT
 // ============================================================
@@ -4154,6 +4156,285 @@ app.put('/api/admin/agents/:agentId/status', authenticateToken, async (req, res)
     }
 });
 
+
+// ============================================================
+// ADMIN AGENT PASSWORD MANAGEMENT
+// ============================================================
+
+// Set/Reset Agent Password
+app.put('/api/admin/agents/:agentId/password', authenticateToken, async (req, res) => {
+    try {
+        const { agentId } = req.params;
+        const { password } = req.body;
+        
+        if (!password || password.length < 6) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Password must be at least 6 characters long' 
+            });
+        }
+        
+        const agent = await db.collection('agents').findOne({ agentId: agentId });
+        if (!agent) {
+            return res.status(404).json({ success: false, message: 'Agent not found' });
+        }
+        
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        await db.collection('agents').updateOne(
+            { agentId: agentId },
+            { 
+                $set: { 
+                    password: hashedPassword,
+                    updatedAt: new Date()
+                }
+            }
+        );
+        
+        await db.collection('audit_logs').insertOne({
+            action: 'AGENT_PASSWORD_SET',
+            agentId: agentId,
+            agentEmail: agent.email,
+            setBy: req.user?.email || 'admin',
+            timestamp: new Date()
+        });
+        
+        await db.collection('agent_notifications').insertOne({
+            agentId: agentId,
+            title: 'Password Updated',
+            message: 'Your GISC Agent account password has been updated by admin.',
+            type: 'account',
+            read: false,
+            createdAt: new Date(),
+            link: '/profile'
+        });
+        
+        res.json({ 
+            success: true, 
+            message: 'Password set successfully. Agent can now log in.' 
+        });
+    } catch (error) {
+        console.error('Error setting agent password:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Admin: Create Agent (Admin registration)
+app.post('/api/admin/agents', authenticateToken, async (req, res) => {
+    try {
+        const { 
+            fullName, email, phone, organization, location,
+            agentCategory, professionalBackground, experience, socialMedia,
+            status
+        } = req.body;
+        
+        if (!fullName || !email || !phone || !location || !agentCategory) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Full name, email, phone, location, and category are required' 
+            });
+        }
+        
+        const existingAgent = await db.collection('agents').findOne({ email: email.toLowerCase() });
+        if (existingAgent) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'An agent with this email already exists' 
+            });
+        }
+        
+        const count = await db.collection('agents').countDocuments();
+        const agentId = `GISC-AGT${String(count + 1).padStart(3, '0')}`;
+        const referralCode = `GISC-DAR${String(count + 1).padStart(3, '0')}`;
+        
+        const agentData = {
+            fullName,
+            organization: organization || '',
+            phone,
+            email: email.toLowerCase(),
+            location: location || '',
+            identification: '',
+            professionalBackground: professionalBackground || '',
+            experience: experience || '',
+            socialMedia: socialMedia || '',
+            references: [],
+            agentCategory: agentCategory || 'Referral Agent',
+            status: status || 'Pending',
+            agentId,
+            referralCode,
+            agreementStatus: 'Pending',
+            dateApproved: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            commissionRate: 0,
+            totalCommissionEarned: 0,
+            totalCommissionPaid: 0,
+            pendingCommission: 0,
+            totalReferrals: 0,
+            qualifiedApplicants: 0,
+            activeApplicants: 0,
+            successfulApplications: 0,
+            totalRevenueGenerated: 0,
+            performanceLevel: 'Registered Agent',
+            password: null,
+            resetToken: null,
+            resetTokenExpiry: null
+        };
+        
+        const result = await db.collection('agents').insertOne(agentData);
+        
+        await db.collection('audit_logs').insertOne({
+            action: 'AGENT_REGISTERED_BY_ADMIN',
+            agentId: agentId,
+            agentEmail: email.toLowerCase(),
+            registeredBy: req.user?.email || 'admin',
+            timestamp: new Date(),
+            details: { fullName, email, agentCategory }
+        });
+        
+        res.json({
+            success: true,
+            message: 'Agent registered successfully',
+            agentId: agentId,
+            referralCode: referralCode,
+            agent: { ...agentData, _id: result.insertedId }
+        });
+    } catch (error) {
+        console.error('Admin agent registration error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Admin: Update Agent
+app.put('/api/admin/agents/:agentId', authenticateToken, async (req, res) => {
+    try {
+        const { agentId } = req.params;
+        const updateData = { ...req.body, updatedAt: new Date() };
+        
+        delete updateData._id;
+        delete updateData.agentId;
+        delete updateData.referralCode;
+        delete updateData.password;
+        delete updateData.resetToken;
+        delete updateData.resetTokenExpiry;
+        delete updateData.createdAt;
+        delete updateData.totalCommissionEarned;
+        delete updateData.totalCommissionPaid;
+        delete updateData.pendingCommission;
+        
+        const agent = await db.collection('agents').findOne({ agentId: agentId });
+        if (!agent) {
+            return res.status(404).json({ success: false, message: 'Agent not found' });
+        }
+        
+        const result = await db.collection('agents').updateOne(
+            { agentId: agentId },
+            { $set: updateData }
+        );
+        
+        await db.collection('audit_logs').insertOne({
+            action: 'AGENT_UPDATED',
+            agentId: agentId,
+            agentEmail: agent.email,
+            updatedBy: req.user?.email || 'admin',
+            timestamp: new Date(),
+            changes: updateData
+        });
+        
+        res.json({ 
+            success: true, 
+            message: 'Agent updated successfully' 
+        });
+    } catch (error) {
+        console.error('Error updating agent:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Admin: Process Commission (Pay commission)
+app.put('/api/admin/commissions/:commissionId/process', authenticateToken, async (req, res) => {
+    try {
+        const { commissionId } = req.params;
+        const { paymentMethod, paymentRef, paymentDate, notes } = req.body;
+        
+        if (!paymentMethod || !paymentRef) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Payment method and reference are required' 
+            });
+        }
+        
+        const commission = await db.collection('commissions').findOne({ 
+            _id: new ObjectId(commissionId) 
+        });
+        
+        if (!commission) {
+            return res.status(404).json({ success: false, message: 'Commission not found' });
+        }
+        
+        if (commission.status === 'Paid' || commission.status === 'Settled') {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'This commission has already been processed' 
+            });
+        }
+        
+        await db.collection('commissions').updateOne(
+            { _id: new ObjectId(commissionId) },
+            {
+                $set: {
+                    status: 'Paid',
+                    paymentMethod: paymentMethod,
+                    paymentReference: paymentRef,
+                    paymentDate: paymentDate || new Date().toISOString().split('T')[0],
+                    processedBy: req.user?.email || 'admin',
+                    processedAt: new Date(),
+                    notes: notes || '',
+                    updatedAt: new Date()
+                }
+            }
+        );
+        
+        await db.collection('agents').updateOne(
+            { agentId: commission.agentId },
+            {
+                $inc: {
+                    totalCommissionPaid: commission.commissionAmount,
+                    pendingCommission: -commission.commissionAmount
+                },
+                $set: { updatedAt: new Date() }
+            }
+        );
+        
+        await db.collection('agent_notifications').insertOne({
+            agentId: commission.agentId,
+            title: 'Commission Paid',
+            message: `Your commission of $${commission.commissionAmount.toFixed(2)} for applicant ${commission.applicantId} has been processed. Reference: ${paymentRef}`,
+            type: 'commission',
+            read: false,
+            createdAt: new Date(),
+            link: `/commission`
+        });
+        
+        await db.collection('audit_logs').insertOne({
+            action: 'COMMISSION_PAID',
+            agentId: commission.agentId,
+            commissionId: commissionId,
+            amount: commission.commissionAmount,
+            paymentRef: paymentRef,
+            processedBy: req.user?.email || 'admin',
+            timestamp: new Date()
+        });
+        
+        res.json({ 
+            success: true, 
+            message: 'Commission processed successfully' 
+        });
+    } catch (error) {
+        console.error('Error processing commission:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
 
 // ============================================================
 // ADMIN AGENT APPLICANTS
