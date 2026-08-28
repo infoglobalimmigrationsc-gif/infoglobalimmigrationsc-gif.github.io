@@ -1,0 +1,2379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Dashboard - Global Immigration SC</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ===== COMPLETE STYLES ===== */
+        :root {
+            --primary-red: #E30613;
+            --primary-red-dark: #b30000;
+            --primary-white: #FFFFFF;
+            --dark-gray: #333333;
+            --medium-gray: #777777;
+            --success-green: #28a745;
+            --warning-yellow: #ffc107;
+            --danger-red: #dc3545;
+            --info-blue: #17a2b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: white;
+        }
+
+        .agent-wrapper { display: flex; min-height: 100vh; }
+
+        .agent-sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 25px 20px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--primary-red);
+            flex-shrink: 0;
+        }
+
+        .sidebar-header .sidebar-logo {
+            max-width: 120px;
+            margin-bottom: 10px;
+        }
+
+        .sidebar-header h3 {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .sidebar-header .subtitle {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.7rem;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            list-style: none;
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 15px;
+            border-radius: 10px;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-bottom: 2px;
+        }
+
+        .sidebar-nav a i { width: 20px; color: var(--primary-red); font-size: 0.95rem; }
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background: rgba(227, 6, 19, 0.15);
+            color: white;
+        }
+        .sidebar-nav a .badge {
+            margin-left: auto;
+            background: var(--primary-red);
+            color: white;
+            font-size: 0.6rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        .sidebar-footer {
+            flex-shrink: 0;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            margin-top: auto;
+        }
+
+        .agent-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .agent-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-red);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .agent-info h4 { font-size: 0.85rem; color: white; margin-bottom: 2px; }
+        .agent-info small { font-size: 0.65rem; color: rgba(255,255,255,0.4); }
+
+        .btn-logout {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--primary-red);
+            background: transparent;
+            color: var(--primary-red);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.85rem;
+        }
+        .btn-logout:hover { background: var(--primary-red); color: white; }
+
+        .agent-main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 25px 30px;
+        }
+
+        .agent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .agent-header h1 { color: white; font-size: 1.4rem; font-weight: 700; }
+        .agent-header h1 i { color: var(--primary-red); margin-right: 10px; }
+        .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 18px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 0.8rem;
+        }
+
+        .btn-primary { background: var(--primary-red); color: white; }
+        .btn-primary:hover { background: var(--primary-red-dark); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(227,6,19,0.3); }
+        .btn-outline { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: white; }
+        .btn-outline:hover { background: rgba(255,255,255,0.15); }
+        .btn-sm { padding: 5px 12px; font-size: 0.7rem; }
+        .btn-success { background: var(--success-green); color: white; }
+        .btn-success:hover { background: #1e7e34; }
+        .btn-danger { background: var(--danger-red); color: white; }
+        .btn-danger:hover { background: #c82333; }
+        .btn-info { background: var(--info-blue); color: white; }
+        .btn-info:hover { background: #138496; }
+        .btn-warning { background: var(--warning-yellow); color: #333; }
+        .btn-warning:hover { background: #e0a800; }
+
+        .agent-section {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px 25px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .agent-section.active { display: block; animation: fadeIn 0.3s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .section-header h2 { color: white; font-size: 1.2rem; }
+        .section-header h2 i { color: var(--primary-red); margin-right: 10px; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stats-grid.small { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: transform 0.3s ease;
+        }
+        .stat-card:hover { transform: translateY(-3px); }
+        .stat-card .stat-icon { font-size: 1.4rem; margin-bottom: 5px; }
+        .stat-card h3 { font-size: 1.5rem; color: white; margin-bottom: 2px; }
+        .stat-card p { color: rgba(255, 255, 255, 0.6); font-size: 0.7rem; }
+
+        .glass-container {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 16px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 15px;
+        }
+        .glass-container h3 { color: white; margin-bottom: 12px; font-size: 1rem; }
+        .glass-container h3 i { color: var(--primary-red); margin-right: 8px; }
+
+        .glass-input {
+            background: rgba(255, 255, 255, 0.85) !important;
+            backdrop-filter: blur(8px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 8px !important;
+            padding: 9px 12px !important;
+            font-size: 0.85rem !important;
+            transition: all 0.3s ease !important;
+            width: 100%;
+            color: var(--dark-gray);
+        }
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border-color: var(--primary-red) !important;
+            box-shadow: 0 0 0 3px rgba(227, 6, 19, 0.1) !important;
+            outline: none;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .search-bar input { flex: 1; min-width: 180px; }
+        .search-bar select { min-width: 130px; }
+
+        .table-wrapper { overflow-x: auto; }
+        .agent-table {
+            width: 100%;
+            border-collapse: collapse;
+            color: rgba(255,255,255,0.9);
+            font-size: 0.8rem;
+        }
+        .agent-table th {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 2px solid rgba(255,255,255,0.06);
+            font-weight: 600;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .agent-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .agent-table tr:hover td { background: rgba(255,255,255,0.03); }
+
+        .status-badge {
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.6rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .status-completed { background: rgba(40, 167, 69, 0.2); color: var(--success-green); }
+        .status-pending { background: rgba(255, 193, 7, 0.2); color: var(--warning-yellow); }
+        .status-approved { background: rgba(40, 167, 69, 0.2); color: var(--success-green); }
+        .status-rejected { background: rgba(220, 53, 69, 0.2); color: var(--danger-red); }
+        .status-registered { background: rgba(23, 162, 184, 0.2); color: var(--info-blue); }
+        .status-lead { background: rgba(108, 117, 125, 0.2); color: #6c757d; }
+        .status-paid { background: rgba(40, 167, 69, 0.2); color: var(--success-green); }
+        .status-unpaid { background: rgba(220, 53, 69, 0.2); color: var(--danger-red); }
+        .status-eligible { background: rgba(40, 167, 69, 0.2); color: var(--success-green); }
+        .status-reversed { background: rgba(220, 53, 69, 0.2); color: var(--danger-red); }
+        .status-settled { background: rgba(23, 162, 184, 0.2); color: var(--info-blue); }
+
+        .glass-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .glass-modal.active { display: flex; }
+
+        .modal-content {
+            background: rgba(30, 30, 60, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px 30px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--primary-red);
+        }
+        .modal-header h2 { color: white; font-size: 1.1rem; }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            color: rgba(255,255,255,0.5);
+            transition: color 0.3s ease;
+        }
+        .modal-close:hover { color: var(--primary-red); }
+
+        .modal-body { color: rgba(255,255,255,0.85); }
+        .modal-body .detail-row {
+            display: flex;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .modal-body .detail-label { font-weight: 600; width: 140px; flex-shrink: 0; color: rgba(255,255,255,0.5); font-size: 0.8rem; }
+        .modal-body .detail-value { flex: 1; color: white; word-break: break-all; font-size: 0.85rem; }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; margin-bottom: 4px; font-weight: 600; color: rgba(255,255,255,0.7); font-size: 0.8rem; }
+        .form-group label .required { color: var(--primary-red); }
+        .form-group textarea.glass-input { resize: vertical; min-height: 80px; }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 380px;
+        }
+
+        .toast {
+            background: rgba(30, 30, 60, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 12px 18px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border-left: 4px solid var(--success-green);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideInRight 0.4s ease;
+            min-width: 250px;
+            color: white;
+        }
+        .toast.error { border-left-color: var(--danger-red); }
+        .toast.warning { border-left-color: var(--warning-yellow); }
+        .toast.info { border-left-color: var(--info-blue); }
+        .toast .toast-close { margin-left: auto; cursor: pointer; opacity: 0.5; background: none; border: none; font-size: 1.1rem; color: white; }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: var(--primary-red);
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .empty-state { text-align: center; padding: 30px; color: rgba(255,255,255,0.3); }
+        .empty-state i { font-size: 2.5rem; margin-bottom: 10px; opacity: 0.3; }
+
+        .debug-info {
+            background: rgba(0,0,0,0.3);
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-bottom: 12px;
+            font-family: monospace;
+            font-size: 0.65rem;
+            color: #0f0;
+            overflow-x: auto;
+            max-height: 80px;
+            overflow-y: auto;
+        }
+
+        .action-buttons { display: flex; gap: 5px; flex-wrap: wrap; }
+
+        .commission-notice {
+            background: rgba(227, 6, 19, 0.08);
+            border-left: 3px solid var(--primary-red);
+            padding: 10px 14px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .agent-id-badge {
+            background: var(--primary-red);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+
+        .pending-action-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 8px;
+            margin-bottom: 6px;
+            border-left: 3px solid var(--warning-yellow);
+        }
+        .pending-action-item .action-text { color: rgba(255,255,255,0.8); font-size: 0.85rem; }
+        .pending-action-item .action-count { background: var(--warning-yellow); color: #333; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; }
+
+        .performance-level {
+            display: inline-block;
+            padding: 3px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+        }
+        .level-elite { background: linear-gradient(135deg, #f7971e, #ffd200); color: #333; }
+        .level-premium { background: linear-gradient(135deg, #11998e, #38ef7d); color: #fff; }
+        .level-active { background: linear-gradient(135deg, #4facfe, #00f2fe); color: #fff; }
+        .level-registered { background: linear-gradient(135deg, #6c757d, #adb5bd); color: #fff; }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: var(--primary-red); border-radius: 3px; }
+
+        @media (max-width: 768px) {
+            .agent-sidebar { transform: translateX(-100%); width: 280px; }
+            .agent-sidebar.open { transform: translateX(0); }
+            .agent-main { margin-left: 0; padding: 15px; padding-top: 65px; }
+            .mobile-menu-toggle { display: block; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+            .stat-card h3 { font-size: 1.1rem; }
+            .agent-section { padding: 12px 15px; }
+            .section-header h2 { font-size: 1rem; }
+            .search-bar { flex-direction: column; }
+            .search-bar select { min-width: 100%; }
+            .modal-content { padding: 15px; margin: 10px; }
+            .modal-body .detail-row { flex-direction: column; padding: 6px 0; }
+            .modal-body .detail-label { width: 100%; margin-bottom: 2px; }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .stat-card { padding: 10px; }
+            .stat-card h3 { font-size: 0.95rem; }
+            .agent-main { padding: 10px; padding-top: 55px; }
+        }
+    </style>
+</head>
+<body>
+    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="agent-wrapper">
+        <!-- Sidebar -->
+        <aside class="agent-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="../GISC-LOGO.webp" alt="Global Immigration SC Logo" class="sidebar-logo" onerror="this.src='https://placehold.co/120x60/E30613/white?text=GISC'">
+                <h3>Agent Portal</h3>
+                <div class="subtitle">Global Immigration SC</div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="#" data-section="dashboard" class="active">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="#" data-section="applicants">
+                    <i class="fas fa-user-plus"></i> Applicants
+                    <span class="badge" id="applicantBadge">0</span>
+                </a>
+                <a href="#" data-section="applications">
+                    <i class="fas fa-file-alt"></i> Applications
+                    <span class="badge" id="applicationBadge">0</span>
+                </a>
+                <a href="#" data-section="commissions">
+                    <i class="fas fa-coins"></i> Commissions
+                    <span class="badge" id="commissionBadge">0</span>
+                </a>
+                <a href="#" data-section="payments">
+                    <i class="fas fa-credit-card"></i> Payments
+                </a>
+                <a href="#" data-section="documents">
+                    <i class="fas fa-folder"></i> Documents
+                </a>
+                <a href="#" data-section="messages">
+                    <i class="fas fa-envelope"></i> Messages
+                    <span class="badge" id="messageBadge">0</span>
+                </a>
+                <a href="#" data-section="notifications">
+                    <i class="fas fa-bell"></i> Notifications
+                    <span class="badge" id="notificationBadge">0</span>
+                </a>
+                <a href="#" data-section="resources">
+                    <i class="fas fa-book"></i> Resources
+                </a>
+                <a href="#" data-section="performance">
+                    <i class="fas fa-chart-line"></i> Performance
+                </a>
+                <a href="#" data-section="profile">
+                    <i class="fas fa-user-circle"></i> Profile
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="agent-info">
+                    <div class="agent-avatar" id="agentAvatar">A</div>
+                    <div>
+                        <h4 id="agentName">Loading...</h4>
+                        <small id="agentIdDisplay">GISC-AGT000</small>
+                    </div>
+                </div>
+                <button id="logoutBtn" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="agent-main">
+            <div class="agent-header">
+                <h1><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
+                <div class="header-actions">
+                    <span id="agentStatusBadge" class="status-badge status-approved">Approved</span>
+                    <button class="btn btn-outline btn-sm" onclick="refreshData()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- ===== DASHBOARD SECTION ===== -->
+            <section id="dashboard-section" class="agent-section active">
+                <div class="section-header">
+                    <h2><i class="fas fa-tachometer-alt"></i> Overview</h2>
+                    <span id="performanceLevelDisplay" class="performance-level level-registered">REGISTERED AGENT</span>
+                </div>
+
+                <div class="stats-grid" id="dashboardStats">
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-user-friends"></i></div><h3 id="statReferrals">0</h3><p>Total Referrals</p></div>
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-user-check"></i></div><h3 id="statQualified">0</h3><p>Qualified</p></div>
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-user-clock"></i></div><h3 id="statActive">0</h3><p>Active</p></div>
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-trophy"></i></div><h3 id="statSuccessful">0</h3><p>Successful</p></div>
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-dollar-sign"></i></div><h3 id="statRevenue">$0</h3><p>Revenue Generated</p></div>
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-coins"></i></div><h3 id="statCommissionEarned">$0</h3><p>Commission Earned</p></div>
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-check-circle" style="color: #28a745;"></i></div><h3 id="statCommissionPaid">$0</h3><p>Commission Paid</p></div>
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-clock" style="color: #ffc107;"></i></div><h3 id="statPendingCommission">$0</h3><p>Pending Commission</p></div>
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-undo" style="color: #dc3545;"></i></div><h3 id="statRefundAdjustments">$0</h3><p>Refund Adjustments</p></div>
+                </div>
+
+                <div class="glass-container">
+                    <h3><i class="fas fa-tasks"></i> Pending Actions</h3>
+                    <div id="pendingActionsList">
+                        <div class="empty-state"><i class="fas fa-check-circle"></i><p>No pending actions</p></div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="glass-container">
+                        <h3><i class="fas fa-user-plus"></i> Recent Applicants</h3>
+                        <div id="recentApplicants"><div class="empty-state"><i class="fas fa-inbox"></i><p>No recent applicants</p></div></div>
+                    </div>
+                    <div class="glass-container">
+                        <h3><i class="fas fa-file-alt"></i> Recent Applications</h3>
+                        <div id="recentApplications"><div class="empty-state"><i class="fas fa-inbox"></i><p>No recent applications</p></div></div>
+                    </div>
+                </div>
+
+                <div class="glass-container">
+                    <h3><i class="fas fa-coins"></i> Recent Commission Activity</h3>
+                    <div id="recentCommissions"><div class="empty-state"><i class="fas fa-inbox"></i><p>No commission activity</p></div></div>
+                </div>
+
+                <div class="glass-container">
+                    <h3><i class="fas fa-bell"></i> Recent Notifications</h3>
+                    <div id="recentNotifications"><div class="empty-state"><i class="fas fa-bell-slash"></i><p>No notifications</p></div></div>
+                </div>
+            </section>
+
+            <!-- ===== APPLICANTS SECTION ===== -->
+            <section id="applicants-section" class="agent-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-user-plus"></i> Applicants</h2>
+                    <button class="btn btn-primary" onclick="openAddApplicant()"><i class="fas fa-plus"></i> Add Applicant</button>
+                </div>
+                <div class="glass-container">
+                    <div class="debug-info" id="applicantDebugInfo"><span style="color: #ff0;">🔍 Loading applicants...</span></div>
+                    <div class="search-bar">
+                        <input type="text" id="searchApplicants" class="glass-input" placeholder="Search by name, email, or ID...">
+                        <select id="filterApplicantStatus" class="glass-input">
+                            <option value="">All Status</option>
+                            <option value="Registered">Registered</option>
+                            <option value="Under Assessment">Under Assessment</option>
+                            <option value="Qualified">Qualified</option>
+                            <option value="Package Selected">Package Selected</option>
+                            <option value="Agreement Pending">Agreement Pending</option>
+                            <option value="Payment Pending">Payment Pending</option>
+                            <option value="Payment Verified">Payment Verified</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                        <button class="btn btn-outline btn-sm" onclick="loadApplicants()"><i class="fas fa-search"></i></button>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="agent-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                    <th>Payment</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="applicantsTableBody"><tr><td colspan="6" style="text-align: center; padding: 30px;">Loading applicants...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== APPLICATIONS SECTION ===== -->
+            <section id="applications-section" class="agent-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-file-alt"></i> Applications</h2>
+                    <span style="color: rgba(255,255,255,0.4); font-size: 0.8rem;" id="appTotalLabel">0 total</span>
+                </div>
+                <div class="glass-container">
+                    <div class="debug-info" id="appDebugInfo"><span style="color: #ff0;">🔍 Loading applications...</span></div>
+                    <div class="search-bar">
+                        <input type="text" id="searchApplications" class="glass-input" placeholder="Search by name or ID...">
+                        <select id="filterAppStatus" class="glass-input">
+                            <option value="">All Status</option>
+                            <option value="Lead">Lead</option>
+                            <option value="Registered">Registered</option>
+                            <option value="Under Assessment">Under Assessment</option>
+                            <option value="Qualified">Qualified</option>
+                            <option value="Package Selected">Package Selected</option>
+                            <option value="Payment Pending">Payment Pending</option>
+                            <option value="Payment Verified">Payment Verified</option>
+                            <option value="Application Submitted">Application Submitted</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
+                        <button class="btn btn-outline btn-sm" onclick="loadApplications()"><i class="fas fa-search"></i></button>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="agent-table">
+                            <thead>
+                                <tr>
+                                    <th>Applicant ID</th>
+                                    <th>Name</th>
+                                    <th>Service</th>
+                                    <th>Status</th>
+                                    <th>Payment</th>
+                                    <th>Updated</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="applicationsTableBody"><tr><td colspan="7" style="text-align: center; padding: 30px;">Loading applications...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== COMMISSIONS SECTION ===== -->
+            <section id="commissions-section" class="agent-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-coins"></i> Commissions</h2>
+                    <span style="color: rgba(255,255,255,0.4); font-size: 0.8rem;" id="commissionTotalLabel">0 total</span>
+                </div>
+                <div class="commission-notice">
+                    <i class="fas fa-info-circle"></i> 
+                    Commission is calculated only from eligible GISC professional service fees actually received and cleared. 
+                    University tuition, government fees, visa fees, embassy fees, biometrics, medical, insurance, flights, 
+                    accommodation and other third-party expenses are excluded.
+                </div>
+                <div class="stats-grid small">
+                    <div class="stat-card"><h3 id="comTotalEarned">$0</h3><p>Total Earned</p></div>
+                    <div class="stat-card"><h3 id="comTotalPaid">$0</h3><p>Paid</p></div>
+                    <div class="stat-card"><h3 id="comTotalPending">$0</h3><p>Pending</p></div>
+                    <div class="stat-card"><h3 id="comTotalReversed">$0</h3><p>Reversed</p></div>
+                    <div class="stat-card"><h3 id="comEligibleSettlement">$0</h3><p>Eligible for Settlement</p></div>
+                </div>
+                <div class="glass-container">
+                    <div class="debug-info" id="commissionDebugInfo"><span style="color: #ff0;">🔍 Loading commissions...</span></div>
+                    <div class="table-wrapper">
+                        <table class="agent-table">
+                            <thead>
+                                <tr>
+                                    <th>Applicant</th>
+                                    <th>Package</th>
+                                    <th>Amount</th>
+                                    <th>Rate</th>
+                                    <th>Commission</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="commissionsTableBody"><tr><td colspan="7" style="text-align: center; padding: 30px;">Loading commissions...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== PAYMENTS SECTION ===== -->
+            <section id="payments-section" class="agent-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-credit-card"></i> Payments</h2>
+                    <span style="color: rgba(255,255,255,0.4); font-size: 0.8rem;" id="paymentTotalLabel">0 total</span>
+                </div>
+                <div class="stats-grid small">
+                    <div class="stat-card"><h3 id="payTotalPaid">$0</h3><p>Paid</p></div>
+                    <div class="stat-card"><h3 id="payTotalPending">$0</h3><p>Pending</p></div>
+                    <div class="stat-card"><h3 id="payTotalRejected">$0</h3><p>Rejected</p></div>
+                </div>
+                <div class="glass-container">
+                    <div class="debug-info" id="paymentDebugInfo"><span style="color: #ff0;">🔍 Loading payments...</span></div>
+                    <div class="table-wrapper">
+                        <table class="agent-table">
+                            <thead>
+                                <tr>
+                                    <th>Applicant</th>
+                                    <th>Package</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentsTableBody"><tr><td colspan="5" style="text-align: center; padding: 30px;">Loading payments...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== DOCUMENTS SECTION ===== -->
+            <section id="documents-section" class="agent-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-folder"></i> Documents</h2>
+                    <button class="btn btn-primary" onclick="openUploadDocument()"><i class="fas fa-upload"></i> Upload Document</button>
+                </div>
+                <div class="glass-container">
+                    <div class="debug-info" id="documentDebugInfo"><span style="color: #ff0;">🔍 Loading documents...</span></div>
+                    <div class="search-bar">
+                        <input type="text" id="searchDocuments" class="glass-input" placeholder="Search by applicant or document...">
+                        <button class="btn btn-outline btn-sm" onclick="loadDocuments()"><i class="fas fa-search"></i></button>
+                    </div>
+                    <div id="documentsList"><div class="empty-state"><i class="fas fa-folder-open"></i><p>No documents uploaded yet</p></div></div>
+                </div>
+            </section>
+
+            <!-- ===== MESSAGES SECTION ===== -->
+            <section id="messages-section" class="agent-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-envelope"></i> Messages</h2>
+                    <button class="btn btn-primary" onclick="openNewMessage()"><i class="fas fa-plus"></i> New Message</button>
+                </div>
+                <div class="glass-container">
+                    <div class="debug-info" id="messageDebugInfo"><span style="color: #ff0;">🔍 Loading conversations...</span></div>
+                    <div id="conversationsList"><div class="empty-state"><i class="fas fa-inbox"></i><p>No conversations yet</p></div></div>
+                </div>
+            </section>
+
+            <!-- ===== NOTIFICATIONS SECTION ===== -->
+            <section id="notifications-section" class="agent-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-bell"></i> Notifications</h2>
+                    <button class="btn btn-outline btn-sm" onclick="markAllNotificationsRead()"><i class="fas fa-check-double"></i> Mark All Read</button>
+                </div>
+                <div class="glass-container">
+                    <div class="debug-info" id="notifDebugInfo"><span style="color: #ff0;">🔍 Loading notifications...</span></div>
+                    <div id="notificationsList"><div class="empty-state"><i class="fas fa-bell-slash"></i><p>No notifications</p></div></div>
+                </div>
+            </section>
+
+            <!-- ===== RESOURCES SECTION ===== -->
+            <section id="resources-section" class="agent-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-book"></i> Resources</h2>
+                </div>
+                <div class="glass-container">
+                    <div class="debug-info" id="resourceDebugInfo"><span style="color: #ff0;">🔍 Loading resources...</span></div>
+                    <div id="resourcesList"><div class="empty-state"><i class="fas fa-book-open"></i><p>No resources available</p></div></div>
+                </div>
+            </section>
+
+            <!-- ===== PERFORMANCE SECTION ===== -->
+            <section id="performance-section" class="agent-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-chart-line"></i> Performance</h2>
+                </div>
+                <div class="glass-container">
+                    <div class="debug-info" id="performanceDebugInfo"><span style="color: #ff0;">🔍 Loading performance data...</span></div>
+                    <div id="performanceContent"><div class="empty-state"><i class="fas fa-chart-line"></i><p>Loading performance data...</p></div></div>
+                </div>
+            </section>
+
+            <!-- ===== PROFILE SECTION ===== -->
+            <section id="profile-section" class="agent-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-user-circle"></i> Profile</h2>
+                    <button class="btn btn-primary btn-sm" onclick="saveProfile()"><i class="fas fa-save"></i> Save Profile</button>
+                </div>
+                <div class="glass-container">
+                    <div class="debug-info" id="profileDebugInfo"><span style="color: #ff0;">🔍 Loading profile...</span></div>
+                    <form id="profileForm">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div class="form-group"><label>Full Name <span class="required">*</span></label><input type="text" id="profFullName" class="glass-input" required></div>
+                            <div class="form-group"><label>Email <span class="required">*</span></label><input type="email" id="profEmail" class="glass-input" required></div>
+                            <div class="form-group"><label>Phone <span class="required">*</span></label><input type="tel" id="profPhone" class="glass-input" required></div>
+                            <div class="form-group"><label>Organization</label><input type="text" id="profOrganization" class="glass-input"></div>
+                            <div class="form-group"><label>Location</label><input type="text" id="profLocation" class="glass-input"></div>
+                            <div class="form-group"><label>Agent Category</label><input type="text" id="profCategory" class="glass-input" readonly></div>
+                            <div class="form-group" style="grid-column: 1 / -1;"><label>Professional Background</label><textarea id="profBackground" class="glass-input" rows="3"></textarea></div>
+                            <div class="form-group" style="grid-column: 1 / -1;"><label>Experience</label><textarea id="profExperience" class="glass-input" rows="3"></textarea></div>
+                            <div class="form-group" style="grid-column: 1 / -1;"><label>Social Media / Business Information</label><input type="text" id="profSocial" class="glass-input" placeholder="Links to LinkedIn, Facebook, etc."></div>
+                        </div>
+                    </form>
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.06);">
+                        <p style="color: rgba(255,255,255,0.4); font-size: 0.75rem;">
+                            <i class="fas fa-shield-alt"></i> Agent ID: <strong id="profAgentId" style="color: white;">GISC-AGT000</strong>
+                            &nbsp;|&nbsp; Referral Code: <strong id="profReferralCode" style="color: white;">GISC-DAR000</strong>
+                            &nbsp;|&nbsp; Status: <span id="profStatus" class="status-badge status-approved">Approved</span>
+                            &nbsp;|&nbsp; Agreement: <span id="profAgreement" class="status-badge status-pending">Pending</span>
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== MODALS ===== -->
+
+            <!-- Add Applicant Modal -->
+            <div id="addApplicantModal" class="glass-modal">
+                <div class="modal-content">
+                    <div class="modal-header"><h2><i class="fas fa-user-plus"></i> Register Applicant</h2><button class="modal-close" id="closeApplicantModal">&times;</button></div>
+                    <div class="modal-body">
+                        <form id="applicantForm">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <div class="form-group"><label>Full Name <span class="required">*</span></label><input type="text" id="appFullName" class="glass-input" required></div>
+                                <div class="form-group"><label>Phone <span class="required">*</span></label><input type="tel" id="appPhone" class="glass-input" required></div>
+                                <div class="form-group"><label>Email <span class="required">*</span></label><input type="email" id="appEmail" class="glass-input" required></div>
+                                <div class="form-group"><label>Country of Interest <span class="required">*</span></label>
+                                    <select id="appCountry" class="glass-input" required>
+                                        <option value="">Select Country</option>
+                                        <option value="Germany">Germany</option>
+                                        <option value="Hungary">Hungary</option>
+                                        <option value="Ireland">Ireland</option>
+                                        <option value="Canada">Canada</option>
+                                        <option value="Australia">Australia</option>
+                                        <option value="United Kingdom">United Kingdom</option>
+                                        <option value="United States">United States</option>
+                                        <option value="France">France</option>
+                                        <option value="Spain">Spain</option>
+                                        <option value="Italy">Italy</option>
+                                        <option value="Netherlands">Netherlands</option>
+                                        <option value="Sweden">Sweden</option>
+                                        <option value="Norway">Norway</option>
+                                        <option value="Denmark">Denmark</option>
+                                        <option value="Finland">Finland</option>
+                                        <option value="Japan">Japan</option>
+                                        <option value="South Korea">South Korea</option>
+                                        <option value="China">China</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="form-group"><label>Service Requested <span class="required">*</span></label>
+                                    <select id="appService" class="glass-input" required>
+                                        <option value="">Select Service</option>
+                                        <option value="Study Abroad">Study Abroad</option>
+                                        <option value="Work Abroad">Work Abroad</option>
+                                        <option value="Visit Visa">Visit Visa</option>
+                                        <option value="Immigration">Immigration</option>
+                                        <option value="Student Loan">Student Loan</option>
+                                        <option value="Accommodation Booking">Accommodation Booking</option>
+                                        <option value="Translation Services">Translation Services</option>
+                                        <option value="Insurance">Insurance</option>
+                                        <option value="Exchange Program">Exchange Program</option>
+                                        <option value="Pre-departure Orientation">Pre-departure Orientation</option>
+                                    </select>
+                                </div>
+                                <div class="form-group"><label>Referral Date</label><input type="date" id="appReferralDate" class="glass-input"></div>
+                                <div class="form-group"><label>Source of Lead</label>
+                                    <select id="appSource" class="glass-input">
+                                        <option value="Agent Referral">Agent Referral</option>
+                                        <option value="Social Media">Social Media</option>
+                                        <option value="Website">Website</option>
+                                        <option value="Referral">Referral</option>
+                                        <option value="Walk-in">Walk-in</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="grid-column: 1 / -1;"><label>Additional Information</label><textarea id="appAdditional" class="glass-input" rows="2"></textarea></div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline" id="cancelApplicantBtn">Cancel</button>
+                        <button class="btn btn-primary" id="saveApplicantBtn"><i class="fas fa-save"></i> Register Applicant</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View Applicant Modal -->
+            <div id="viewApplicantModal" class="glass-modal">
+                <div class="modal-content">
+                    <div class="modal-header"><h2 id="viewApplicantTitle">Applicant Details</h2><button class="modal-close" id="closeViewApplicant">&times;</button></div>
+                    <div class="modal-body" id="viewApplicantBody"><div style="text-align: center; padding: 20px;"><div class="spinner"></div><p style="margin-top: 10px; color: rgba(255,255,255,0.5);">Loading...</p></div></div>
+                    <div class="modal-footer"><button class="btn btn-outline" id="closeViewApplicantBtn">Close</button></div>
+                </div>
+            </div>
+
+            <!-- Upload Document Modal -->
+            <div id="uploadDocumentModal" class="glass-modal">
+                <div class="modal-content">
+                    <div class="modal-header"><h2><i class="fas fa-upload"></i> Upload Document</h2><button class="modal-close" id="closeUploadModal">&times;</button></div>
+                    <div class="modal-body">
+                        <form id="uploadForm">
+                            <div class="form-group"><label>Applicant <span class="required">*</span></label>
+                                <select id="uploadApplicant" class="glass-input" required>
+                                    <option value="">Select Applicant</option>
+                                </select>
+                            </div>
+                            <div class="form-group"><label>Document Type <span class="required">*</span></label>
+                                <select id="uploadDocType" class="glass-input" required>
+                                    <option value="">Select Type</option>
+                                    <option value="passport">Passport Copy</option>
+                                    <option value="academic_transcripts">Academic Transcripts</option>
+                                    <option value="academic_diploma">Academic Diploma</option>
+                                    <option value="proof_of_funds">Proof of Funds</option>
+                                    <option value="cv_resume">CV/Resume</option>
+                                    <option value="passport_photos">Passport Photos</option>
+                                    <option value="recommendation_letter">Recommendation Letter</option>
+                                    <option value="other_documents">Other Documents</option>
+                                </select>
+                            </div>
+                            <div class="form-group"><label>File <span class="required">*</span></label>
+                                <input type="file" id="uploadFile" class="glass-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" required>
+                                <small style="color: rgba(255,255,255,0.3); font-size: 0.65rem;">Allowed: PDF, JPG, PNG, DOC (Max 10MB)</small>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline" id="cancelUploadBtn">Cancel</button>
+                        <button class="btn btn-primary" id="saveUploadBtn"><i class="fas fa-upload"></i> Upload</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Message Modal -->
+            <div id="newMessageModal" class="glass-modal">
+                <div class="modal-content">
+                    <div class="modal-header"><h2><i class="fas fa-paper-plane"></i> New Message</h2><button class="modal-close" id="closeMessageModal">&times;</button></div>
+                    <div class="modal-body">
+                        <form id="messageForm">
+                            <div class="form-group"><label>Subject</label><input type="text" id="msgSubject" class="glass-input" placeholder="Message subject"></div>
+                            <div class="form-group"><label>Message <span class="required">*</span></label><textarea id="msgContent" class="glass-input" rows="5" placeholder="Write your message here..." required></textarea></div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline" id="cancelMessageBtn">Cancel</button>
+                        <button class="btn btn-primary" id="sendMessageBtn"><i class="fas fa-paper-plane"></i> Send</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conversation View Modal -->
+            <div id="conversationModal" class="glass-modal">
+                <div class="modal-content" style="max-width: 600px;">
+                    <div class="modal-header"><h2 id="convModalTitle">Conversation</h2><button class="modal-close" id="closeConvModal">&times;</button></div>
+                    <div class="modal-body" id="convModalBody">
+                        <div id="convMessages" style="max-height: 400px; overflow-y: auto; margin-bottom: 15px;"></div>
+                        <form id="convReplyForm">
+                            <div class="form-group"><label>Reply</label><textarea id="convReply" class="glass-input" rows="3" placeholder="Type your reply..."></textarea></div>
+                            <button class="btn btn-primary btn-sm" id="sendReplyBtn"><i class="fas fa-paper-plane"></i> Send Reply</button>
+                        </form>
+                    </div>
+                    <div class="modal-footer"><button class="btn btn-outline" id="closeConvModalBtn">Close</button></div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ===== SECURITY ===== -->
+    <script>
+        document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12') { e.preventDefault(); return false; }
+            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) { e.preventDefault(); return false; }
+            if (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j')) { e.preventDefault(); return false; }
+            if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) { e.preventDefault(); return false; }
+            if (e.ctrlKey && (e.key === 'S' || e.key === 's')) { e.preventDefault(); return false; }
+        });
+        if (window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1')) {
+            console.log = function() {};
+            console.warn = function() {};
+            console.error = function() {};
+            console.info = function() {};
+            console.debug = function() {};
+        }
+        console.clear = function() {};
+    </script>
+
+    <!-- ===== MAIN SCRIPT ===== -->
+    <script>
+        // ============================================================
+        // CONFIGURATION
+        // ============================================================
+        const API_URL = 'https://gisc-app-production.up.railway.app/api';
+
+        // ============================================================
+        // AGENT AUTHENTICATION
+        // ============================================================
+        const agentToken = localStorage.getItem('agentToken');
+        const agentData = localStorage.getItem('agentData');
+
+        if (!agentToken || !agentData) {
+            window.location.href = 'login.html';
+        }
+
+        let agentUser = null;
+        try {
+            agentUser = JSON.parse(agentData);
+            document.getElementById('agentName').textContent = agentUser.fullName || 'Agent';
+            document.getElementById('agentAvatar').textContent = (agentUser.fullName || 'A')[0].toUpperCase();
+            document.getElementById('agentIdDisplay').textContent = agentUser.agentId || 'GISC-AGT000';
+            document.getElementById('profAgentId').textContent = agentUser.agentId || 'GISC-AGT000';
+            document.getElementById('profReferralCode').textContent = agentUser.referralCode || 'GISC-DAR000';
+            document.getElementById('profStatus').textContent = agentUser.status || 'Pending';
+            document.getElementById('profStatus').className = `status-badge status-${(agentUser.status || 'pending').toLowerCase()}`;
+            console.log('✅ Agent logged in:', agentUser.email);
+        } catch (e) {
+            console.error('Error parsing agent data:', e);
+            window.location.href = 'login.html';
+        }
+
+        // ============================================================
+        // API HELPER
+        // ============================================================
+        async function agentApiFetch(endpoint, options = {}) {
+            try {
+                const url = endpoint.startsWith('/api/') ? `${API_URL}${endpoint}` : `${API_URL}/agent/${endpoint}`;
+                const response = await fetch(url, {
+                    ...options,
+                    headers: {
+                        'Authorization': `Bearer ${agentToken}`,
+                        'Content-Type': 'application/json',
+                        ...(options.headers || {})
+                    }
+                });
+                
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('Non-JSON response:', text.substring(0, 200));
+                    throw new Error('Server returned non-JSON response.');
+                }
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || `API error ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error(`API Fetch Error (${endpoint}):`, error);
+                throw error;
+            }
+        }
+
+        // ============================================================
+        // LOGOUT
+        // ============================================================
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('agentToken');
+                localStorage.removeItem('agentData');
+                window.location.href = 'login.html';
+            }
+        });
+
+        // ============================================================
+        // NAVIGATION
+        // ============================================================
+        document.querySelectorAll('.sidebar-nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const section = this.dataset.section;
+
+                document.querySelectorAll('.sidebar-nav a').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+
+                document.querySelectorAll('.agent-section').forEach(s => s.classList.remove('active'));
+                const targetSection = document.getElementById(`${section}-section`);
+                if (targetSection) targetSection.classList.add('active');
+
+                const loaders = {
+                    'dashboard': loadDashboard,
+                    'applicants': loadApplicants,
+                    'applications': loadApplications,
+                    'commissions': loadCommissions,
+                    'payments': loadPayments,
+                    'documents': loadDocuments,
+                    'messages': loadConversations,
+                    'notifications': loadNotifications,
+                    'resources': loadResources,
+                    'performance': loadPerformance,
+                    'profile': loadProfile
+                };
+                if (loaders[section]) loaders[section]();
+
+                document.getElementById('sidebar').classList.remove('open');
+            });
+        });
+
+        // ============================================================
+        // MOBILE MENU
+        // ============================================================
+        document.getElementById('mobileMenuToggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
+
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const toggle = document.getElementById('mobileMenuToggle');
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(e.target) && !toggle.contains(e.target)) {
+                    sidebar.classList.remove('open');
+                }
+            }
+        });
+
+        // ============================================================
+        // TOAST NOTIFICATIONS
+        // ============================================================
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer') || (() => {
+                const c = document.createElement('div');
+                c.id = 'toastContainer';
+                c.className = 'toast-container';
+                document.body.appendChild(c);
+                return c;
+            })();
+
+            const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
+            const colors = { success: '#28a745', error: '#dc3545', warning: '#ffc107', info: '#17a2b8' };
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i class="fas ${icons[type] || 'fa-info-circle'}" style="color: ${colors[type] || '#28a745'};"></i><span>${message}</span><button class="toast-close">&times;</button>`;
+
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                toast.style.animation = 'slideOutRight 0.3s ease forwards';
+                setTimeout(() => toast.remove(), 300);
+            });
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.style.animation = 'slideOutRight 0.3s ease forwards';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 4000);
+        }
+
+        // ============================================================
+        // LOAD DASHBOARD
+        // ============================================================
+        async function loadDashboard() {
+            try {
+                const result = await agentApiFetch('dashboard');
+                const data = result.dashboard;
+                
+                // Stats
+                document.getElementById('statReferrals').textContent = data.stats.totalReferrals || 0;
+                document.getElementById('statQualified').textContent = data.stats.qualifiedApplicants || 0;
+                document.getElementById('statActive').textContent = data.stats.activeApplicants || 0;
+                document.getElementById('statSuccessful').textContent = data.stats.successfulApplications || 0;
+                document.getElementById('statRevenue').textContent = `$${(data.stats.totalRevenueGenerated || 0).toFixed(2)}`;
+                document.getElementById('statCommissionEarned').textContent = `$${(data.stats.commissionEarned || 0).toFixed(2)}`;
+                document.getElementById('statCommissionPaid').textContent = `$${(data.stats.commissionPaid || 0).toFixed(2)}`;
+                document.getElementById('statPendingCommission').textContent = `$${(data.stats.pendingCommission || 0).toFixed(2)}`;
+                document.getElementById('statRefundAdjustments').textContent = `$${(data.stats.refundAdjustments || 0).toFixed(2)}`;
+                
+                // Performance Level
+                const level = data.stats.performanceLevel || 'REGISTERED AGENT';
+                const levelClass = level.toLowerCase().replace(/ /g, '-');
+                document.getElementById('performanceLevelDisplay').textContent = level;
+                document.getElementById('performanceLevelDisplay').className = `performance-level level-${levelClass}`;
+                
+                // Agent Status Badge
+                document.getElementById('agentStatusBadge').textContent = data.agent.status || 'Pending';
+                document.getElementById('agentStatusBadge').className = `status-badge status-${(data.agent.status || 'pending').toLowerCase()}`;
+                
+                // Pending Actions
+                const actionsContainer = document.getElementById('pendingActionsList');
+                if (data.pendingActions && data.pendingActions.length > 0) {
+                    actionsContainer.innerHTML = data.pendingActions.map(action => `
+                        <div class="pending-action-item">
+                            <span class="action-text">${action.message}</span>
+                            <span class="action-count">${action.count}</span>
+                        </div>
+                    `).join('');
+                } else {
+                    actionsContainer.innerHTML = '<div class="empty-state"><i class="fas fa-check-circle"></i><p>No pending actions</p></div>';
+                }
+                
+                // Recent Applicants
+                const recentApps = document.getElementById('recentApplicants');
+                if (data.recent.applicants && data.recent.applicants.length > 0) {
+                    recentApps.innerHTML = data.recent.applicants.slice(0, 5).map(a => `
+                        <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.8rem;">
+                            <span>${a.fullName}</span>
+                            <span class="status-badge status-${a.status ? a.status.toLowerCase().replace(/ /g, '_') : 'registered'}">${a.status || 'Registered'}</span>
+                        </div>
+                    `).join('');
+                } else {
+                    recentApps.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>No recent applicants</p></div>';
+                }
+                
+                // Recent Applications
+                const recentAppls = document.getElementById('recentApplications');
+                if (data.recent.applications && data.recent.applications.length > 0) {
+                    recentAppls.innerHTML = data.recent.applications.slice(0, 5).map(a => `
+                        <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.8rem;">
+                            <span>${a.applicantName}</span>
+                            <span class="status-badge status-${a.status ? a.status.toLowerCase() : 'lead'}">${a.status || 'Lead'}</span>
+                        </div>
+                    `).join('');
+                } else {
+                    recentAppls.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>No recent applications</p></div>';
+                }
+                
+                // Recent Commissions
+                const recentComs = document.getElementById('recentCommissions');
+                if (data.recent.commissions && data.recent.commissions.length > 0) {
+                    recentComs.innerHTML = data.recent.commissions.slice(0, 5).map(c => `
+                        <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.8rem;">
+                            <span>${c.applicantId || 'N/A'}</span>
+                            <span style="color: #28a745;">$${(c.commissionAmount || 0).toFixed(2)}</span>
+                            <span class="status-badge status-${c.status ? c.status.toLowerCase() : 'pending'}">${c.status || 'Pending'}</span>
+                        </div>
+                    `).join('');
+                } else {
+                    recentComs.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>No commission activity</p></div>';
+                }
+                
+                // Recent Notifications
+                const recentNotifs = document.getElementById('recentNotifications');
+                if (data.recent.notifications && data.recent.notifications.length > 0) {
+                    recentNotifs.innerHTML = data.recent.notifications.slice(0, 5).map(n => `
+                        <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.8rem;">
+                            <span>${n.title}</span>
+                            <span style="color: rgba(255,255,255,0.3); font-size: 0.65rem;">${new Date(n.createdAt).toLocaleDateString()}</span>
+                        </div>
+                    `).join('');
+                } else {
+                    recentNotifs.innerHTML = '<div class="empty-state"><i class="fas fa-bell-slash"></i><p>No notifications</p></div>';
+                }
+                
+                // Update badges
+                document.getElementById('applicantBadge').textContent = data.stats.totalReferrals || 0;
+                document.getElementById('notificationBadge').textContent = data.recent.notifications ? data.recent.notifications.filter(n => !n.read).length : 0;
+                
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                showToast('Error loading dashboard: ' + error.message, 'error');
+            }
+        }
+
+        // ============================================================
+        // LOAD APPLICANTS
+        // ============================================================
+        async function loadApplicants() {
+            const debugEl = document.getElementById('applicantDebugInfo');
+            const tbody = document.getElementById('applicantsTableBody');
+            
+            try {
+                debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading applicants...</span>';
+                const result = await agentApiFetch('applicants');
+                const applicants = result.applicants || [];
+                
+                debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${applicants.length} applicants</span>`;
+                
+                if (applicants.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px;">No applicants found</td></tr>`;
+                    return;
+                }
+                
+                tbody.innerHTML = applicants.map(app => `
+                    <tr>
+                        <td><strong>${app.applicantId || 'N/A'}</strong></td>
+                        <td>${app.fullName || 'Unknown'}</td>
+                        <td>${app.email || 'N/A'}</td>
+                        <td><span class="status-badge status-${app.status ? app.status.toLowerCase().replace(/ /g, '_') : 'registered'}">${app.status || 'Registered'}</span></td>
+                        <td><span class="status-badge status-${app.paymentStatus ? app.paymentStatus.toLowerCase().replace(/ /g, '_') : 'unpaid'}">${app.paymentStatus || 'No Payment'}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="viewApplicant('${app.applicantId}')"><i class="fas fa-eye"></i></button>
+                            <button class="btn btn-sm btn-primary" onclick="uploadForApplicant('${app.applicantId}')"><i class="fas fa-upload"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error loading applicants:', error);
+                debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px;">Error loading applicants</td></tr>`;
+            }
+        }
+
+        // ============================================================
+        // VIEW APPLICANT
+        // ============================================================
+        window.viewApplicant = async (applicantId) => {
+            const modal = document.getElementById('viewApplicantModal');
+            const body = document.getElementById('viewApplicantBody');
+            const title = document.getElementById('viewApplicantTitle');
+            
+            modal.classList.add('active');
+            body.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner"></div><p style="margin-top: 10px;">Loading...</p></div>';
+            
+            try {
+                const result = await agentApiFetch(`applicants/${applicantId}`);
+                const app = result.applicant;
+                const application = result.application;
+                
+                title.textContent = `Applicant: ${app.fullName}`;
+                
+                body.innerHTML = `
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                        <div>
+                            <div class="detail-row"><span class="detail-label">ID</span><span class="detail-value">${app.applicantId}</span></div>
+                            <div class="detail-row"><span class="detail-label">Name</span><span class="detail-value">${app.fullName}</span></div>
+                            <div class="detail-row"><span class="detail-label">Email</span><span class="detail-value">${app.email}</span></div>
+                            <div class="detail-row"><span class="detail-label">Phone</span><span class="detail-value">${app.phone}</span></div>
+                        </div>
+                        <div>
+                            <div class="detail-row"><span class="detail-label">Country</span><span class="detail-value">${app.countryOfInterest}</span></div>
+                            <div class="detail-row"><span class="detail-label">Service</span><span class="detail-value">${app.serviceRequested}</span></div>
+                            <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value"><span class="status-badge status-${app.status ? app.status.toLowerCase().replace(/ /g, '_') : 'registered'}">${app.status}</span></span></div>
+                            <div class="detail-row"><span class="detail-label">Payment</span><span class="detail-value"><span class="status-badge status-${app.paymentStatus ? app.paymentStatus.toLowerCase().replace(/ /g, '_') : 'unpaid'}">${app.paymentStatus}</span></span></div>
+                        </div>
+                    </div>
+                    ${application ? `
+                        <div style="margin-top: 10px; background: rgba(255,255,255,0.04); padding: 12px; border-radius: 8px;">
+                            <h4 style="color: var(--primary-red); margin-bottom: 8px;">Application Details</h4>
+                            <div class="detail-row"><span class="detail-label">Stage</span><span class="detail-value">${application.stage || application.status}</span></div>
+                            <div class="detail-row"><span class="detail-label">Total Fee</span><span class="detail-value">$${(application.totalServiceFee || 0).toFixed(2)}</span></div>
+                            <div class="detail-row"><span class="detail-label">Received</span><span class="detail-value">$${(application.amountReceived || 0).toFixed(2)}</span></div>
+                            <div class="detail-row"><span class="detail-label">Remaining</span><span class="detail-value">$${(application.amountRemaining || 0).toFixed(2)}</span></div>
+                            ${application.milestones && application.milestones.length > 0 ? `
+                                <div style="margin-top: 8px;"><strong style="font-size: 0.8rem;">Milestones:</strong></div>
+                                ${application.milestones.map(m => `
+                                    <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.75rem;">
+                                        <span>${m.milestone}</span>
+                                        <span class="status-badge status-${m.status ? m.status.toLowerCase() : 'pending'}">${m.status || 'Pending'}</span>
+                                    </div>
+                                `).join('')}
+                            ` : ''}
+                        </div>
+                    ` : '<p style="color: rgba(255,255,255,0.3); font-size: 0.85rem;">No application record found</p>'}
+                `;
+                
+            } catch (error) {
+                console.error('Error viewing applicant:', error);
+                body.innerHTML = `<p style="color: var(--danger-red);">Error loading applicant: ${error.message}</p>`;
+            }
+        };
+
+        // ============================================================
+        // ADD APPLICANT
+        // ============================================================
+        window.openAddApplicant = () => {
+            document.getElementById('addApplicantModal').classList.add('active');
+            document.getElementById('applicantForm').reset();
+            document.getElementById('appReferralDate').value = new Date().toISOString().split('T')[0];
+        };
+
+        document.getElementById('closeApplicantModal').addEventListener('click', () => {
+            document.getElementById('addApplicantModal').classList.remove('active');
+        });
+        document.getElementById('cancelApplicantBtn').addEventListener('click', () => {
+            document.getElementById('addApplicantModal').classList.remove('active');
+        });
+
+        document.getElementById('saveApplicantBtn').addEventListener('click', async () => {
+            const fullName = document.getElementById('appFullName').value.trim();
+            const phone = document.getElementById('appPhone').value.trim();
+            const email = document.getElementById('appEmail').value.trim();
+            const countryOfInterest = document.getElementById('appCountry').value;
+            const serviceRequested = document.getElementById('appService').value;
+            const referralDate = document.getElementById('appReferralDate').value;
+            const sourceOfLead = document.getElementById('appSource').value;
+            const additionalInformation = document.getElementById('appAdditional').value.trim();
+
+            if (!fullName || !phone || !email || !countryOfInterest || !serviceRequested) {
+                showToast('Please fill in all required fields', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('saveApplicantBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner"></span> Registering...';
+            btn.disabled = true;
+
+            try {
+                const result = await agentApiFetch('applicants', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        fullName, phone, email, countryOfInterest, serviceRequested,
+                        referralDate, sourceOfLead, additionalInformation
+                    })
+                });
+                
+                showToast(`Applicant registered successfully! ID: ${result.applicantId}`, 'success');
+                document.getElementById('addApplicantModal').classList.remove('active');
+                await loadApplicants();
+                await loadDashboard();
+            } catch (error) {
+                console.error('Error adding applicant:', error);
+                showToast('Error: ' + error.message, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        // ============================================================
+        // LOAD APPLICATIONS
+        // ============================================================
+        async function loadApplications() {
+            const debugEl = document.getElementById('appDebugInfo');
+            const tbody = document.getElementById('applicationsTableBody');
+            
+            try {
+                debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading applications...</span>';
+                const result = await agentApiFetch('applications');
+                const apps = result.applications || [];
+                
+                document.getElementById('appTotalLabel').textContent = `${apps.length} total`;
+                debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${apps.length} applications</span>`;
+                
+                if (apps.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 30px;">No applications found</td></tr>`;
+                    return;
+                }
+                
+                tbody.innerHTML = apps.map(app => `
+                    <tr>
+                        <td><strong>${app.applicantId || 'N/A'}</strong></td>
+                        <td>${app.applicantName || 'Unknown'}</td>
+                        <td>${app.service || 'N/A'}</td>
+                        <td><span class="status-badge status-${app.status ? app.status.toLowerCase() : 'lead'}">${app.status || 'Lead'}</span></td>
+                        <td><span class="status-badge status-${app.paymentStatus ? app.paymentStatus.toLowerCase().replace(/ /g, '_') : 'unpaid'}">${app.paymentStatus || 'No Payment'}</span></td>
+                        <td style="font-size: 0.75rem; color: rgba(255,255,255,0.4);">${app.updatedAt ? new Date(app.updatedAt).toLocaleDateString() : 'N/A'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="viewApplication('${app.applicantId}')"><i class="fas fa-eye"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error loading applications:', error);
+                debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 30px;">Error loading applications</td></tr>`;
+            }
+        }
+
+        window.viewApplication = async (applicantId) => {
+            try {
+                const result = await agentApiFetch(`applications/${applicantId}`);
+                const app = result.application;
+                
+                let milestonesHtml = '';
+                if (app.milestones && app.milestones.length > 0) {
+                    milestonesHtml = app.milestones.map(m => `
+                        <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.75rem;">
+                            <span>${m.milestone}</span>
+                            <span class="status-badge status-${m.status ? m.status.toLowerCase() : 'pending'}">${m.status || 'Pending'}</span>
+                            <span style="color: rgba(255,255,255,0.3); font-size: 0.6rem;">${m.date ? new Date(m.date).toLocaleDateString() : ''}</span>
+                        </div>
+                    `).join('');
+                }
+                
+                alert(`📋 Application Details\n\nApplicant: ${app.applicantName}\nID: ${app.applicantId}\nService: ${app.service}\nDestination: ${app.destination}\nStatus: ${app.status}\nPayment: ${app.paymentStatus}\nTotal Fee: $${(app.totalServiceFee || 0).toFixed(2)}\nReceived: $${(app.amountReceived || 0).toFixed(2)}\nRemaining: $${(app.amountRemaining || 0).toFixed(2)}\n\n--- Milestones ---\n${milestonesHtml || 'No milestones recorded'}`);
+            } catch (error) {
+                console.error('Error viewing application:', error);
+                showToast('Error loading application', 'error');
+            }
+        };
+
+        // ============================================================
+        // LOAD COMMISSIONS
+        // ============================================================
+        async function loadCommissions() {
+            const debugEl = document.getElementById('commissionDebugInfo');
+            const tbody = document.getElementById('commissionsTableBody');
+            
+            try {
+                debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading commissions...</span>';
+                const result = await agentApiFetch('commissions');
+                const commissions = result.commissions || [];
+                const summary = result.summary || {};
+                
+                document.getElementById('comTotalEarned').textContent = `$${(summary.totalEarned || 0).toFixed(2)}`;
+                document.getElementById('comTotalPaid').textContent = `$${(summary.totalPaid || 0).toFixed(2)}`;
+                document.getElementById('comTotalPending').textContent = `$${(summary.totalPending || 0).toFixed(2)}`;
+                document.getElementById('comTotalReversed').textContent = `$${(summary.totalReversed || 0).toFixed(2)}`;
+                document.getElementById('comEligibleSettlement').textContent = `$${(summary.eligibleForSettlement || 0).toFixed(2)}`;
+                document.getElementById('commissionTotalLabel').textContent = `${commissions.length} total`;
+                document.getElementById('commissionBadge').textContent = commissions.filter(c => c.status === 'Eligible' || c.status === 'Pending').length;
+                
+                debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${commissions.length} commissions</span>`;
+                
+                if (commissions.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 30px;">No commissions yet</td></tr>`;
+                    return;
+                }
+                
+                tbody.innerHTML = commissions.map(c => `
+                    <tr>
+                        <td>${c.applicantId || 'N/A'}</td>
+                        <td>${c.packageName || 'N/A'}</td>
+                        <td>$${(c.amountReceived || 0).toFixed(2)}</td>
+                        <td>${(c.rate || 0) * 100}%</td>
+                        <td><strong>$${(c.commissionAmount || 0).toFixed(2)}</strong></td>
+                        <td><span class="status-badge status-${c.status ? c.status.toLowerCase() : 'pending'}">${c.status || 'Pending'}</span></td>
+                        <td style="font-size: 0.7rem; color: rgba(255,255,255,0.4);">${c.createdAt ? new Date(c.createdAt).toLocaleDateString() : 'N/A'}</td>
+                    </tr>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error loading commissions:', error);
+                debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 30px;">Error loading commissions</td></tr>`;
+            }
+        }
+
+        // ============================================================
+        // LOAD PAYMENTS
+        // ============================================================
+        async function loadPayments() {
+            const debugEl = document.getElementById('paymentDebugInfo');
+            const tbody = document.getElementById('paymentsTableBody');
+            
+            try {
+                debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading payments...</span>';
+                const result = await agentApiFetch('payments');
+                const payments = result.payments || [];
+                const summary = result.summary || {};
+                
+                document.getElementById('payTotalPaid').textContent = `$${(summary.totalPaid || 0).toFixed(2)}`;
+                document.getElementById('payTotalPending').textContent = `$${(summary.totalPending || 0).toFixed(2)}`;
+                document.getElementById('payTotalRejected').textContent = `$${(summary.totalRejected || 0).toFixed(2)}`;
+                document.getElementById('paymentTotalLabel').textContent = `${payments.length} total`;
+                
+                debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${payments.length} payments</span>`;
+                
+                if (payments.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 30px;">No payments yet</td></tr>`;
+                    return;
+                }
+                
+                tbody.innerHTML = payments.map(p => `
+                    <tr>
+                        <td>${p.applicantName || p.applicantId || 'N/A'}</td>
+                        <td>${p.packageName || p.service || 'N/A'}</td>
+                        <td>$${(p.amount || 0).toFixed(2)}</td>
+                        <td><span class="status-badge status-${p.status ? p.status.toLowerCase().replace(/ /g, '_') : 'pending'}">${p.status || 'Pending'}</span></td>
+                        <td style="font-size: 0.7rem; color: rgba(255,255,255,0.4);">${p.uploadedAt || p.createdAt || p.pendingAt || p.confirmedAt ? new Date(p.uploadedAt || p.createdAt || p.pendingAt || p.confirmedAt).toLocaleDateString() : 'N/A'}</td>
+                    </tr>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error loading payments:', error);
+                debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 30px;">Error loading payments</td></tr>`;
+            }
+        }
+
+        // ============================================================
+        // LOAD DOCUMENTS
+        // ============================================================
+        async function loadDocuments() {
+            const debugEl = document.getElementById('documentDebugInfo');
+            const container = document.getElementById('documentsList');
+            
+            try {
+                debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading documents...</span>';
+                const result = await agentApiFetch('documents');
+                const documents = result.documents || [];
+                
+                debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${documents.length} documents</span>`;
+                
+                if (documents.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-folder-open"></i><p>No documents uploaded yet</p></div>';
+                    return;
+                }
+                
+                container.innerHTML = `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
+                        ${documents.map(doc => `
+                            <div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.06);">
+                                <div style="font-size: 2rem; color: var(--primary-red); margin-bottom: 5px;">
+                                    <i class="fas ${doc.docType === 'passport' ? 'fa-passport' : doc.docType === 'academic_transcripts' ? 'fa-graduation-cap' : doc.docType === 'academic_diploma' ? 'fa-certificate' : doc.docType === 'proof_of_funds' ? 'fa-money-bill-wave' : doc.docType === 'cv_resume' ? 'fa-file-alt' : doc.docType === 'passport_photos' ? 'fa-camera' : doc.docType === 'recommendation_letter' ? 'fa-envelope' : 'fa-file'}"></i>
+                                </div>
+                                <div style="font-size: 0.8rem; font-weight: 500;">${doc.fileName || 'Unknown'}</div>
+                                <div style="font-size: 0.6rem; color: rgba(255,255,255,0.3);">${doc.docType ? doc.docType.replace('_', ' ') : 'N/A'}</div>
+                                <div style="font-size: 0.6rem; color: rgba(255,255,255,0.3);">${doc.applicantName || doc.applicantId || 'N/A'}</div>
+                                <div style="margin-top: 6px;">
+                                    <span class="status-badge status-${doc.status ? doc.status.toLowerCase().replace(/ /g, '_') : 'pending_review'}">${doc.status || 'Pending Review'}</span>
+                                </div>
+                                ${doc.fileUrl ? `<a href="${doc.fileUrl}" target="_blank" class="btn btn-sm btn-primary" style="margin-top: 8px; font-size: 0.6rem;"><i class="fas fa-eye"></i> View</a>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Error loading documents:', error);
+                debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading documents: ${error.message}</p></div>`;
+            }
+        }
+
+        // ============================================================
+        // UPLOAD DOCUMENT
+        // ============================================================
+        window.openUploadDocument = async () => {
+            document.getElementById('uploadDocumentModal').classList.add('active');
+            document.getElementById('uploadForm').reset();
+            
+            // Populate applicant dropdown
+            const select = document.getElementById('uploadApplicant');
+            try {
+                const result = await agentApiFetch('applicants');
+                const applicants = result.applicants || [];
+                select.innerHTML = '<option value="">Select Applicant</option>' + 
+                    applicants.map(a => `<option value="${a.applicantId}">${a.fullName} (${a.applicantId})</option>`).join('');
+            } catch (error) {
+                console.error('Error loading applicants for upload:', error);
+                select.innerHTML = '<option value="">Error loading applicants</option>';
+            }
+        };
+
+        document.getElementById('closeUploadModal').addEventListener('click', () => {
+            document.getElementById('uploadDocumentModal').classList.remove('active');
+        });
+        document.getElementById('cancelUploadBtn').addEventListener('click', () => {
+            document.getElementById('uploadDocumentModal').classList.remove('active');
+        });
+
+        document.getElementById('saveUploadBtn').addEventListener('click', async () => {
+            const applicantId = document.getElementById('uploadApplicant').value;
+            const docType = document.getElementById('uploadDocType').value;
+            const fileInput = document.getElementById('uploadFile');
+            
+            if (!applicantId || !docType || !fileInput.files.length) {
+                showToast('Please fill in all fields', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('saveUploadBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner"></span> Uploading...';
+            btn.disabled = true;
+
+            try {
+                const file = fileInput.files[0];
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('userId', applicantId);
+                formData.append('docType', docType);
+
+                const uploadResponse = await fetch(`${API_URL}/upload`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${agentToken}` },
+                    body: formData
+                });
+
+                if (!uploadResponse.ok) {
+                    const error = await uploadResponse.json();
+                    throw new Error(error.message || 'Upload failed');
+                }
+
+                const uploadResult = await uploadResponse.json();
+                
+                await agentApiFetch(`applicants/${applicantId}/documents`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        docType: docType,
+                        fileId: uploadResult.fileId,
+                        fileName: file.name,
+                        fileSize: file.size,
+                        fileType: file.type,
+                        fileUrl: uploadResult.url
+                    })
+                });
+
+                showToast('Document uploaded successfully!', 'success');
+                document.getElementById('uploadDocumentModal').classList.remove('active');
+                await loadDocuments();
+            } catch (error) {
+                console.error('Error uploading document:', error);
+                showToast('Error uploading: ' + error.message, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        window.uploadForApplicant = (applicantId) => {
+            openUploadDocument();
+            setTimeout(() => {
+                document.getElementById('uploadApplicant').value = applicantId;
+            }, 500);
+        };
+
+        // ============================================================
+        // LOAD CONVERSATIONS (MESSAGES)
+        // ============================================================
+        async function loadConversations() {
+            const debugEl = document.getElementById('messageDebugInfo');
+            const container = document.getElementById('conversationsList');
+            
+            try {
+                debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading conversations...</span>';
+                const result = await agentApiFetch('messages/conversations');
+                const conversations = result.conversations || [];
+                
+                const unreadCount = conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+                document.getElementById('messageBadge').textContent = unreadCount;
+                
+                debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${conversations.length} conversations</span>`;
+                
+                if (conversations.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>No conversations yet. Start a new message!</p></div>';
+                    return;
+                }
+                
+                container.innerHTML = conversations.map(conv => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: rgba(255,255,255,0.04); border-radius: 8px; margin-bottom: 8px; border-left: 3px solid ${conv.unreadCount > 0 ? 'var(--primary-red)' : 'rgba(255,255,255,0.1)'}; cursor: pointer;" onclick="openConversation('${conv._id}')">
+                        <div>
+                            <div style="font-weight: 600; color: white;">${conv.subject || 'Conversation'}</div>
+                            <div style="font-size: 0.75rem; color: rgba(255,255,255,0.4);">
+                                ${conv.lastMessage ? conv.lastMessage.message.substring(0, 60) + (conv.lastMessage.message.length > 60 ? '...' : '') : 'No messages'}
+                            </div>
+                            <div style="font-size: 0.65rem; color: rgba(255,255,255,0.2);">${conv.updatedAt ? new Date(conv.updatedAt).toLocaleDateString() : ''}</div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            ${conv.status === 'closed' ? '<span class="status-badge status-closed">Closed</span>' : ''}
+                            ${conv.unreadCount > 0 ? `<span class="badge" style="background: var(--primary-red); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.6rem;">${conv.unreadCount}</span>` : ''}
+                            <span style="font-size: 1.2rem; color: rgba(255,255,255,0.2);"><i class="fas fa-chevron-right"></i></span>
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error loading conversations:', error);
+                debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading conversations</p></div>`;
+            }
+        }
+
+        // ============================================================
+        // OPEN CONVERSATION
+        // ============================================================
+        window.openConversation = async (conversationId) => {
+            const modal = document.getElementById('conversationModal');
+            const body = document.getElementById('convModalBody');
+            const title = document.getElementById('convModalTitle');
+            
+            modal.classList.add('active');
+            body.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner"></div></div>';
+            
+            try {
+                const result = await agentApiFetch(`messages/${conversationId}`);
+                const messages = result.messages || [];
+                
+                title.textContent = `Conversation`;
+                
+                const messagesHtml = messages.map(m => `
+                    <div style="display: flex; justify-content: ${m.sender === 'agent' ? 'flex-end' : 'flex-start'}; margin-bottom: 8px;">
+                        <div style="max-width: 80%; background: ${m.sender === 'agent' ? 'rgba(227,6,19,0.2)' : 'rgba(255,255,255,0.08)'}; padding: 8px 14px; border-radius: 12px; border-bottom-right-radius: ${m.sender === 'agent' ? '4px' : '12px'}; border-bottom-left-radius: ${m.sender === 'agent' ? '12px' : '4px'};">
+                            <div style="font-size: 0.7rem; color: rgba(255,255,255,0.3);">${m.sender === 'agent' ? 'You' : 'Admin'}</div>
+                            <div style="font-size: 0.85rem;">${m.message}</div>
+                            <div style="font-size: 0.6rem; color: rgba(255,255,255,0.2); text-align: right;">${m.createdAt ? new Date(m.createdAt).toLocaleString() : ''}</div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                document.getElementById('convMessages').innerHTML = messagesHtml || '<p style="color: rgba(255,255,255,0.3);">No messages</p>';
+                document.getElementById('convMessages').scrollTop = document.getElementById('convMessages').scrollHeight;
+                
+                // Store conversation ID for reply
+                document.getElementById('convReplyForm').dataset.conversationId = conversationId;
+                
+            } catch (error) {
+                console.error('Error loading conversation:', error);
+                body.innerHTML = `<p style="color: var(--danger-red);">Error loading conversation: ${error.message}</p>`;
+            }
+        };
+
+        // ============================================================
+        // SEND REPLY
+        // ============================================================
+        document.getElementById('sendReplyBtn').addEventListener('click', async () => {
+            const conversationId = document.getElementById('convReplyForm').dataset.conversationId;
+            const message = document.getElementById('convReply').value.trim();
+            
+            if (!message) {
+                showToast('Please enter a message', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('sendReplyBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner"></span> Sending...';
+            btn.disabled = true;
+            
+            try {
+                await agentApiFetch('messages', {
+                    method: 'POST',
+                    body: JSON.stringify({ conversationId, message })
+                });
+                
+                showToast('Message sent!', 'success');
+                document.getElementById('convReply').value = '';
+                await openConversation(conversationId);
+                await loadConversations();
+            } catch (error) {
+                console.error('Error sending reply:', error);
+                showToast('Error sending message: ' + error.message, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        // ============================================================
+        // NEW MESSAGE
+        // ============================================================
+        window.openNewMessage = () => {
+            document.getElementById('newMessageModal').classList.add('active');
+            document.getElementById('messageForm').reset();
+        };
+
+        document.getElementById('closeMessageModal').addEventListener('click', () => {
+            document.getElementById('newMessageModal').classList.remove('active');
+        });
+        document.getElementById('cancelMessageBtn').addEventListener('click', () => {
+            document.getElementById('newMessageModal').classList.remove('active');
+        });
+
+        document.getElementById('sendMessageBtn').addEventListener('click', async () => {
+            const subject = document.getElementById('msgSubject').value.trim();
+            const message = document.getElementById('msgContent').value.trim();
+            
+            if (!message) {
+                showToast('Please enter a message', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('sendMessageBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner"></span> Sending...';
+            btn.disabled = true;
+            
+            try {
+                await agentApiFetch('messages', {
+                    method: 'POST',
+                    body: JSON.stringify({ subject: subject || 'Agent Inquiry', message })
+                });
+                
+                showToast('Message sent!', 'success');
+                document.getElementById('newMessageModal').classList.remove('active');
+                await loadConversations();
+            } catch (error) {
+                console.error('Error sending message:', error);
+                showToast('Error sending message: ' + error.message, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        // ============================================================
+        // LOAD NOTIFICATIONS
+        // ============================================================
+        async function loadNotifications() {
+            const debugEl = document.getElementById('notifDebugInfo');
+            const container = document.getElementById('notificationsList');
+            
+            try {
+                debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading notifications...</span>';
+                const result = await agentApiFetch('notifications');
+                const notifications = result.notifications || [];
+                const unreadCount = result.unreadCount || 0;
+                
+                document.getElementById('notificationBadge').textContent = unreadCount;
+                debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${notifications.length} notifications (${unreadCount} unread)</span>`;
+                
+                if (notifications.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-bell-slash"></i><p>No notifications</p></div>';
+                    return;
+                }
+                
+                container.innerHTML = notifications.map(n => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: rgba(255,255,255,0.04); border-radius: 8px; margin-bottom: 6px; border-left: 3px solid ${n.read ? 'rgba(255,255,255,0.1)' : 'var(--primary-red)'};">
+                        <div>
+                            <div style="font-weight: 600; color: ${n.read ? 'rgba(255,255,255,0.5)' : 'white'}; font-size: 0.85rem;">
+                                ${n.read ? '' : '● '}${n.title}
+                            </div>
+                            <div style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">${n.message}</div>
+                            <div style="font-size: 0.6rem; color: rgba(255,255,255,0.2);">${n.createdAt ? new Date(n.createdAt).toLocaleString() : ''}</div>
+                        </div>
+                        ${!n.read ? `<button class="btn btn-sm btn-success" onclick="markNotificationRead('${n._id}')"><i class="fas fa-check"></i></button>` : ''}
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+                debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading notifications</p></div>`;
+            }
+        }
+
+        window.markNotificationRead = async (notificationId) => {
+            try {
+                await agentApiFetch(`notifications/${notificationId}/read`, { method: 'PUT' });
+                await loadNotifications();
+                await loadDashboard();
+            } catch (error) {
+                console.error('Error marking notification read:', error);
+                showToast('Error marking notification read', 'error');
+            }
+        };
+
+        window.markAllNotificationsRead = async () => {
+            try {
+                await agentApiFetch('notifications/read-all', { method: 'PUT' });
+                showToast('All notifications marked as read', 'success');
+                await loadNotifications();
+                await loadDashboard();
+            } catch (error) {
+                console.error('Error marking all notifications read:', error);
+                showToast('Error marking all notifications read', 'error');
+            }
+        };
+
+        // ============================================================
+        // LOAD RESOURCES
+        // ============================================================
+        async function loadResources() {
+            const debugEl = document.getElementById('resourceDebugInfo');
+            const container = document.getElementById('resourcesList');
+            
+            try {
+                debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading resources...</span>';
+                const result = await agentApiFetch('resources');
+                const resources = result.resources || [];
+                
+                debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${resources.length} resources</span>`;
+                
+                if (resources.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-book-open"></i><p>No resources available</p></div>';
+                    return;
+                }
+                
+                container.innerHTML = resources.map(r => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: rgba(255,255,255,0.04); border-radius: 8px; margin-bottom: 8px; border-left: 3px solid var(--primary-red);">
+                        <div>
+                            <div style="font-weight: 600; color: white;">${r.title || 'Resource'}</div>
+                            <div style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">${r.description || ''}</div>
+                            ${r.category ? `<span class="status-badge status-published" style="font-size: 0.55rem;">${r.category}</span>` : ''}
+                        </div>
+                        ${r.fileUrl ? `<a href="${r.fileUrl}" target="_blank" class="btn btn-sm btn-primary"><i class="fas fa-download"></i> Download</a>` : ''}
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error loading resources:', error);
+                debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading resources</p></div>`;
+            }
+        }
+
+        // ============================================================
+        // LOAD PERFORMANCE
+        // ============================================================
+        async function loadPerformance() {
+            const debugEl = document.getElementById('performanceDebugInfo');
+            const container = document.getElementById('performanceContent');
+            
+            try {
+                debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading performance data...</span>';
+                const result = await agentApiFetch('performance');
+                const perf = result.performance;
+                
+                const levelClass = perf.level.current.toLowerCase().replace(/ /g, '-');
+                
+                container.innerHTML = `
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div style="background: rgba(255,255,255,0.04); padding: 15px; border-radius: 10px;">
+                            <h4 style="color: var(--primary-red); margin-bottom: 8px;">Agent Info</h4>
+                            <div class="detail-row"><span class="detail-label">Name</span><span class="detail-value">${perf.agent.name}</span></div>
+                            <div class="detail-row"><span class="detail-label">ID</span><span class="detail-value">${perf.agent.agentId}</span></div>
+                            <div class="detail-row"><span class="detail-label">Category</span><span class="detail-value">${perf.agent.category}</span></div>
+                            <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value"><span class="status-badge status-${perf.agent.status ? perf.agent.status.toLowerCase() : 'pending'}">${perf.agent.status}</span></span></div>
+                            <div class="detail-row"><span class="detail-label">Joined</span><span class="detail-value">${perf.agent.joinedDate ? new Date(perf.agent.joinedDate).toLocaleDateString() : 'N/A'}</span></div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.04); padding: 15px; border-radius: 10px;">
+                            <h4 style="color: var(--primary-red); margin-bottom: 8px;">Level</h4>
+                            <div style="text-align: center; padding: 10px;">
+                                <div style="font-size: 2rem; font-weight: 700; background: linear-gradient(135deg, #f7971e, #ffd200); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${perf.level.current}</div>
+                                <div style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">Next: ${perf.level.next} (${perf.level.threshold} applications)</div>
+                                <div style="margin-top: 8px; background: rgba(255,255,255,0.08); border-radius: 20px; height: 8px; overflow: hidden;">
+                                    <div style="height: 100%; width: ${Math.min(perf.level.progress, 100)}%; background: linear-gradient(90deg, var(--primary-red), #ff6b6b); border-radius: 20px;"></div>
+                                </div>
+                                <div style="font-size: 0.7rem; color: rgba(255,255,255,0.3); margin-top: 4px;">${Math.min(perf.level.progress, 100).toFixed(0)}% to next level</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 15px;">
+                        <div style="background: rgba(255,255,255,0.04); padding: 12px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 1.2rem; font-weight: 700; color: white;">${perf.metrics.totalApplicants}</div>
+                            <div style="font-size: 0.7rem; color: rgba(255,255,255,0.4);">Total Applicants</div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.04); padding: 12px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 1.2rem; font-weight: 700; color: #17a2b8;">${perf.metrics.qualifiedApplicants}</div>
+                            <div style="font-size: 0.7rem; color: rgba(255,255,255,0.4);">Qualified</div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.04); padding: 12px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 1.2rem; font-weight: 700; color: #28a745;">${perf.metrics.successfulApplications}</div>
+                            <div style="font-size: 0.7rem; color: rgba(255,255,255,0.4);">Successful</div>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div style="background: rgba(255,255,255,0.04); padding: 15px; border-radius: 10px;">
+                            <h4 style="color: var(--primary-red); margin-bottom: 8px;">Commission Summary</h4>
+                            <div class="detail-row"><span class="detail-label">Total Earned</span><span class="detail-value" style="color: #28a745;">$${perf.commissions.totalEarned.toFixed(2)}</span></div>
+                            <div class="detail-row"><span class="detail-label">Paid</span><span class="detail-value" style="color: #28a745;">$${perf.commissions.totalPaid.toFixed(2)}</span></div>
+                            <div class="detail-row"><span class="detail-label">Pending</span><span class="detail-value" style="color: #ffc107;">$${perf.commissions.totalPending.toFixed(2)}</span></div>
+                            <div class="detail-row"><span class="detail-label">Reversed</span><span class="detail-value" style="color: #dc3545;">$${perf.commissions.totalReversed.toFixed(2)}</span></div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.04); padding: 15px; border-radius: 10px;">
+                            <h4 style="color: var(--primary-red); margin-bottom: 8px;">Bonuses</h4>
+                            ${perf.bonuses && perf.bonuses.length > 0 ? perf.bonuses.map(b => `
+                                <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.04);">
+                                    <span>${b.type}</span>
+                                    <span style="color: ${b.achieved ? '#28a745' : 'rgba(255,255,255,0.3)'};">${b.achieved ? '✅ $' + b.amount : '⏳ $' + b.amount}</span>
+                                </div>
+                            `).join('') : '<p style="color: rgba(255,255,255,0.3); font-size: 0.85rem;">No bonuses available</p>'}
+                        </div>
+                    </div>
+                    ${perf.packageBreakdown && perf.packageBreakdown.length > 0 ? `
+                        <div style="background: rgba(255,255,255,0.04); padding: 15px; border-radius: 10px;">
+                            <h4 style="color: var(--primary-red); margin-bottom: 8px;">Package Breakdown</h4>
+                            ${perf.packageBreakdown.map(p => `
+                                <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.85rem;">
+                                    <span>${p.package}</span>
+                                    <span>${p.count} applications | $${p.totalRevenue.toFixed(2)} revenue | $${p.totalCommission.toFixed(2)} commission</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    ${perf.monthlyData && perf.monthlyData.length > 0 ? `
+                        <div style="background: rgba(255,255,255,0.04); padding: 15px; border-radius: 10px; margin-top: 15px;">
+                            <h4 style="color: var(--primary-red); margin-bottom: 8px;">Monthly Performance</h4>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px;">
+                                ${perf.monthlyData.map(m => `
+                                    <div style="background: rgba(255,255,255,0.04); padding: 8px; border-radius: 6px; text-align: center;">
+                                        <div style="font-size: 0.65rem; color: rgba(255,255,255,0.4);">${m.month}</div>
+                                        <div style="font-weight: 600;">${m.applicants}</div>
+                                        <div style="font-size: 0.6rem; color: rgba(255,255,255,0.3);">$${m.revenue.toFixed(0)}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                `;
+                
+                debugEl.innerHTML = `<span style="color: #0f0;">✅ Performance data loaded</span>`;
+                
+            } catch (error) {
+                console.error('Error loading performance:', error);
+                debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading performance data: ${error.message}</p></div>`;
+            }
+        }
+
+        // ============================================================
+        // LOAD PROFILE
+        // ============================================================
+        async function loadProfile() {
+            const debugEl = document.getElementById('profileDebugInfo');
+            
+            try {
+                debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading profile...</span>';
+                const result = await agentApiFetch('profile');
+                const agent = result.agent;
+                
+                document.getElementById('profFullName').value = agent.fullName || '';
+                document.getElementById('profEmail').value = agent.email || '';
+                document.getElementById('profPhone').value = agent.phone || '';
+                document.getElementById('profOrganization').value = agent.organization || '';
+                document.getElementById('profLocation').value = agent.location || '';
+                document.getElementById('profCategory').value = agent.agentCategory || '';
+                document.getElementById('profBackground').value = agent.professionalBackground || '';
+                document.getElementById('profExperience').value = agent.experience || '';
+                document.getElementById('profSocial').value = agent.socialMedia || '';
+                document.getElementById('profStatus').textContent = agent.status || 'Pending';
+                document.getElementById('profStatus').className = `status-badge status-${(agent.status || 'pending').toLowerCase()}`;
+                document.getElementById('profAgreement').textContent = agent.agreementStatus || 'Pending';
+                document.getElementById('profAgreement').className = `status-badge status-${(agent.agreementStatus || 'pending').toLowerCase()}`;
+                
+                debugEl.innerHTML = `<span style="color: #0f0;">✅ Profile loaded</span>`;
+                
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+            }
+        }
+
+        // ============================================================
+        // SAVE PROFILE
+        // ============================================================
+        window.saveProfile = async () => {
+            const btn = document.querySelector('#profile-section .btn-primary');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner"></span> Saving...';
+            btn.disabled = true;
+            
+            try {
+                const data = {
+                    fullName: document.getElementById('profFullName').value.trim(),
+                    phone: document.getElementById('profPhone').value.trim(),
+                    organization: document.getElementById('profOrganization').value.trim(),
+                    location: document.getElementById('profLocation').value.trim(),
+                    professionalBackground: document.getElementById('profBackground').value.trim(),
+                    experience: document.getElementById('profExperience').value.trim(),
+                    socialMedia: document.getElementById('profSocial').value.trim()
+                };
+                
+                await agentApiFetch('profile', {
+                    method: 'PUT',
+                    body: JSON.stringify(data)
+                });
+                
+                showToast('Profile updated successfully!', 'success');
+                await loadProfile();
+                await loadDashboard();
+            } catch (error) {
+                console.error('Error saving profile:', error);
+                showToast('Error saving profile: ' + error.message, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        };
+
+        // ============================================================
+        // MODAL CLOSE HANDLERS
+        // ============================================================
+        document.getElementById('closeViewApplicant').addEventListener('click', () => {
+            document.getElementById('viewApplicantModal').classList.remove('active');
+        });
+        document.getElementById('closeViewApplicantBtn').addEventListener('click', () => {
+            document.getElementById('viewApplicantModal').classList.remove('active');
+        });
+        document.getElementById('closeConvModal').addEventListener('click', () => {
+            document.getElementById('conversationModal').classList.remove('active');
+        });
+        document.getElementById('closeConvModalBtn').addEventListener('click', () => {
+            document.getElementById('conversationModal').classList.remove('active');
+        });
+
+        // Close modals on backdrop click
+        document.querySelectorAll('.glass-modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+        });
+
+        // ============================================================
+        // KEYBOARD SHORTCUTS
+        // ============================================================
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'r') { e.preventDefault(); refreshData(); }
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.glass-modal.active').forEach(m => m.classList.remove('active'));
+                document.getElementById('sidebar').classList.remove('open');
+            }
+        });
+
+        // ============================================================
+        // REFRESH DATA
+        // ============================================================
+        async function refreshData() {
+            showToast('Refreshing data...', 'info');
+            const activeSection = document.querySelector('.agent-section.active');
+            if (activeSection) {
+                const id = activeSection.id;
+                const loaders = {
+                    'dashboard-section': loadDashboard,
+                    'applicants-section': loadApplicants,
+                    'applications-section': loadApplications,
+                    'commissions-section': loadCommissions,
+                    'payments-section': loadPayments,
+                    'documents-section': loadDocuments,
+                    'messages-section': loadConversations,
+                    'notifications-section': loadNotifications,
+                    'resources-section': loadResources,
+                    'performance-section': loadPerformance,
+                    'profile-section': loadProfile
+                };
+                if (loaders[id]) await loaders[id]();
+            }
+            showToast('Data refreshed!', 'success');
+        }
+
+        // ============================================================
+        // EXPOSE GLOBALLY
+        // ============================================================
+        window.refreshData = refreshData;
+        window.loadDashboard = loadDashboard;
+        window.loadApplicants = loadApplicants;
+        window.loadApplications = loadApplications;
+        window.loadCommissions = loadCommissions;
+        window.loadPayments = loadPayments;
+        window.loadDocuments = loadDocuments;
+        window.loadConversations = loadConversations;
+        window.loadNotifications = loadNotifications;
+        window.loadResources = loadResources;
+        window.loadPerformance = loadPerformance;
+        window.loadProfile = loadProfile;
+        window.viewApplicant = viewApplicant;
+        window.viewApplication = viewApplication;
+        window.openAddApplicant = openAddApplicant;
+        window.openUploadDocument = openUploadDocument;
+        window.uploadForApplicant = uploadForApplicant;
+        window.openNewMessage = openNewMessage;
+        window.openConversation = openConversation;
+        window.markNotificationRead = markNotificationRead;
+        window.markAllNotificationsRead = markAllNotificationsRead;
+        window.saveProfile = saveProfile;
+
+        // ============================================================
+        // INITIALIZE
+        // ============================================================
+        console.log('🚀 Initializing Agent Portal...');
+        console.log('👤 Agent:', agentUser?.email);
+        console.log('🔗 API URL:', API_URL);
+        
+        // Load all sections
+        loadDashboard();
+        setTimeout(() => loadApplicants(), 300);
+        setTimeout(() => loadApplications(), 600);
+        setTimeout(() => loadCommissions(), 900);
+        setTimeout(() => loadPayments(), 1200);
+        setTimeout(() => loadDocuments(), 1500);
+        setTimeout(() => loadConversations(), 1800);
+        setTimeout(() => loadNotifications(), 2100);
+        setTimeout(() => loadResources(), 2400);
+        setTimeout(() => loadPerformance(), 2700);
+        setTimeout(() => loadProfile(), 3000);
+        
+        console.log('✅ Agent Portal ready');
+        console.log('💡 Tip: Click "Add Applicant" to start registering new applicants!');
+    </script>
+</body>
+</html>
