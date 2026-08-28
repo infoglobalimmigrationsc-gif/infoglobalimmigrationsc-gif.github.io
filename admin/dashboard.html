@@ -2278,6 +2278,134 @@ async function loadAgentApplicants() {
     }
 }
 
+ // View Agent Applicant with Documents
+window.viewAgentApplicant = async (applicantId) => {
+    try {
+        const result = await apiFetch(`agent-applicants/${applicantId}`);
+        const applicant = result.applicant;
+        const application = result.application || null;
+        
+        // Get documents
+        let docHtml = '';
+        let docCount = 0;
+        
+        if (application && application.documents) {
+            const docs = application.documents;
+            docCount = Object.keys(docs).length;
+            
+            for (const [key, value] of Object.entries(docs)) {
+                if (Array.isArray(value)) {
+                    for (const item of value) {
+                        if (item && item.fileName) {
+                            docHtml += `
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #eee; font-size: 0.85rem;">
+                                    <span><i class="fas fa-file"></i> ${item.fileName}</span>
+                                    <span class="status-badge status-${item.status || 'pending_review'}">${item.status || 'Pending Review'}</span>
+                                    ${item.fileUrl ? `<a href="${item.fileUrl}" target="_blank" class="btn btn-sm btn-primary" style="font-size: 0.6rem;"><i class="fas fa-eye"></i></a>` : ''}
+                                </div>
+                            `;
+                        }
+                    }
+                } else if (value && value.fileName) {
+                    docHtml += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #eee; font-size: 0.85rem;">
+                            <span><i class="fas fa-file"></i> ${value.fileName}</span>
+                            <span class="status-badge status-${value.status || 'pending_review'}">${value.status || 'Pending Review'}</span>
+                            ${value.fileUrl ? `<a href="${value.fileUrl}" target="_blank" class="btn btn-sm btn-primary" style="font-size: 0.6rem;"><i class="fas fa-eye"></i></a>` : ''}
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        // Get payments
+        let paymentHtml = '';
+        if (application && application.payments && application.payments.length > 0) {
+            paymentHtml = application.payments.map(p => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #eee; font-size: 0.85rem;">
+                    <span>$${(p.amount || 0).toFixed(2)} - ${p.description || 'Payment'}</span>
+                    <span class="status-badge status-${p.status || 'pending'}">${p.status || 'Pending'}</span>
+                    ${p.receiptUrl ? `<a href="${p.receiptUrl}" target="_blank" class="btn btn-sm btn-primary" style="font-size: 0.6rem;"><i class="fas fa-receipt"></i></a>` : ''}
+                </div>
+            `).join('');
+        } else {
+            paymentHtml = '<p style="color: #999; font-size: 0.85rem;">No payments recorded</p>';
+        }
+        
+        // Create modal
+        const modal = document.createElement('div');
+        modal.className = 'glass-modal active';
+        modal.style.display = 'flex';
+        modal.id = 'viewAgentApplicantModal';
+        
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 650px;">
+                <div class="modal-header">
+                    <h2><i class="fas fa-user-graduate"></i> ${applicant.fullName || 'Applicant'}</h2>
+                    <button class="modal-close" onclick="document.getElementById('viewAgentApplicantModal').remove()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                        <div>
+                            <div class="detail-row"><span class="detail-label">ID</span><span class="detail-value">${applicant.applicantId}</span></div>
+                            <div class="detail-row"><span class="detail-label">Name</span><span class="detail-value">${applicant.fullName}</span></div>
+                            <div class="detail-row"><span class="detail-label">Email</span><span class="detail-value">${applicant.email}</span></div>
+                            <div class="detail-row"><span class="detail-label">Phone</span><span class="detail-value">${applicant.phone}</span></div>
+                        </div>
+                        <div>
+                            <div class="detail-row"><span class="detail-label">Agent</span><span class="detail-value">${applicant.agentName || applicant.agentId || 'N/A'}</span></div>
+                            <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value"><span class="status-badge status-${applicant.status ? applicant.status.toLowerCase().replace(/ /g, '_') : 'registered'}">${applicant.status || 'Registered'}</span></span></div>
+                            <div class="detail-row"><span class="detail-label">Payment</span><span class="detail-value"><span class="payment-status-badge ${applicant.paymentStatus ? applicant.paymentStatus.toLowerCase() : 'due'}">${applicant.paymentStatus || 'No Payment'}</span></span></div>
+                            <div class="detail-row"><span class="detail-label">Documents</span><span class="detail-value">${docCount}</span></div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 10px; background: rgba(0,0,0,0.03); padding: 12px; border-radius: 8px;">
+                        <h4 style="margin-bottom: 8px; font-size: 1rem;"><i class="fas fa-file-alt"></i> Documents (${docCount})</h4>
+                        ${docHtml || '<p style="color: #999; font-size: 0.85rem;">No documents uploaded</p>'}
+                    </div>
+                    
+                    <div style="margin-top: 10px; background: rgba(0,0,0,0.03); padding: 12px; border-radius: 8px;">
+                        <h4 style="margin-bottom: 8px; font-size: 1rem;"><i class="fas fa-credit-card"></i> Payments</h4>
+                        ${paymentHtml}
+                        <div style="margin-top: 8px; font-size: 0.85rem;">
+                            <strong>Total Fee:</strong> $${(application?.totalServiceFee || 0).toFixed(2)} &nbsp;|&nbsp;
+                            <strong>Received:</strong> $${(application?.amountReceived || 0).toFixed(2)} &nbsp;|&nbsp;
+                            <strong>Remaining:</strong> $${(application?.amountRemaining || 0).toFixed(2)}
+                        </div>
+                    </div>
+                    
+                    ${application?.timeline && application.timeline.length > 0 ? `
+                        <div style="margin-top: 10px; background: rgba(0,0,0,0.03); padding: 12px; border-radius: 8px;">
+                            <h4 style="margin-bottom: 8px; font-size: 1rem;"><i class="fas fa-history"></i> Timeline</h4>
+                            ${application.timeline.map(t => `
+                                <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(0,0,0,0.04); font-size: 0.8rem;">
+                                    <span>${t.event}</span>
+                                    <span style="color: #666;">${t.date ? new Date(t.date).toLocaleDateString() : ''}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" onclick="document.getElementById('viewAgentApplicantModal').remove()">Close</button>
+                    ${applicant.email ? `<button class="btn btn-primary" onclick="window.open('mailto:${applicant.email}')"><i class="fas fa-envelope"></i> Email</button>` : ''}
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) this.remove();
+        });
+        
+    } catch (error) {
+        console.error('Error viewing agent applicant:', error);
+        showToast('Error loading applicant details: ' + error.message, 'error');
+    }
+};       
+        
 // View Applicant Documents (Admin)
 window.viewApplicantDocuments = async (applicantId) => {
     try {
