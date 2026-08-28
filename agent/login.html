@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Login - Global Immigration SC</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-red: #E30613;
+            --primary-red-dark: #b30000;
+            --primary-white: #FFFFFF;
+            --dark-gray: #333333;
+            --medium-gray: #777777;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            background-attachment: fixed;
+        }
+
+        .login-container {
+            max-width: 450px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.10);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header img {
+            max-width: 100px;
+            margin-bottom: 15px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .login-header h2 {
+            color: white;
+            margin-bottom: 5px;
+            font-size: 1.6rem;
+        }
+
+        .login-header p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+
+        .login-header .agent-badge {
+            display: inline-block;
+            background: var(--primary-red);
+            color: white;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-top: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        .form-group label i {
+            color: var(--primary-red);
+            margin-right: 5px;
+        }
+
+        .glass-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            color: var(--dark-gray);
+        }
+
+        .glass-input:focus {
+            outline: none;
+            border-color: var(--primary-red);
+            box-shadow: 0 0 0 3px rgba(227, 6, 19, 0.15);
+        }
+
+        .glass-input::placeholder {
+            color: #999;
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .form-options label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .form-options label input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary-red);
+            cursor: pointer;
+        }
+
+        .form-options a {
+            color: var(--primary-red);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.3s ease;
+        }
+
+        .form-options a:hover {
+            color: #ff4444;
+            text-decoration: underline;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            background: var(--primary-red);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-red-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(227, 6, 19, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            background: rgba(227, 6, 19, 0.15);
+            border-left: 3px solid var(--primary-red);
+            color: #ff6b6b;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 0.85rem;
+        }
+
+        .error-message i {
+            margin-right: 8px;
+        }
+
+        .success-message {
+            background: rgba(40, 167, 69, 0.15);
+            border-left: 3px solid #28a745;
+            color: #28a745;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 0.85rem;
+        }
+
+        .success-message i {
+            margin-right: 8px;
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .login-footer p {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+
+        .login-footer a {
+            color: var(--primary-red);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .login-footer a:hover {
+            color: #ff4444;
+            text-decoration: underline;
+        }
+
+        .login-footer .back-home {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.8rem;
+        }
+
+        .login-footer .back-home:hover {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+        .status-pending { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+        .status-approved { background: rgba(40, 167, 69, 0.2); color: #28a745; }
+        .status-suspended { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
+        .status-inactive { background: rgba(108, 117, 125, 0.2); color: #6c757d; }
+        .status-terminated { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
+
+        @media (max-width: 550px) {
+            .login-container {
+                padding: 25px;
+            }
+            
+            .login-header h2 {
+                font-size: 1.3rem;
+            }
+            
+            .form-options {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <img src="../GISC-LOGO.webp" alt="Global Immigration SC Logo" onerror="this.src='https://placehold.co/100x100/E30613/white?text=GISC'">
+            <h2>Agent Portal</h2>
+            <p>Login to manage your applicants and commissions</p>
+            <span class="agent-badge"><i class="fas fa-user-tie"></i> AGENT ACCESS</span>
+        </div>
+        
+        <div id="errorMessage" class="error-message">
+            <i class="fas fa-exclamation-circle"></i> <span id="errorText">Invalid credentials</span>
+        </div>
+        
+        <div id="statusMessage" class="success-message">
+            <i class="fas fa-info-circle"></i> <span id="statusText">Account status message</span>
+        </div>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label><i class="fas fa-envelope"></i> Email Address</label>
+                <input type="email" id="email" class="glass-input" placeholder="agent@example.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label><i class="fas fa-lock"></i> Password</label>
+                <input type="password" id="password" class="glass-input" placeholder="••••••••" required>
+            </div>
+            
+            <div class="form-options">
+                <label>
+                    <input type="checkbox" id="rememberMe"> Remember me
+                </label>
+                <a href="forgot-password.html">Forgot Password?</a>
+            </div>
+            
+            <button type="submit" class="btn-primary" id="loginBtn">
+                <i class="fas fa-sign-in-alt"></i> Login to Agent Dashboard
+            </button>
+        </form>
+        
+        <div class="login-footer">
+            <p>Don't have an account? <a href="register.html">Apply to become an Agent</a></p>
+            <p style="margin-top: 8px;">
+                <a href="../index.html" class="back-home">← Back to Home</a>
+            </p>
+            <p style="margin-top: 12px; font-size: 0.7rem; color: rgba(255,255,255,0.2);">
+                © 2024 Global Immigration SC
+            </p>
+        </div>
+    </div>
+    
+    <!-- ============ SECURITY PROTECTION ============ -->
+    <script>
+        // Anti-console protection
+        document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12') { e.preventDefault(); return false; }
+            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) { e.preventDefault(); return false; }
+            if (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j')) { e.preventDefault(); return false; }
+            if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) { e.preventDefault(); return false; }
+            if (e.ctrlKey && (e.key === 'S' || e.key === 's')) { e.preventDefault(); return false; }
+        });
+        if (window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1')) {
+            console.log = function() {};
+            console.warn = function() {};
+            console.error = function() {};
+            console.info = function() {};
+            console.debug = function() {};
+        }
+        console.clear = function() {};
+    </script>
+
+    <script>
+        // ============================================================
+        // CONFIGURATION
+        // ============================================================
+        const API_URL = 'https://gisc-app-production.up.railway.app/api';
+
+        // ============================================================
+        // CHECK IF ALREADY LOGGED IN
+        // ============================================================
+        const agentToken = localStorage.getItem('agentToken');
+        if (agentToken) {
+            // Verify token is valid by checking agent data
+            const agentData = localStorage.getItem('agentData');
+            if (agentData) {
+                try {
+                    const agent = JSON.parse(agentData);
+                    if (agent.status === 'Approved') {
+                        window.location.href = 'index.html';
+                    }
+                } catch(e) {
+                    // Invalid data, clear and stay on login
+                    localStorage.removeItem('agentToken');
+                    localStorage.removeItem('agentData');
+                }
+            }
+        }
+
+        // ============================================================
+        // LOGIN FORM HANDLER
+        // ============================================================
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const rememberMe = document.getElementById('rememberMe').checked;
+            const errorDiv = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            const statusDiv = document.getElementById('statusMessage');
+            const statusText = document.getElementById('statusText');
+            const submitBtn = document.getElementById('loginBtn');
+            
+            // Hide previous messages
+            errorDiv.style.display = 'none';
+            statusDiv.style.display = 'none';
+            
+            if (!email || !password) {
+                errorText.textContent = 'Please enter both email and password';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="spinner"></span> Logging in...';
+            submitBtn.disabled = true;
+            
+            try {
+                const response = await fetch(`${API_URL}/agent/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || 'Login failed');
+                }
+                
+                if (!data.success) {
+                    throw new Error(data.message || 'Login failed');
+                }
+                
+                // Check agent status
+                if (data.agent && data.agent.status !== 'Approved') {
+                    statusText.textContent = `Your account is ${data.agent.status.toLowerCase()}. Please contact GISC Admin for assistance.`;
+                    statusDiv.style.display = 'block';
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                    return;
+                }
+                
+                // Store agent data
+                localStorage.setItem('agentToken', data.token);
+                localStorage.setItem('agentData', JSON.stringify(data.agent));
+                
+                // Set session persistence
+                if (rememberMe) {
+                    sessionStorage.setItem('agentRememberMe', 'true');
+                }
+                
+                // Redirect to dashboard
+                window.location.href = 'index.html';
+                
+            } catch (error) {
+                console.error('Login error:', error);
+                errorText.textContent = error.message || 'Login failed. Please try again.';
+                errorDiv.style.display = 'block';
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+        
+        // ============================================================
+        // ENTER KEY SUPPORT
+        // ============================================================
+        document.getElementById('password').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+            }
+        });
+        
+        // ============================================================
+        // DEMO CREDENTIALS - Remove in production
+        // ============================================================
+        // For testing purposes only - remove these lines in production
+        console.log('🔐 Agent Login Demo Credentials:');
+        console.log('   Email: agent@test.com');
+        console.log('   Password: agent123');
+    </script>
+</body>
+</html>
