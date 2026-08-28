@@ -3424,120 +3424,155 @@
         // ============================================================
         // LOAD APPLICATIONS - FIXED TO SHOW APPLICANT/AGENT NAMES
         // ============================================================
-        async function loadApplications() {
-            const debugEl = document.getElementById('appDebugInfo');
-            const container = document.getElementById('applicationsList');
-            
-            try {
-                debugEl.innerHTML = '<span style="color: #ff0;">🔄 Fetching applications...</span>';
-                const result = await apiFetch('applications');
-                const apps = result.applications || [];
-                
-                // Fetch applicants and agents for enrichment
-                let applicants = [];
-                let agents = [];
-                try {
-                    const appResult = await apiFetch('agent-applicants');
-                    applicants = appResult.applicants || [];
-                } catch (e) {
-                    console.warn('Could not fetch applicants:', e);
-                }
-                try {
-                    const agentResult = await apiFetch('agents');
-                    agents = agentResult.agents || [];
-                } catch (e) {
-                    console.warn('Could not fetch agents:', e);
-                }
-                
-                const applicantMap = {};
-                applicants.forEach(a => {
-                    applicantMap[a.applicantId] = a;
-                });
-                
-                const agentMap = {};
-                agents.forEach(a => {
-                    agentMap[a.agentId] = a;
-                });
-                
-                // Enrich applications with applicant and agent info
-                const enrichedApps = apps.map(app => {
-                    const applicant = applicantMap[app.applicantId];
-                    const agent = agentMap[app.agentId];
-                    return {
-                        ...app,
-                        applicantName: applicant ? applicant.fullName : (app.applicantName || 'Unknown'),
-                        applicantEmail: applicant ? applicant.email : (app.email || 'N/A'),
-                        applicantPhone: applicant ? applicant.phone : (app.phone || 'N/A'),
-                        agentName: agent ? agent.fullName : (app.agentName || 'Unknown'),
-                        agentIdDisplay: agent ? agent.agentId : (app.agentId || 'Unknown'),
-                        applicantStatus: applicant ? applicant.status : 'Unknown',
-                        paymentStatus: app.paymentStatus || applicant?.paymentStatus || 'No Payment'
-                    };
-                });
-                
-                debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${enrichedApps.length} applications</span><span style="color: #ff0; margin-left: 15px;">📋 Enriched with applicant/agent data</span>`;
-                document.getElementById('appTotalLabel').textContent = `${enrichedApps.length} total`;
-
-                if (enrichedApps.length === 0) {
-                    container.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>No applications yet. Users need to submit applications first.</p></div>`;
-                    return;
-                }
-
-                container.innerHTML = `
-                    <div class="table-wrapper">
-                        <table class="admin-table">
-                            <thead><tr>
-                                <th>Applicant</th>
-                                <th>Email</th>
-                                <th>Applicant ID</th>
-                                <th>Agent</th>
-                                <th>Agent ID</th>
-                                <th>Service</th>
-                                <th>Status</th>
-                                <th>Payment</th>
-                                <th>Actions</th>
-                            </tr></thead>
-                            <tbody>
-                                ${enrichedApps.map(app => {
-                                    const status = app.status || 'draft';
-                                    const docCount = app.documents ? Object.keys(app.documents).length : 0;
-                                    const paymentStatus = app.paymentStatus || 'No Payment';
-                                    return `
-                                        <tr>
-                                            <td><strong>${app.applicantName || 'Unknown'}</strong></td>
-                                            <td>${app.applicantEmail || 'N/A'}</td>
-                                            <td><span style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">${app.applicantId || 'N/A'}</span></td>
-                                            <td>${app.agentName || 'Unknown'}</td>
-                                            <td><span style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">${app.agentIdDisplay || 'N/A'}</span></td>
-                                            <td>${app.service || 'N/A'}</td>
-                                            <td><span class="status-badge status-${status}">${status.toUpperCase()}</span></td>
-                                            <td><span class="payment-status-badge ${paymentStatus.toLowerCase().replace(/ /g, '_')}">${paymentStatus}</span></td>
-                                            <td>
-                                                <button class="btn btn-sm btn-info" onclick="viewApplicationDetail('${app._id || app.id}')" title="View Full Details"><i class="fas fa-file-alt"></i></button>
-                                                <select onchange="updateApplicationStatus('${app._id || app.id}', this.value)" class="glass-input" style="width: auto; padding: 4px 8px; font-size: 0.7rem;">
-                                                    <option value="draft" ${status === 'draft' ? 'selected' : ''}>Draft</option>
-                                                    <option value="submitted" ${status === 'submitted' ? 'selected' : ''}>Submitted</option>
-                                                    <option value="pending_review" ${status === 'pending_review' ? 'selected' : ''}>Pending Review</option>
-                                                    <option value="under_review" ${status === 'under_review' ? 'selected' : ''}>Under Review</option>
-                                                    <option value="approved" ${status === 'approved' ? 'selected' : ''}>Approved</option>
-                                                    <option value="rejected" ${status === 'rejected' ? 'selected' : ''}>Rejected</option>
-                                                </select>
-                                            </td>
-                                        </tr>
-                                    `;
-                                }).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                `;
-
-            } catch (error) {
-                console.error('Error loading applications:', error);
-                debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
-                container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading applications: ${error.message}</p></div>`;
-                showToast('Error loading applications', 'error');
-            }
+       // ============================================================
+// LOAD APPLICATIONS - FIXED TO SHOW APPLICANT/AGENT NAMES
+// ============================================================
+async function loadApplications() {
+    const debugEl = document.getElementById('appDebugInfo');
+    const container = document.getElementById('applicationsList');
+    
+    try {
+        debugEl.innerHTML = '<span style="color: #ff0;">🔄 Fetching applications...</span>';
+        const result = await apiFetch('applications');
+        const apps = result.applications || [];
+        
+        // Log what we got for debugging
+        console.log('📋 Applications from API:', apps);
+        
+        // Fetch applicants and agents for enrichment
+        let applicants = [];
+        let agents = [];
+        try {
+            const appResult = await apiFetch('agent-applicants');
+            applicants = appResult.applicants || [];
+            console.log('👤 Applicants found:', applicants.length);
+        } catch (e) {
+            console.warn('Could not fetch applicants:', e);
         }
+        try {
+            const agentResult = await apiFetch('agents');
+            agents = agentResult.agents || [];
+            console.log('🤝 Agents found:', agents.length);
+            console.log('📋 Agent IDs:', agents.map(a => a.agentId));
+        } catch (e) {
+            console.warn('Could not fetch agents:', e);
+        }
+        
+        const applicantMap = {};
+        applicants.forEach(a => {
+            applicantMap[a.applicantId] = a;
+        });
+        
+        const agentMap = {};
+        agents.forEach(a => {
+            agentMap[a.agentId] = a;
+        });
+        
+        // Enrich applications with applicant and agent info
+        const enrichedApps = apps.map(app => {
+            const applicant = applicantMap[app.applicantId];
+            const agent = agentMap[app.agentId];
+            
+            // If agent not found by agentId, try by agentId field from applicant
+            let agentName = app.agentName || 'Unknown';
+            let agentIdDisplay = app.agentId || 'Unknown';
+            
+            if (agent) {
+                agentName = agent.fullName;
+                agentIdDisplay = agent.agentId;
+            } else if (applicant && applicant.agentId) {
+                // Try to find agent by the agentId from the applicant
+                const agentFromApplicant = agentMap[applicant.agentId];
+                if (agentFromApplicant) {
+                    agentName = agentFromApplicant.fullName;
+                    agentIdDisplay = agentFromApplicant.agentId;
+                } else {
+                    agentName = applicant.agentName || applicant.agentId || 'Unknown Agent';
+                    agentIdDisplay = applicant.agentId || 'Unknown';
+                }
+            }
+            
+            // If still no agent name, try to find in app.agentData
+            if (agentName === 'Unknown' && app.agentData) {
+                agentName = app.agentData.name || 'Unknown';
+                agentIdDisplay = app.agentData.agentId || 'Unknown';
+            }
+            
+            return {
+                ...app,
+                applicantName: applicant ? applicant.fullName : (app.applicantName || app.personalInfo?.name || 'Unknown'),
+                applicantEmail: applicant ? applicant.email : (app.email || app.personalInfo?.email || 'N/A'),
+                applicantPhone: applicant ? applicant.phone : (app.phone || app.personalInfo?.phone || 'N/A'),
+                agentName: agentName,
+                agentIdDisplay: agentIdDisplay,
+                applicantStatus: applicant ? applicant.status : 'Unknown',
+                paymentStatus: app.paymentStatus || applicant?.paymentStatus || 'No Payment'
+            };
+        });
+        
+        debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${enrichedApps.length} applications</span><span style="color: #ff0; margin-left: 15px;">📋 Enriched with applicant/agent data</span>`;
+        document.getElementById('appTotalLabel').textContent = `${enrichedApps.length} total`;
+
+        if (enrichedApps.length === 0) {
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>No applications yet. Users need to submit applications first.</p></div>`;
+            return;
+        }
+
+        container.innerHTML = `
+            <div class="table-wrapper">
+                <table class="admin-table">
+                    <thead><tr>
+                        <th>Applicant</th>
+                        <th>Email</th>
+                        <th>Applicant ID</th>
+                        <th>Agent</th>
+                        <th>Agent ID</th>
+                        <th>Service</th>
+                        <th>Status</th>
+                        <th>Payment</th>
+                        <th>Actions</th>
+                    </tr></thead>
+                    <tbody>
+                        ${enrichedApps.map(app => {
+                            const status = app.status || 'draft';
+                            const docCount = app.documents ? Object.keys(app.documents).length : 0;
+                            const paymentStatus = app.paymentStatus || 'No Payment';
+                            return `
+                                <tr>
+                                    <td><strong>${app.applicantName || 'Unknown'}</strong></td>
+                                    <td>${app.applicantEmail || 'N/A'}</td>
+                                    <td><span style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">${app.applicantId || 'N/A'}</span></td>
+                                    <td><strong>${app.agentName || 'Unknown'}</strong></td>
+                                    <td><span style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">${app.agentIdDisplay || 'N/A'}</span></td>
+                                    <td>${app.service || app.serviceRequested || 'N/A'}</td>
+                                    <td><span class="status-badge status-${status}">${status.toUpperCase()}</span></td>
+                                    <td><span class="payment-status-badge ${paymentStatus.toLowerCase().replace(/ /g, '_')}">${paymentStatus}</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info" onclick="viewApplicationDetail('${app._id || app.id}')" title="View Full Details"><i class="fas fa-file-alt"></i></button>
+                                        <select onchange="updateApplicationStatus('${app._id || app.id}', this.value)" class="glass-input" style="width: auto; padding: 4px 8px; font-size: 0.7rem;">
+                                            <option value="draft" ${status === 'draft' ? 'selected' : ''}>Draft</option>
+                                            <option value="submitted" ${status === 'submitted' ? 'selected' : ''}>Submitted</option>
+                                            <option value="pending_review" ${status === 'pending_review' ? 'selected' : ''}>Pending Review</option>
+                                            <option value="under_review" ${status === 'under_review' ? 'selected' : ''}>Under Review</option>
+                                            <option value="approved" ${status === 'approved' ? 'selected' : ''}>Approved</option>
+                                            <option value="rejected" ${status === 'rejected' ? 'selected' : ''}>Rejected</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+    } catch (error) {
+        console.error('Error loading applications:', error);
+        debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+        container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading applications: ${error.message}</p></div>`;
+        showToast('Error loading applications', 'error');
+    }
+}
 
         // ============================================================
         // VIEW APPLICATION DETAIL - FIXED TO SHOW ENRICHED DATA
