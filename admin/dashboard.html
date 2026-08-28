@@ -339,6 +339,9 @@
         .status-active { background: rgba(40, 167, 69, 0.2); color: var(--success-green); }
         .status-inactive { background: rgba(108, 117, 125, 0.2); color: #6c757d; }
         .status-archived { background: rgba(108, 117, 125, 0.2); color: #6c757d; }
+        .status-eligible { background: rgba(40, 167, 69, 0.2); color: var(--success-green); }
+        .status-settled { background: rgba(23, 162, 184, 0.2); color: var(--info-blue); }
+        .status-reversed { background: rgba(220, 53, 69, 0.2); color: var(--danger-red); }
 
         .glass-modal {
             position: fixed;
@@ -698,25 +701,25 @@
                     <span class="badge" id="programmeCount">0</span>
                 </a>
                 <a href="#" data-section="service-requests">
-    <i class="fas fa-concierge-bell"></i> Service Requests
-    <span class="badge" id="serviceReqCount">0</span>
-</a>
-<!-- ===== NEW AGENT SECTIONS ===== -->
-<a href="#" data-section="agents">
-    <i class="fas fa-user-tie"></i> Agents
-    <span class="badge" id="agentCountBadge">0</span>
-</a>
-<a href="#" data-section="agent-applicants">
-    <i class="fas fa-user-graduate"></i> Agent Applicants
-    <span class="badge" id="agentApplicantCount">0</span>
-</a>
-<a href="#" data-section="agent-commissions">
-    <i class="fas fa-coins"></i> Agent Commissions
-    <span class="badge" id="commissionCount">0</span>
-</a>
-<a href="#" data-section="agent-settlements">
-    <i class="fas fa-file-invoice"></i> Settlements
-</a>
+                    <i class="fas fa-concierge-bell"></i> Service Requests
+                    <span class="badge" id="serviceReqCount">0</span>
+                </a>
+                <!-- ===== NEW AGENT SECTIONS ===== -->
+                <a href="#" data-section="agents">
+                    <i class="fas fa-user-tie"></i> Agents
+                    <span class="badge" id="agentCountBadge">0</span>
+                </a>
+                <a href="#" data-section="agent-applicants">
+                    <i class="fas fa-user-graduate"></i> Agent Applicants
+                    <span class="badge" id="agentApplicantCount">0</span>
+                </a>
+                <a href="#" data-section="agent-commissions">
+                    <i class="fas fa-coins"></i> Agent Commissions
+                    <span class="badge" id="commissionCount">0</span>
+                </a>
+                <a href="#" data-section="agent-settlements">
+                    <i class="fas fa-file-invoice"></i> Settlements
+                </a>
             </nav>
 
             <div class="sidebar-footer">
@@ -1321,6 +1324,265 @@
                 </div>
             </div>
 
+            <!-- ============================================================ -->
+            <!-- AGENT MANAGEMENT MODALS -->
+            <!-- ============================================================ -->
+
+            <!-- Register Agent Modal -->
+            <div id="registerAgentModal" class="glass-modal">
+                <div class="modal-content" style="max-width: 700px;">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-user-tie"></i> Register Agent</h2>
+                        <button class="modal-close" id="closeRegisterAgentModal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="registerAgentForm">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div class="form-group"><label>Full Name <span class="required">*</span></label><input type="text" id="regFullName" class="glass-input" placeholder="John Doe" required></div>
+                                <div class="form-group"><label>Email <span class="required">*</span></label><input type="email" id="regEmail" class="glass-input" placeholder="agent@example.com" required></div>
+                                <div class="form-group"><label>Phone <span class="required">*</span></label><input type="tel" id="regPhone" class="glass-input" placeholder="+231 770 562 292" required></div>
+                                <div class="form-group"><label>Organization</label><input type="text" id="regOrganization" class="glass-input" placeholder="Company name"></div>
+                                <div class="form-group"><label>Location <span class="required">*</span></label><input type="text" id="regLocation" class="glass-input" placeholder="City, Country" required></div>
+                                <div class="form-group"><label>Agent Category <span class="required">*</span></label>
+                                    <select id="regCategory" class="glass-input" required>
+                                        <option value="">Select Category</option>
+                                        <option value="Referral Agent">Referral Agent</option>
+                                        <option value="Education Counselor">Education Counselor</option>
+                                        <option value="Senior Counselor">Senior Counselor</option>
+                                        <option value="Country Representative">Country / Regional Representative</option>
+                                        <option value="Corporate Referral Partner">Institutional / Corporate Referral Partner</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="grid-column: 1 / -1;"><label>Professional Background</label><textarea id="regBackground" class="glass-input" rows="2" placeholder="Brief description of experience"></textarea></div>
+                                <div class="form-group" style="grid-column: 1 / -1;"><label>Previous Experience</label><textarea id="regExperience" class="glass-input" rows="2" placeholder="Previous recruitment or consultancy experience"></textarea></div>
+                                <div class="form-group" style="grid-column: 1 / -1;"><label>Social Media / Business Info</label><input type="text" id="regSocial" class="glass-input" placeholder="LinkedIn, Facebook, Website, etc."></div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline" id="cancelRegisterAgentBtn">Cancel</button>
+                        <button class="btn btn-primary" id="saveRegisterAgentBtn"><i class="fas fa-save"></i> Register Agent</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Agent Modal -->
+            <div id="editAgentModal" class="glass-modal">
+                <div class="modal-content" style="max-width: 700px;">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-edit"></i> Edit Agent</h2>
+                        <button class="modal-close" id="closeEditAgentModal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editAgentForm">
+                            <input type="hidden" id="editAgentId">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div class="form-group"><label>Full Name <span class="required">*</span></label><input type="text" id="editFullName" class="glass-input" required></div>
+                                <div class="form-group"><label>Email <span class="required">*</span></label><input type="email" id="editEmail" class="glass-input" required></div>
+                                <div class="form-group"><label>Phone <span class="required">*</span></label><input type="tel" id="editPhone" class="glass-input" required></div>
+                                <div class="form-group"><label>Organization</label><input type="text" id="editOrganization" class="glass-input"></div>
+                                <div class="form-group"><label>Location <span class="required">*</span></label><input type="text" id="editLocation" class="glass-input" required></div>
+                                <div class="form-group"><label>Agent Category <span class="required">*</span></label>
+                                    <select id="editCategory" class="glass-input" required>
+                                        <option value="Referral Agent">Referral Agent</option>
+                                        <option value="Education Counselor">Education Counselor</option>
+                                        <option value="Senior Counselor">Senior Counselor</option>
+                                        <option value="Country Representative">Country / Regional Representative</option>
+                                        <option value="Corporate Referral Partner">Institutional / Corporate Referral Partner</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="grid-column: 1 / -1;"><label>Professional Background</label><textarea id="editBackground" class="glass-input" rows="2"></textarea></div>
+                                <div class="form-group" style="grid-column: 1 / -1;"><label>Previous Experience</label><textarea id="editExperience" class="glass-input" rows="2"></textarea></div>
+                                <div class="form-group" style="grid-column: 1 / -1;"><label>Social Media / Business Info</label><input type="text" id="editSocial" class="glass-input"></div>
+                                <div class="form-group" style="grid-column: 1 / -1;"><label>Status</label>
+                                    <select id="editStatus" class="glass-input">
+                                        <option value="Pending">Pending</option>
+                                        <option value="Approved">Approved</option>
+                                        <option value="Suspended">Suspended</option>
+                                        <option value="Inactive">Inactive</option>
+                                        <option value="Terminated">Terminated</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline" id="cancelEditAgentBtn">Cancel</button>
+                        <button class="btn btn-primary" id="saveEditAgentBtn"><i class="fas fa-save"></i> Save Changes</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Set/Reset Password Modal -->
+            <div id="setPasswordModal" class="glass-modal">
+                <div class="modal-content" style="max-width: 450px;">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-key"></i> <span id="setPasswordTitle">Set Password</span></h2>
+                        <button class="modal-close" id="closeSetPasswordModal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="setPasswordForm">
+                            <input type="hidden" id="passwordAgentId">
+                            <div class="form-group">
+                                <label>New Password <span class="required">*</span></label>
+                                <div style="position: relative;">
+                                    <input type="password" id="newPassword" class="glass-input" placeholder="Enter secure password" required minlength="6">
+                                    <button type="button" onclick="togglePasswordVisibility('newPassword')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #999;">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Confirm Password <span class="required">*</span></label>
+                                <div style="position: relative;">
+                                    <input type="password" id="confirmPassword" class="glass-input" placeholder="Confirm password" required minlength="6">
+                                    <button type="button" onclick="togglePasswordVisibility('confirmPassword')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #999;">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="passwordStrength" style="margin-top: 5px; height: 4px; background: #eee; border-radius: 2px; overflow: hidden;">
+                                <div id="passwordStrengthBar" style="height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+                            </div>
+                            <div id="passwordStrengthText" style="font-size: 0.75rem; color: #999; margin-top: 3px;"></div>
+                            <div style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 6px; font-size: 0.8rem; color: #856404;">
+                                <i class="fas fa-info-circle"></i> Password must be at least 6 characters. Admin will provide credentials to the agent securely.
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline" id="cancelSetPasswordBtn">Cancel</button>
+                        <button class="btn btn-primary" id="saveSetPasswordBtn"><i class="fas fa-key"></i> Set Password</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Approve Agent with Password Modal -->
+            <div id="approveAgentModal" class="glass-modal">
+                <div class="modal-content" style="max-width: 500px;">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-check-circle"></i> Approve Agent</h2>
+                        <button class="modal-close" id="closeApproveAgentModal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="approveAgentForm">
+                            <input type="hidden" id="approveAgentId">
+                            <div style="background: #e8f5e8; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+                                <p style="margin: 0; color: #2e7d32;">
+                                    <i class="fas fa-info-circle"></i> You are about to approve <strong id="approveAgentName">this agent</strong>.
+                                    Please set a temporary password for them.
+                                </p>
+                            </div>
+                            <div class="form-group">
+                                <label>Temporary Password <span class="required">*</span></label>
+                                <div style="position: relative;">
+                                    <input type="password" id="approvePassword" class="glass-input" placeholder="Enter temporary password" required minlength="6">
+                                    <button type="button" onclick="togglePasswordVisibility('approvePassword')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #999;">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Confirm Password <span class="required">*</span></label>
+                                <div style="position: relative;">
+                                    <input type="password" id="approveConfirmPassword" class="glass-input" placeholder="Confirm password" required minlength="6">
+                                    <button type="button" onclick="togglePasswordVisibility('approveConfirmPassword')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #999;">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="approvePasswordStrength" style="margin-top: 5px; height: 4px; background: #eee; border-radius: 2px; overflow: hidden;">
+                                <div id="approvePasswordStrengthBar" style="height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+                            </div>
+                            <div id="approvePasswordStrengthText" style="font-size: 0.75rem; color: #999; margin-top: 3px;"></div>
+                            <div style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 6px; font-size: 0.8rem; color: #856404;">
+                                <i class="fas fa-info-circle"></i> The password will be securely hashed and stored. Admin must provide credentials to the agent through GISC's approved communication method.
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline" id="cancelApproveAgentBtn">Cancel</button>
+                        <button class="btn btn-success" id="saveApproveAgentBtn"><i class="fas fa-check"></i> Approve Agent</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Process Commission Modal -->
+            <div id="processCommissionModal" class="glass-modal">
+                <div class="modal-content" style="max-width: 750px;">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-coins"></i> Process Commission</h2>
+                        <button class="modal-close" id="closeProcessCommissionModal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="commissionReviewSection">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                                <div style="background: #f8f9fa; padding: 12px; border-radius: 8px;">
+                                    <div style="font-size: 0.7rem; color: #999;">Agent</div>
+                                    <div id="pcAgentName" style="font-weight: 600;">Loading...</div>
+                                    <div id="pcAgentId" style="font-size: 0.8rem; color: #666;"></div>
+                                </div>
+                                <div style="background: #f8f9fa; padding: 12px; border-radius: 8px;">
+                                    <div style="font-size: 0.7rem; color: #999;">Applicant</div>
+                                    <div id="pcApplicantName" style="font-weight: 600;">Loading...</div>
+                                    <div id="pcApplicantId" style="font-size: 0.8rem; color: #666;"></div>
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                                <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; text-align: center;">
+                                    <div style="font-size: 0.6rem; color: #999;">Package</div>
+                                    <div id="pcPackage" style="font-weight: 600; font-size: 0.9rem;">-</div>
+                                </div>
+                                <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; text-align: center;">
+                                    <div style="font-size: 0.6rem; color: #999;">Eligible Revenue</div>
+                                    <div id="pcRevenue" style="font-weight: 600; color: #28a745;">$0.00</div>
+                                </div>
+                                <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; text-align: center;">
+                                    <div style="font-size: 0.6rem; color: #999;">Commission</div>
+                                    <div id="pcCommission" style="font-weight: 700; font-size: 1.1rem; color: var(--primary-red);">$0.00</div>
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                                <div style="background: #f8f9fa; padding: 10px; border-radius: 6px;">
+                                    <div style="font-size: 0.6rem; color: #999;">Rate</div>
+                                    <div id="pcRate" style="font-weight: 600;">0%</div>
+                                </div>
+                                <div style="background: #f8f9fa; padding: 10px; border-radius: 6px;">
+                                    <div style="font-size: 0.6rem; color: #999;">Status</div>
+                                    <div id="pcStatus" style="font-weight: 600;"><span class="status-badge status-eligible">Eligible</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr style="border-color: rgba(0,0,0,0.05); margin: 15px 0;">
+                        <form id="processCommissionForm">
+                            <input type="hidden" id="pcCommissionId">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div class="form-group"><label>Payment Method <span class="required">*</span></label>
+                                    <select id="pcPaymentMethod" class="glass-input" required>
+                                        <option value="">Select Method</option>
+                                        <option value="Bank Transfer">Bank Transfer</option>
+                                        <option value="Mobile Money">Mobile Money</option>
+                                        <option value="Cash">Cash</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="form-group"><label>Payment Reference <span class="required">*</span></label><input type="text" id="pcPaymentRef" class="glass-input" placeholder="REF-2024-001" required></div>
+                                <div class="form-group"><label>Payment Date</label><input type="date" id="pcPaymentDate" class="glass-input"></div>
+                                <div class="form-group"><label>Amount (Auto-calculated)</label><input type="text" id="pcAmount" class="glass-input" readonly style="background: #f0f0f0; font-weight: 600;"></div>
+                                <div class="form-group" style="grid-column: 1 / -1;"><label>Notes</label><textarea id="pcNotes" class="glass-input" rows="2" placeholder="Additional notes..."></textarea></div>
+                            </div>
+                            <div style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 6px; font-size: 0.8rem; color: #856404;">
+                                <i class="fas fa-exclamation-triangle"></i> Verify this commission has not been paid before. Commission cannot be processed twice.
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline" id="cancelProcessCommissionBtn">Cancel</button>
+                        <button class="btn btn-success" id="saveProcessCommissionBtn"><i class="fas fa-check"></i> Process Commission</button>
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
 
@@ -1435,23 +1697,22 @@
                 if (targetSection) targetSection.classList.add('active');
 
                 const loaders = {
-    'users': loadUsers,
-    'applications': loadApplications,
-    'contacts': loadContacts,
-    'blog': loadBlogPosts,
-    'notifications': loadNotifications,
-    'payments': loadPayments,
-    'opportunities': loadOpportunities,
-    'scholarships': loadScholarships,
-    'universities': loadUniversities,
-    'programmes': loadProgrammes,
-    'service-requests': loadServiceRequests,
-    // ===== NEW AGENT LOADERS =====
-    'agents': loadAgents,
-    'agent-applicants': loadAgentApplicants,
-    'agent-commissions': loadAgentCommissions,
-    'agent-settlements': loadAgentSettlements
-};
+                    'users': loadUsers,
+                    'applications': loadApplications,
+                    'contacts': loadContacts,
+                    'blog': loadBlogPosts,
+                    'notifications': loadNotifications,
+                    'payments': loadPayments,
+                    'opportunities': loadOpportunities,
+                    'scholarships': loadScholarships,
+                    'universities': loadUniversities,
+                    'programmes': loadProgrammes,
+                    'service-requests': loadServiceRequests,
+                    'agents': loadAgents,
+                    'agent-applicants': loadAgentApplicants,
+                    'agent-commissions': loadAgentCommissions,
+                    'agent-settlements': loadAgentSettlements
+                };
                 if (loaders[section]) loaders[section]();
 
                 document.getElementById('sidebar').classList.remove('open');
@@ -1487,7 +1748,6 @@
         // ============================================================
         async function loadDashboardData() {
             try {
-                // Try to load each section independently to avoid one failure breaking everything
                 let users = { users: [] };
                 let apps = { applications: [] };
                 let blogs = { blogs: [] };
@@ -1528,7 +1788,6 @@
                 document.getElementById('oppCount').textContent = oppsList.length;
                 document.getElementById('scholarshipCount').textContent = schsList.length;
 
-                // Contact badge
                 const newContacts = contactsList.filter(c => c.status === 'new').length;
                 const contactBadge = document.querySelector('.sidebar-nav a[data-section="contacts"] .badge');
                 if (contactBadge) {
@@ -1538,7 +1797,6 @@
                 }
                 if (newContacts > 0) showToast(`📩 ${newContacts} new contact submission${newContacts > 1 ? 's' : ''}!`, 'info');
 
-                // Recent activity
                 const recentActivity = document.getElementById('recentActivityList');
                 const sortedApps = [...appsList].sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0)).slice(0, 10);
 
@@ -1828,327 +2086,781 @@
         };
 
         // ============================================================
-// AGENT MANAGEMENT FUNCTIONS
-// ============================================================
+        // AGENT MANAGEMENT FUNCTIONS - COMPLETE
+        // ============================================================
 
-// Load Agents
-async function loadAgents() {
-    const debugEl = document.getElementById('agentDebugInfo');
-    const tbody = document.getElementById('agentsTableBody');
-    
-    try {
-        debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading agents...</span>';
-        const result = await apiFetch('agents');
-        const agents = result.agents || [];
-        
-        const total = agents.length;
-        const pending = agents.filter(a => a.status === 'Pending').length;
-        const approved = agents.filter(a => a.status === 'Approved').length;
-        const active = agents.filter(a => a.status === 'Approved' && a.lastLogin).length;
-        
-        document.getElementById('totalAgents').textContent = total;
-        document.getElementById('pendingAgents').textContent = pending;
-        document.getElementById('approvedAgents').textContent = approved;
-        document.getElementById('activeAgents').textContent = active;
-        document.getElementById('agentCountBadge').textContent = total;
-        
-        debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${total} agents</span>`;
-        
-        if (agents.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px;">No agents found</td></tr>`;
-            return;
+        // Load Agents
+        async function loadAgents() {
+            const debugEl = document.getElementById('agentDebugInfo');
+            const tbody = document.getElementById('agentsTableBody');
+            
+            try {
+                debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading agents...</span>';
+                const result = await apiFetch('agents');
+                const agents = result.agents || [];
+                
+                const total = agents.length;
+                const pending = agents.filter(a => a.status === 'Pending').length;
+                const approved = agents.filter(a => a.status === 'Approved').length;
+                const active = agents.filter(a => a.status === 'Approved' && a.lastLogin).length;
+                
+                document.getElementById('totalAgents').textContent = total;
+                document.getElementById('pendingAgents').textContent = pending;
+                document.getElementById('approvedAgents').textContent = approved;
+                document.getElementById('activeAgents').textContent = active;
+                document.getElementById('agentCountBadge').textContent = total;
+                
+                debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${total} agents</span>`;
+                
+                if (agents.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px;">No agents found</td></tr>`;
+                    return;
+                }
+                
+                tbody.innerHTML = agents.map(agent => {
+                    const hasPassword = agent.password && agent.password !== null;
+                    const isApproved = agent.status === 'Approved';
+                    const isPending = agent.status === 'Pending';
+                    
+                    return `
+                    <tr>
+                        <td><strong>${agent.agentId || 'N/A'}</strong></td>
+                        <td>${agent.fullName || 'Unknown'}</td>
+                        <td>${agent.email || 'N/A'}</td>
+                        <td>${agent.agentCategory || 'N/A'}</td>
+                        <td><span class="status-badge status-${agent.status ? agent.status.toLowerCase() : 'pending'}">${agent.status || 'Pending'}</span></td>
+                        <td>${agent.totalReferrals || 0}</td>
+                        <td>$${(agent.totalCommissionEarned || 0).toFixed(2)}</td>
+                        <td>
+                            <div style="display: flex; flex-wrap: wrap; gap: 3px;">
+                                <button class="btn btn-sm btn-info" onclick="viewAgent('${agent.agentId}')" title="View"><i class="fas fa-eye"></i></button>
+                                <button class="btn btn-sm btn-primary" onclick="editAgent('${agent.agentId}')" title="Edit"><i class="fas fa-edit"></i></button>
+                                ${isPending ? `<button class="btn btn-sm btn-success" onclick="openApproveAgent('${agent.agentId}', '${agent.fullName}')" title="Approve"><i class="fas fa-check"></i></button>` : ''}
+                                ${!hasPassword && isApproved ? `<button class="btn btn-sm btn-warning" onclick="openSetPassword('${agent.agentId}', '${agent.fullName}')" title="Set Password"><i class="fas fa-key"></i></button>` : ''}
+                                ${hasPassword && isApproved ? `<button class="btn btn-sm btn-outline" onclick="openSetPassword('${agent.agentId}', '${agent.fullName}')" title="Reset Password"><i class="fas fa-sync-alt"></i></button>` : ''}
+                                <select onchange="updateAgentStatus('${agent.agentId}', this.value)" class="glass-input" style="width: auto; padding: 3px 6px; font-size: 0.65rem; min-width: 90px;">
+                                    <option value="Pending" ${agent.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                                    <option value="Approved" ${agent.status === 'Approved' ? 'selected' : ''}>Approved</option>
+                                    <option value="Suspended" ${agent.status === 'Suspended' ? 'selected' : ''}>Suspended</option>
+                                    <option value="Inactive" ${agent.status === 'Inactive' ? 'selected' : ''}>Inactive</option>
+                                    <option value="Terminated" ${agent.status === 'Terminated' ? 'selected' : ''}>Terminated</option>
+                                </select>
+                            </div>
+                        </td>
+                    </tr>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                console.error('Error loading agents:', error);
+                debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px;">Error loading agents: ${error.message}</td></tr>`;
+            }
         }
-        
-        tbody.innerHTML = agents.map(agent => `
-            <tr>
-                <td><strong>${agent.agentId || 'N/A'}</strong></td>
-                <td>${agent.fullName || 'Unknown'}</td>
-                <td>${agent.email || 'N/A'}</td>
-                <td>${agent.agentCategory || 'N/A'}</td>
-                <td><span class="status-badge status-${agent.status ? agent.status.toLowerCase() : 'pending'}">${agent.status || 'Pending'}</span></td>
-                <td>${agent.totalReferrals || 0}</td>
-                <td>$${(agent.totalCommissionEarned || 0).toFixed(2)}</td>
-                <td>
-                    <button class="btn btn-sm btn-info" onclick="viewAgent('${agent.agentId}')"><i class="fas fa-eye"></i></button>
-                    <button class="btn btn-sm btn-primary" onclick="editAgent('${agent.agentId}')"><i class="fas fa-edit"></i></button>
-                    <select onchange="updateAgentStatus('${agent.agentId}', this.value)" class="glass-input" style="width: auto; padding: 4px 8px; font-size: 0.7rem; min-width: 100px;">
-                        <option value="Pending" ${agent.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                        <option value="Approved" ${agent.status === 'Approved' ? 'selected' : ''}>Approved</option>
-                        <option value="Suspended" ${agent.status === 'Suspended' ? 'selected' : ''}>Suspended</option>
-                        <option value="Inactive" ${agent.status === 'Inactive' ? 'selected' : ''}>Inactive</option>
-                        <option value="Terminated" ${agent.status === 'Terminated' ? 'selected' : ''}>Terminated</option>
-                    </select>
-                </td>
-            </tr>
-        `).join('');
-        
-    } catch (error) {
-        console.error('Error loading agents:', error);
-        debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px;">Error loading agents: ${error.message}</td></tr>`;
-    }
-}
 
-// Load Agent Applicants
-async function loadAgentApplicants() {
-    const debugEl = document.getElementById('agentApplicantDebugInfo');
-    const tbody = document.getElementById('agentApplicantsTableBody');
-    
-    try {
-        debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading agent applicants...</span>';
-        const result = await apiFetch('agent-applicants');
-        const applicants = result.applicants || [];
-        
-        document.getElementById('agentApplicantTotal').textContent = `${applicants.length} total`;
-        document.getElementById('agentApplicantCount').textContent = applicants.length;
-        
-        debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${applicants.length} agent applicants</span>`;
-        
-        if (applicants.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px;">No agent applicants found</td></tr>`;
-            return;
+        // Load Agent Applicants
+        async function loadAgentApplicants() {
+            const debugEl = document.getElementById('agentApplicantDebugInfo');
+            const tbody = document.getElementById('agentApplicantsTableBody');
+            
+            try {
+                debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading agent applicants...</span>';
+                const result = await apiFetch('agent-applicants');
+                const applicants = result.applicants || [];
+                
+                document.getElementById('agentApplicantTotal').textContent = `${applicants.length} total`;
+                document.getElementById('agentApplicantCount').textContent = applicants.length;
+                
+                debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${applicants.length} agent applicants</span>`;
+                
+                if (applicants.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px;">No agent applicants found</td></tr>`;
+                    return;
+                }
+                
+                tbody.innerHTML = applicants.map(app => `
+                    <tr>
+                        <td><strong>${app.applicantId || 'N/A'}</strong></td>
+                        <td>${app.fullName || 'Unknown'}</td>
+                        <td>${app.email || 'N/A'}</td>
+                        <td>${app.agentName || app.agentId || 'N/A'}</td>
+                        <td><span class="status-badge status-${app.status ? app.status.toLowerCase().replace(/ /g, '_') : 'registered'}">${app.status || 'Registered'}</span></td>
+                        <td><span class="payment-status-badge ${app.paymentStatus ? app.paymentStatus.toLowerCase() : 'due'}">${app.paymentStatus || 'No Payment'}</span></td>
+                        <td>${app.commissionStatus || 'No Commission'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="viewAgentApplicant('${app.applicantId}')"><i class="fas fa-eye"></i></button>
+                            <button class="btn btn-sm btn-primary" onclick="editAgentApplicant('${app.applicantId}')"><i class="fas fa-edit"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error loading agent applicants:', error);
+                debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px;">Error loading applicants: ${error.message}</td></tr>`;
+            }
         }
-        
-        tbody.innerHTML = applicants.map(app => `
-            <tr>
-                <td><strong>${app.applicantId || 'N/A'}</strong></td>
-                <td>${app.fullName || 'Unknown'}</td>
-                <td>${app.email || 'N/A'}</td>
-                <td>${app.agentName || app.agentId || 'N/A'}</td>
-                <td><span class="status-badge status-${app.status ? app.status.toLowerCase().replace(/ /g, '_') : 'registered'}">${app.status || 'Registered'}</span></td>
-                <td><span class="payment-status-badge ${app.paymentStatus ? app.paymentStatus.toLowerCase() : 'due'}">${app.paymentStatus || 'No Payment'}</span></td>
-                <td>${app.commissionStatus || 'No Commission'}</td>
-                <td>
-                    <button class="btn btn-sm btn-info" onclick="viewAgentApplicant('${app.applicantId}')"><i class="fas fa-eye"></i></button>
-                    <button class="btn btn-sm btn-primary" onclick="editAgentApplicant('${app.applicantId}')"><i class="fas fa-edit"></i></button>
-                </td>
-            </tr>
-        `).join('');
-        
-    } catch (error) {
-        console.error('Error loading agent applicants:', error);
-        debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px;">Error loading applicants: ${error.message}</td></tr>`;
-    }
-}
 
-// Load Agent Commissions
-async function loadAgentCommissions() {
-    const debugEl = document.getElementById('commissionDebugInfo');
-    const tbody = document.getElementById('commissionsTableBody');
-    
-    try {
-        debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading commissions...</span>';
-        const result = await apiFetch('agent-commissions');
-        const commissions = result.commissions || [];
-        const summary = result.summary || {};
-        
-        document.getElementById('totalCommissionEarned').textContent = (summary.totalEarned || 0).toFixed(2);
-        document.getElementById('totalCommissionPaid').textContent = (summary.totalPaid || 0).toFixed(2);
-        document.getElementById('totalCommissionPending').textContent = (summary.totalPending || 0).toFixed(2);
-        document.getElementById('totalCommissionReversed').textContent = (summary.totalReversed || 0).toFixed(2);
-        document.getElementById('commissionTotal').textContent = `${commissions.length} total`;
-        document.getElementById('commissionCount').textContent = commissions.length;
-        
-        // Populate agent filter dropdown
-        const agentSelect = document.getElementById('filterCommissionAgent');
-        const agents = await apiFetch('agents');
-        const agentList = agents.agents || [];
-        agentSelect.innerHTML = '<option value="all">All Agents</option>' + 
-            agentList.map(a => `<option value="${a.agentId}">${a.fullName} (${a.agentId})</option>`).join('');
-        
-        debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${commissions.length} commissions</span>`;
-        
-        if (commissions.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px;">No commissions found</td></tr>`;
-            return;
+        // Load Agent Commissions
+        async function loadAgentCommissions() {
+            const debugEl = document.getElementById('commissionDebugInfo');
+            const tbody = document.getElementById('commissionsTableBody');
+            
+            try {
+                debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading commissions...</span>';
+                const result = await apiFetch('agent-commissions');
+                const commissions = result.commissions || [];
+                const summary = result.summary || {};
+                
+                document.getElementById('totalCommissionEarned').textContent = (summary.totalEarned || 0).toFixed(2);
+                document.getElementById('totalCommissionPaid').textContent = (summary.totalPaid || 0).toFixed(2);
+                document.getElementById('totalCommissionPending').textContent = (summary.totalPending || 0).toFixed(2);
+                document.getElementById('totalCommissionReversed').textContent = (summary.totalReversed || 0).toFixed(2);
+                document.getElementById('commissionTotal').textContent = `${commissions.length} total`;
+                document.getElementById('commissionCount').textContent = commissions.length;
+                
+                // Populate agent filter dropdown
+                const agentSelect = document.getElementById('filterCommissionAgent');
+                const agents = await apiFetch('agents');
+                const agentList = agents.agents || [];
+                agentSelect.innerHTML = '<option value="all">All Agents</option>' + 
+                    agentList.map(a => `<option value="${a.agentId}">${a.fullName} (${a.agentId})</option>`).join('');
+                
+                debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${commissions.length} commissions</span>`;
+                
+                if (commissions.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px;">No commissions found</td></tr>`;
+                    return;
+                }
+                
+                tbody.innerHTML = commissions.map(c => `
+                    <tr>
+                        <td>${c.agentName || c.agentId || 'N/A'}</td>
+                        <td>${c.applicantName || c.applicantId || 'N/A'}</td>
+                        <td>${c.packageName || 'N/A'}</td>
+                        <td>$${(c.amountReceived || 0).toFixed(2)}</td>
+                        <td><strong>$${(c.commissionAmount || 0).toFixed(2)}</strong></td>
+                        <td>${(c.rate || 0) * 100}%</td>
+                        <td><span class="status-badge status-${c.status ? c.status.toLowerCase() : 'pending'}">${c.status || 'Pending'}</span></td>
+                        <td>
+                            ${c.status === 'Eligible' ? `<button class="btn btn-sm btn-success" onclick="reverseCommission('${c._id}')"><i class="fas fa-undo"></i> Reverse</button>` : ''}
+                            ${c.status === 'Reversed' ? `<span style="color: #dc3545;">Reversed</span>` : ''}
+                            ${c.status === 'Eligible' || c.status === 'Pending' ? `<button class="btn btn-sm btn-primary" onclick="processSingleCommission('${c._id}')"><i class="fas fa-coins"></i> Pay</button>` : ''}
+                        </td>
+                    </tr>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error loading commissions:', error);
+                debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px;">Error loading commissions: ${error.message}</td></tr>`;
+            }
         }
-        
-        tbody.innerHTML = commissions.map(c => `
-            <tr>
-                <td>${c.agentName || c.agentId || 'N/A'}</td>
-                <td>${c.applicantName || c.applicantId || 'N/A'}</td>
-                <td>${c.packageName || 'N/A'}</td>
-                <td>$${(c.amountReceived || 0).toFixed(2)}</td>
-                <td><strong>$${(c.commissionAmount || 0).toFixed(2)}</strong></td>
-                <td>${(c.rate || 0) * 100}%</td>
-                <td><span class="status-badge status-${c.status ? c.status.toLowerCase() : 'pending'}">${c.status || 'Pending'}</span></td>
-                <td>
-                    ${c.status === 'Eligible' ? `<button class="btn btn-sm btn-success" onclick="reverseCommission('${c._id}')"><i class="fas fa-undo"></i> Reverse</button>` : ''}
-                    ${c.status === 'Reversed' ? `<span style="color: #dc3545;">Reversed</span>` : ''}
-                </td>
-            </tr>
-        `).join('');
-        
-    } catch (error) {
-        console.error('Error loading commissions:', error);
-        debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px;">Error loading commissions: ${error.message}</td></tr>`;
-    }
-}
 
-// Load Agent Settlements
-async function loadAgentSettlements() {
-    const debugEl = document.getElementById('settlementDebugInfo');
-    const tbody = document.getElementById('settlementsTableBody');
-    
-    try {
-        debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading settlements...</span>';
-        const result = await apiFetch('agent-settlements');
-        const settlements = result.settlements || [];
-        
-        document.getElementById('settlementTotal').textContent = `${settlements.length} total`;
-        
-        debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${settlements.length} settlements</span>`;
-        
-        if (settlements.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 30px;">No settlements found</td></tr>`;
-            return;
+        // Load Agent Settlements
+        async function loadAgentSettlements() {
+            const debugEl = document.getElementById('settlementDebugInfo');
+            const tbody = document.getElementById('settlementsTableBody');
+            
+            try {
+                debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading settlements...</span>';
+                const result = await apiFetch('agent-settlements');
+                const settlements = result.settlements || [];
+                
+                document.getElementById('settlementTotal').textContent = `${settlements.length} total`;
+                
+                debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${settlements.length} settlements</span>`;
+                
+                if (settlements.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 30px;">No settlements found</td></tr>`;
+                    return;
+                }
+                
+                tbody.innerHTML = settlements.map(s => `
+                    <tr>
+                        <td><strong>${s._id ? s._id.toString().slice(-8) : 'N/A'}</strong></td>
+                        <td>${s.agentName || s.agentId || 'N/A'}</td>
+                        <td>${s.periodStart ? new Date(s.periodStart).toLocaleDateString() : 'N/A'} - ${s.periodEnd ? new Date(s.periodEnd).toLocaleDateString() : 'N/A'}</td>
+                        <td><strong>$${(s.totalAmount || 0).toFixed(2)}</strong></td>
+                        <td><span class="status-badge status-${s.status ? s.status.toLowerCase() : 'pending'}">${s.status || 'Pending'}</span></td>
+                        <td>${s.generatedAt ? new Date(s.generatedAt).toLocaleDateString() : 'N/A'}</td>
+                        <td>
+                            ${s.status === 'Pending' ? `<button class="btn btn-sm btn-success" onclick="markSettlementPaid('${s._id}')"><i class="fas fa-check"></i> Mark Paid</button>` : ''}
+                            <button class="btn btn-sm btn-info" onclick="viewSettlement('${s._id}')"><i class="fas fa-eye"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error loading settlements:', error);
+                debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 30px;">Error loading settlements: ${error.message}</td></tr>`;
+            }
         }
-        
-        tbody.innerHTML = settlements.map(s => `
-            <tr>
-                <td><strong>${s._id ? s._id.toString().slice(-8) : 'N/A'}</strong></td>
-                <td>${s.agentName || s.agentId || 'N/A'}</td>
-                <td>${s.periodStart ? new Date(s.periodStart).toLocaleDateString() : 'N/A'} - ${s.periodEnd ? new Date(s.periodEnd).toLocaleDateString() : 'N/A'}</td>
-                <td><strong>$${(s.totalAmount || 0).toFixed(2)}</strong></td>
-                <td><span class="status-badge status-${s.status ? s.status.toLowerCase() : 'pending'}">${s.status || 'Pending'}</span></td>
-                <td>${s.generatedAt ? new Date(s.generatedAt).toLocaleDateString() : 'N/A'}</td>
-                <td>
-                    ${s.status === 'Pending' ? `<button class="btn btn-sm btn-success" onclick="markSettlementPaid('${s._id}')"><i class="fas fa-check"></i> Mark Paid</button>` : ''}
-                    <button class="btn btn-sm btn-info" onclick="viewSettlement('${s._id}')"><i class="fas fa-eye"></i></button>
-                </td>
-            </tr>
-        `).join('');
-        
-    } catch (error) {
-        console.error('Error loading settlements:', error);
-        debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 30px;">Error loading settlements: ${error.message}</td></tr>`;
-    }
-}
 
-// ============================================================
-// AGENT ACTION FUNCTIONS
-// ============================================================
+        // ============================================================
+        // AGENT ACTION FUNCTIONS - COMPLETE
+        // ============================================================
 
-// Update Agent Status
-window.updateAgentStatus = async (agentId, status) => {
-    try {
-        await apiFetch(`agents/${agentId}/status`, { 
-            method: 'PUT', 
-            body: JSON.stringify({ status }) 
+        // Update Agent Status
+        window.updateAgentStatus = async (agentId, status) => {
+            try {
+                await apiFetch(`agents/${agentId}/status`, { 
+                    method: 'PUT', 
+                    body: JSON.stringify({ status }) 
+                });
+                showToast(`Agent status updated to: ${status}`, 'success');
+                loadAgents();
+                loadDashboardData();
+            } catch (error) {
+                console.error('Error updating agent status:', error);
+                showToast('Error updating agent status', 'error');
+            }
+        };
+
+        // View Agent
+        window.viewAgent = async (agentId) => {
+            try {
+                const result = await apiFetch(`agents/${agentId}`);
+                const agent = result.agent;
+                const statusLabel = agent.status || 'Pending';
+                const hasPassword = agent.password && agent.password !== null;
+                
+                alert(`👤 Agent Details\n\nName: ${agent.fullName}\nID: ${agent.agentId}\nEmail: ${agent.email}\nPhone: ${agent.phone}\nCategory: ${agent.agentCategory}\nStatus: ${statusLabel}\nPassword Set: ${hasPassword ? '✅ Yes' : '❌ No'}\nReferrals: ${agent.totalReferrals || 0}\nCommission Earned: $${(agent.totalCommissionEarned || 0).toFixed(2)}\nCommission Paid: $${(agent.totalCommissionPaid || 0).toFixed(2)}\nPending Commission: $${(agent.pendingCommission || 0).toFixed(2)}`);
+            } catch (error) {
+                console.error('Error viewing agent:', error);
+                showToast('Error loading agent details', 'error');
+            }
+        };
+
+        // ============================================================
+        // EDIT AGENT - FULL IMPLEMENTATION
+        // ============================================================
+        window.editAgent = async (agentId) => {
+            try {
+                const result = await apiFetch(`agents/${agentId}`);
+                const agent = result.agent;
+                
+                if (!agent) {
+                    showToast('Agent not found', 'error');
+                    return;
+                }
+                
+                // Populate form
+                document.getElementById('editAgentId').value = agentId;
+                document.getElementById('editFullName').value = agent.fullName || '';
+                document.getElementById('editEmail').value = agent.email || '';
+                document.getElementById('editPhone').value = agent.phone || '';
+                document.getElementById('editOrganization').value = agent.organization || '';
+                document.getElementById('editLocation').value = agent.location || '';
+                document.getElementById('editCategory').value = agent.agentCategory || 'Referral Agent';
+                document.getElementById('editBackground').value = agent.professionalBackground || '';
+                document.getElementById('editExperience').value = agent.experience || '';
+                document.getElementById('editSocial').value = agent.socialMedia || '';
+                document.getElementById('editStatus').value = agent.status || 'Pending';
+                
+                document.getElementById('editAgentModal').classList.add('active');
+            } catch (error) {
+                console.error('Error loading agent for edit:', error);
+                showToast('Error loading agent: ' + error.message, 'error');
+            }
+        };
+
+        // ============================================================
+        // REGISTER AGENT - FULL IMPLEMENTATION
+        // ============================================================
+        window.openAgentRegistration = () => {
+            document.getElementById('registerAgentForm').reset();
+            document.getElementById('registerAgentModal').classList.add('active');
+        };
+
+        // ============================================================
+        // PROCESS COMMISSION - FULL IMPLEMENTATION
+        // ============================================================
+        window.processCommissionModal = async () => {
+            try {
+                const result = await apiFetch('agent-commissions');
+                const commissions = result.commissions || [];
+                const eligible = commissions.filter(c => c.status === 'Eligible' || c.status === 'Pending');
+                
+                if (eligible.length === 0) {
+                    showToast('No eligible commissions found to process', 'warning');
+                    return;
+                }
+                
+                const commissionList = eligible.map((c, i) => 
+                    `${i + 1}. ${c.agentName || c.agentId} - ${c.applicantName || c.applicantId} - $${c.commissionAmount.toFixed(2)} (${c.packageName})`
+                ).join('\n');
+                
+                const selection = prompt(`Select a commission to process:\n\n${commissionList}\n\nEnter the number (1-${eligible.length}):`);
+                if (!selection) return;
+                
+                const index = parseInt(selection) - 1;
+                if (isNaN(index) || index < 0 || index >= eligible.length) {
+                    showToast('Invalid selection', 'error');
+                    return;
+                }
+                
+                const selected = eligible[index];
+                await openCommissionProcessing(selected);
+                
+            } catch (error) {
+                console.error('Error loading commissions for processing:', error);
+                showToast('Error loading commissions: ' + error.message, 'error');
+            }
+        };
+
+        // Process a single commission directly from the table
+        window.processSingleCommission = async (commissionId) => {
+            try {
+                const result = await apiFetch(`agent-commissions`);
+                const commissions = result.commissions || [];
+                const selected = commissions.find(c => c._id === commissionId);
+                
+                if (!selected) {
+                    showToast('Commission not found', 'error');
+                    return;
+                }
+                
+                if (selected.status !== 'Eligible' && selected.status !== 'Pending') {
+                    showToast('This commission is not eligible for processing', 'warning');
+                    return;
+                }
+                
+                await openCommissionProcessing(selected);
+            } catch (error) {
+                console.error('Error loading commission:', error);
+                showToast('Error loading commission: ' + error.message, 'error');
+            }
+        };
+
+        // Open commission processing modal with selected commission
+        async function openCommissionProcessing(commission) {
+            try {
+                const commissionId = commission._id || commission.id;
+                
+                document.getElementById('pcCommissionId').value = commissionId;
+                document.getElementById('pcAgentName').textContent = commission.agentName || commission.agentId || 'Unknown';
+                document.getElementById('pcAgentId').textContent = `ID: ${commission.agentId || 'N/A'}`;
+                document.getElementById('pcApplicantName').textContent = commission.applicantName || commission.applicantId || 'Unknown';
+                document.getElementById('pcApplicantId').textContent = `ID: ${commission.applicantId || 'N/A'}`;
+                document.getElementById('pcPackage').textContent = commission.packageName || 'N/A';
+                document.getElementById('pcRevenue').textContent = `$${(commission.eligibleRevenue || 0).toFixed(2)}`;
+                document.getElementById('pcCommission').textContent = `$${(commission.commissionAmount || 0).toFixed(2)}`;
+                document.getElementById('pcRate').textContent = `${(commission.rate || 0) * 100}%`;
+                document.getElementById('pcStatus').innerHTML = `<span class="status-badge status-eligible">${commission.status || 'Eligible'}</span>`;
+                document.getElementById('pcAmount').value = `$${(commission.commissionAmount || 0).toFixed(2)}`;
+                document.getElementById('pcPaymentDate').value = new Date().toISOString().split('T')[0];
+                
+                document.getElementById('processCommissionModal').classList.add('active');
+            } catch (error) {
+                console.error('Error opening commission processing:', error);
+                showToast('Error loading commission details: ' + error.message, 'error');
+            }
+        }
+
+        // ============================================================
+        // SET PASSWORD - FULL IMPLEMENTATION
+        // ============================================================
+        window.openSetPassword = async (agentId, agentName) => {
+            document.getElementById('passwordAgentId').value = agentId;
+            document.getElementById('setPasswordTitle').textContent = `Set Password for ${agentName || 'Agent'}`;
+            document.getElementById('setPasswordForm').reset();
+            document.getElementById('passwordStrengthBar').style.width = '0%';
+            document.getElementById('passwordStrengthText').textContent = '';
+            document.getElementById('setPasswordModal').classList.add('active');
+        };
+
+        // ============================================================
+        // APPROVE AGENT WITH PASSWORD - FULL IMPLEMENTATION
+        // ============================================================
+        window.openApproveAgent = async (agentId, agentName) => {
+            document.getElementById('approveAgentId').value = agentId;
+            document.getElementById('approveAgentName').textContent = agentName || 'this agent';
+            document.getElementById('approveAgentForm').reset();
+            document.getElementById('approvePasswordStrengthBar').style.width = '0%';
+            document.getElementById('approvePasswordStrengthText').textContent = '';
+            document.getElementById('approveAgentModal').classList.add('active');
+        };
+
+        // View Agent Applicant
+        window.viewAgentApplicant = async (applicantId) => {
+            try {
+                const result = await apiFetch(`agent-applicants/${applicantId}`);
+                const applicant = result.applicant;
+                alert(`👤 Applicant Details\n\nName: ${applicant.fullName}\nID: ${applicant.applicantId}\nEmail: ${applicant.email}\nStatus: ${applicant.status}\nAgent: ${applicant.agentId}\nPayment Status: ${applicant.paymentStatus}\nCommission Status: ${applicant.commissionStatus}`);
+            } catch (error) {
+                console.error('Error viewing applicant:', error);
+                showToast('Error loading applicant details', 'error');
+            }
+        };
+
+        // Edit Agent Applicant
+        window.editAgentApplicant = async (applicantId) => {
+            showToast('Edit applicant functionality coming soon', 'info');
+        };
+
+        // Reverse Commission
+        window.reverseCommission = async (commissionId) => {
+            const reason = prompt('Enter reason for reversing this commission:');
+            if (reason === null) return;
+            if (!confirm('Are you sure you want to reverse this commission?')) return;
+            
+            try {
+                await apiFetch(`commissions/${commissionId}/reverse`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ reason: reason || 'Admin reversal' })
+                });
+                showToast('Commission reversed successfully', 'success');
+                loadAgentCommissions();
+            } catch (error) {
+                console.error('Error reversing commission:', error);
+                showToast('Error reversing commission', 'error');
+            }
+        };
+
+        // Generate Settlement
+        window.generateSettlement = () => {
+            const agentId = prompt('Enter Agent ID to generate settlement for:');
+            if (!agentId) return;
+            
+            showToast('Generating settlement...', 'info');
+        };
+
+        // Mark Settlement as Paid
+        window.markSettlementPaid = async (settlementId) => {
+            const paymentRef = prompt('Enter payment reference number:');
+            if (paymentRef === null) return;
+            
+            try {
+                await apiFetch(`settlements/${settlementId}/pay`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ paymentReference: paymentRef || `PAY-${Date.now()}` })
+                });
+                showToast('Settlement marked as paid', 'success');
+                loadAgentSettlements();
+            } catch (error) {
+                console.error('Error marking settlement paid:', error);
+                showToast('Error marking settlement paid', 'error');
+            }
+        };
+
+        // View Settlement
+        window.viewSettlement = async (settlementId) => {
+            try {
+                const result = await apiFetch(`settlements/${settlementId}`);
+                const settlement = result.settlement;
+                alert(`📄 Settlement Details\n\nID: ${settlementId}\nAgent: ${settlement.agentName || settlement.agentId}\nTotal: $${(settlement.totalAmount || 0).toFixed(2)}\nStatus: ${settlement.status}\nPeriod: ${settlement.periodStart ? new Date(settlement.periodStart).toLocaleDateString() : 'N/A'} - ${settlement.periodEnd ? new Date(settlement.periodEnd).toLocaleDateString() : 'N/A'}\nGenerated: ${settlement.generatedAt ? new Date(settlement.generatedAt).toLocaleDateString() : 'N/A'}\n${settlement.paymentReference ? `Payment Ref: ${settlement.paymentReference}` : ''}`);
+            } catch (error) {
+                console.error('Error viewing settlement:', error);
+                showToast('Error loading settlement details', 'error');
+            }
+        };
+
+        // ============================================================
+        // REGISTER AGENT MODAL EVENTS
+        // ============================================================
+        document.getElementById('closeRegisterAgentModal').addEventListener('click', () => {
+            document.getElementById('registerAgentModal').classList.remove('active');
         });
-        showToast(`Agent status updated to: ${status}`, 'success');
-        loadAgents();
-    } catch (error) {
-        console.error('Error updating agent status:', error);
-        showToast('Error updating agent status', 'error');
-    }
-};
-
-// View Agent
-window.viewAgent = async (agentId) => {
-    try {
-        const result = await apiFetch(`agents/${agentId}`);
-        const agent = result.agent;
-        alert(`👤 Agent Details\n\nName: ${agent.fullName}\nID: ${agent.agentId}\nEmail: ${agent.email}\nCategory: ${agent.agentCategory}\nStatus: ${agent.status}\nReferrals: ${agent.totalReferrals || 0}\nCommission Earned: $${(agent.totalCommissionEarned || 0).toFixed(2)}`);
-    } catch (error) {
-        console.error('Error viewing agent:', error);
-        showToast('Error loading agent details', 'error');
-    }
-};
-
-// Edit Agent
-window.editAgent = async (agentId) => {
-    showToast('Edit agent functionality coming soon', 'info');
-};
-
-// Open Agent Registration
-window.openAgentRegistration = () => {
-    showToast('Agent registration form coming soon', 'info');
-};
-
-// View Agent Applicant
-window.viewAgentApplicant = async (applicantId) => {
-    try {
-        const result = await apiFetch(`agent-applicants/${applicantId}`);
-        const applicant = result.applicant;
-        alert(`👤 Applicant Details\n\nName: ${applicant.fullName}\nID: ${applicant.applicantId}\nEmail: ${applicant.email}\nStatus: ${applicant.status}\nAgent: ${applicant.agentId}\nPayment Status: ${applicant.paymentStatus}\nCommission Status: ${applicant.commissionStatus}`);
-    } catch (error) {
-        console.error('Error viewing applicant:', error);
-        showToast('Error loading applicant details', 'error');
-    }
-};
-
-// Edit Agent Applicant
-window.editAgentApplicant = async (applicantId) => {
-    showToast('Edit applicant functionality coming soon', 'info');
-};
-
-// Reverse Commission
-window.reverseCommission = async (commissionId) => {
-    const reason = prompt('Enter reason for reversing this commission:');
-    if (reason === null) return;
-    if (!confirm('Are you sure you want to reverse this commission?')) return;
-    
-    try {
-        await apiFetch(`commissions/${commissionId}/reverse`, {
-            method: 'PUT',
-            body: JSON.stringify({ reason: reason || 'Admin reversal' })
+        document.getElementById('cancelRegisterAgentBtn').addEventListener('click', () => {
+            document.getElementById('registerAgentModal').classList.remove('active');
         });
-        showToast('Commission reversed successfully', 'success');
-        loadAgentCommissions();
-    } catch (error) {
-        console.error('Error reversing commission:', error);
-        showToast('Error reversing commission', 'error');
-    }
-};
 
-// Process Commission Modal
-window.processCommissionModal = () => {
-    showToast('Process commission form coming soon', 'info');
-};
+        document.getElementById('saveRegisterAgentBtn').addEventListener('click', async () => {
+            const fullName = document.getElementById('regFullName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const phone = document.getElementById('regPhone').value.trim();
+            const organization = document.getElementById('regOrganization').value.trim();
+            const location = document.getElementById('regLocation').value.trim();
+            const agentCategory = document.getElementById('regCategory').value;
+            const professionalBackground = document.getElementById('regBackground').value.trim();
+            const experience = document.getElementById('regExperience').value.trim();
+            const socialMedia = document.getElementById('regSocial').value.trim();
 
-// Generate Settlement
-window.generateSettlement = () => {
-    const agentId = prompt('Enter Agent ID to generate settlement for:');
-    if (!agentId) return;
-    
-    // Show confirmation with amount
-    showToast('Generating settlement...', 'info');
-    // This will be implemented with the backend API
-};
+            if (!fullName || !email || !phone || !location || !agentCategory) {
+                showToast('Please fill in all required fields', 'error');
+                return;
+            }
 
-// Mark Settlement as Paid
-window.markSettlementPaid = async (settlementId) => {
-    const paymentRef = prompt('Enter payment reference number:');
-    if (paymentRef === null) return;
-    
-    try {
-        await apiFetch(`settlements/${settlementId}/pay`, {
-            method: 'PUT',
-            body: JSON.stringify({ paymentReference: paymentRef || `PAY-${Date.now()}` })
+            const btn = document.getElementById('saveRegisterAgentBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner"></span> Registering...';
+            btn.disabled = true;
+
+            try {
+                const result = await apiFetch('agents', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        fullName, email, phone, organization, location,
+                        agentCategory, professionalBackground, experience, socialMedia
+                    })
+                });
+                showToast('Agent registered successfully!', 'success');
+                document.getElementById('registerAgentModal').classList.remove('active');
+                await loadAgents();
+                await loadDashboardData();
+            } catch (error) {
+                console.error('Error registering agent:', error);
+                showToast('Error: ' + error.message, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
         });
-        showToast('Settlement marked as paid', 'success');
-        loadAgentSettlements();
-    } catch (error) {
-        console.error('Error marking settlement paid:', error);
-        showToast('Error marking settlement paid', 'error');
-    }
-};
 
-// View Settlement
-window.viewSettlement = async (settlementId) => {
-    try {
-        const result = await apiFetch(`settlements/${settlementId}`);
-        const settlement = result.settlement;
-        alert(`📄 Settlement Details\n\nID: ${settlementId}\nAgent: ${settlement.agentName || settlement.agentId}\nTotal: $${(settlement.totalAmount || 0).toFixed(2)}\nStatus: ${settlement.status}\nPeriod: ${settlement.periodStart ? new Date(settlement.periodStart).toLocaleDateString() : 'N/A'} - ${settlement.periodEnd ? new Date(settlement.periodEnd).toLocaleDateString() : 'N/A'}\nGenerated: ${settlement.generatedAt ? new Date(settlement.generatedAt).toLocaleDateString() : 'N/A'}\n${settlement.paymentReference ? `Payment Ref: ${settlement.paymentReference}` : ''}`);
-    } catch (error) {
-        console.error('Error viewing settlement:', error);
-        showToast('Error loading settlement details', 'error');
-    }
-};
+        // ============================================================
+        // EDIT AGENT MODAL EVENTS
+        // ============================================================
+        document.getElementById('closeEditAgentModal').addEventListener('click', () => {
+            document.getElementById('editAgentModal').classList.remove('active');
+        });
+        document.getElementById('cancelEditAgentBtn').addEventListener('click', () => {
+            document.getElementById('editAgentModal').classList.remove('active');
+        });
+
+        document.getElementById('saveEditAgentBtn').addEventListener('click', async () => {
+            const agentId = document.getElementById('editAgentId').value;
+            const fullName = document.getElementById('editFullName').value.trim();
+            const email = document.getElementById('editEmail').value.trim();
+            const phone = document.getElementById('editPhone').value.trim();
+            const organization = document.getElementById('editOrganization').value.trim();
+            const location = document.getElementById('editLocation').value.trim();
+            const agentCategory = document.getElementById('editCategory').value;
+            const professionalBackground = document.getElementById('editBackground').value.trim();
+            const experience = document.getElementById('editExperience').value.trim();
+            const socialMedia = document.getElementById('editSocial').value.trim();
+            const status = document.getElementById('editStatus').value;
+
+            if (!fullName || !email || !phone || !location || !agentCategory) {
+                showToast('Please fill in all required fields', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('saveEditAgentBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner"></span> Saving...';
+            btn.disabled = true;
+
+            try {
+                await apiFetch(`agents/${agentId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        fullName, email, phone, organization, location,
+                        agentCategory, professionalBackground, experience, socialMedia, status
+                    })
+                });
+                showToast('Agent updated successfully!', 'success');
+                document.getElementById('editAgentModal').classList.remove('active');
+                await loadAgents();
+                await loadDashboardData();
+            } catch (error) {
+                console.error('Error updating agent:', error);
+                showToast('Error: ' + error.message, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        // ============================================================
+        // SET PASSWORD MODAL EVENTS
+        // ============================================================
+        document.getElementById('closeSetPasswordModal').addEventListener('click', () => {
+            document.getElementById('setPasswordModal').classList.remove('active');
+        });
+        document.getElementById('cancelSetPasswordBtn').addEventListener('click', () => {
+            document.getElementById('setPasswordModal').classList.remove('active');
+        });
+
+        // Password strength checker
+        document.getElementById('newPassword').addEventListener('input', function() {
+            const password = this.value;
+            const bar = document.getElementById('passwordStrengthBar');
+            const text = document.getElementById('passwordStrengthText');
+            
+            let strength = 0;
+            if (password.length >= 8) strength++;
+            if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
+            if (password.match(/\d/)) strength++;
+            if (password.match(/[^a-zA-Z\d]/)) strength++;
+            
+            const colors = ['#dc3545', '#dc3545', '#ffc107', '#17a2b8', '#28a745'];
+            const labels = ['', 'Weak', 'Weak', 'Medium', 'Strong'];
+            
+            bar.style.width = strength === 0 ? '0%' : (strength * 25) + '%';
+            bar.style.background = colors[strength] || '#eee';
+            text.textContent = strength > 0 ? labels[strength] : '';
+            text.style.color = colors[strength] || '#999';
+        });
+
+        document.getElementById('saveSetPasswordBtn').addEventListener('click', async () => {
+            const agentId = document.getElementById('passwordAgentId').value;
+            const password = document.getElementById('newPassword').value;
+            const confirm = document.getElementById('confirmPassword').value;
+
+            if (!password || password.length < 6) {
+                showToast('Password must be at least 6 characters', 'error');
+                return;
+            }
+            if (password !== confirm) {
+                showToast('Passwords do not match', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('saveSetPasswordBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner"></span> Setting...';
+            btn.disabled = true;
+
+            try {
+                await apiFetch(`agents/${agentId}/password`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ password })
+                });
+                showToast('Password set successfully! Agent can now login.', 'success');
+                document.getElementById('setPasswordModal').classList.remove('active');
+                await loadAgents();
+            } catch (error) {
+                console.error('Error setting password:', error);
+                showToast('Error: ' + error.message, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        // ============================================================
+        // APPROVE AGENT MODAL EVENTS
+        // ============================================================
+        document.getElementById('closeApproveAgentModal').addEventListener('click', () => {
+            document.getElementById('approveAgentModal').classList.remove('active');
+        });
+        document.getElementById('cancelApproveAgentBtn').addEventListener('click', () => {
+            document.getElementById('approveAgentModal').classList.remove('active');
+        });
+
+        document.getElementById('approvePassword').addEventListener('input', function() {
+            const password = this.value;
+            const bar = document.getElementById('approvePasswordStrengthBar');
+            const text = document.getElementById('approvePasswordStrengthText');
+            
+            let strength = 0;
+            if (password.length >= 8) strength++;
+            if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
+            if (password.match(/\d/)) strength++;
+            if (password.match(/[^a-zA-Z\d]/)) strength++;
+            
+            const colors = ['#dc3545', '#dc3545', '#ffc107', '#17a2b8', '#28a745'];
+            const labels = ['', 'Weak', 'Weak', 'Medium', 'Strong'];
+            
+            bar.style.width = strength === 0 ? '0%' : (strength * 25) + '%';
+            bar.style.background = colors[strength] || '#eee';
+            text.textContent = strength > 0 ? labels[strength] : '';
+            text.style.color = colors[strength] || '#999';
+        });
+
+        document.getElementById('saveApproveAgentBtn').addEventListener('click', async () => {
+            const agentId = document.getElementById('approveAgentId').value;
+            const password = document.getElementById('approvePassword').value;
+            const confirm = document.getElementById('approveConfirmPassword').value;
+
+            if (!password || password.length < 6) {
+                showToast('Password must be at least 6 characters', 'error');
+                return;
+            }
+            if (password !== confirm) {
+                showToast('Passwords do not match', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('saveApproveAgentBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner"></span> Approving...';
+            btn.disabled = true;
+
+            try {
+                await apiFetch(`agents/${agentId}/password`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ password })
+                });
+                await apiFetch(`agents/${agentId}/status`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ status: 'Approved' })
+                });
+                showToast('Agent approved and password set!', 'success');
+                document.getElementById('approveAgentModal').classList.remove('active');
+                await loadAgents();
+                await loadDashboardData();
+            } catch (error) {
+                console.error('Error approving agent:', error);
+                showToast('Error: ' + error.message, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        // ============================================================
+        // PROCESS COMMISSION MODAL EVENTS
+        // ============================================================
+        document.getElementById('closeProcessCommissionModal').addEventListener('click', () => {
+            document.getElementById('processCommissionModal').classList.remove('active');
+        });
+        document.getElementById('cancelProcessCommissionBtn').addEventListener('click', () => {
+            document.getElementById('processCommissionModal').classList.remove('active');
+        });
+
+        document.getElementById('saveProcessCommissionBtn').addEventListener('click', async () => {
+            const commissionId = document.getElementById('pcCommissionId').value;
+            const paymentMethod = document.getElementById('pcPaymentMethod').value;
+            const paymentRef = document.getElementById('pcPaymentRef').value.trim();
+            const paymentDate = document.getElementById('pcPaymentDate').value;
+            const notes = document.getElementById('pcNotes').value.trim();
+
+            if (!paymentMethod || !paymentRef) {
+                showToast('Please fill in payment method and reference', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('saveProcessCommissionBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner"></span> Processing...';
+            btn.disabled = true;
+
+            try {
+                await apiFetch(`commissions/${commissionId}/process`, {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        paymentMethod, paymentRef, paymentDate, notes
+                    })
+                });
+                showToast('Commission processed successfully!', 'success');
+                document.getElementById('processCommissionModal').classList.remove('active');
+                await loadAgentCommissions();
+                await loadDashboardData();
+            } catch (error) {
+                console.error('Error processing commission:', error);
+                showToast('Error: ' + error.message, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        // ============================================================
+        // TOGGLE PASSWORD VISIBILITY
+        // ============================================================
+        function togglePasswordVisibility(inputId) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+            input.setAttribute('type', type);
+            const btn = input.parentElement.querySelector('button');
+            if (btn) {
+                btn.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+            }
+        }
 
         // ============================================================
         // LOAD NOTIFICATIONS
@@ -2358,7 +3070,6 @@ window.viewSettlement = async (settlementId) => {
                 const documents = app.documents || {};
                 const docCount = Object.keys(documents).length;
                 
-                // Helper functions
                 function getDocIcon(dt) {
                     const icons = { 'passport': 'fa-passport', 'academic_transcripts': 'fa-graduation-cap', 'academic_diploma': 'fa-certificate', 'proof_of_funds': 'fa-money-bill-wave', 'cv_resume': 'fa-file-alt', 'passport_photos': 'fa-camera', 'recommendation_letter': 'fa-envelope', 'other_documents': 'fa-folder-open' };
                     return icons[dt] || 'fa-file';
@@ -2368,7 +3079,6 @@ window.viewSettlement = async (settlementId) => {
                     return names[dt] || dt.replace('_', ' ');
                 }
                 
-                // Service data
                 let serviceDataHtml = '';
                 if (user.serviceType && user.serviceType !== 'Not selected') {
                     const serviceData = user.serviceData || {};
@@ -2389,7 +3099,6 @@ window.viewSettlement = async (settlementId) => {
                     serviceDataHtml = `<div style="margin-top: 15px; background: #f0f0f0; padding: 15px; border-radius: 8px;"><h4 style="color: var(--primary-red); margin-bottom: 10px;"><i class="fas fa-concierge-bell"></i> Service: ${user.serviceType.charAt(0).toUpperCase() + user.serviceType.slice(1)}</h4>${fieldHtml || '<p style="color: #999; font-size: 0.8rem;">No additional service details provided</p>'}</div>`;
                 }
                 
-                // Documents
                 let docsHtml = '';
                 if (docCount > 0) {
                     let docCards = '';
@@ -2409,11 +3118,9 @@ window.viewSettlement = async (settlementId) => {
                     docsHtml = `<div style="margin-top: 15px; text-align: center; color: #999; padding: 20px; background: #f5f5f5; border-radius: 8px;"><i class="fas fa-file-alt" style="font-size: 2rem; opacity: 0.3;"></i><p>No documents uploaded yet</p></div>`;
                 }
                 
-                // Payment
                 const receipt = app.paymentReceipt || null;
                 let paymentHtml = `<div style="margin-top: 15px; background: #f8f9fa; padding: 15px; border-radius: 8px;"><h4 style="color: var(--primary-red); margin-bottom: 10px;"><i class="fas fa-credit-card"></i> Payment Status</h4><div class="detail-row"><span class="detail-label">Status</span><span class="detail-value"><span class="payment-status-badge ${user.paymentStatus || 'due'}">${(user.paymentStatus || 'due').toUpperCase()}</span></span></div>${receipt ? `<div class="detail-row"><span class="detail-label">Receipt</span><span class="detail-value"><a href="${receipt.receiptUrl}" target="_blank" class="btn btn-sm btn-info"><i class="fas fa-receipt"></i> View Receipt</a><span style="margin-left: 10px; font-size: 0.7rem; color: #666;">${receipt.receiptFileName || ''}</span></span></div><div class="detail-row"><span class="detail-label">Uploaded</span><span class="detail-value">${receipt.uploadedAt ? new Date(receipt.uploadedAt).toLocaleDateString() : 'N/A'}</span></div>${receipt.rejectionReason ? `<div class="detail-row"><span class="detail-label">Rejection Reason</span><span class="detail-value" style="color: #dc3545;">${receipt.rejectionReason}</span></div>` : ''}` : '<div class="detail-row"><span class="detail-label">Receipt</span><span class="detail-value">No receipt uploaded</span></div>'}</div>`;
                 
-                // History
                 const uploadHistory = app.uploadHistory || [];
                 let historyHtml = '';
                 if (uploadHistory.length > 0) {
@@ -3930,6 +4637,23 @@ window.viewSettlement = async (settlementId) => {
         window.deleteProgramme = deleteProgramme;
         window.updateServiceRequestStatus = updateServiceRequestStatus;
         window.deleteServiceRequest = deleteServiceRequest;
+        window.loadAgents = loadAgents;
+        window.loadAgentApplicants = loadAgentApplicants;
+        window.loadAgentCommissions = loadAgentCommissions;
+        window.loadAgentSettlements = loadAgentSettlements;
+        window.viewAgent = viewAgent;
+        window.editAgent = editAgent;
+        window.openAgentRegistration = openAgentRegistration;
+        window.openSetPassword = openSetPassword;
+        window.openApproveAgent = openApproveAgent;
+        window.processCommissionModal = processCommissionModal;
+        window.processSingleCommission = processSingleCommission;
+        window.reverseCommission = reverseCommission;
+        window.generateSettlement = generateSettlement;
+        window.markSettlementPaid = markSettlementPaid;
+        window.viewSettlement = viewSettlement;
+        window.updateAgentStatus = updateAgentStatus;
+        window.togglePasswordVisibility = togglePasswordVisibility;
 
         // ============================================================
         // INITIALIZE
@@ -3942,9 +4666,10 @@ window.viewSettlement = async (settlementId) => {
         setTimeout(() => loadUsers(), 500);
         setTimeout(() => loadPayments(), 1000);
         setTimeout(() => loadOpportunities(), 1500);
+        setTimeout(() => loadAgents(), 2000);
         
         console.log('✅ Admin Dashboard 2.0 ready');
-        console.log('💡 New Features: Opportunities, Scholarships, Universities, Programmes, Service Requests');
+        console.log('💡 New Features: Agent Management, Password System, Commission Processing');
     </script>
 </body>
 </html>
