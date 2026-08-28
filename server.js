@@ -2746,11 +2746,61 @@ app.post('/api/admin/sync-users', authenticateToken, async (req, res) => {
     }
 });
 
+// ============================================================
+// ADMIN APPLICATIONS - ENHANCED WITH POPULATION
+// ============================================================
+
 app.get('/api/admin/applications', authenticateToken, async (req, res) => {
     try {
         const applications = await db.collection('applications').find({}).toArray();
-        res.json({ success: true, applications });
+        
+        // Get all applicant IDs
+        const applicantIds = applications.map(a => a.applicantId).filter(Boolean);
+        const agentIds = applications.map(a => a.agentId).filter(Boolean);
+        
+        // Fetch applicants and agents
+        let applicants = [];
+        let agents = [];
+        try {
+            if (applicantIds.length > 0) {
+                applicants = await db.collection('applicants')
+                    .find({ applicantId: { $in: applicantIds } })
+                    .toArray();
+            }
+            if (agentIds.length > 0) {
+                agents = await db.collection('agents')
+                    .find({ agentId: { $in: agentIds } })
+                    .toArray();
+            }
+        } catch (e) {
+            console.warn('Could not fetch related data:', e);
+        }
+        
+        const applicantMap = {};
+        applicants.forEach(a => { applicantMap[a.applicantId] = a; });
+        
+        const agentMap = {};
+        agents.forEach(a => { agentMap[a.agentId] = a; });
+        
+        // Enrich applications
+        const enrichedApps = applications.map(app => {
+            const applicant = applicantMap[app.applicantId];
+            const agent = agentMap[app.agentId];
+            return {
+                ...app,
+                applicantName: applicant ? applicant.fullName : (app.applicantName || 'Unknown'),
+                applicantEmail: applicant ? applicant.email : (app.email || 'N/A'),
+                applicantPhone: applicant ? applicant.phone : (app.phone || 'N/A'),
+                agentName: agent ? agent.fullName : (app.agentName || 'Unknown'),
+                agentIdDisplay: agent ? agent.agentId : (app.agentId || 'Unknown'),
+                applicantStatus: applicant ? applicant.status : 'Unknown',
+                paymentStatus: app.paymentStatus || applicant?.paymentStatus || 'No Payment'
+            };
+        });
+        
+        res.json({ success: true, applications: enrichedApps });
     } catch (error) {
+        console.error('Error fetching enhanced applications:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
@@ -4197,6 +4247,8 @@ app.get('/api/admin/service-requests', authenticateToken, async (req, res) => {
     }
 });
 
+
+
 app.put('/api/admin/service-requests/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
@@ -4227,7 +4279,73 @@ app.delete('/api/admin/service-requests/:id', authenticateToken, async (req, res
     }
 });
 
+// ============================================================
+// ADMIN AGENT APPLICANT DOCUMENTS - NEW
+// ============================================================
 
+// Get applicant with documents by applicantId (string)
+app.get('/api/admin/applicants/:applicantId', authenticateToken, async (req, res) => {
+    try {
+        const { applicantId } = req.params;
+        
+        const applicant = await db.collection('applicants').findOne({ applicantId: applicantId });
+        if (!applicant) {
+            return res.status(404).json({ success: false, message: 'Applicant not found' });
+        }
+        
+        const application = await db.collection('applications').findOne({ applicantId: applicantId });
+        
+        res.json({
+            success: true,
+            applicant: applicant,
+            application: application || null
+        });
+    } catch (error) {
+        console.error('Error fetching applicant:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Get documents for an applicant by applicantId
+app.get('/api/admin/applicants/:applicantId/documents', authenticateToken, async (req, res) => {
+    try {
+        const { applicantId } = req.params;
+        
+        const application = await db.collection('applications').findOne({ applicantId: applicantId });
+        if (!application) {
+            return res.json({ 
+                success: true, 
+                documents: {},
+                count: 0,
+                message: 'No application found for this applicant'
+            });
+        }
+        
+        const documents = application.documents || {};
+        const docCount = Object.keys(documents).length;
+        
+        // Count all documents (including arrays)
+        let totalDocs = 0;
+        for (const [key, value] of Object.entries(documents)) {
+            if (Array.isArray(value)) {
+                totalDocs += value.filter(v => v && v.fileName).length;
+            } else if (value && value.fileName) {
+                totalDocs++;
+            }
+        }
+        
+        res.json({
+            success: true,
+            documents: documents,
+            count: totalDocs,
+            applicantId: applicantId,
+            applicantName: application.applicantName || 'Unknown'
+        });
+    } catch (error) {
+        console.error('Error fetching applicant documents:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
 
 // ============================================================
 // ADMIN AGENT MANAGEMENT
@@ -4630,7 +4748,7 @@ app.put('/api/admin/commissions/:commissionId/process', authenticateToken, async
 // ADMIN AGENT APPLICANTS
 // ============================================================
 
-// Get all agent applicants (with agent info)
+// Enhanced version of GET /api/admin/agent-applicants
 app.get('/api/admin/agent-applicants', authenticateToken, async (req, res) => {
     try {
         const { search, status, agentId } = req.query;
@@ -4655,13 +4773,39 @@ app.get('/api/admin/agent-applicants', authenticateToken, async (req, res) => {
             .sort({ createdAt: -1 })
             .toArray();
         
-        // Enrich with agent names
+        // Get applications for document counts
+        const applicantIds = applicants.map(a => a.applicantId);
+        const applications = await db.collection('applications')
+            .find({ applicantId: { $in: applicantIds } })
+            .toArray();
+        const appMap = {};
+        applications.forEach(app => {
+            appMap[app.applicantId] = app;
+        });
+        
+        // Enrich with agent names and document counts
         const enrichedApplicants = [];
         for (const app of applicants) {
             const agent = await db.collection('agents').findOne({ agentId: app.agentId });
+            const application = appMap[app.applicantId] || null;
+            
+            // Count documents
+            let docCount = 0;
+            if (application && application.documents) {
+                for (const [key, value] of Object.entries(application.documents)) {
+                    if (Array.isArray(value)) {
+                        docCount += value.filter(v => v && v.fileName).length;
+                    } else if (value && value.fileName) {
+                        docCount++;
+                    }
+                }
+            }
+            
             enrichedApplicants.push({
                 ...app,
-                agentName: agent ? agent.fullName : 'Unknown Agent'
+                agentName: agent ? agent.fullName : 'Unknown Agent',
+                docCount: docCount,
+                application: application
             });
         }
         
