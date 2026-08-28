@@ -189,6 +189,2242 @@ app.post('/api/admin/login', async (req, res) => {
 });
 
 // ============================================================
+// AGENT API ENDPOINTS
+// ============================================================
+
+// ============================================================
+// AGENT REGISTRATION
+// ============================================================
+app.post('/api/agent/register', async (req, res) => {
+    try {
+        const { 
+            fullName, organization, phone, email, location, 
+            identification, professionalBackground, experience,
+            socialMedia, references, agentCategory, status,
+            agreementStatus
+        } = req.body;
+
+        // Validate required fields
+        if (!fullName || !email || !phone) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Full name, email and phone are required' 
+            });
+        }
+
+        // Check if email already exists
+        const existingAgent = await db.collection('agents').findOne({ email: email.toLowerCase() });
+        if (existingAgent) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'An agent with this email already exists' 
+            });
+        }
+
+        // Generate unique Agent ID
+        const count = await db.collection('agents').countDocuments();
+        const agentId = `GISC-AGT${String(count + 1).padStart(3, '0')}`;
+        
+        // Generate unique Referral Code
+        const referralCode = `GISC-DAR${String(count + 1).padStart(3, '0')}`;
+
+        const agentData = {
+            fullName,
+            organization: organization || '',
+            phone,
+            email: email.toLowerCase(),
+            location: location || '',
+            identification: identification || '',
+            professionalBackground: professionalBackground || '',
+            experience: experience || '',
+            socialMedia: socialMedia || '',
+            references: references || [],
+            agentCategory: agentCategory || 'Referral Agent',
+            status: 'Pending', // Pending, Approved, Suspended, Inactive, Terminated
+            agentId,
+            referralCode,
+            agreementStatus: agreementStatus || 'Pending',
+            dateApproved: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            // Commission settings
+            commissionRate: 0,
+            totalCommissionEarned: 0,
+            totalCommissionPaid: 0,
+            pendingCommission: 0,
+            // Performance
+            totalReferrals: 0,
+            qualifiedApplicants: 0,
+            activeApplicants: 0,
+            successfulApplications: 0,
+            totalRevenueGenerated: 0,
+            performanceLevel: 'Registered Agent',
+            // Security
+            password: null, // Will be set when approved
+            resetToken: null,
+            resetTokenExpiry: null
+        };
+
+        const result = await db.collection('agents').insertOne(agentData);
+
+        // Log the registration
+        await db.collection('audit_logs').insertOne({
+            action: 'AGENT_REGISTERED',
+            agentId: agentId,
+            agentEmail: email.toLowerCase(),
+            timestamp: new Date(),
+            details: { fullName, email, agentCategory }
+        });
+
+        res.json({
+            success: true,
+            message: 'Agent registration submitted successfully. You will be notified when your account is approved.',
+            agentId: agentId,
+            referralCode: referralCode
+        });
+
+    } catch (error) {
+        console.error('Agent registration error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
+// AGENT LOGIN
+// ============================================================
+app.post('/api/agent/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ success: false, message: 'Email and password are required' });
+        }
+
+        const agent = await db.collection('agents').findOne({ email: email.toLowerCase() });
+        if (!agent) {
+            return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        }
+
+        // Check if agent is approved
+        if (agent.status !== 'Approved') {
+            return res.status(403).json({ 
+                success: false, 
+                message: `Your account is ${agent.status.toLowerCase()}. Please contact GISC Admin for assistance.` 
+            });
+        }
+
+        // Check if password exists
+        if (!agent.password) {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Please set your password before logging in. Use the password reset feature.' 
+            });
+        }
+
+        const isValid = await bcrypt.compare(password, agent.password);
+        if (!isValid) {
+            return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        }
+
+        const token = jwt.sign(
+            { 
+                id: agent._id, 
+                email: agent.email, 
+                agentId: agent.agentId,
+                role: 'agent',
+                status: agent.status
+            },
+            process.env.JWT_SECRET || 'your-secret-key',
+            { expiresIn: '24h' }
+        );
+
+        // Update last login
+        await db.collection('agents').updateOne(
+            { _id: agent._id },
+            { $set: { lastLogin: new Date() } }
+        );
+
+        res.json({
+            success: true,
+            token: token,
+            agent: {
+                id: agent._id,
+                fullName: agent.fullName,
+                email: agent.email,
+                agentId: agent.agentId,
+                referralCode: agent.referralCode,
+                agentCategory: agent.agentCategory,
+                status: agent.status
+            }
+        });
+
+    } catch (error) {
+        console.error('Agent login error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
+// AGENT PASSWORD RESET
+// ============================================================
+app.post('/api/agent/forgot-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
+
+        const agent = await db.collection('agents').findOne({ email: email.toLowerCase() });
+        if (!agent) {
+            return res.status(404).json({ success: false, message: 'No agent found with this email address.' });
+        }
+
+        const crypto = require('crypto');
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const tokenExpiry = new Date();
+        tokenExpiry.setHours(tokenExpiry.getHours() + 1);
+
+        await db.collection('agents').updateOne(
+            { email: email.toLowerCase() },
+            { $set: { resetToken: resetToken, resetTokenExpiry: tokenExpiry } }
+        );
+
+        const resetLink = `https://globalimmigrationsclr.com/agent/reset-password.html?token=${resetToken}`;
+        console.log(`🔗 AGENT RESET LINK FOR ${email}: ${resetLink}`);
+
+        res.json({ success: true, message: 'Reset link generated', debugLink: resetLink });
+    } catch (error) {
+        console.error('Error in agent forgot-password:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.post('/api/agent/reset-password', async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+        if (!token || !newPassword) {
+            return res.status(400).json({ success: false, message: 'Token and password are required' });
+        }
+
+        const agent = await db.collection('agents').findOne({ 
+            resetToken: token, 
+            resetTokenExpiry: { $gt: new Date() } 
+        });
+        if (!agent) {
+            return res.status(400).json({ success: false, message: 'Invalid or expired reset token.' });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await db.collection('agents').updateOne(
+            { _id: agent._id },
+            { 
+                $set: { password: hashedPassword, updatedAt: new Date() }, 
+                $unset: { resetToken: "", resetTokenExpiry: "" } 
+            }
+        );
+
+        // Log the password change
+        await db.collection('audit_logs').insertOne({
+            action: 'AGENT_PASSWORD_RESET',
+            agentId: agent.agentId,
+            agentEmail: agent.email,
+            timestamp: new Date()
+        });
+
+        res.json({ success: true, message: 'Password reset successfully' });
+    } catch (error) {
+        console.error('Error in agent reset-password:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
+// AGENT MIDDLEWARE
+// ============================================================
+function authenticateAgent(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    if (!token) {
+        return res.status(401).json({ success: false, message: 'No token provided' });
+    }
+    
+    jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key', (err, user) => {
+        if (err) {
+            return res.status(403).json({ success: false, message: 'Invalid token' });
+        }
+        if (user.role !== 'agent') {
+            return res.status(403).json({ success: false, message: 'Access denied. Agent role required.' });
+        }
+        req.agent = user;
+        next();
+    });
+}
+
+// ============================================================
+// AGENT PROFILE
+// ============================================================
+app.get('/api/agent/profile', authenticateAgent, async (req, res) => {
+    try {
+        const agent = await db.collection('agents').findOne({ _id: new ObjectId(req.agent.id) });
+        if (!agent) {
+            return res.status(404).json({ success: false, message: 'Agent not found' });
+        }
+
+        // Remove sensitive data
+        delete agent.password;
+        delete agent.resetToken;
+        delete agent.resetTokenExpiry;
+
+        res.json({ success: true, agent });
+    } catch (error) {
+        console.error('Error fetching agent profile:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.put('/api/agent/profile', authenticateAgent, async (req, res) => {
+    try {
+        const updateData = { ...req.body, updatedAt: new Date() };
+        delete updateData._id;
+        delete updateData.password;
+        delete updateData.resetToken;
+        delete updateData.resetTokenExpiry;
+
+        const result = await db.collection('agents').updateOne(
+            { _id: new ObjectId(req.agent.id) },
+            { $set: updateData }
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Agent not found' });
+        }
+
+        res.json({ success: true, message: 'Profile updated successfully' });
+    } catch (error) {
+        console.error('Error updating agent profile:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
+// AGENT DASHBOARD
+// ============================================================
+app.get('/api/agent/dashboard', authenticateAgent, async (req, res) => {
+    try {
+        const agentId = req.agent.agentId;
+        
+        // Get agent data
+        const agent = await db.collection('agents').findOne({ _id: new ObjectId(req.agent.id) });
+        if (!agent) {
+            return res.status(404).json({ success: false, message: 'Agent not found' });
+        }
+
+        // Get applicants for this agent
+        const applicants = await db.collection('applicants')
+            .find({ agentId: agentId })
+            .sort({ createdAt: -1 })
+            .toArray();
+
+        // Get applications for this agent's applicants
+        const applicantIds = applicants.map(a => a.applicantId);
+        const applications = await db.collection('applications')
+            .find({ applicantId: { $in: applicantIds } })
+            .toArray();
+
+        // Get commissions for this agent
+        const commissions = await db.collection('commissions')
+            .find({ agentId: agentId })
+            .sort({ createdAt: -1 })
+            .toArray();
+
+        // Get notifications for this agent
+        const notifications = await db.collection('agent_notifications')
+            .find({ agentId: agentId })
+            .sort({ createdAt: -1 })
+            .limit(20)
+            .toArray();
+
+        // Calculate dashboard stats
+        const totalReferrals = applicants.length;
+        const qualifiedApplicants = applicants.filter(a => a.status === 'Qualified').length;
+        const activeApplicants = applicants.filter(a => ['Registered', 'Under Assessment', 'Qualified', 'Package Selected', 'Agreement Pending', 'Payment Pending', 'Payment Verified'].includes(a.status)).length;
+        const successfulApplications = applications.filter(a => a.status === 'Completed').length;
+
+        // Calculate revenue
+        const totalRevenueGenerated = applications
+            .filter(a => a.paymentStatus === 'Paid' || a.paymentStatus === 'Verified')
+            .reduce((sum, a) => sum + (a.totalServiceFee || 0), 0);
+
+        // Calculate commission totals
+        const commissionEarned = commissions
+            .filter(c => c.status === 'Eligible' || c.status === 'Paid')
+            .reduce((sum, c) => sum + c.commissionAmount, 0);
+        const commissionPaid = commissions
+            .filter(c => c.status === 'Paid')
+            .reduce((sum, c) => sum + c.commissionAmount, 0);
+        const pendingCommission = commissions
+            .filter(c => c.status === 'Eligible' || c.status === 'Pending')
+            .reduce((sum, c) => sum + c.commissionAmount, 0);
+
+        // Calculate refund adjustments
+        const refundAdjustments = commissions
+            .filter(c => c.status === 'Reversed')
+            .reduce((sum, c) => sum + c.commissionAmount, 0);
+
+        // Determine performance level
+        const successCount = successfulApplications;
+        let performanceLevel = 'Registered Agent';
+        if (successCount >= 25) performanceLevel = 'ELITE AGENT';
+        else if (successCount >= 10) performanceLevel = 'PREMIUM AGENT';
+        else if (successCount >= 3) performanceLevel = 'ACTIVE AGENT';
+
+        // Recent activity
+        const recentApplicants = applicants.slice(0, 5);
+        const recentApplications = applications.slice(0, 5);
+        const recentCommissions = commissions.slice(0, 5);
+        const recentNotifications = notifications.slice(0, 10);
+
+        // Pending actions
+        const pendingActions = [];
+        const pendingApplicants = applicants.filter(a => a.status === 'Registered' || a.status === 'Under Assessment');
+        if (pendingApplicants.length > 0) {
+            pendingActions.push({
+                type: 'applicant_review',
+                count: pendingApplicants.length,
+                message: `${pendingApplicants.length} applicant(s) pending review`
+            });
+        }
+
+        const pendingPayments = applications.filter(a => a.paymentStatus === 'Pending' || a.paymentStatus === 'Pending Verification');
+        if (pendingPayments.length > 0) {
+            pendingActions.push({
+                type: 'payment_verification',
+                count: pendingPayments.length,
+                message: `${pendingPayments.length} payment(s) pending verification`
+            });
+        }
+
+        const eligibleCommissions = commissions.filter(c => c.status === 'Eligible');
+        if (eligibleCommissions.length > 0) {
+            const totalEligible = eligibleCommissions.reduce((sum, c) => sum + c.commissionAmount, 0);
+            pendingActions.push({
+                type: 'commission_settlement',
+                count: eligibleCommissions.length,
+                message: `${eligibleCommissions.length} commission(s) eligible for settlement ($${totalEligible.toFixed(2)})`
+            });
+        }
+
+        // Next settlement date (1st of next month)
+        const now = new Date();
+        const nextSettlement = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+        res.json({
+            success: true,
+            dashboard: {
+                stats: {
+                    totalReferrals,
+                    qualifiedApplicants,
+                    activeApplicants,
+                    successfulApplications,
+                    totalRevenueGenerated,
+                    commissionEarned,
+                    commissionPaid,
+                    pendingCommission,
+                    refundAdjustments,
+                    performanceLevel
+                },
+                recent: {
+                    applicants: recentApplicants,
+                    applications: recentApplications,
+                    commissions: recentCommissions,
+                    notifications: recentNotifications
+                },
+                pendingActions,
+                nextSettlementDate: nextSettlement,
+                agent: {
+                    fullName: agent.fullName,
+                    agentId: agent.agentId,
+                    referralCode: agent.referralCode,
+                    agentCategory: agent.agentCategory,
+                    status: agent.status
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Error fetching agent dashboard:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+
+// ============================================================
+// AGENT APPLICANT MANAGEMENT
+// ============================================================
+
+// Generate unique Applicant ID
+async function generateApplicantId() {
+    const count = await db.collection('applicants').countDocuments();
+    return `GISC-APP-${String(count + 1).padStart(6, '0')}`;
+}
+
+// Check for duplicate applicant
+async function checkDuplicateApplicant(email, phone) {
+    const existing = await db.collection('applicants').findOne({
+        $or: [
+            { email: email.toLowerCase() },
+            { phone: phone }
+        ]
+    });
+    return existing;
+}
+
+// Get all applicants for an agent
+app.get('/api/agent/applicants', authenticateAgent, async (req, res) => {
+    try {
+        const agentId = req.agent.agentId;
+        const { search, status, limit } = req.query;
+        
+        const query = { agentId: agentId };
+        
+        if (search) {
+            query.$or = [
+                { fullName: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: 'i' } },
+                { applicantId: { $regex: search, $options: 'i' } }
+            ];
+        }
+        
+        if (status) {
+            query.status = status;
+        }
+        
+        let cursor = db.collection('applicants')
+            .find(query)
+            .sort({ createdAt: -1 });
+            
+        if (limit) {
+            cursor = cursor.limit(parseInt(limit));
+        }
+        
+        const applicants = await cursor.toArray();
+        
+        // Get application data for each applicant
+        const applicantIds = applicants.map(a => a.applicantId);
+        const applications = await db.collection('applications')
+            .find({ applicantId: { $in: applicantIds } })
+            .toArray();
+        
+        const appMap = {};
+        applications.forEach(app => {
+            appMap[app.applicantId] = app;
+        });
+        
+        const enrichedApplicants = applicants.map(a => ({
+            ...a,
+            application: appMap[a.applicantId] || null
+        }));
+        
+        res.json({ success: true, applicants: enrichedApplicants, count: enrichedApplicants.length });
+    } catch (error) {
+        console.error('Error fetching applicants:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Get single applicant
+app.get('/api/agent/applicants/:applicantId', authenticateAgent, async (req, res) => {
+    try {
+        const agentId = req.agent.agentId;
+        const { applicantId } = req.params;
+        
+        const applicant = await db.collection('applicants').findOne({ 
+            applicantId: applicantId,
+            agentId: agentId
+        });
+        
+        if (!applicant) {
+            return res.status(404).json({ success: false, message: 'Applicant not found or does not belong to you' });
+        }
+        
+        // Get application data
+        const application = await db.collection('applications')
+            .findOne({ applicantId: applicantId });
+        
+        res.json({ success: true, applicant, application: application || null });
+    } catch (error) {
+        console.error('Error fetching applicant:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Create new applicant
+app.post('/api/agent/applicants', authenticateAgent, async (req, res) => {
+    try {
+        const agentId = req.agent.agentId;
+        const agent = await db.collection('agents').findOne({ _id: new ObjectId(req.agent.id) });
+        
+        if (!agent || agent.status !== 'Approved') {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Only approved agents can submit applicants' 
+            });
+        }
+        
+        const {
+            fullName, phone, email, countryOfInterest, serviceRequested,
+            referralDate, sourceOfLead, dateOfBirth, nationality,
+            currentCountry, educationLevel, highestQualification,
+            workExperience, preferredDestination, programmeInterest,
+            additionalInformation
+        } = req.body;
+        
+        // Validate required fields
+        if (!fullName || !phone || !email || !countryOfInterest || !serviceRequested) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Full name, phone, email, country of interest, and service requested are required' 
+            });
+        }
+        
+        // Check for duplicates
+        const existing = await checkDuplicateApplicant(email, phone);
+        if (existing) {
+            return res.status(409).json({
+                success: false,
+                message: 'This applicant already exists in the GISC system. Please contact GISC Admin regarding ownership.',
+                existingApplicant: {
+                    applicantId: existing.applicantId,
+                    fullName: existing.fullName,
+                    email: existing.email,
+                    phone: existing.phone,
+                    status: existing.status,
+                    agentId: existing.agentId
+                }
+            });
+        }
+        
+        // Generate unique Applicant ID
+        const applicantId = await generateApplicantId();
+        
+        const applicantData = {
+            applicantId,
+            agentId: agentId,
+            agentReferralCode: agent.referralCode,
+            fullName,
+            phone,
+            email: email.toLowerCase(),
+            countryOfInterest,
+            serviceRequested,
+            referralDate: referralDate || new Date().toISOString().split('T')[0],
+            sourceOfLead: sourceOfLead || 'Agent Referral',
+            dateOfBirth: dateOfBirth || '',
+            nationality: nationality || '',
+            currentCountry: currentCountry || '',
+            educationLevel: educationLevel || '',
+            highestQualification: highestQualification || '',
+            workExperience: workExperience || '',
+            preferredDestination: preferredDestination || '',
+            programmeInterest: programmeInterest || '',
+            additionalInformation: additionalInformation || '',
+            status: 'Registered',
+            applicationStage: 'Lead',
+            paymentStatus: 'No Payment',
+            commissionStatus: 'No Commission',
+            assignedCounselor: null,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+        
+        const result = await db.collection('applicants').insertOne(applicantData);
+        
+        // Create application record
+        const applicationData = {
+            applicantId: applicantId,
+            agentId: agentId,
+            agentReferralCode: agent.referralCode,
+            applicantName: fullName,
+            email: email.toLowerCase(),
+            phone: phone,
+            service: serviceRequested,
+            destination: countryOfInterest,
+            status: 'Lead',
+            stage: 'Lead',
+            paymentStatus: 'No Payment',
+            totalServiceFee: 0,
+            amountReceived: 0,
+            amountRemaining: 0,
+            milestones: [
+                {
+                    milestone: 'Applicant Registered',
+                    status: 'Completed',
+                    date: new Date().toISOString(),
+                    notes: 'Applicant registered by agent'
+                }
+            ],
+            timeline: [
+                {
+                    event: 'Applicant Registered',
+                    description: 'Applicant was registered in the GISC system',
+                    date: new Date().toISOString(),
+                    actor: 'Agent'
+                }
+            ],
+            documents: {},
+            payments: [],
+            commissions: [],
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+        
+        await db.collection('applications').insertOne(applicationData);
+        
+        // Update agent stats
+        await db.collection('agents').updateOne(
+            { _id: agent._id },
+            { 
+                $inc: { totalReferrals: 1 },
+                $set: { updatedAt: new Date() }
+            }
+        );
+        
+        // Log the action
+        await db.collection('audit_logs').insertOne({
+            action: 'APPLICANT_REGISTERED',
+            agentId: agentId,
+            agentEmail: agent.email,
+            applicantId: applicantId,
+            applicantName: fullName,
+            timestamp: new Date()
+        });
+        
+        res.json({
+            success: true,
+            message: 'Applicant registered successfully',
+            applicantId: applicantId,
+            applicant: applicantData
+        });
+        
+    } catch (error) {
+        console.error('Error creating applicant:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Update applicant
+app.put('/api/agent/applicants/:applicantId', authenticateAgent, async (req, res) => {
+    try {
+        const agentId = req.agent.agentId;
+        const { applicantId } = req.params;
+        
+        // Check ownership
+        const applicant = await db.collection('applicants').findOne({
+            applicantId: applicantId,
+            agentId: agentId
+        });
+        
+        if (!applicant) {
+            return res.status(404).json({ success: false, message: 'Applicant not found or does not belong to you' });
+        }
+        
+        const updateData = { ...req.body, updatedAt: new Date() };
+        delete updateData._id;
+        delete updateData.applicantId;
+        delete updateData.agentId;
+        delete updateData.agentReferralCode;
+        
+        // Only allow certain fields to be updated
+        const allowedUpdates = [
+            'fullName', 'phone', 'email', 'countryOfInterest', 'serviceRequested',
+            'referralDate', 'sourceOfLead', 'dateOfBirth', 'nationality',
+            'currentCountry', 'educationLevel', 'highestQualification',
+            'workExperience', 'preferredDestination', 'programmeInterest',
+            'additionalInformation'
+        ];
+        
+        const filteredUpdate = {};
+        for (const key of allowedUpdates) {
+            if (updateData[key] !== undefined) {
+                filteredUpdate[key] = updateData[key];
+            }
+        }
+        
+        // Cannot update status or payment status - only admin can
+        // Cannot update commission status - system managed
+        
+        const result = await db.collection('applicants').updateOne(
+            { applicantId: applicantId, agentId: agentId },
+            { $set: filteredUpdate }
+        );
+        
+        res.json({
+            success: true,
+            message: 'Applicant updated successfully'
+        });
+        
+    } catch (error) {
+        console.error('Error updating applicant:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Upload document for applicant
+app.post('/api/agent/applicants/:applicantId/documents', authenticateAgent, async (req, res) => {
+    try {
+        const agentId = req.agent.agentId;
+        const { applicantId } = req.params;
+        const { docType, fileId, fileName, fileSize, fileType, fileUrl } = req.body;
+        
+        if (!docType || !fileId || !fileUrl) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'docType, fileId, and fileUrl are required' 
+            });
+        }
+        
+        // Check ownership
+        const applicant = await db.collection('applicants').findOne({
+            applicantId: applicantId,
+            agentId: agentId
+        });
+        
+        if (!applicant) {
+            return res.status(404).json({ success: false, message: 'Applicant not found or does not belong to you' });
+        }
+        
+        const docData = {
+            fileId,
+            fileName: fileName || 'Unknown',
+            fileSize: fileSize || 0,
+            fileType: fileType || 'application/octet-stream',
+            fileUrl: fileUrl,
+            docType: docType,
+            uploadedBy: 'agent',
+            uploaderId: agentId,
+            status: 'pending_review',
+            uploadedAt: new Date().toISOString()
+        };
+        
+        // Update applicant document
+        await db.collection('applicants').updateOne(
+            { applicantId: applicantId },
+            { 
+                $set: { updatedAt: new Date() },
+                $push: { documents: docData }
+            }
+        );
+        
+        // Update application document
+        await db.collection('applications').updateOne(
+            { applicantId: applicantId },
+            {
+                $set: { updatedAt: new Date() },
+                $push: { 
+                    [`documents.${docType}`]: docData,
+                    uploadHistory: {
+                        filename: fileName || 'Unknown',
+                        docType: docType,
+                        timestamp: new Date().toISOString(),
+                        status: 'submitted'
+                    }
+                }
+            }
+        );
+        
+        // Add timeline entry
+        await db.collection('applications').updateOne(
+            { applicantId: applicantId },
+            {
+                $push: {
+                    timeline: {
+                        event: 'Document Uploaded',
+                        description: `${docType.replace('_', ' ')} uploaded by agent`,
+                        date: new Date().toISOString(),
+                        actor: 'Agent'
+                    }
+                }
+            }
+        );
+        
+        res.json({
+            success: true,
+            message: 'Document uploaded successfully',
+            document: docData
+        });
+        
+    } catch (error) {
+        console.error('Error uploading document:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Get applicant timeline
+app.get('/api/agent/applicants/:applicantId/timeline', authenticateAgent, async (req, res) => {
+    try {
+        const agentId = req.agent.agentId;
+        const { applicantId } = req.params;
+        
+        // Check ownership
+        const applicant = await db.collection('applicants').findOne({
+            applicantId: applicantId,
+            agentId: agentId
+        });
+        
+        if (!applicant) {
+            return res.status(404).json({ success: false, message: 'Applicant not found' });
+        }
+        
+        const application = await db.collection('applications')
+            .findOne({ applicantId: applicantId });
+        
+        if (!application) {
+            return res.json({ success: true, timeline: [] });
+        }
+        
+        res.json({
+            success: true,
+            timeline: application.timeline || [],
+            milestones: application.milestones || []
+        });
+        
+    } catch (error) {
+        console.error('Error fetching timeline:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+
+// ============================================================
+// AGENT APPLICATION TRACKING
+// ============================================================
+
+// Get all applications for agent's applicants
+app.get('/api/agent/applications', authenticateAgent, async (req, res) => {
+    try {
+        const agentId = req.agent.agentId;
+        const { status, search, limit } = req.query;
+        
+        const query = { agentId: agentId };
+        
+        if (status) {
+            query.status = status;
+        }
+        
+        if (search) {
+            query.$or = [
+                { applicantName: { $regex: search, $options: 'i' } },
+                { applicantId: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: 'i' } }
+            ];
+        }
+        
+        let cursor = db.collection('applications')
+            .find(query)
+            .sort({ updatedAt: -1 });
+            
+        if (limit) {
+            cursor = cursor.limit(parseInt(limit));
+        }
+        
+        const applications = await cursor.toArray();
+        
+        res.json({ success: true, applications, count: applications.length });
+    } catch (error) {
+        console.error('Error fetching applications:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Get single application
+app.get('/api/agent/applications/:applicantId', authenticateAgent, async (req, res) => {
+    try {
+        const agentId = req.agent.agentId;
+        const { applicantId } = req.params;
+        
+        const application = await db.collection('applications').findOne({
+            applicantId: applicantId,
+            agentId: agentId
+        });
+        
+        if (!application) {
+            return res.status(404).json({ success: false, message: 'Application not found' });
+        }
+        
+        res.json({ success: true, application });
+    } catch (error) {
+        console.error('Error fetching application:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
+// AGENT PAYMENT TRACKING
+// ============================================================
+
+// Get payments for agent's applicants
+app.get('/api/agent/payments', authenticateAgent, async (req, res) => {
+    try {
+        const agentId = req.agent.agentId;
+        
+        const applications = await db.collection('applications')
+            .find({ agentId: agentId })
+            .toArray();
+        
+        const payments = [];
+        
+        for (const app of applications) {
+            if (app.payments && app.payments.length > 0) {
+                for (const payment of app.payments) {
+                    payments.push({
+                        ...payment,
+                        applicantId: app.applicantId,
+                        applicantName: app.applicantName,
+                        service: app.service,
+                        packageName: app.packageName || 'Standard'
+                    });
+                }
+            }
+            
+            // Include payment receipt if exists
+            if (app.paymentReceipt) {
+                payments.push({
+                    ...app.paymentReceipt,
+                    type: 'receipt',
+                    applicantId: app.applicantId,
+                    applicantName: app.applicantName,
+                    service: app.service,
+                    packageName: app.packageName || 'Standard'
+                });
+            }
+        }
+        
+        // Sort by date
+        payments.sort((a, b) => {
+            const dateA = a.uploadedAt || a.createdAt || a.pendingAt || a.confirmedAt || '';
+            const dateB = b.uploadedAt || b.createdAt || b.pendingAt || b.confirmedAt || '';
+            return new Date(dateB) - new Date(dateA);
+        });
+        
+        // Calculate totals
+        const totalPaid = payments
+            .filter(p => p.status === 'completed' || p.status === 'verified')
+            .reduce((sum, p) => sum + (p.amount || 0), 0);
+            
+        const totalPending = payments
+            .filter(p => p.status === 'pending' || p.status === 'pending_verification')
+            .reduce((sum, p) => sum + (p.amount || 0), 0);
+            
+        const totalRejected = payments
+            .filter(p => p.status === 'rejected')
+            .reduce((sum, p) => sum + (p.amount || 0), 0);
+        
+        res.json({
+            success: true,
+            payments: payments,
+            summary: {
+                totalPaid,
+                totalPending,
+                totalRejected,
+                count: payments.length
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching payments:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Get payment status summary for an applicant
+app.get('/api/agent/applicants/:applicantId/payments', authenticateAgent, async (req, res) => {
+    try {
+        const agentId = req.agent.agentId;
+        const { applicantId } = req.params;
+        
+        const application = await db.collection('applications').findOne({
+            applicantId: applicantId,
+            agentId: agentId
+        });
+        
+        if (!application) {
+            return res.status(404).json({ success: false, message: 'Application not found' });
+        }
+        
+        // Calculate payment summary
+        const payments = application.payments || [];
+        const receipt = application.paymentReceipt;
+        
+        const paidPayments = payments.filter(p => p.status === 'completed');
+        const pendingPayments = payments.filter(p => p.status === 'pending');
+        const rejectedPayments = payments.filter(p => p.status === 'rejected');
+        
+        const totalPaid = paidPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+        const totalPending = pendingPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+        const totalRejected = rejectedPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+        
+        const totalServiceFee = application.totalServiceFee || 0;
+        const amountReceived = application.amountReceived || 0;
+        const amountRemaining = application.amountRemaining || 0;
+        
+        res.json({
+            success: true,
+            paymentSummary: {
+                totalServiceFee,
+                amountReceived,
+                amountRemaining,
+                payments: payments,
+                receipt: receipt,
+                paidCount: paidPayments.length,
+                pendingCount: pendingPayments.length,
+                rejectedCount: rejectedPayments.length,
+                totalPaid,
+                totalPending,
+                totalRejected
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching payment summary:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+
+// ============================================================
+// AGENT COMMISSION SYSTEM
+// ============================================================
+
+// Commission structure
+const COMMISSION_STRUCTURE = {
+    'Profile Review & Eligibility Assessment': { fee: 25, rate: 0 },
+    'Basic Support': { fee: 50, rate: 0.10 },
+    'Application Guidance': { fee: 150, rate: 0.10 },
+    'Basic Processing': { fee: 299, rate: 0.15 },
+    'Standard Processing': { fee: 500, rate: 0.15 },
+    'Silver Premium': { fee: 999, rate: 0.20 },
+    'Gold': { fee: 1500, rate: 0.20 },
+    'Platinum': { fee: 2500, rate: 0.20 },
+    'Executive': { fee: 5000, rate: 0.25 }
+};
+
+// Calculate commission for a payment
+function calculateCommission(packageName, amountReceived) {
+    const packageInfo = COMMISSION_STRUCTURE[packageName];
+    if (!packageInfo) {
+        return { commissionAmount: 0, rate: 0, eligibleRevenue: 0 };
+    }
+    
+    const rate = packageInfo.rate;
+    const eligibleRevenue = amountReceived;
+    const commissionAmount = eligibleRevenue * rate;
+    
+    return {
+        commissionAmount: Math.round(commissionAmount * 100) / 100,
+        rate: rate,
+        eligibleRevenue: eligibleRevenue,
+        packageFee: packageInfo.fee
+    };
+}
+
+// Get commission data for agent
+app.get('/api/agent/commissions', authenticateAgent, async (req, res) => {
+    try {
+        const agentId = req.agent.agentId;
+        
+        // Get agent data for totals
+        const agent = await db.collection('agents').findOne({ _id: new ObjectId(req.agent.id) });
+        
+        // Get all commissions
+        const commissions = await db.collection('commissions')
+            .find({ agentId: agentId })
+            .sort({ createdAt: -1 })
+            .toArray();
+        
+        // Get commission settlements
+        const settlements = await db.collection('commission_settlements')
+            .find({ agentId: agentId })
+            .sort({ settlementDate: -1 })
+            .toArray();
+        
+        // Calculate totals
+        const totalEarned = commissions
+            .filter(c => c.status === 'Eligible' || c.status === 'Paid' || c.status === 'Settled')
+            .reduce((sum, c) => sum + c.commissionAmount, 0);
+            
+        const totalPaid = commissions
+            .filter(c => c.status === 'Paid' || c.status === 'Settled')
+            .reduce((sum, c) => sum + c.commissionAmount, 0);
+            
+        const totalPending = commissions
+            .filter(c => c.status === 'Pending' || c.status === 'Eligible')
+            .reduce((sum, c) => sum + c.commissionAmount, 0);
+            
+        const totalReversed = commissions
+            .filter(c => c.status === 'Reversed')
+            .reduce((sum, c) => sum + c.commissionAmount, 0);
+        
+        // Get eligible for settlement (pending commissions with status 'Eligible')
+        const eligibleForSettlement = commissions
+            .filter(c => c.status === 'Eligible')
+            .reduce((sum, c) => sum + c.commissionAmount, 0);
+        
+        // Next settlement date (1st of next month)
+        const now = new Date();
+        const nextSettlement = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        
+        res.json({
+            success: true,
+            commissions: commissions,
+            settlements: settlements,
+            summary: {
+                totalEarned,
+                totalPaid,
+                totalPending,
+                totalReversed,
+                eligibleForSettlement,
+                nextSettlementDate: nextSettlement,
+                commissionRate: agent.commissionRate || 0
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching commissions:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Get commission details for a specific applicant
+app.get('/api/agent/applicants/:applicantId/commission', authenticateAgent, async (req, res) => {
+    try {
+        const agentId = req.agent.agentId;
+        const { applicantId } = req.params;
+        
+        const commission = await db.collection('commissions')
+            .findOne({ agentId: agentId, applicantId: applicantId });
+        
+        if (!commission) {
+            return res.json({ success: true, commission: null, message: 'No commission found for this applicant' });
+        }
+        
+        res.json({ success: true, commission });
+    } catch (error) {
+        console.error('Error fetching commission:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Commission eligibility check - called by admin when payment is verified
+async function processCommission(applicantId, agentId, packageName, amountReceived, paymentId) {
+    try {
+        const agent = await db.collection('agents').findOne({ agentId: agentId });
+        if (!agent || agent.status !== 'Approved') {
+            return { success: false, message: 'Agent not found or not approved' };
+        }
+        
+        // Check if commission already exists
+        const existingCommission = await db.collection('commissions')
+            .findOne({ applicantId: applicantId, paymentId: paymentId });
+        
+        if (existingCommission) {
+            return { success: false, message: 'Commission already processed for this payment' };
+        }
+        
+        // Calculate commission
+        const calculation = calculateCommission(packageName, amountReceived);
+        
+        if (calculation.commissionAmount === 0) {
+            return { success: false, message: 'No commission earned for this package' };
+        }
+        
+        // Create commission record
+        const commissionData = {
+            agentId: agentId,
+            agentReferralCode: agent.referralCode,
+            applicantId: applicantId,
+            paymentId: paymentId,
+            packageName: packageName,
+            packageFee: calculation.packageFee,
+            amountReceived: amountReceived,
+            eligibleRevenue: calculation.eligibleRevenue,
+            rate: calculation.rate,
+            commissionAmount: calculation.commissionAmount,
+            status: 'Eligible', // Eligible, Paid, Reversed, Pending
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+        
+        const result = await db.collection('commissions').insertOne(commissionData);
+        
+        // Update agent stats
+        await db.collection('agents').updateOne(
+            { agentId: agentId },
+            {
+                $inc: {
+                    totalCommissionEarned: calculation.commissionAmount,
+                    pendingCommission: calculation.commissionAmount
+                },
+                $set: { updatedAt: new Date() }
+            }
+        );
+        
+        // Update application
+        await db.collection('applications').updateOne(
+            { applicantId: applicantId },
+            {
+                $push: {
+                    commissions: {
+                        commissionId: result.insertedId,
+                        amount: calculation.commissionAmount,
+                        rate: calculation.rate,
+                        status: 'Eligible',
+                        createdAt: new Date().toISOString()
+                    }
+                },
+                $set: { updatedAt: new Date() }
+            }
+        );
+        
+        // Log the action
+        await db.collection('audit_logs').insertOne({
+            action: 'COMMISSION_CALCULATED',
+            agentId: agentId,
+            agentEmail: agent.email,
+            applicantId: applicantId,
+            commissionAmount: calculation.commissionAmount,
+            packageName: packageName,
+            amountReceived: amountReceived,
+            timestamp: new Date()
+        });
+        
+        // Create notification for agent
+        await db.collection('agent_notifications').insertOne({
+            agentId: agentId,
+            title: 'Commission Earned',
+            message: `You have earned $${calculation.commissionAmount.toFixed(2)} commission for applicant ${applicantId} (${packageName})`,
+            type: 'commission',
+            read: false,
+            createdAt: new Date(),
+            link: `/commission`
+        });
+        
+        return { success: true, commission: commissionData };
+        
+    } catch (error) {
+        console.error('Error processing commission:', error);
+        return { success: false, message: error.message };
+    }
+}
+
+// Process commission for a payment - called by admin
+app.post('/api/admin/commissions/process', authenticateToken, async (req, res) => {
+    try {
+        const { applicantId, packageName, amountReceived, paymentId } = req.body;
+        
+        if (!applicantId || !packageName || !amountReceived) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'applicantId, packageName, and amountReceived are required' 
+            });
+        }
+        
+        // Get applicant to find agent
+        const applicant = await db.collection('applicants').findOne({ applicantId: applicantId });
+        if (!applicant) {
+            return res.status(404).json({ success: false, message: 'Applicant not found' });
+        }
+        
+        const result = await processCommission(
+            applicantId,
+            applicant.agentId,
+            packageName,
+            amountReceived,
+            paymentId || `PAY-${Date.now()}`
+        );
+        
+        if (!result.success) {
+            return res.status(400).json({ success: false, message: result.message });
+        }
+        
+        res.json({ success: true, commission: result.commission });
+    } catch (error) {
+        console.error('Error processing commission:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Reverse commission (for refunds)
+app.put('/api/admin/commissions/:commissionId/reverse', authenticateToken, async (req, res) => {
+    try {
+        const { commissionId } = req.params;
+        const { reason } = req.body;
+        
+        const commission = await db.collection('commissions').findOne({ 
+            _id: new ObjectId(commissionId) 
+        });
+        
+        if (!commission) {
+            return res.status(404).json({ success: false, message: 'Commission not found' });
+        }
+        
+        if (commission.status === 'Reversed') {
+            return res.status(400).json({ success: false, message: 'Commission already reversed' });
+        }
+        
+        // Update commission status
+        await db.collection('commissions').updateOne(
+            { _id: new ObjectId(commissionId) },
+            {
+                $set: {
+                    status: 'Reversed',
+                    reversalReason: reason || 'Refund processed',
+                    reversedAt: new Date(),
+                    updatedAt: new Date()
+                }
+            }
+        );
+        
+        // Update agent stats
+        await db.collection('agents').updateOne(
+            { agentId: commission.agentId },
+            {
+                $inc: {
+                    totalCommissionEarned: -commission.commissionAmount,
+                    pendingCommission: -commission.commissionAmount
+                },
+                $set: { updatedAt: new Date() }
+            }
+        );
+        
+        // Update application
+        await db.collection('applications').updateOne(
+            { applicantId: commission.applicantId },
+            {
+                $push: {
+                    commissions: {
+                        commissionId: commissionId,
+                        amount: -commission.commissionAmount,
+                        status: 'Reversed',
+                        reason: reason || 'Refund processed',
+                        reversedAt: new Date().toISOString()
+                    }
+                },
+                $set: { updatedAt: new Date() }
+            }
+        );
+        
+        // Log the action
+        await db.collection('audit_logs').insertOne({
+            action: 'COMMISSION_REVERSED',
+            agentId: commission.agentId,
+            applicantId: commission.applicantId,
+            commissionId: commissionId,
+            amount: commission.commissionAmount,
+            reason: reason || 'Refund processed',
+            timestamp: new Date()
+        });
+        
+        // Create notification for agent
+        await db.collection('agent_notifications').insertOne({
+            agentId: commission.agentId,
+            title: 'Commission Reversed',
+            message: `Commission of $${commission.commissionAmount.toFixed(2)} for applicant ${commission.applicantId} has been reversed. Reason: ${reason || 'Refund processed'}`,
+            type: 'commission',
+            read: false,
+            createdAt: new Date(),
+            link: `/commission`
+        });
+        
+        res.json({ success: true, message: 'Commission reversed successfully' });
+    } catch (error) {
+        console.error('Error reversing commission:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Commission settlement - admin generates monthly statement
+app.post('/api/admin/commissions/settle', authenticateToken, async (req, res) => {
+    try {
+        const { agentId, periodStart, periodEnd } = req.body;
+        
+        if (!agentId) {
+            return res.status(400).json({ success: false, message: 'agentId is required' });
+        }
+        
+        // Get eligible commissions
+        const query = {
+            agentId: agentId,
+            status: 'Eligible'
+        };
+        
+        if (periodStart && periodEnd) {
+            query.createdAt = {
+                $gte: new Date(periodStart),
+                $lte: new Date(periodEnd)
+            };
+        }
+        
+        const eligibleCommissions = await db.collection('commissions')
+            .find(query)
+            .toArray();
+        
+        if (eligibleCommissions.length === 0) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'No eligible commissions found for settlement' 
+            });
+        }
+        
+        const totalAmount = eligibleCommissions.reduce((sum, c) => sum + c.commissionAmount, 0);
+        const commissionIds = eligibleCommissions.map(c => c._id.toString());
+        
+        // Create settlement record
+        const settlementData = {
+            agentId: agentId,
+            periodStart: periodStart ? new Date(periodStart) : eligibleCommissions[0].createdAt,
+            periodEnd: periodEnd ? new Date(periodEnd) : new Date(),
+            commissionIds: commissionIds,
+            totalAmount: totalAmount,
+            status: 'Pending', // Pending, Paid, Rejected
+            generatedAt: new Date(),
+            paidAt: null,
+            paymentReference: null,
+            notes: req.body.notes || ''
+        };
+        
+        const result = await db.collection('commission_settlements').insertOne(settlementData);
+        
+        // Update commission statuses
+        for (const c of eligibleCommissions) {
+            await db.collection('commissions').updateOne(
+                { _id: c._id },
+                {
+                    $set: {
+                        status: 'Settled',
+                        settlementId: result.insertedId,
+                        updatedAt: new Date()
+                    }
+                }
+            );
+        }
+        
+        // Update agent pending commission
+        await db.collection('agents').updateOne(
+            { agentId: agentId },
+            {
+                $inc: { pendingCommission: -totalAmount },
+                $set: { updatedAt: new Date() }
+            }
+        );
+        
+        // Log the action
+        await db.collection('audit_logs').insertOne({
+            action: 'COMMISSION_SETTLEMENT_GENERATED',
+            agentId: agentId,
+            settlementId: result.insertedId,
+            totalAmount: totalAmount,
+            commissionCount: eligibleCommissions.length,
+            timestamp: new Date()
+        });
+        
+        res.json({
+            success: true,
+            settlementId: result.insertedId,
+            totalAmount: totalAmount,
+            commissionCount: eligibleCommissions.length,
+            settlement: settlementData
+        });
+    } catch (error) {
+        console.error('Error generating settlement:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Mark settlement as paid
+app.put('/api/admin/commissions/settlement/:settlementId/pay', authenticateToken, async (req, res) => {
+    try {
+        const { settlementId } = req.params;
+        const { paymentReference, notes } = req.body;
+        
+        const settlement = await db.collection('commission_settlements').findOne({
+            _id: new ObjectId(settlementId)
+        });
+        
+        if (!settlement) {
+            return res.status(404).json({ success: false, message: 'Settlement not found' });
+        }
+        
+        if (settlement.status === 'Paid') {
+            return res.status(400).json({ success: false, message: 'Settlement already paid' });
+        }
+        
+        // Update settlement
+        await db.collection('commission_settlements').updateOne(
+            { _id: new ObjectId(settlementId) },
+            {
+                $set: {
+                    status: 'Paid',
+                    paidAt: new Date(),
+                    paymentReference: paymentReference || `PAY-${Date.now()}`,
+                    notes: notes || settlement.notes,
+                    updatedAt: new Date()
+                }
+            }
+        );
+        
+        // Update individual commissions
+        for (const commissionId of settlement.commissionIds) {
+            await db.collection('commissions').updateOne(
+                { _id: new ObjectId(commissionId) },
+                {
+                    $set: {
+                        status: 'Paid',
+                        paidAt: new Date(),
+                        paymentReference: paymentReference || `PAY-${Date.now()}`,
+                        updatedAt: new Date()
+                    }
+                }
+            );
+        }
+        
+        // Update agent stats
+        await db.collection('agents').updateOne(
+            { agentId: settlement.agentId },
+            {
+                $inc: { totalCommissionPaid: settlement.totalAmount },
+                $set: { updatedAt: new Date() }
+            }
+        );
+        
+        // Log the action
+        await db.collection('audit_logs').insertOne({
+            action: 'COMMISSION_SETTLEMENT_PAID',
+            agentId: settlement.agentId,
+            settlementId: settlementId,
+            totalAmount: settlement.totalAmount,
+            paymentReference: paymentReference || `PAY-${Date.now()}`,
+            timestamp: new Date()
+        });
+        
+        // Create notification for agent
+        await db.collection('agent_notifications').insertOne({
+            agentId: settlement.agentId,
+            title: 'Commission Settlement Paid',
+            message: `Your commission settlement of $${settlement.totalAmount.toFixed(2)} has been paid. Reference: ${paymentReference || `PAY-${Date.now()}`}`,
+            type: 'commission',
+            read: false,
+            createdAt: new Date(),
+            link: `/commission`
+        });
+        
+        res.json({
+            success: true,
+            message: 'Settlement marked as paid',
+            settlement: { ...settlement, status: 'Paid', paidAt: new Date() }
+        });
+    } catch (error) {
+        console.error('Error marking settlement as paid:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
+// AGENT DOCUMENTS
+// ============================================================
+
+// Get all documents for agent's applicants
+app.get('/api/agent/documents', authenticateAgent, async (req, res) => {
+    try {
+        const agentId = req.agent.agentId;
+        const { applicantId } = req.query;
+        
+        const query = { agentId: agentId };
+        if (applicantId) {
+            query.applicantId = applicantId;
+        }
+        
+        const applicants = await db.collection('applicants')
+            .find(query)
+            .toArray();
+        
+        const allDocuments = [];
+        
+        for (const applicant of applicants) {
+            if (applicant.documents && applicant.documents.length > 0) {
+                for (const doc of applicant.documents) {
+                    allDocuments.push({
+                        ...doc,
+                        applicantId: applicant.applicantId,
+                        applicantName: applicant.fullName
+                    });
+                }
+            }
+        }
+        
+        // Sort by uploadedAt descending
+        allDocuments.sort((a, b) => {
+            return new Date(b.uploadedAt) - new Date(a.uploadedAt);
+        });
+        
+        res.json({ success: true, documents: allDocuments, count: allDocuments.length });
+    } catch (error) {
+        console.error('Error fetching documents:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Get documents for a specific applicant
+app.get('/api/agent/applicants/:applicantId/documents', authenticateAgent, async (req, res) => {
+    try {
+        const agentId = req.agent.agentId;
+        const { applicantId } = req.params;
+        
+        const applicant = await db.collection('applicants').findOne({
+            applicantId: applicantId,
+            agentId: agentId
+        });
+        
+        if (!applicant) {
+            return res.status(404).json({ success: false, message: 'Applicant not found' });
+        }
+        
+        res.json({ 
+            success: true, 
+            documents: applicant.documents || [],
+            count: (applicant.documents || []).length
+        });
+    } catch (error) {
+        console.error('Error fetching applicant documents:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Delete a document (agent can delete their own uploaded documents)
+app.delete('/api/agent/documents/:documentId', authenticateAgent, async (req, res) => {
+    try {
+        const agentId = req.agent.agentId;
+        const { documentId } = req.params;
+        
+        // Find applicant containing this document
+        const applicant = await db.collection('applicants').findOne({
+            agentId: agentId,
+            'documents.fileId': documentId
+        });
+        
+        if (!applicant) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Document not found or does not belong to you' 
+            });
+        }
+        
+        // Remove document from applicant
+        await db.collection('applicants').updateOne(
+            { applicantId: applicant.applicantId },
+            {
+                $pull: { documents: { fileId: documentId } },
+                $set: { updatedAt: new Date() }
+            }
+        );
+        
+        // Remove document from application
+        await db.collection('applications').updateOne(
+            { applicantId: applicant.applicantId },
+            {
+                $pull: { documents: { fileId: documentId } }
+            }
+        );
+        
+        // Note: GridFS file deletion can be added here if needed
+        
+        res.json({ success: true, message: 'Document deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting document:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+
+// ============================================================
+// AGENT MESSAGING SYSTEM
+// ============================================================
+
+// Get all conversations for agent
+app.get('/api/agent/messages/conversations', authenticateAgent, async (req, res) => {
+    try {
+        const agentId = req.agent.agentId;
+        
+        // Get all conversations where agent is participant
+        const conversations = await db.collection('agent_conversations')
+            .find({ agentId: agentId })
+            .sort({ updatedAt: -1 })
+            .toArray();
+        
+        // Get latest message for each conversation
+        const enrichedConversations = [];
+        for (const conv of conversations) {
+            const messages = await db.collection('agent_messages')
+                .find({ conversationId: conv._id.toString() })
+                .sort({ createdAt: -1 })
+                .limit(1)
+                .toArray();
+            
+            enrichedConversations.push({
+                ...conv,
+                lastMessage: messages[0] || null,
+                unreadCount: await db.collection('agent_messages')
+                    .countDocuments({
+                        conversationId: conv._id.toString(),
+                        receiver: 'agent',
+                        read: false
+                    })
+            });
+        }
+        
+        res.json({ success: true, conversations: enrichedConversations });
+    } catch (error) {
+        console.error('Error fetching conversations:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Get messages for a conversation
+app.get('/api/agent/messages/:conversationId', authenticateAgent, async (req, res) => {
+    try {
+        const agentId = req.agent.agentId;
+        const { conversationId } = req.params;
+        
+        // Verify conversation belongs to agent
+        const conversation = await db.collection('agent_conversations').findOne({
+            _id: new ObjectId(conversationId),
+            agentId: agentId
+        });
+        
+        if (!conversation) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Conversation not found' 
+            });
+        }
+        
+        // Get messages
+        const messages = await db.collection('agent_messages')
+            .find({ conversationId: conversationId })
+            .sort({ createdAt: 1 })
+            .toArray();
+        
+        // Mark messages as read
+        await db.collection('agent_messages').updateMany(
+            {
+                conversationId: conversationId,
+                receiver: 'agent',
+                read: false
+            },
+            {
+                $set: { read: true, readAt: new Date() }
+            }
+        );
+        
+        res.json({ success: true, messages: messages });
+    } catch (error) {
+        console.error('Error fetching messages:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Send a message
+app.post('/api/agent/messages', authenticateAgent, async (req, res) => {
+    try {
+        const agentId = req.agent.agentId;
+        const { conversationId, message, subject } = req.body;
+        
+        if (!message) {
+            return res.status(400).json({ success: false, message: 'Message is required' });
+        }
+        
+        const agent = await db.collection('agents').findOne({ _id: new ObjectId(req.agent.id) });
+        
+        let convId = conversationId;
+        
+        // If no conversation ID, create a new conversation
+        if (!convId) {
+            const newConversation = {
+                agentId: agentId,
+                agentName: agent.fullName,
+                agentEmail: agent.email,
+                subject: subject || 'Agent Inquiry',
+                status: 'open',
+                createdAt: new Date(),
+                updatedAt: new Date()
+            };
+            
+            const result = await db.collection('agent_conversations').insertOne(newConversation);
+            convId = result.insertedId.toString();
+        } else {
+            // Verify conversation exists and belongs to agent
+            const conv = await db.collection('agent_conversations').findOne({
+                _id: new ObjectId(convId),
+                agentId: agentId
+            });
+            
+            if (!conv) {
+                return res.status(404).json({ 
+                    success: false, 
+                    message: 'Conversation not found' 
+                });
+            }
+            
+            // Update conversation
+            await db.collection('agent_conversations').updateOne(
+                { _id: new ObjectId(convId) },
+                { $set: { updatedAt: new Date(), status: 'open' } }
+            );
+        }
+        
+        // Create message
+        const messageData = {
+            conversationId: convId,
+            sender: 'agent',
+            senderId: agentId,
+            senderName: agent.fullName,
+            receiver: 'admin',
+            message: message,
+            read: false,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+        
+        const result = await db.collection('agent_messages').insertOne(messageData);
+        
+        res.json({
+            success: true,
+            messageId: result.insertedId,
+            conversationId: convId,
+            message: messageData
+        });
+    } catch (error) {
+        console.error('Error sending message:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Admin: Get all agent conversations
+app.get('/api/admin/agent-messages/conversations', authenticateToken, async (req, res) => {
+    try {
+        const conversations = await db.collection('agent_conversations')
+            .find({})
+            .sort({ updatedAt: -1 })
+            .toArray();
+        
+        // Get unread count for each
+        const enriched = [];
+        for (const conv of conversations) {
+            const unreadCount = await db.collection('agent_messages')
+                .countDocuments({
+                    conversationId: conv._id.toString(),
+                    receiver: 'admin',
+                    read: false
+                });
+            
+            const lastMessage = await db.collection('agent_messages')
+                .find({ conversationId: conv._id.toString() })
+                .sort({ createdAt: -1 })
+                .limit(1)
+                .toArray();
+            
+            enriched.push({
+                ...conv,
+                unreadCount: unreadCount,
+                lastMessage: lastMessage[0] || null
+            });
+        }
+        
+        res.json({ success: true, conversations: enriched });
+    } catch (error) {
+        console.error('Error fetching conversations:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Admin: Get messages for a conversation
+app.get('/api/admin/agent-messages/:conversationId', authenticateToken, async (req, res) => {
+    try {
+        const { conversationId } = req.params;
+        
+        const conversation = await db.collection('agent_conversations').findOne({
+            _id: new ObjectId(conversationId)
+        });
+        
+        if (!conversation) {
+            return res.status(404).json({ success: false, message: 'Conversation not found' });
+        }
+        
+        const messages = await db.collection('agent_messages')
+            .find({ conversationId: conversationId })
+            .sort({ createdAt: 1 })
+            .toArray();
+        
+        // Mark admin messages as read
+        await db.collection('agent_messages').updateMany(
+            {
+                conversationId: conversationId,
+                receiver: 'admin',
+                read: false
+            },
+            {
+                $set: { read: true, readAt: new Date() }
+            }
+        );
+        
+        res.json({ success: true, messages: messages, conversation: conversation });
+    } catch (error) {
+        console.error('Error fetching messages:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Admin: Reply to agent message
+app.post('/api/admin/agent-messages/:conversationId/reply', authenticateToken, async (req, res) => {
+    try {
+        const { conversationId } = req.params;
+        const { message } = req.body;
+        
+        if (!message) {
+            return res.status(400).json({ success: false, message: 'Message is required' });
+        }
+        
+        const conversation = await db.collection('agent_conversations').findOne({
+            _id: new ObjectId(conversationId)
+        });
+        
+        if (!conversation) {
+            return res.status(404).json({ success: false, message: 'Conversation not found' });
+        }
+        
+        const admin = await db.collection('admins').findOne({ _id: new ObjectId(req.user.id) });
+        
+        const messageData = {
+            conversationId: conversationId,
+            sender: 'admin',
+            senderId: req.user.id,
+            senderName: admin ? admin.name : 'Admin',
+            receiver: 'agent',
+            message: message,
+            read: false,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+        
+        const result = await db.collection('agent_messages').insertOne(messageData);
+        
+        // Update conversation
+        await db.collection('agent_conversations').updateOne(
+            { _id: new ObjectId(conversationId) },
+            { $set: { updatedAt: new Date(), status: 'open' } }
+        );
+        
+        // Create notification for agent
+        await db.collection('agent_notifications').insertOne({
+            agentId: conversation.agentId,
+            title: 'New Message from Admin',
+            message: `You have a new message from GISC Admin regarding "${conversation.subject}"`,
+            type: 'message',
+            read: false,
+            createdAt: new Date(),
+            link: `/messages?conversation=${conversationId}`
+        });
+        
+        res.json({ success: true, messageId: result.insertedId, message: messageData });
+    } catch (error) {
+        console.error('Error replying to message:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Admin: Mark conversation as closed
+app.put('/api/admin/agent-messages/:conversationId/close', authenticateToken, async (req, res) => {
+    try {
+        const { conversationId } = req.params;
+        
+        const result = await db.collection('agent_conversations').updateOne(
+            { _id: new ObjectId(conversationId) },
+            { $set: { status: 'closed', updatedAt: new Date() } }
+        );
+        
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Conversation not found' });
+        }
+        
+        res.json({ success: true, message: 'Conversation closed' });
+    } catch (error) {
+        console.error('Error closing conversation:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
+// AGENT NOTIFICATIONS
+// ============================================================
+
+// Get notifications for agent
+app.get('/api/agent/notifications', authenticateAgent, async (req, res) => {
+    try {
+        const agentId = req.agent.agentId;
+        const { unread, limit } = req.query;
+        
+        const query = { agentId: agentId };
+        if (unread === 'true') {
+            query.read = false;
+        }
+        
+        let cursor = db.collection('agent_notifications')
+            .find(query)
+            .sort({ createdAt: -1 });
+            
+        if (limit) {
+            cursor = cursor.limit(parseInt(limit));
+        }
+        
+        const notifications = await cursor.toArray();
+        const unreadCount = await db.collection('agent_notifications')
+            .countDocuments({ agentId: agentId, read: false });
+        
+        res.json({
+            success: true,
+            notifications: notifications,
+            unreadCount: unreadCount,
+            total: notifications.length
+        });
+    } catch (error) {
+        console.error('Error fetching notifications:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Mark notification as read
+app.put('/api/agent/notifications/:notificationId/read', authenticateAgent, async (req, res) => {
+    try {
+        const agentId = req.agent.agentId;
+        const { notificationId } = req.params;
+        
+        const result = await db.collection('agent_notifications').updateOne(
+            { 
+                _id: new ObjectId(notificationId),
+                agentId: agentId
+            },
+            {
+                $set: { read: true, readAt: new Date() }
+            }
+        );
+        
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Notification not found' 
+            });
+        }
+        
+        res.json({ success: true, message: 'Notification marked as read' });
+    } catch (error) {
+        console.error('Error marking notification as read:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Mark all notifications as read
+app.put('/api/agent/notifications/read-all', authenticateAgent, async (req, res) => {
+    try {
+        const agentId = req.agent.agentId;
+        
+        await db.collection('agent_notifications').updateMany(
+            { agentId: agentId, read: false },
+            { $set: { read: true, readAt: new Date() } }
+        );
+        
+        res.json({ success: true, message: 'All notifications marked as read' });
+    } catch (error) {
+        console.error('Error marking all notifications as read:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Admin: Send notification to agent
+app.post('/api/admin/agent-notifications', authenticateToken, async (req, res) => {
+    try {
+        const { agentId, title, message, link, priority } = req.body;
+        
+        if (!agentId || !title || !message) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'agentId, title, and message are required' 
+            });
+        }
+        
+        // Verify agent exists
+        const agent = await db.collection('agents').findOne({ agentId: agentId });
+        if (!agent) {
+            return res.status(404).json({ success: false, message: 'Agent not found' });
+        }
+        
+        const notification = {
+            agentId: agentId,
+            title: title,
+            message: message,
+            type: 'admin',
+            priority: priority || 'normal',
+            link: link || null,
+            read: false,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+        
+        const result = await db.collection('agent_notifications').insertOne(notification);
+        
+        res.json({
+            success: true,
+            notificationId: result.insertedId,
+            notification: notification
+        });
+    } catch (error) {
+        console.error('Error sending notification:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Admin: Send notification to multiple agents
+app.post('/api/admin/agent-notifications/bulk', authenticateToken, async (req, res) => {
+    try {
+        const { agentIds, title, message, link, priority } = req.body;
+        
+        if (!agentIds || !title || !message) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'agentIds, title, and message are required' 
+            });
+        }
+        
+        const notifications = agentIds.map(agentId => ({
+            agentId: agentId,
+            title: title,
+            message: message,
+            type: 'admin',
+            priority: priority || 'normal',
+            link: link || null,
+            read: false,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        }));
+        
+        const result = await db.collection('agent_notifications').insertMany(notifications);
+        
+        res.json({
+            success: true,
+            sentCount: result.insertedCount,
+            ids: result.insertedIds
+        });
+    } catch (error) {
+        console.error('Error sending bulk notifications:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+
+
+// ============================================================
 // UPLOAD ENDPOINT
 // ============================================================
 const storage = multer.memoryStorage();
