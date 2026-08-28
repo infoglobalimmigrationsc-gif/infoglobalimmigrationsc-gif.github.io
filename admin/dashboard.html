@@ -342,6 +342,23 @@
         .status-eligible { background: rgba(40, 167, 69, 0.2); color: var(--success-green); }
         .status-settled { background: rgba(23, 162, 184, 0.2); color: var(--info-blue); }
         .status-reversed { background: rgba(220, 53, 69, 0.2); color: var(--danger-red); }
+        .status-registered { background: rgba(23, 162, 184, 0.2); color: var(--info-blue); }
+        .status-under_assessment { background: rgba(255, 193, 7, 0.2); color: var(--warning-yellow); }
+        .status-qualified { background: rgba(40, 167, 69, 0.2); color: var(--success-green); }
+        .status-package_selected { background: rgba(23, 162, 184, 0.2); color: var(--info-blue); }
+        .status-agreement_pending { background: rgba(255, 193, 7, 0.2); color: var(--warning-yellow); }
+        .status-payment_pending { background: rgba(255, 193, 7, 0.2); color: var(--warning-yellow); }
+        .status-payment_verified { background: rgba(40, 167, 69, 0.2); color: var(--success-green); }
+        .status-application_preparation { background: rgba(23, 162, 184, 0.2); color: var(--info-blue); }
+        .status-application_submitted { background: rgba(0, 123, 255, 0.2); color: #007bff; }
+        .status-admission_processing { background: rgba(23, 162, 184, 0.2); color: var(--info-blue); }
+        .status-visa_processing { background: rgba(23, 162, 184, 0.2); color: var(--info-blue); }
+        .status-completed { background: rgba(40, 167, 69, 0.2); color: var(--success-green); }
+        .status-withdrawn { background: rgba(108, 117, 125, 0.2); color: #6c757d; }
+        .status-all_approved { background: rgba(40, 167, 69, 0.2); color: var(--success-green); }
+        .status-partial_approved { background: rgba(255, 193, 7, 0.2); color: var(--warning-yellow); }
+        .status-no_documents { background: rgba(108, 117, 125, 0.2); color: #6c757d; }
+        .status-no_application { background: rgba(108, 117, 125, 0.2); color: #6c757d; }
 
         .glass-modal {
             position: fixed;
@@ -575,6 +592,9 @@
         .payment-status-badge.pending { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
         .payment-status-badge.due { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
         .payment-status-badge.rejected { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
+        .payment-status-badge.verified { background: rgba(40, 167, 69, 0.2); color: #28a745; }
+        .payment-status-badge.pending_verification { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+        .payment-status-badge.no_payment { background: rgba(108, 117, 125, 0.2); color: #6c757d; }
 
         .action-buttons { display: flex; gap: 5px; flex-wrap: wrap; }
 
@@ -606,6 +626,35 @@
         .opp-status-published { background: rgba(40,167,69,0.2); color: #28a745; }
         .opp-status-draft { background: rgba(255,193,7,0.2); color: #ffc107; }
         .opp-status-archived { background: rgba(108,117,125,0.2); color: #6c757d; }
+        .opp-status-open { background: rgba(40,167,69,0.2); color: #28a745; }
+        .opp-status-closed { background: rgba(220,53,69,0.2); color: #dc3545; }
+
+        /* Resource card styles */
+        .resource-card {
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+        }
+        .resource-card:hover { background: rgba(255, 255, 255, 0.1); }
+        .resource-card .resource-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .resource-card .resource-title { color: white; font-size: 1rem; font-weight: 600; }
+        .resource-card .resource-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.5);
+            flex-wrap: wrap;
+        }
+        .resource-card .resource-actions { display: flex; gap: 5px; flex-wrap: wrap; }
 
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 3px; }
@@ -719,6 +768,11 @@
                 </a>
                 <a href="#" data-section="agent-settlements">
                     <i class="fas fa-file-invoice"></i> Settlements
+                </a>
+                <!-- ===== NEW AGENT RESOURCES ===== -->
+                <a href="#" data-section="agent-resources">
+                    <i class="fas fa-folder-open"></i> Agent Resources
+                    <span class="badge" id="resourceCount">0</span>
                 </a>
             </nav>
 
@@ -992,172 +1046,218 @@
                 </div>
             </section>
 
+            <!-- ============================================================ -->
+            <!-- AGENT MANAGEMENT SECTIONS -->
+            <!-- ============================================================ -->
+
+            <!-- Agents Section -->
+            <section id="agents-section" class="admin-section">
+                <div class="section-header">
+                    <h1><i class="fas fa-user-tie"></i> Agent Management</h1>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" onclick="openAgentRegistration()"><i class="fas fa-user-plus"></i> Register Agent</button>
+                        <button class="btn btn-outline" onclick="loadAgents()"><i class="fas fa-sync-alt"></i> Refresh</button>
+                    </div>
+                </div>
+                <div class="stats-grid small">
+                    <div class="stat-card"><h3 id="totalAgents">0</h3><p>Total Agents</p></div>
+                    <div class="stat-card"><h3 id="pendingAgents">0</h3><p>Pending</p></div>
+                    <div class="stat-card"><h3 id="approvedAgents">0</h3><p>Approved</p></div>
+                    <div class="stat-card"><h3 id="activeAgents">0</h3><p>Active</p></div>
+                </div>
+                <div class="glass-container">
+                    <div class="debug-info" id="agentDebugInfo"><span style="color: #ff0;">🔍 Debug: Loading agents...</span></div>
+                    <div class="table-wrapper">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Agent ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th>Referrals</th>
+                                    <th>Commission</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="agentsTableBody"><tr><td colspan="8" style="text-align: center; padding: 30px;">Loading agents...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Agent Applicants Section -->
+            <section id="agent-applicants-section" class="admin-section">
+                <div class="section-header">
+                    <h1><i class="fas fa-user-graduate"></i> Agent Applicants</h1>
+                    <span style="color: rgba(255,255,255,0.5);" id="agentApplicantTotal">0 total</span>
+                </div>
+                <div class="glass-container">
+                    <div class="debug-info" id="agentApplicantDebugInfo"><span style="color: #ff0;">🔍 Debug: Loading agent applicants...</span></div>
+                    <div class="search-bar">
+                        <input type="text" id="searchAgentApplicants" class="glass-input" placeholder="Search by name, email, or ID...">
+                        <select id="filterAgentApplicantStatus" class="glass-input">
+                            <option value="all">All Status</option>
+                            <option value="Registered">Registered</option>
+                            <option value="Under Assessment">Under Assessment</option>
+                            <option value="Qualified">Qualified</option>
+                            <option value="Package Selected">Package Selected</option>
+                            <option value="Agreement Pending">Agreement Pending</option>
+                            <option value="Payment Pending">Payment Pending</option>
+                            <option value="Payment Verified">Payment Verified</option>
+                            <option value="Application Preparation">Application Preparation</option>
+                            <option value="Application Submitted">Application Submitted</option>
+                            <option value="Admission Processing">Admission Processing</option>
+                            <option value="Visa Processing">Visa Processing</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Rejected">Rejected</option>
+                            <option value="Withdrawn">Withdrawn</option>
+                        </select>
+                        <button class="btn btn-outline" onclick="loadAgentApplicants()"><i class="fas fa-search"></i></button>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Applicant ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Agent</th>
+                                    <th>Status</th>
+                                    <th>Payment</th>
+                                    <th>Documents</th>
+                                    <th>Commission</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="agentApplicantsTableBody"><tr><td colspan="9" style="text-align: center; padding: 30px;">Loading applicants...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Agent Commissions Section -->
+            <section id="agent-commissions-section" class="admin-section">
+                <div class="section-header">
+                    <h1><i class="fas fa-coins"></i> Agent Commissions</h1>
+                    <span style="color: rgba(255,255,255,0.5);" id="commissionTotal">0 total</span>
+                </div>
+                <div class="stats-grid small">
+                    <div class="stat-card"><h3>$<span id="totalCommissionEarned">0.00</span></h3><p>Total Earned</p></div>
+                    <div class="stat-card"><h3>$<span id="totalCommissionPaid">0.00</span></h3><p>Paid</p></div>
+                    <div class="stat-card"><h3>$<span id="totalCommissionPending">0.00</span></h3><p>Pending</p></div>
+                    <div class="stat-card"><h3>$<span id="totalCommissionReversed">0.00</span></h3><p>Reversed</p></div>
+                </div>
+                <div class="glass-container">
+                    <div class="debug-info" id="commissionDebugInfo"><span style="color: #ff0;">🔍 Debug: Loading commissions...</span></div>
+                    <div class="search-bar">
+                        <select id="filterCommissionStatus" class="glass-input">
+                            <option value="all">All Status</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Eligible">Eligible</option>
+                            <option value="Settled">Settled</option>
+                            <option value="Paid">Paid</option>
+                            <option value="Reversed">Reversed</option>
+                        </select>
+                        <select id="filterCommissionAgent" class="glass-input">
+                            <option value="all">All Agents</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="processCommissionModal()"><i class="fas fa-calculator"></i> Process Commission</button>
+                        <button class="btn btn-success" onclick="generateSettlement()"><i class="fas fa-file-invoice"></i> Generate Settlement</button>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Agent</th>
+                                    <th>Applicant</th>
+                                    <th>Package</th>
+                                    <th>Amount</th>
+                                    <th>Commission</th>
+                                    <th>Rate</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="commissionsTableBody"><tr><td colspan="8" style="text-align: center; padding: 30px;">Loading commissions...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Agent Settlements Section -->
+            <section id="agent-settlements-section" class="admin-section">
+                <div class="section-header">
+                    <h1><i class="fas fa-file-invoice"></i> Commission Settlements</h1>
+                    <span style="color: rgba(255,255,255,0.5);" id="settlementTotal">0 total</span>
+                </div>
+                <div class="glass-container">
+                    <div class="debug-info" id="settlementDebugInfo"><span style="color: #ff0;">🔍 Debug: Loading settlements...</span></div>
+                    <div class="table-wrapper">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Settlement ID</th>
+                                    <th>Agent</th>
+                                    <th>Period</th>
+                                    <th>Total Amount</th>
+                                    <th>Status</th>
+                                    <th>Generated</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="settlementsTableBody"><tr><td colspan="7" style="text-align: center; padding: 30px;">Loading settlements...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
 
             <!-- ============================================================ -->
-<!-- AGENT MANAGEMENT SECTIONS -->
-<!-- ============================================================ -->
-
-<!-- Agents Section -->
-<section id="agents-section" class="admin-section">
-    <div class="section-header">
-        <h1><i class="fas fa-user-tie"></i> Agent Management</h1>
-        <div style="display: flex; gap: 10px;">
-            <button class="btn btn-primary" onclick="openAgentRegistration()"><i class="fas fa-user-plus"></i> Register Agent</button>
-            <button class="btn btn-outline" onclick="loadAgents()"><i class="fas fa-sync-alt"></i> Refresh</button>
-        </div>
-    </div>
-    <div class="stats-grid small">
-        <div class="stat-card"><h3 id="totalAgents">0</h3><p>Total Agents</p></div>
-        <div class="stat-card"><h3 id="pendingAgents">0</h3><p>Pending</p></div>
-        <div class="stat-card"><h3 id="approvedAgents">0</h3><p>Approved</p></div>
-        <div class="stat-card"><h3 id="activeAgents">0</h3><p>Active</p></div>
-    </div>
-    <div class="glass-container">
-        <div class="debug-info" id="agentDebugInfo"><span style="color: #ff0;">🔍 Debug: Loading agents...</span></div>
-        <div class="table-wrapper">
-            <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th>Agent ID</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Category</th>
-                        <th>Status</th>
-                        <th>Referrals</th>
-                        <th>Commission</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="agentsTableBody"><tr><td colspan="8" style="text-align: center; padding: 30px;">Loading agents...</td></tr></tbody>
-            </table>
-        </div>
-    </div>
-</section>
-
-<!-- Agent Applicants Section -->
-<section id="agent-applicants-section" class="admin-section">
-    <div class="section-header">
-        <h1><i class="fas fa-user-graduate"></i> Agent Applicants</h1>
-        <span style="color: rgba(255,255,255,0.5);" id="agentApplicantTotal">0 total</span>
-    </div>
-    <div class="glass-container">
-        <div class="debug-info" id="agentApplicantDebugInfo"><span style="color: #ff0;">🔍 Debug: Loading agent applicants...</span></div>
-        <div class="search-bar">
-            <input type="text" id="searchAgentApplicants" class="glass-input" placeholder="Search by name, email, or ID...">
-            <select id="filterAgentApplicantStatus" class="glass-input">
-                <option value="all">All Status</option>
-                <option value="Registered">Registered</option>
-                <option value="Under Assessment">Under Assessment</option>
-                <option value="Qualified">Qualified</option>
-                <option value="Package Selected">Package Selected</option>
-                <option value="Agreement Pending">Agreement Pending</option>
-                <option value="Payment Pending">Payment Pending</option>
-                <option value="Payment Verified">Payment Verified</option>
-                <option value="Application Preparation">Application Preparation</option>
-                <option value="Application Submitted">Application Submitted</option>
-                <option value="Admission Processing">Admission Processing</option>
-                <option value="Visa Processing">Visa Processing</option>
-                <option value="Completed">Completed</option>
-                <option value="Rejected">Rejected</option>
-                <option value="Withdrawn">Withdrawn</option>
-            </select>
-            <button class="btn btn-outline" onclick="loadAgentApplicants()"><i class="fas fa-search"></i></button>
-        </div>
-        <div class="table-wrapper">
-            <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th>Applicant ID</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Agent</th>
-                        <th>Status</th>
-                        <th>Payment</th>
-                        <th>Commission</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="agentApplicantsTableBody"><tr><td colspan="8" style="text-align: center; padding: 30px;">Loading applicants...</td></tr></tbody>
-            </table>
-        </div>
-    </div>
-</section>
-
-<!-- Agent Commissions Section -->
-<section id="agent-commissions-section" class="admin-section">
-    <div class="section-header">
-        <h1><i class="fas fa-coins"></i> Agent Commissions</h1>
-        <span style="color: rgba(255,255,255,0.5);" id="commissionTotal">0 total</span>
-    </div>
-    <div class="stats-grid small">
-        <div class="stat-card"><h3>$<span id="totalCommissionEarned">0.00</span></h3><p>Total Earned</p></div>
-        <div class="stat-card"><h3>$<span id="totalCommissionPaid">0.00</span></h3><p>Paid</p></div>
-        <div class="stat-card"><h3>$<span id="totalCommissionPending">0.00</span></h3><p>Pending</p></div>
-        <div class="stat-card"><h3>$<span id="totalCommissionReversed">0.00</span></h3><p>Reversed</p></div>
-    </div>
-    <div class="glass-container">
-        <div class="debug-info" id="commissionDebugInfo"><span style="color: #ff0;">🔍 Debug: Loading commissions...</span></div>
-        <div class="search-bar">
-            <select id="filterCommissionStatus" class="glass-input">
-                <option value="all">All Status</option>
-                <option value="Pending">Pending</option>
-                <option value="Eligible">Eligible</option>
-                <option value="Settled">Settled</option>
-                <option value="Paid">Paid</option>
-                <option value="Reversed">Reversed</option>
-            </select>
-            <select id="filterCommissionAgent" class="glass-input">
-                <option value="all">All Agents</option>
-            </select>
-            <button class="btn btn-primary" onclick="processCommissionModal()"><i class="fas fa-calculator"></i> Process Commission</button>
-            <button class="btn btn-success" onclick="generateSettlement()"><i class="fas fa-file-invoice"></i> Generate Settlement</button>
-        </div>
-        <div class="table-wrapper">
-            <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th>Agent</th>
-                        <th>Applicant</th>
-                        <th>Package</th>
-                        <th>Amount</th>
-                        <th>Commission</th>
-                        <th>Rate</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="commissionsTableBody"><tr><td colspan="8" style="text-align: center; padding: 30px;">Loading commissions...</td></tr></tbody>
-            </table>
-        </div>
-    </div>
-</section>
-
-<!-- Agent Settlements Section -->
-<section id="agent-settlements-section" class="admin-section">
-    <div class="section-header">
-        <h1><i class="fas fa-file-invoice"></i> Commission Settlements</h1>
-        <span style="color: rgba(255,255,255,0.5);" id="settlementTotal">0 total</span>
-    </div>
-    <div class="glass-container">
-        <div class="debug-info" id="settlementDebugInfo"><span style="color: #ff0;">🔍 Debug: Loading settlements...</span></div>
-        <div class="table-wrapper">
-            <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th>Settlement ID</th>
-                        <th>Agent</th>
-                        <th>Period</th>
-                        <th>Total Amount</th>
-                        <th>Status</th>
-                        <th>Generated</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="settlementsTableBody"><tr><td colspan="7" style="text-align: center; padding: 30px;">Loading settlements...</td></tr></tbody>
-            </table>
-        </div>
-    </div>
-</section>
+            <!-- AGENT RESOURCES SECTION - NEW -->
+            <!-- ============================================================ -->
+            <section id="agent-resources-section" class="admin-section">
+                <div class="section-header">
+                    <h1><i class="fas fa-folder-open"></i> Agent Resources</h1>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" id="newResourceBtn"><i class="fas fa-upload"></i> Upload Resource</button>
+                        <button class="btn btn-outline" onclick="loadAgentResources()"><i class="fas fa-sync-alt"></i> Refresh</button>
+                    </div>
+                </div>
+                <div class="stats-grid small">
+                    <div class="stat-card"><h3 id="totalResources">0</h3><p>Total Resources</p></div>
+                    <div class="stat-card"><h3 id="publishedResources">0</h3><p>Published</p></div>
+                    <div class="stat-card"><h3 id="draftResources">0</h3><p>Drafts</p></div>
+                </div>
+                <div class="glass-container">
+                    <div class="debug-info" id="resourceDebugInfo"><span style="color: #ff0;">🔍 Debug: Loading resources...</span></div>
+                    <div class="search-bar">
+                        <input type="text" id="searchResources" class="glass-input" placeholder="Search resources...">
+                        <select id="filterResourceCategory" class="glass-input">
+                            <option value="all">All Categories</option>
+                            <option value="GISC Brochure">GISC Brochure</option>
+                            <option value="Service Packages">Service Packages</option>
+                            <option value="Country Guides">Country Guides</option>
+                            <option value="Application Checklists">Application Checklists</option>
+                            <option value="Agent Guidelines">Agent Guidelines</option>
+                            <option value="Commission Information">Commission Information</option>
+                            <option value="Approved Marketing Materials">Approved Marketing Materials</option>
+                            <option value="Social Media Materials">Social Media Materials</option>
+                            <option value="Training Materials">Training Materials</option>
+                            <option value="Forms & Templates">Forms & Templates</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <select id="filterResourceStatus" class="glass-input">
+                            <option value="all">All Status</option>
+                            <option value="published">Published</option>
+                            <option value="draft">Draft</option>
+                            <option value="archived">Archived</option>
+                        </select>
+                        <button class="btn btn-outline" onclick="loadAgentResources()"><i class="fas fa-search"></i></button>
+                    </div>
+                    <div id="resourcesList"><div class="empty-state"><i class="fas fa-folder-open"></i><p>No resources available. Upload your first resource!</p></div></div>
+                </div>
+            </section>
 
             <!-- ===== MODALS ===== -->
             
@@ -1583,6 +1683,225 @@
                 </div>
             </div>
 
+            <!-- ============================================================ -->
+            <!-- AGENT RESOURCE MODALS - NEW -->
+            <!-- ============================================================ -->
+
+            <!-- Upload/Edit Resource Modal -->
+            <div id="resourceModal" class="glass-modal">
+                <div class="modal-content" style="max-width: 700px;">
+                    <div class="modal-header">
+                        <h2 id="resourceModalTitle"><i class="fas fa-upload"></i> Upload Resource</h2>
+                        <button class="modal-close" id="closeResourceModal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="resourceForm" enctype="multipart/form-data">
+                            <input type="hidden" id="resourceEditId">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div class="form-group" style="grid-column: 1 / -1;">
+                                    <label>Resource Title <span class="required">*</span></label>
+                                    <input type="text" id="resourceTitle" class="glass-input" placeholder="Enter resource title" required>
+                                </div>
+                                <div class="form-group" style="grid-column: 1 / -1;">
+                                    <label>Description</label>
+                                    <textarea id="resourceDescription" class="glass-input" rows="3" placeholder="Brief description of the resource..."></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Category <span class="required">*</span></label>
+                                    <select id="resourceCategory" class="glass-input" required>
+                                        <option value="">Select Category</option>
+                                        <option value="GISC Brochure">GISC Brochure</option>
+                                        <option value="Service Packages">Service Packages</option>
+                                        <option value="Country Guides">Country Guides</option>
+                                        <option value="Application Checklists">Application Checklists</option>
+                                        <option value="Agent Guidelines">Agent Guidelines</option>
+                                        <option value="Commission Information">Commission Information</option>
+                                        <option value="Approved Marketing Materials">Approved Marketing Materials</option>
+                                        <option value="Social Media Materials">Social Media Materials</option>
+                                        <option value="Training Materials">Training Materials</option>
+                                        <option value="Forms & Templates">Forms & Templates</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Status</label>
+                                    <select id="resourceStatus" class="glass-input">
+                                        <option value="draft">Draft</option>
+                                        <option value="published">Published</option>
+                                        <option value="archived">Archived</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="grid-column: 1 / -1;">
+                                    <label>Upload File <span class="required" id="fileRequired">*</span></label>
+                                    <input type="file" id="resourceFile" class="glass-input" style="padding: 10px;">
+                                    <div id="currentFileInfo" style="margin-top: 8px; font-size: 0.85rem; color: #666; display: none;">
+                                        <i class="fas fa-file"></i> Current file: <span id="currentFileName"></span>
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="removeResourceFile()" style="margin-left: 10px;">Remove</button>
+                                    </div>
+                                    <div style="font-size: 0.7rem; color: #999; margin-top: 5px;">
+                                        Allowed: PDF, JPG, PNG, DOC, DOCX. Max: 10MB
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline" id="cancelResourceBtn">Cancel</button>
+                        <button class="btn btn-primary" id="saveResourceBtn"><i class="fas fa-save"></i> <span id="resourceBtnText">Upload Resource</span></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View Resource Modal -->
+            <div id="viewResourceModal" class="glass-modal">
+                <div class="modal-content" style="max-width: 650px;">
+                    <div class="modal-header">
+                        <h2 id="viewResourceTitle">Resource Details</h2>
+                        <button class="modal-close" id="closeViewResourceModal">&times;</button>
+                    </div>
+                    <div class="modal-body" id="viewResourceBody">
+                        <div style="text-align: center; padding: 20px;">
+                            <div class="spinner"></div>
+                            <p style="margin-top: 10px; color: #666;">Loading resource details...</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline" id="closeViewResourceBtn">Close</button>
+                        <button class="btn btn-primary" id="downloadResourceBtn"><i class="fas fa-download"></i> Download</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- EDIT APPLICANT MODAL - NEW -->
+            <!-- ============================================================ -->
+            <div id="editApplicantModal" class="glass-modal">
+                <div class="modal-content" style="max-width: 800px;">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-user-edit"></i> Edit Applicant</h2>
+                        <button class="modal-close" id="closeEditApplicantModal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editApplicantForm">
+                            <input type="hidden" id="editApplicantId">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div class="form-group"><label>Full Name <span class="required">*</span></label><input type="text" id="editAppFullName" class="glass-input" required></div>
+                                <div class="form-group"><label>Email <span class="required">*</span></label><input type="email" id="editAppEmail" class="glass-input" required></div>
+                                <div class="form-group"><label>Phone <span class="required">*</span></label><input type="tel" id="editAppPhone" class="glass-input" required></div>
+                                <div class="form-group"><label>Country of Interest <span class="required">*</span></label>
+                                    <select id="editAppCountry" class="glass-input" required>
+                                        <option value="">Select Country</option>
+                                        <option value="Germany">🇩🇪 Germany</option>
+                                        <option value="Hungary">🇭🇺 Hungary</option>
+                                        <option value="Ireland">🇮🇪 Ireland</option>
+                                        <option value="Canada">🇨🇦 Canada</option>
+                                        <option value="Australia">🇦🇺 Australia</option>
+                                        <option value="United Kingdom">🇬🇧 United Kingdom</option>
+                                        <option value="United States">🇺🇸 United States</option>
+                                        <option value="France">🇫🇷 France</option>
+                                        <option value="Spain">🇪🇸 Spain</option>
+                                        <option value="Italy">🇮🇹 Italy</option>
+                                        <option value="Netherlands">🇳🇱 Netherlands</option>
+                                        <option value="Sweden">🇸🇪 Sweden</option>
+                                        <option value="Norway">🇳🇴 Norway</option>
+                                        <option value="Denmark">🇩🇰 Denmark</option>
+                                        <option value="Finland">🇫🇮 Finland</option>
+                                        <option value="Japan">🇯🇵 Japan</option>
+                                        <option value="South Korea">🇰🇷 South Korea</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="form-group"><label>Service Requested <span class="required">*</span></label>
+                                    <select id="editAppService" class="glass-input" required>
+                                        <option value="">Select Service</option>
+                                        <option value="Study Abroad">Study Abroad</option>
+                                        <option value="Work Abroad">Work Abroad</option>
+                                        <option value="Visit Visa">Visit Visa</option>
+                                        <option value="Immigration">Immigration</option>
+                                        <option value="Student Loan">Student Loan</option>
+                                        <option value="Accommodation Booking">Accommodation Booking</option>
+                                        <option value="Translation Services">Translation Services</option>
+                                        <option value="Insurance">Insurance</option>
+                                        <option value="Exchange Program">Exchange Program</option>
+                                        <option value="Pre-departure Orientation">Pre-departure Orientation</option>
+                                    </select>
+                                </div>
+                                <div class="form-group"><label>Date of Birth</label><input type="date" id="editAppDob" class="glass-input"></div>
+                                <div class="form-group"><label>Nationality</label><input type="text" id="editAppNationality" class="glass-input" placeholder="e.g., Liberian"></div>
+                                <div class="form-group"><label>Current Country</label><input type="text" id="editAppCurrentCountry" class="glass-input" placeholder="e.g., Liberia"></div>
+                                <div class="form-group"><label>Education Level</label>
+                                    <select id="editAppEducation" class="glass-input">
+                                        <option value="">Select</option>
+                                        <option value="High School">High School</option>
+                                        <option value="Bachelor's Degree">Bachelor's Degree</option>
+                                        <option value="Master's Degree">Master's Degree</option>
+                                        <option value="PhD">PhD</option>
+                                        <option value="Diploma">Diploma</option>
+                                        <option value="Certificate">Certificate</option>
+                                    </select>
+                                </div>
+                                <div class="form-group"><label>Highest Qualification</label><input type="text" id="editAppQualification" class="glass-input" placeholder="e.g., BSc Computer Science"></div>
+                                <div class="form-group"><label>Work Experience</label><input type="text" id="editAppWorkExp" class="glass-input" placeholder="e.g., 2 years in IT"></div>
+                                <div class="form-group"><label>Preferred Destination</label><input type="text" id="editAppDestination" class="glass-input" placeholder="e.g., Berlin, Germany"></div>
+                                <div class="form-group"><label>Programme Interest</label><input type="text" id="editAppProgramme" class="glass-input" placeholder="e.g., Master of Public Health"></div>
+                                <div class="form-group"><label>Source</label>
+                                    <select id="editAppSource" class="glass-input">
+                                        <option value="Agent Referral">Agent Referral</option>
+                                        <option value="Website">Website</option>
+                                        <option value="Social Media">Social Media</option>
+                                        <option value="Referral">Referral</option>
+                                        <option value="Walk-in">Walk-in</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="grid-column: 1 / -1;"><label>Status <span class="required">*</span></label>
+                                    <select id="editAppStatus" class="glass-input" required>
+                                        <option value="Registered">Registered</option>
+                                        <option value="Under Assessment">Under Assessment</option>
+                                        <option value="Qualified">Qualified</option>
+                                        <option value="Package Selected">Package Selected</option>
+                                        <option value="Agreement Pending">Agreement Pending</option>
+                                        <option value="Payment Pending">Payment Pending</option>
+                                        <option value="Payment Verified">Payment Verified</option>
+                                        <option value="Application Preparation">Application Preparation</option>
+                                        <option value="Application Submitted">Application Submitted</option>
+                                        <option value="Admission Processing">Admission Processing</option>
+                                        <option value="Visa Processing">Visa Processing</option>
+                                        <option value="Completed">Completed</option>
+                                        <option value="Rejected">Rejected</option>
+                                        <option value="Withdrawn">Withdrawn</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="grid-column: 1 / -1;"><label>Additional Notes</label><textarea id="editAppNotes" class="glass-input" rows="3" placeholder="Any additional information..."></textarea></div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline" id="cancelEditApplicantBtn">Cancel</button>
+                        <button class="btn btn-primary" id="saveEditApplicantBtn"><i class="fas fa-save"></i> Save Changes</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View Documents Modal -->
+            <div id="viewDocumentsModal" class="glass-modal">
+                <div class="modal-content" style="max-width: 700px;">
+                    <div class="modal-header">
+                        <h2 id="viewDocumentsTitle">Applicant Documents</h2>
+                        <button class="modal-close" id="closeViewDocumentsModal">&times;</button>
+                    </div>
+                    <div class="modal-body" id="viewDocumentsBody">
+                        <div style="text-align: center; padding: 20px;">
+                            <div class="spinner"></div>
+                            <p style="margin-top: 10px; color: #666;">Loading documents...</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline" id="closeViewDocumentsBtn">Close</button>
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
 
@@ -1711,7 +2030,8 @@
                     'agents': loadAgents,
                     'agent-applicants': loadAgentApplicants,
                     'agent-commissions': loadAgentCommissions,
-                    'agent-settlements': loadAgentSettlements
+                    'agent-settlements': loadAgentSettlements,
+                    'agent-resources': loadAgentResources
                 };
                 if (loaders[section]) loaders[section]();
 
@@ -2158,333 +2478,550 @@
             }
         }
 
-        // Load Agent Applicants with Documents
-async function loadAgentApplicants() {
-    const debugEl = document.getElementById('agentApplicantDebugInfo');
-    const tbody = document.getElementById('agentApplicantsTableBody');
-    
-    try {
-        debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading agent applicants...</span>';
-        const result = await apiFetch('agent-applicants');
-        const applicants = result.applicants || [];
-        
-        document.getElementById('agentApplicantTotal').textContent = `${applicants.length} total`;
-        document.getElementById('agentApplicantCount').textContent = applicants.length;
-        
-        // Fetch documents for each applicant
-        const enrichedApplicants = [];
-        for (const app of applicants) {
-            // Get documents from applications collection
+        // ============================================================
+        // LOAD AGENT APPLICANTS WITH DOCUMENTS - FIXED
+        // ============================================================
+        async function loadAgentApplicants() {
+            const debugEl = document.getElementById('agentApplicantDebugInfo');
+            const tbody = document.getElementById('agentApplicantsTableBody');
+            
             try {
-                const appDoc = await apiFetch(`applications/${app.applicantId}`);
-                const application = appDoc.application;
+                debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading agent applicants...</span>';
+                const result = await apiFetch('agent-applicants');
+                const applicants = result.applicants || [];
                 
-                // Count documents
-                let docCount = 0;
-                let docStatus = 'No Documents';
-                let docList = [];
+                document.getElementById('agentApplicantTotal').textContent = `${applicants.length} total`;
+                document.getElementById('agentApplicantCount').textContent = applicants.length;
                 
-                if (application && application.documents) {
-                    const docs = application.documents;
-                    docCount = Object.keys(docs).length;
+                // Get applications for document info
+                const applicantIds = applicants.map(a => a.applicantId);
+                let applications = [];
+                try {
+                    const appResult = await apiFetch('applications');
+                    applications = (appResult.applications || []).filter(a => applicantIds.includes(a.applicantId));
+                } catch (e) {
+                    console.warn('Could not fetch applications:', e);
+                }
+                
+                const appMap = {};
+                applications.forEach(app => {
+                    appMap[app.applicantId] = app;
+                });
+                
+                const enrichedApplicants = applicants.map(app => {
+                    const application = appMap[app.applicantId] || null;
+                    let docCount = 0;
+                    let docStatus = 'No Documents';
                     
-                    // Get document types and statuses
-                    for (const [key, value] of Object.entries(docs)) {
-                        if (value && value.fileName) {
-                            docList.push({
-                                type: key,
-                                fileName: value.fileName,
-                                status: value.status || 'pending_review',
-                                url: value.fileUrl || null
-                            });
-                        } else if (Array.isArray(value)) {
-                            for (const item of value) {
-                                if (item && item.fileName) {
-                                    docList.push({
-                                        type: key,
-                                        fileName: item.fileName,
-                                        status: item.status || 'pending_review',
-                                        url: item.fileUrl || null
-                                    });
+                    if (application && application.documents) {
+                        const docs = application.documents;
+                        docCount = Object.keys(docs).length;
+                        
+                        if (docCount > 0) {
+                            const allStatuses = [];
+                            for (const [key, value] of Object.entries(docs)) {
+                                if (Array.isArray(value)) {
+                                    for (const item of value) {
+                                        if (item && item.status) allStatuses.push(item.status);
+                                    }
+                                } else if (value && value.status) {
+                                    allStatuses.push(value.status);
                                 }
                             }
+                            
+                            const hasApproved = allStatuses.some(s => s === 'approved');
+                            const hasRejected = allStatuses.some(s => s === 'rejected');
+                            const hasPending = allStatuses.some(s => s === 'pending_review' || s === 'submitted');
+                            
+                            if (docCount === 0) docStatus = 'No Documents';
+                            else if (hasRejected && !hasApproved) docStatus = 'Rejected';
+                            else if (hasApproved && !hasPending && !hasRejected) docStatus = 'All Approved';
+                            else if (hasApproved && hasPending) docStatus = 'Partial Approved';
+                            else if (hasPending) docStatus = 'Pending Review';
                         }
                     }
                     
-                    // Determine overall status
-                    const hasApproved = docList.some(d => d.status === 'approved');
-                    const hasRejected = docList.some(d => d.status === 'rejected');
-                    const hasPending = docList.some(d => d.status === 'pending_review' || d.status === 'submitted');
-                    
-                    if (docCount === 0) docStatus = 'No Documents';
-                    else if (hasRejected && !hasApproved) docStatus = 'Rejected';
-                    else if (hasApproved && !hasPending && !hasRejected) docStatus = 'All Approved';
-                    else if (hasApproved && hasPending) docStatus = 'Partial Approved';
-                    else if (hasPending) docStatus = 'Pending Review';
+                    return {
+                        ...app,
+                        docCount,
+                        docStatus,
+                        application
+                    };
+                });
+                
+                debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${enrichedApplicants.length} agent applicants</span>`;
+                
+                if (enrichedApplicants.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 30px;">No agent applicants found</td></tr>`;
+                    return;
                 }
                 
-                enrichedApplicants.push({
-                    ...app,
-                    docCount: docCount,
-                    docStatus: docStatus,
-                    docList: docList,
-                    application: application || null
-                });
-            } catch (e) {
-                // If no application found, still show applicant
-                enrichedApplicants.push({
-                    ...app,
-                    docCount: 0,
-                    docStatus: 'No Application',
-                    docList: [],
-                    application: null
-                });
+                tbody.innerHTML = enrichedApplicants.map(app => {
+                    const hasDocuments = app.docCount > 0;
+                    return `
+                    <tr>
+                        <td><strong>${app.applicantId || 'N/A'}</strong></td>
+                        <td>${app.fullName || 'Unknown'}</td>
+                        <td>${app.email || 'N/A'}</td>
+                        <td>${app.agentName || app.agentId || 'N/A'}</td>
+                        <td><span class="status-badge status-${app.status ? app.status.toLowerCase().replace(/ /g, '_') : 'registered'}">${app.status || 'Registered'}</span></td>
+                        <td><span class="payment-status-badge ${app.paymentStatus ? app.paymentStatus.toLowerCase().replace(/ /g, '_') : 'no_payment'}">${app.paymentStatus || 'No Payment'}</span></td>
+                        <td>
+                            <span style="color: #17a2b8; font-weight: 600;">${app.docCount}</span>
+                            <span style="font-size: 0.6rem; color: rgba(255,255,255,0.3);"> docs</span>
+                            ${app.docStatus !== 'No Documents' ? `<br><span class="status-badge status-${app.docStatus.toLowerCase().replace(/ /g, '_')}" style="font-size: 0.55rem;">${app.docStatus}</span>` : ''}
+                        </td>
+                        <td>${app.commissionStatus || 'No Commission'}</td>
+                        <td>
+                            <div style="display: flex; flex-wrap: wrap; gap: 3px;">
+                                <button class="btn btn-sm btn-info" onclick="viewAgentApplicant('${app.applicantId}')" title="View"><i class="fas fa-eye"></i></button>
+                                <button class="btn btn-sm btn-primary" onclick="editAgentApplicant('${app.applicantId}')" title="Edit"><i class="fas fa-edit"></i></button>
+                                ${hasDocuments ? `<button class="btn btn-sm btn-success" onclick="viewApplicantDocuments('${app.applicantId}')" title="View Documents"><i class="fas fa-file-alt"></i></button>` : ''}
+                                ${!hasDocuments ? `<button class="btn btn-sm btn-outline" onclick="viewApplicantDocuments('${app.applicantId}')" title="No Documents"><i class="fas fa-file-alt" style="opacity: 0.3;"></i></button>` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                console.error('Error loading agent applicants:', error);
+                debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 30px;">Error loading applicants: ${error.message}</td></tr>`;
             }
         }
-        
-        debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${enrichedApplicants.length} agent applicants with document info</span>`;
-        
-        if (enrichedApplicants.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 30px;">No agent applicants found</td></tr>`;
-            return;
-        }
-        
-        tbody.innerHTML = enrichedApplicants.map(app => `
-            <tr>
-                <td><strong>${app.applicantId || 'N/A'}</strong></td>
-                <td>${app.fullName || 'Unknown'}</td>
-                <td>${app.email || 'N/A'}</td>
-                <td>${app.agentName || app.agentId || 'N/A'}</td>
-                <td><span class="status-badge status-${app.status ? app.status.toLowerCase().replace(/ /g, '_') : 'registered'}">${app.status || 'Registered'}</span></td>
-                <td><span class="payment-status-badge ${app.paymentStatus ? app.paymentStatus.toLowerCase() : 'due'}">${app.paymentStatus || 'No Payment'}</span></td>
-                <td>
-                    <span style="color: #17a2b8; font-weight: 600;">${app.docCount}</span> 
-                    <span style="font-size: 0.6rem; color: rgba(255,255,255,0.3);">docs</span>
-                    ${app.docStatus !== 'No Documents' ? `<br><span class="status-badge status-${app.docStatus.toLowerCase().replace(/ /g, '_')}" style="font-size: 0.55rem;">${app.docStatus}</span>` : ''}
-                </td>
-                <td>${app.commissionStatus || 'No Commission'}</td>
-                <td>
-                    <button class="btn btn-sm btn-info" onclick="viewAgentApplicant('${app.applicantId}')"><i class="fas fa-eye"></i></button>
-                    <button class="btn btn-sm btn-primary" onclick="editAgentApplicant('${app.applicantId}')"><i class="fas fa-edit"></i></button>
-                    ${app.docCount > 0 ? `<button class="btn btn-sm btn-success" onclick="viewApplicantDocuments('${app.applicantId}')"><i class="fas fa-file-alt"></i></button>` : ''}
-                </td>
-            </tr>
-        `).join('');
-        
-    } catch (error) {
-        console.error('Error loading agent applicants:', error);
-        debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 30px;">Error loading applicants: ${error.message}</td></tr>`;
-    }
-}
 
- // View Agent Applicant with Documents
-window.viewAgentApplicant = async (applicantId) => {
-    try {
-        const result = await apiFetch(`agent-applicants/${applicantId}`);
-        const applicant = result.applicant;
-        const application = result.application || null;
-        
-        // Get documents
-        let docHtml = '';
-        let docCount = 0;
-        
-        if (application && application.documents) {
-            const docs = application.documents;
-            docCount = Object.keys(docs).length;
+        // ============================================================
+        // VIEW APPLICANT DOCUMENTS - FIXED
+        // ============================================================
+        window.viewApplicantDocuments = async (applicantId) => {
+            const modal = document.getElementById('viewDocumentsModal');
+            const body = document.getElementById('viewDocumentsBody');
+            const title = document.getElementById('viewDocumentsTitle');
             
-            for (const [key, value] of Object.entries(docs)) {
-                if (Array.isArray(value)) {
-                    for (const item of value) {
-                        if (item && item.fileName) {
-                            docHtml += `
-                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #eee; font-size: 0.85rem;">
-                                    <span><i class="fas fa-file"></i> ${item.fileName}</span>
-                                    <span class="status-badge status-${item.status || 'pending_review'}">${item.status || 'Pending Review'}</span>
-                                    ${item.fileUrl ? `<a href="${item.fileUrl}" target="_blank" class="btn btn-sm btn-primary" style="font-size: 0.6rem;"><i class="fas fa-eye"></i></a>` : ''}
-                                </div>
-                            `;
-                        }
+            modal.classList.add('active');
+            title.textContent = `Documents for ${applicantId}`;
+            body.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner"></div><p style="margin-top: 10px; color: #666;">Loading documents...</p></div>';
+            
+            try {
+                // First get the applicant details
+                let applicant = null;
+                let application = null;
+                
+                try {
+                    const result = await apiFetch(`agent-applicants/${applicantId}`);
+                    applicant = result.applicant;
+                    application = result.application;
+                } catch (e) {
+                    console.warn('Could not fetch applicant details:', e);
+                }
+                
+                // If not found via agent-applicants, try via applications
+                if (!application) {
+                    try {
+                        const appResult = await apiFetch(`applications/${applicantId}`);
+                        application = appResult.application;
+                    } catch (e) {
+                        console.warn('Could not fetch application:', e);
                     }
-                } else if (value && value.fileName) {
-                    docHtml += `
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #eee; font-size: 0.85rem;">
-                            <span><i class="fas fa-file"></i> ${value.fileName}</span>
-                            <span class="status-badge status-${value.status || 'pending_review'}">${value.status || 'Pending Review'}</span>
-                            ${value.fileUrl ? `<a href="${value.fileUrl}" target="_blank" class="btn btn-sm btn-primary" style="font-size: 0.6rem;"><i class="fas fa-eye"></i></a>` : ''}
+                }
+                
+                // If still no application, try to find by applicantId in applications list
+                if (!application) {
+                    try {
+                        const allApps = await apiFetch('applications');
+                        const found = allApps.applications.find(a => a.applicantId === applicantId);
+                        if (found) application = found;
+                    } catch (e) {
+                        console.warn('Could not fetch all applications:', e);
+                    }
+                }
+                
+                // If we have an applicant but no application, try using applicant's userId
+                if (!application && applicant && applicant.userId) {
+                    try {
+                        const appResult = await apiFetch(`applications/${applicant.userId}`);
+                        application = appResult.application;
+                    } catch (e) {
+                        console.warn('Could not fetch application by userId:', e);
+                    }
+                }
+                
+                if (!application || !application.documents || Object.keys(application.documents).length === 0) {
+                    body.innerHTML = `
+                        <div style="text-align: center; padding: 30px; color: #999;">
+                            <i class="fas fa-file-alt" style="font-size: 3rem; opacity: 0.3; margin-bottom: 15px; display: block;"></i>
+                            <p>No documents found for this applicant</p>
+                            <p style="font-size: 0.85rem; margin-top: 5px;">Applicant ID: ${applicantId}</p>
+                            ${applicant ? `<p style="font-size: 0.85rem; color: #666;">${applicant.fullName || ''}</p>` : ''}
                         </div>
                     `;
+                    return;
                 }
-            }
-        }
-        
-        // Get payments
-        let paymentHtml = '';
-        if (application && application.payments && application.payments.length > 0) {
-            paymentHtml = application.payments.map(p => `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #eee; font-size: 0.85rem;">
-                    <span>$${(p.amount || 0).toFixed(2)} - ${p.description || 'Payment'}</span>
-                    <span class="status-badge status-${p.status || 'pending'}">${p.status || 'Pending'}</span>
-                    ${p.receiptUrl ? `<a href="${p.receiptUrl}" target="_blank" class="btn btn-sm btn-primary" style="font-size: 0.6rem;"><i class="fas fa-receipt"></i></a>` : ''}
-                </div>
-            `).join('');
-        } else {
-            paymentHtml = '<p style="color: #999; font-size: 0.85rem;">No payments recorded</p>';
-        }
-        
-        // Create modal
-        const modal = document.createElement('div');
-        modal.className = 'glass-modal active';
-        modal.style.display = 'flex';
-        modal.id = 'viewAgentApplicantModal';
-        
-        modal.innerHTML = `
-            <div class="modal-content" style="max-width: 650px;">
-                <div class="modal-header">
-                    <h2><i class="fas fa-user-graduate"></i> ${applicant.fullName || 'Applicant'}</h2>
-                    <button class="modal-close" onclick="document.getElementById('viewAgentApplicantModal').remove()">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-                        <div>
-                            <div class="detail-row"><span class="detail-label">ID</span><span class="detail-value">${applicant.applicantId}</span></div>
-                            <div class="detail-row"><span class="detail-label">Name</span><span class="detail-value">${applicant.fullName}</span></div>
-                            <div class="detail-row"><span class="detail-label">Email</span><span class="detail-value">${applicant.email}</span></div>
-                            <div class="detail-row"><span class="detail-label">Phone</span><span class="detail-value">${applicant.phone}</span></div>
-                        </div>
-                        <div>
-                            <div class="detail-row"><span class="detail-label">Agent</span><span class="detail-value">${applicant.agentName || applicant.agentId || 'N/A'}</span></div>
-                            <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value"><span class="status-badge status-${applicant.status ? applicant.status.toLowerCase().replace(/ /g, '_') : 'registered'}">${applicant.status || 'Registered'}</span></span></div>
-                            <div class="detail-row"><span class="detail-label">Payment</span><span class="detail-value"><span class="payment-status-badge ${applicant.paymentStatus ? applicant.paymentStatus.toLowerCase() : 'due'}">${applicant.paymentStatus || 'No Payment'}</span></span></div>
-                            <div class="detail-row"><span class="detail-label">Documents</span><span class="detail-value">${docCount}</span></div>
-                        </div>
-                    </div>
-                    
-                    <div style="margin-top: 10px; background: rgba(0,0,0,0.03); padding: 12px; border-radius: 8px;">
-                        <h4 style="margin-bottom: 8px; font-size: 1rem;"><i class="fas fa-file-alt"></i> Documents (${docCount})</h4>
-                        ${docHtml || '<p style="color: #999; font-size: 0.85rem;">No documents uploaded</p>'}
-                    </div>
-                    
-                    <div style="margin-top: 10px; background: rgba(0,0,0,0.03); padding: 12px; border-radius: 8px;">
-                        <h4 style="margin-bottom: 8px; font-size: 1rem;"><i class="fas fa-credit-card"></i> Payments</h4>
-                        ${paymentHtml}
-                        <div style="margin-top: 8px; font-size: 0.85rem;">
-                            <strong>Total Fee:</strong> $${(application?.totalServiceFee || 0).toFixed(2)} &nbsp;|&nbsp;
-                            <strong>Received:</strong> $${(application?.amountReceived || 0).toFixed(2)} &nbsp;|&nbsp;
-                            <strong>Remaining:</strong> $${(application?.amountRemaining || 0).toFixed(2)}
-                        </div>
-                    </div>
-                    
-                    ${application?.timeline && application.timeline.length > 0 ? `
-                        <div style="margin-top: 10px; background: rgba(0,0,0,0.03); padding: 12px; border-radius: 8px;">
-                            <h4 style="margin-bottom: 8px; font-size: 1rem;"><i class="fas fa-history"></i> Timeline</h4>
-                            ${application.timeline.map(t => `
-                                <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(0,0,0,0.04); font-size: 0.8rem;">
-                                    <span>${t.event}</span>
-                                    <span style="color: #666;">${t.date ? new Date(t.date).toLocaleDateString() : ''}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                    ` : ''}
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-outline" onclick="document.getElementById('viewAgentApplicantModal').remove()">Close</button>
-                    ${applicant.email ? `<button class="btn btn-primary" onclick="window.open('mailto:${applicant.email}')"><i class="fas fa-envelope"></i> Email</button>` : ''}
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
-        
-        modal.addEventListener('click', function(e) {
-            if (e.target === this) this.remove();
-        });
-        
-    } catch (error) {
-        console.error('Error viewing agent applicant:', error);
-        showToast('Error loading applicant details: ' + error.message, 'error');
-    }
-};       
-        
-// View Applicant Documents (Admin)
-window.viewApplicantDocuments = async (applicantId) => {
-    try {
-        const result = await apiFetch(`applications/${applicantId}`);
-        const application = result.application;
-        
-        if (!application || !application.documents || Object.keys(application.documents).length === 0) {
-            showToast('No documents found for this applicant', 'info');
-            return;
-        }
-        
-        const docs = application.documents;
-        let docHtml = '';
-        
-        for (const [key, value] of Object.entries(docs)) {
-            if (Array.isArray(value)) {
-                for (const item of value) {
-                    if (item && item.fileName) {
+                
+                const docs = application.documents;
+                let docHtml = '';
+                let docCount = 0;
+                
+                for (const [key, value] of Object.entries(docs)) {
+                    if (Array.isArray(value)) {
+                        for (const item of value) {
+                            if (item && item.fileName) {
+                                docCount++;
+                                const statusClass = item.status || 'pending_review';
+                                const uploadedAt = item.uploadedAt ? new Date(item.uploadedAt).toLocaleString() : 'N/A';
+                                const uploadedBy = item.uploadedBy || 'Unknown';
+                                const fileSize = item.fileSize ? (item.fileSize / 1024).toFixed(1) + ' KB' : 'N/A';
+                                
+                                docHtml += `
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-bottom: 1px solid #eee; gap: 10px; flex-wrap: wrap;">
+                                        <div style="flex: 1; min-width: 150px;">
+                                            <div style="font-weight: 600; font-size: 0.9rem;">${key.replace(/_/g, ' ').toUpperCase()}</div>
+                                            <div style="font-size: 0.8rem; color: #666;">${item.fileName}</div>
+                                            <div style="font-size: 0.7rem; color: #999; margin-top: 2px;">
+                                                <i class="fas fa-user"></i> ${uploadedBy} • 
+                                                <i class="fas fa-calendar"></i> ${uploadedAt} • 
+                                                <i class="fas fa-file"></i> ${fileSize}
+                                            </div>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                            <span class="status-badge status-${statusClass}">${statusClass.replace('_', ' ').toUpperCase()}</span>
+                                            ${item.fileUrl ? `
+                                                <a href="${item.fileUrl}" target="_blank" class="btn btn-sm btn-info" title="View"><i class="fas fa-eye"></i></a>
+                                                <a href="${item.fileUrl}" download class="btn btn-sm btn-primary" title="Download"><i class="fas fa-download"></i></a>
+                                            ` : ''}
+                                            <button class="btn btn-sm btn-danger" onclick="deleteDocument('${applicantId}', '${item.fileId || ''}')" title="Delete"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        }
+                    } else if (value && value.fileName) {
+                        docCount++;
+                        const statusClass = value.status || 'pending_review';
+                        const uploadedAt = value.uploadedAt ? new Date(value.uploadedAt).toLocaleString() : 'N/A';
+                        const uploadedBy = value.uploadedBy || 'Unknown';
+                        const fileSize = value.fileSize ? (value.fileSize / 1024).toFixed(1) + ' KB' : 'N/A';
+                        
                         docHtml += `
-                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid #eee;">
-                                <div>
-                                    <strong>${key.replace('_', ' ').toUpperCase()}</strong>
-                                    <div style="font-size: 0.85rem;">${item.fileName}</div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-bottom: 1px solid #eee; gap: 10px; flex-wrap: wrap;">
+                                <div style="flex: 1; min-width: 150px;">
+                                    <div style="font-weight: 600; font-size: 0.9rem;">${key.replace(/_/g, ' ').toUpperCase()}</div>
+                                    <div style="font-size: 0.8rem; color: #666;">${value.fileName}</div>
+                                    <div style="font-size: 0.7rem; color: #999; margin-top: 2px;">
+                                        <i class="fas fa-user"></i> ${uploadedBy} • 
+                                        <i class="fas fa-calendar"></i> ${uploadedAt} • 
+                                        <i class="fas fa-file"></i> ${fileSize}
+                                    </div>
                                 </div>
-                                <div>
-                                    <span class="status-badge status-${item.status || 'pending_review'}">${item.status || 'Pending Review'}</span>
-                                    ${item.fileUrl ? `<a href="${item.fileUrl}" target="_blank" class="btn btn-sm btn-primary" style="margin-left: 8px;"><i class="fas fa-eye"></i></a>` : ''}
+                                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                    <span class="status-badge status-${statusClass}">${statusClass.replace('_', ' ').toUpperCase()}</span>
+                                    ${value.fileUrl ? `
+                                        <a href="${value.fileUrl}" target="_blank" class="btn btn-sm btn-info" title="View"><i class="fas fa-eye"></i></a>
+                                        <a href="${value.fileUrl}" download class="btn btn-sm btn-primary" title="Download"><i class="fas fa-download"></i></a>
+                                    ` : ''}
+                                    <button class="btn btn-sm btn-danger" onclick="deleteDocument('${applicantId}', '${value.fileId || ''}')" title="Delete"><i class="fas fa-trash"></i></button>
                                 </div>
                             </div>
                         `;
                     }
                 }
-            } else if (value && value.fileName) {
-                docHtml += `
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid #eee;">
-                        <div>
-                            <strong>${key.replace('_', ' ').toUpperCase()}</strong>
-                            <div style="font-size: 0.85rem;">${value.fileName}</div>
+                
+                if (docCount === 0) {
+                    body.innerHTML = `
+                        <div style="text-align: center; padding: 30px; color: #999;">
+                            <i class="fas fa-file-alt" style="font-size: 3rem; opacity: 0.3; margin-bottom: 15px; display: block;"></i>
+                            <p>No documents found for this applicant</p>
                         </div>
+                    `;
+                    return;
+                }
+                
+                body.innerHTML = `
+                    <div style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
                         <div>
-                            <span class="status-badge status-${value.status || 'pending_review'}">${value.status || 'Pending Review'}</span>
-                            ${value.fileUrl ? `<a href="${value.fileUrl}" target="_blank" class="btn btn-sm btn-primary" style="margin-left: 8px;"><i class="fas fa-eye"></i></a>` : ''}
+                            <strong>${applicant ? applicant.fullName : 'Applicant'}</strong>
+                            <span style="color: #666; margin-left: 10px;">${applicantId}</span>
+                        </div>
+                        <span style="color: #17a2b8; font-weight: 600;">${docCount} document${docCount > 1 ? 's' : ''}</span>
+                    </div>
+                    ${docHtml}
+                `;
+                
+            } catch (error) {
+                console.error('Error viewing documents:', error);
+                body.innerHTML = `
+                    <div style="text-align: center; padding: 30px; color: #dc3545;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 15px; display: block;"></i>
+                        <p>Error loading documents: ${error.message}</p>
+                    </div>
+                `;
+                showToast('Error loading documents: ' + error.message, 'error');
+            }
+        };
+
+        // ============================================================
+        // DELETE DOCUMENT
+        // ============================================================
+        window.deleteDocument = async (applicantId, fileId) => {
+            if (!fileId) {
+                showToast('Cannot delete: No file ID found', 'error');
+                return;
+            }
+            if (!confirm('Are you sure you want to delete this document? This action cannot be undone.')) return;
+            
+            try {
+                // Try to delete via agent documents endpoint
+                const result = await apiFetch(`agent/documents/${fileId}`, {
+                    method: 'DELETE'
+                });
+                showToast('Document deleted successfully', 'success');
+                // Refresh documents view
+                viewApplicantDocuments(applicantId);
+                // Refresh applicants list
+                loadAgentApplicants();
+            } catch (error) {
+                console.error('Error deleting document:', error);
+                showToast('Error deleting document: ' + error.message, 'error');
+            }
+        };
+
+        // ============================================================
+        // VIEW AGENT APPLICANT DETAIL
+        // ============================================================
+        window.viewAgentApplicant = async (applicantId) => {
+            try {
+                const result = await apiFetch(`agent-applicants/${applicantId}`);
+                const applicant = result.applicant;
+                const application = result.application || null;
+                
+                if (!applicant) {
+                    showToast('Applicant not found', 'error');
+                    return;
+                }
+                
+                // Get document count
+                let docCount = 0;
+                if (application && application.documents) {
+                    for (const [key, value] of Object.entries(application.documents)) {
+                        if (Array.isArray(value)) {
+                            docCount += value.filter(v => v && v.fileName).length;
+                        } else if (value && value.fileName) {
+                            docCount++;
+                        }
+                    }
+                }
+                
+                // Get payment info
+                let paymentHtml = '';
+                if (application && application.payments && application.payments.length > 0) {
+                    paymentHtml = application.payments.map(p => `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #eee; font-size: 0.85rem;">
+                            <span>$${(p.amount || 0).toFixed(2)} - ${p.description || 'Payment'}</span>
+                            <span class="status-badge status-${p.status || 'pending'}">${p.status || 'Pending'}</span>
+                            ${p.receiptUrl ? `<a href="${p.receiptUrl}" target="_blank" class="btn btn-sm btn-primary" style="font-size: 0.6rem;"><i class="fas fa-receipt"></i></a>` : ''}
+                        </div>
+                    `).join('');
+                } else {
+                    paymentHtml = '<p style="color: #999; font-size: 0.85rem;">No payments recorded</p>';
+                }
+                
+                // Show in a modal or alert
+                const modal = document.createElement('div');
+                modal.className = 'glass-modal active';
+                modal.style.display = 'flex';
+                modal.id = 'viewApplicantModal';
+                
+                modal.innerHTML = `
+                    <div class="modal-content" style="max-width: 650px;">
+                        <div class="modal-header">
+                            <h2><i class="fas fa-user-graduate"></i> ${applicant.fullName || 'Applicant'}</h2>
+                            <button class="modal-close" onclick="document.getElementById('viewApplicantModal').remove()">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                                <div>
+                                    <div class="detail-row"><span class="detail-label">ID</span><span class="detail-value">${applicant.applicantId}</span></div>
+                                    <div class="detail-row"><span class="detail-label">Name</span><span class="detail-value">${applicant.fullName}</span></div>
+                                    <div class="detail-row"><span class="detail-label">Email</span><span class="detail-value">${applicant.email}</span></div>
+                                    <div class="detail-row"><span class="detail-label">Phone</span><span class="detail-value">${applicant.phone}</span></div>
+                                    <div class="detail-row"><span class="detail-label">Country</span><span class="detail-value">${applicant.countryOfInterest || 'N/A'}</span></div>
+                                </div>
+                                <div>
+                                    <div class="detail-row"><span class="detail-label">Agent</span><span class="detail-value">${applicant.agentName || applicant.agentId || 'N/A'}</span></div>
+                                    <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value"><span class="status-badge status-${applicant.status ? applicant.status.toLowerCase().replace(/ /g, '_') : 'registered'}">${applicant.status || 'Registered'}</span></span></div>
+                                    <div class="detail-row"><span class="detail-label">Payment</span><span class="detail-value"><span class="payment-status-badge ${applicant.paymentStatus ? applicant.paymentStatus.toLowerCase().replace(/ /g, '_') : 'no_payment'}">${applicant.paymentStatus || 'No Payment'}</span></span></div>
+                                    <div class="detail-row"><span class="detail-label">Documents</span><span class="detail-value">${docCount}</span></div>
+                                    <div class="detail-row"><span class="detail-label">Service</span><span class="detail-value">${applicant.serviceRequested || 'N/A'}</span></div>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-top: 10px; background: rgba(0,0,0,0.03); padding: 12px; border-radius: 8px;">
+                                <h4 style="margin-bottom: 8px; font-size: 1rem;"><i class="fas fa-file-alt"></i> Documents (${docCount})</h4>
+                                ${docCount > 0 ? `<button class="btn btn-sm btn-success" onclick="document.getElementById('viewApplicantModal').remove(); viewApplicantDocuments('${applicant.applicantId}')"><i class="fas fa-file-alt"></i> View All Documents</button>` : '<p style="color: #999; font-size: 0.85rem;">No documents uploaded</p>'}
+                            </div>
+                            
+                            <div style="margin-top: 10px; background: rgba(0,0,0,0.03); padding: 12px; border-radius: 8px;">
+                                <h4 style="margin-bottom: 8px; font-size: 1rem;"><i class="fas fa-credit-card"></i> Payments</h4>
+                                ${paymentHtml}
+                                <div style="margin-top: 8px; font-size: 0.85rem;">
+                                    <strong>Total Fee:</strong> $${(application?.totalServiceFee || 0).toFixed(2)} &nbsp;|&nbsp;
+                                    <strong>Received:</strong> $${(application?.amountReceived || 0).toFixed(2)} &nbsp;|&nbsp;
+                                    <strong>Remaining:</strong> $${(application?.amountRemaining || 0).toFixed(2)}
+                                </div>
+                            </div>
+                            
+                            ${application?.timeline && application.timeline.length > 0 ? `
+                                <div style="margin-top: 10px; background: rgba(0,0,0,0.03); padding: 12px; border-radius: 8px;">
+                                    <h4 style="margin-bottom: 8px; font-size: 1rem;"><i class="fas fa-history"></i> Timeline</h4>
+                                    ${application.timeline.slice(-5).reverse().map(t => `
+                                        <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(0,0,0,0.04); font-size: 0.8rem;">
+                                            <span>${t.event}</span>
+                                            <span style="color: #666;">${t.date ? new Date(t.date).toLocaleDateString() : ''}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-outline" onclick="document.getElementById('viewApplicantModal').remove()">Close</button>
+                            <button class="btn btn-primary" onclick="document.getElementById('viewApplicantModal').remove(); editAgentApplicant('${applicant.applicantId}')"><i class="fas fa-edit"></i> Edit</button>
+                            ${applicant.email ? `<button class="btn btn-success" onclick="window.open('mailto:${applicant.email}')"><i class="fas fa-envelope"></i> Email</button>` : ''}
                         </div>
                     </div>
                 `;
+                
+                document.body.appendChild(modal);
+                
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) this.remove();
+                });
+                
+            } catch (error) {
+                console.error('Error viewing agent applicant:', error);
+                showToast('Error loading applicant details: ' + error.message, 'error');
             }
-        }
-        
-        // Create modal
-        const modal = document.createElement('div');
-        modal.className = 'glass-modal active';
-        modal.style.display = 'flex';
-        modal.innerHTML = `
-            <div class="modal-content" style="max-width: 600px;">
-                <div class="modal-header">
-                    <h2>Documents for ${application.applicantName || applicantId}</h2>
-                    <button class="modal-close" onclick="this.closest('.glass-modal').remove()">&times;</button>
-                </div>
-                <div class="modal-body">
-                    ${docHtml || '<p style="color: #999;">No documents found</p>'}
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-outline" onclick="this.closest('.glass-modal').remove()">Close</button>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(modal);
-        
-        modal.addEventListener('click', function(e) {
-            if (e.target === this) this.remove();
-        });
-        
-    } catch (error) {
-        console.error('Error viewing documents:', error);
-        showToast('Error loading documents: ' + error.message, 'error');
-    }
-};
+        };
 
-        // Load Agent Commissions
+        // ============================================================
+        // EDIT AGENT APPLICANT - FULL IMPLEMENTATION
+        // ============================================================
+        window.editAgentApplicant = async (applicantId) => {
+            try {
+                const result = await apiFetch(`agent-applicants/${applicantId}`);
+                const applicant = result.applicant;
+                
+                if (!applicant) {
+                    showToast('Applicant not found', 'error');
+                    return;
+                }
+                
+                // Populate form
+                document.getElementById('editApplicantId').value = applicantId;
+                document.getElementById('editAppFullName').value = applicant.fullName || '';
+                document.getElementById('editAppEmail').value = applicant.email || '';
+                document.getElementById('editAppPhone').value = applicant.phone || '';
+                document.getElementById('editAppCountry').value = applicant.countryOfInterest || '';
+                document.getElementById('editAppService').value = applicant.serviceRequested || '';
+                document.getElementById('editAppDob').value = applicant.dateOfBirth ? applicant.dateOfBirth.split('T')[0] : '';
+                document.getElementById('editAppNationality').value = applicant.nationality || '';
+                document.getElementById('editAppCurrentCountry').value = applicant.currentCountry || '';
+                document.getElementById('editAppEducation').value = applicant.educationLevel || '';
+                document.getElementById('editAppQualification').value = applicant.highestQualification || '';
+                document.getElementById('editAppWorkExp').value = applicant.workExperience || '';
+                document.getElementById('editAppDestination').value = applicant.preferredDestination || '';
+                document.getElementById('editAppProgramme').value = applicant.programmeInterest || '';
+                document.getElementById('editAppSource').value = applicant.sourceOfLead || 'Agent Referral';
+                document.getElementById('editAppStatus').value = applicant.status || 'Registered';
+                document.getElementById('editAppNotes').value = applicant.additionalInformation || '';
+                
+                document.getElementById('editApplicantModal').classList.add('active');
+                
+            } catch (error) {
+                console.error('Error loading applicant for edit:', error);
+                showToast('Error loading applicant: ' + error.message, 'error');
+            }
+        };
+
+        // ============================================================
+        // EDIT APPLICANT MODAL EVENTS
+        // ============================================================
+        document.getElementById('closeEditApplicantModal').addEventListener('click', () => {
+            document.getElementById('editApplicantModal').classList.remove('active');
+        });
+        document.getElementById('cancelEditApplicantBtn').addEventListener('click', () => {
+            document.getElementById('editApplicantModal').classList.remove('active');
+        });
+
+        document.getElementById('saveEditApplicantBtn').addEventListener('click', async () => {
+            const applicantId = document.getElementById('editApplicantId').value;
+            const fullName = document.getElementById('editAppFullName').value.trim();
+            const email = document.getElementById('editAppEmail').value.trim();
+            const phone = document.getElementById('editAppPhone').value.trim();
+            const countryOfInterest = document.getElementById('editAppCountry').value;
+            const serviceRequested = document.getElementById('editAppService').value;
+            const dateOfBirth = document.getElementById('editAppDob').value;
+            const nationality = document.getElementById('editAppNationality').value.trim();
+            const currentCountry = document.getElementById('editAppCurrentCountry').value.trim();
+            const educationLevel = document.getElementById('editAppEducation').value;
+            const highestQualification = document.getElementById('editAppQualification').value.trim();
+            const workExperience = document.getElementById('editAppWorkExp').value.trim();
+            const preferredDestination = document.getElementById('editAppDestination').value.trim();
+            const programmeInterest = document.getElementById('editAppProgramme').value.trim();
+            const sourceOfLead = document.getElementById('editAppSource').value;
+            const status = document.getElementById('editAppStatus').value;
+            const additionalInformation = document.getElementById('editAppNotes').value.trim();
+
+            if (!fullName || !email || !phone || !countryOfInterest || !serviceRequested) {
+                showToast('Please fill in all required fields', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('saveEditApplicantBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner"></span> Saving...';
+            btn.disabled = true;
+
+            try {
+                // Update via admin endpoint
+                await apiFetch(`agent-applicants/${applicantId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        fullName, email, phone, countryOfInterest, serviceRequested,
+                        dateOfBirth, nationality, currentCountry, educationLevel,
+                        highestQualification, workExperience, preferredDestination,
+                        programmeInterest, sourceOfLead, status, additionalInformation
+                    })
+                });
+                showToast('Applicant updated successfully!', 'success');
+                document.getElementById('editApplicantModal').classList.remove('active');
+                await loadAgentApplicants();
+                await loadDashboardData();
+            } catch (error) {
+                console.error('Error updating applicant:', error);
+                showToast('Error: ' + error.message, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        // ============================================================
+        // VIEW DOCUMENTS MODAL EVENTS
+        // ============================================================
+        document.getElementById('closeViewDocumentsModal').addEventListener('click', () => {
+            document.getElementById('viewDocumentsModal').classList.remove('active');
+        });
+        document.getElementById('closeViewDocumentsBtn').addEventListener('click', () => {
+            document.getElementById('viewDocumentsModal').classList.remove('active');
+        });
+        document.getElementById('viewDocumentsModal').addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('active');
+        });
+
+        // ============================================================
+        // LOAD AGENT COMMISSIONS
+        // ============================================================
         async function loadAgentCommissions() {
             const debugEl = document.getElementById('commissionDebugInfo');
             const tbody = document.getElementById('commissionsTableBody');
@@ -2504,10 +3041,14 @@ window.viewApplicantDocuments = async (applicantId) => {
                 
                 // Populate agent filter dropdown
                 const agentSelect = document.getElementById('filterCommissionAgent');
-                const agents = await apiFetch('agents');
-                const agentList = agents.agents || [];
-                agentSelect.innerHTML = '<option value="all">All Agents</option>' + 
-                    agentList.map(a => `<option value="${a.agentId}">${a.fullName} (${a.agentId})</option>`).join('');
+                try {
+                    const agents = await apiFetch('agents');
+                    const agentList = agents.agents || [];
+                    agentSelect.innerHTML = '<option value="all">All Agents</option>' + 
+                        agentList.map(a => `<option value="${a.agentId}">${a.fullName} (${a.agentId})</option>`).join('');
+                } catch (e) {
+                    console.warn('Could not load agents for filter:', e);
+                }
                 
                 debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${commissions.length} commissions</span>`;
                 
@@ -2540,7 +3081,9 @@ window.viewApplicantDocuments = async (applicantId) => {
             }
         }
 
-        // Load Agent Settlements
+        // ============================================================
+        // LOAD AGENT SETTLEMENTS
+        // ============================================================
         async function loadAgentSettlements() {
             const debugEl = document.getElementById('settlementDebugInfo');
             const tbody = document.getElementById('settlementsTableBody');
@@ -2580,6 +3123,484 @@ window.viewApplicantDocuments = async (applicantId) => {
                 tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 30px;">Error loading settlements: ${error.message}</td></tr>`;
             }
         }
+
+        // ============================================================
+        // ============================================================
+        // AGENT RESOURCES MANAGEMENT - COMPLETE
+        // ============================================================
+        // ============================================================
+
+        let allResources = [];
+        let editingResourceId = null;
+
+        // Load Agent Resources
+        async function loadAgentResources() {
+            const debugEl = document.getElementById('resourceDebugInfo');
+            const container = document.getElementById('resourcesList');
+            
+            try {
+                debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading resources...</span>';
+                const result = await apiFetch('resources');
+                allResources = result.resources || [];
+                
+                const total = allResources.length;
+                const published = allResources.filter(r => r.status === 'published').length;
+                const drafts = allResources.filter(r => r.status === 'draft').length;
+                
+                document.getElementById('totalResources').textContent = total;
+                document.getElementById('publishedResources').textContent = published;
+                document.getElementById('draftResources').textContent = drafts;
+                document.getElementById('resourceCount').textContent = total;
+                
+                debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${total} resources</span>`;
+                
+                // Apply filters
+                const searchTerm = document.getElementById('searchResources')?.value?.toLowerCase() || '';
+                const categoryFilter = document.getElementById('filterResourceCategory')?.value || 'all';
+                const statusFilter = document.getElementById('filterResourceStatus')?.value || 'all';
+                
+                let filtered = allResources;
+                
+                if (searchTerm) {
+                    filtered = filtered.filter(r => 
+                        (r.title || '').toLowerCase().includes(searchTerm) || 
+                        (r.description || '').toLowerCase().includes(searchTerm)
+                    );
+                }
+                
+                if (categoryFilter !== 'all') {
+                    filtered = filtered.filter(r => r.category === categoryFilter);
+                }
+                
+                if (statusFilter !== 'all') {
+                    filtered = filtered.filter(r => r.status === statusFilter);
+                }
+                
+                if (filtered.length === 0) {
+                    container.innerHTML = `<div class="empty-state"><i class="fas fa-folder-open"></i><p>No resources match your filters. Upload a new resource!</p></div>`;
+                    return;
+                }
+                
+                container.innerHTML = filtered.map(resource => `
+                    <div class="resource-card">
+                        <div class="resource-header">
+                            <div>
+                                <div class="resource-title">${resource.title || 'Untitled'}</div>
+                                <div class="resource-meta">
+                                    <span><i class="fas fa-tag"></i> ${resource.category || 'Uncategorized'}</span>
+                                    <span><i class="fas fa-file"></i> ${resource.fileName || 'No file'}</span>
+                                    <span><i class="fas fa-user"></i> ${resource.uploadedBy || 'Admin'}</span>
+                                    <span><i class="fas fa-calendar"></i> ${resource.createdAt ? new Date(resource.createdAt).toLocaleDateString() : 'N/A'}</span>
+                                    <span class="status-badge status-${resource.status || 'draft'}">${(resource.status || 'draft').toUpperCase()}</span>
+                                </div>
+                            </div>
+                            <div class="resource-actions">
+                                ${resource.fileUrl ? `<a href="${resource.fileUrl}" target="_blank" class="btn btn-sm btn-info"><i class="fas fa-eye"></i> View</a>` : ''}
+                                ${resource.fileUrl ? `<a href="${resource.fileUrl}" download class="btn btn-sm btn-primary"><i class="fas fa-download"></i></a>` : ''}
+                                <button class="btn btn-sm btn-outline" onclick="editResource('${resource._id}')"><i class="fas fa-edit"></i></button>
+                                ${resource.status === 'published' ? `<button class="btn btn-sm btn-warning" onclick="toggleResourceStatus('${resource._id}', 'draft')"><i class="fas fa-pause"></i></button>` : ''}
+                                ${resource.status === 'draft' ? `<button class="btn btn-sm btn-success" onclick="toggleResourceStatus('${resource._id}', 'published')"><i class="fas fa-check"></i></button>` : ''}
+                                ${resource.status === 'archived' ? `<button class="btn btn-sm btn-outline" onclick="toggleResourceStatus('${resource._id}', 'draft')"><i class="fas fa-undo"></i></button>` : ''}
+                                <button class="btn btn-sm btn-danger" onclick="deleteResource('${resource._id}')"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        ${resource.description ? `<p style="color: rgba(255,255,255,0.5); font-size: 0.85rem; margin-top: 8px;">${resource.description}</p>` : ''}
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error loading resources:', error);
+                debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading resources: ${error.message}</p></div>`;
+                showToast('Error loading resources', 'error');
+            }
+        }
+
+        // Open Upload Resource Modal
+        document.getElementById('newResourceBtn').addEventListener('click', () => {
+            editingResourceId = null;
+            document.getElementById('resourceModalTitle').textContent = 'Upload Resource';
+            document.getElementById('resourceBtnText').textContent = 'Upload Resource';
+            document.getElementById('resourceForm').reset();
+            document.getElementById('fileRequired').style.display = 'inline';
+            document.getElementById('currentFileInfo').style.display = 'none';
+            document.getElementById('resourceEditId').value = '';
+            document.getElementById('resourceModal').classList.add('active');
+        });
+
+        // Close Resource Modal
+        document.getElementById('closeResourceModal').addEventListener('click', closeResourceModal);
+        document.getElementById('cancelResourceBtn').addEventListener('click', closeResourceModal);
+        document.getElementById('resourceModal').addEventListener('click', function(e) {
+            if (e.target === this) closeResourceModal();
+        });
+
+        function closeResourceModal() {
+            document.getElementById('resourceModal').classList.remove('active');
+            editingResourceId = null;
+        }
+
+        // Save Resource
+        document.getElementById('saveResourceBtn').addEventListener('click', async () => {
+            const title = document.getElementById('resourceTitle').value.trim();
+            const category = document.getElementById('resourceCategory').value;
+            const description = document.getElementById('resourceDescription').value.trim();
+            const status = document.getElementById('resourceStatus').value;
+            const fileInput = document.getElementById('resourceFile');
+            const editId = document.getElementById('resourceEditId').value;
+
+            if (!title) {
+                showToast('Please enter a resource title', 'error');
+                return;
+            }
+            if (!category) {
+                showToast('Please select a category', 'error');
+                return;
+            }
+            if (!editId && (!fileInput.files || fileInput.files.length === 0)) {
+                showToast('Please select a file to upload', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('saveResourceBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner"></span> Saving...';
+            btn.disabled = true;
+
+            try {
+                let fileUrl = '';
+                let fileId = '';
+                let fileName = '';
+                let fileSize = 0;
+                let fileType = '';
+
+                // Upload file if selected
+                if (fileInput.files && fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('userId', 'admin');
+                    formData.append('docType', 'resource');
+
+                    const uploadResponse = await fetch('https://gisc-app-production.up.railway.app/api/upload', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${adminToken}`
+                        },
+                        body: formData
+                    });
+
+                    if (!uploadResponse.ok) {
+                        const errorText = await uploadResponse.text();
+                        throw new Error('Upload failed: ' + errorText);
+                    }
+
+                    const uploadResult = await uploadResponse.json();
+                    if (!uploadResult.success) {
+                        throw new Error(uploadResult.message || 'Upload failed');
+                    }
+
+                    fileUrl = uploadResult.url;
+                    fileId = uploadResult.fileId;
+                    fileName = uploadResult.fileName || file.name;
+                    fileSize = uploadResult.fileSize || file.size;
+                    fileType = uploadResult.fileType || file.type;
+                }
+
+                const resourceData = {
+                    title,
+                    category,
+                    description: description || '',
+                    status,
+                    uploadedBy: adminUser?.name || 'Admin',
+                    fileUrl,
+                    fileId,
+                    fileName,
+                    fileSize,
+                    fileType,
+                    updatedAt: new Date().toISOString()
+                };
+
+                let result;
+                if (editId) {
+                    // Update existing resource
+                    result = await apiFetch(`resources/${editId}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(resourceData)
+                    });
+                    showToast('Resource updated successfully!', 'success');
+                } else {
+                    // Create new resource
+                    resourceData.createdAt = new Date().toISOString();
+                    result = await apiFetch('resources', {
+                        method: 'POST',
+                        body: JSON.stringify(resourceData)
+                    });
+                    showToast('Resource uploaded successfully!', 'success');
+                }
+
+                closeResourceModal();
+                await loadAgentResources();
+                await loadDashboardData();
+
+            } catch (error) {
+                console.error('Error saving resource:', error);
+                showToast('Error: ' + error.message, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        // Edit Resource
+        window.editResource = async (resourceId) => {
+            try {
+                const result = await apiFetch(`resources/${resourceId}`);
+                const resource = result.resource;
+                
+                if (!resource) {
+                    showToast('Resource not found', 'error');
+                    return;
+                }
+
+                editingResourceId = resourceId;
+                document.getElementById('resourceModalTitle').textContent = 'Edit Resource';
+                document.getElementById('resourceBtnText').textContent = 'Update Resource';
+                document.getElementById('resourceEditId').value = resourceId;
+                document.getElementById('resourceTitle').value = resource.title || '';
+                document.getElementById('resourceCategory').value = resource.category || '';
+                document.getElementById('resourceDescription').value = resource.description || '';
+                document.getElementById('resourceStatus').value = resource.status || 'draft';
+                document.getElementById('fileRequired').style.display = 'none';
+                document.getElementById('currentFileInfo').style.display = 'block';
+                document.getElementById('currentFileName').textContent = resource.fileName || 'No file';
+                document.getElementById('resourceFile').value = '';
+
+                document.getElementById('resourceModal').classList.add('active');
+            } catch (error) {
+                console.error('Error loading resource for edit:', error);
+                showToast('Error loading resource: ' + error.message, 'error');
+            }
+        };
+
+        // Remove file from resource
+        window.removeResourceFile = () => {
+            document.getElementById('resourceFile').value = '';
+            document.getElementById('currentFileInfo').style.display = 'none';
+        };
+
+        // Toggle Resource Status
+        window.toggleResourceStatus = async (resourceId, status) => {
+            try {
+                await apiFetch(`resources/${resourceId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ status })
+                });
+                showToast(`Resource ${status === 'published' ? 'published' : 'unpublished'} successfully`, 'success');
+                await loadAgentResources();
+                await loadDashboardData();
+            } catch (error) {
+                console.error('Error updating resource status:', error);
+                showToast('Error updating resource status: ' + error.message, 'error');
+            }
+        };
+
+        // Delete Resource
+        window.deleteResource = async (resourceId) => {
+            if (!confirm('Are you sure you want to delete this resource? This action cannot be undone.')) return;
+            try {
+                await apiFetch(`resources/${resourceId}`, {
+                    method: 'DELETE'
+                });
+                showToast('Resource deleted successfully', 'success');
+                await loadAgentResources();
+                await loadDashboardData();
+            } catch (error) {
+                console.error('Error deleting resource:', error);
+                showToast('Error deleting resource: ' + error.message, 'error');
+            }
+        };
+
+        // ============================================================
+        // LOAD APPLICATIONS - FIXED TO SHOW APPLICANT/AGENT NAMES
+        // ============================================================
+        async function loadApplications() {
+            const debugEl = document.getElementById('appDebugInfo');
+            const container = document.getElementById('applicationsList');
+            
+            try {
+                debugEl.innerHTML = '<span style="color: #ff0;">🔄 Fetching applications...</span>';
+                const result = await apiFetch('applications');
+                const apps = result.applications || [];
+                
+                // Fetch applicants and agents for enrichment
+                let applicants = [];
+                let agents = [];
+                try {
+                    const appResult = await apiFetch('agent-applicants');
+                    applicants = appResult.applicants || [];
+                } catch (e) {
+                    console.warn('Could not fetch applicants:', e);
+                }
+                try {
+                    const agentResult = await apiFetch('agents');
+                    agents = agentResult.agents || [];
+                } catch (e) {
+                    console.warn('Could not fetch agents:', e);
+                }
+                
+                const applicantMap = {};
+                applicants.forEach(a => {
+                    applicantMap[a.applicantId] = a;
+                });
+                
+                const agentMap = {};
+                agents.forEach(a => {
+                    agentMap[a.agentId] = a;
+                });
+                
+                // Enrich applications with applicant and agent info
+                const enrichedApps = apps.map(app => {
+                    const applicant = applicantMap[app.applicantId];
+                    const agent = agentMap[app.agentId];
+                    return {
+                        ...app,
+                        applicantName: applicant ? applicant.fullName : (app.applicantName || 'Unknown'),
+                        applicantEmail: applicant ? applicant.email : (app.email || 'N/A'),
+                        applicantPhone: applicant ? applicant.phone : (app.phone || 'N/A'),
+                        agentName: agent ? agent.fullName : (app.agentName || 'Unknown'),
+                        agentIdDisplay: agent ? agent.agentId : (app.agentId || 'Unknown'),
+                        applicantStatus: applicant ? applicant.status : 'Unknown',
+                        paymentStatus: app.paymentStatus || applicant?.paymentStatus || 'No Payment'
+                    };
+                });
+                
+                debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${enrichedApps.length} applications</span><span style="color: #ff0; margin-left: 15px;">📋 Enriched with applicant/agent data</span>`;
+                document.getElementById('appTotalLabel').textContent = `${enrichedApps.length} total`;
+
+                if (enrichedApps.length === 0) {
+                    container.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>No applications yet. Users need to submit applications first.</p></div>`;
+                    return;
+                }
+
+                container.innerHTML = `
+                    <div class="table-wrapper">
+                        <table class="admin-table">
+                            <thead><tr>
+                                <th>Applicant</th>
+                                <th>Email</th>
+                                <th>Applicant ID</th>
+                                <th>Agent</th>
+                                <th>Agent ID</th>
+                                <th>Service</th>
+                                <th>Status</th>
+                                <th>Payment</th>
+                                <th>Actions</th>
+                            </tr></thead>
+                            <tbody>
+                                ${enrichedApps.map(app => {
+                                    const status = app.status || 'draft';
+                                    const docCount = app.documents ? Object.keys(app.documents).length : 0;
+                                    const paymentStatus = app.paymentStatus || 'No Payment';
+                                    return `
+                                        <tr>
+                                            <td><strong>${app.applicantName || 'Unknown'}</strong></td>
+                                            <td>${app.applicantEmail || 'N/A'}</td>
+                                            <td><span style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">${app.applicantId || 'N/A'}</span></td>
+                                            <td>${app.agentName || 'Unknown'}</td>
+                                            <td><span style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">${app.agentIdDisplay || 'N/A'}</span></td>
+                                            <td>${app.service || 'N/A'}</td>
+                                            <td><span class="status-badge status-${status}">${status.toUpperCase()}</span></td>
+                                            <td><span class="payment-status-badge ${paymentStatus.toLowerCase().replace(/ /g, '_')}">${paymentStatus}</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-info" onclick="viewApplicationDetail('${app._id || app.id}')" title="View Full Details"><i class="fas fa-file-alt"></i></button>
+                                                <select onchange="updateApplicationStatus('${app._id || app.id}', this.value)" class="glass-input" style="width: auto; padding: 4px 8px; font-size: 0.7rem;">
+                                                    <option value="draft" ${status === 'draft' ? 'selected' : ''}>Draft</option>
+                                                    <option value="submitted" ${status === 'submitted' ? 'selected' : ''}>Submitted</option>
+                                                    <option value="pending_review" ${status === 'pending_review' ? 'selected' : ''}>Pending Review</option>
+                                                    <option value="under_review" ${status === 'under_review' ? 'selected' : ''}>Under Review</option>
+                                                    <option value="approved" ${status === 'approved' ? 'selected' : ''}>Approved</option>
+                                                    <option value="rejected" ${status === 'rejected' ? 'selected' : ''}>Rejected</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error('Error loading applications:', error);
+                debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading applications: ${error.message}</p></div>`;
+                showToast('Error loading applications', 'error');
+            }
+        }
+
+        // ============================================================
+        // VIEW APPLICATION DETAIL - FIXED TO SHOW ENRICHED DATA
+        // ============================================================
+        window.viewApplicationDetail = async (appId) => {
+            try {
+                const result = await apiFetch(`applications/${appId}`);
+                const appData = result.application;
+                
+                if (!appData) {
+                    showToast('Application not found', 'error');
+                    return;
+                }
+                
+                const docCount = Object.keys(appData?.documents || {}).length;
+                
+                let docsHtml = '';
+                if (docCount > 0) {
+                    docsHtml = Object.entries(appData.documents).map(([key, doc]) => {
+                        if (Array.isArray(doc)) {
+                            return doc.filter(d => d && d.fileName).map(d => `
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-bottom: 1px solid #eee;">
+                                    <span><strong>${key.replace(/_/g, ' ').toUpperCase()}</strong> - ${d.fileName}</span>
+                                    <span class="status-badge status-${d.status || 'pending_review'}">${(d.status || 'pending_review').toUpperCase()}</span>
+                                    ${d.fileUrl ? `<a href="${d.fileUrl}" target="_blank" class="btn btn-sm btn-primary" style="font-size: 0.6rem;"><i class="fas fa-eye"></i> View</a>` : ''}
+                                </div>
+                            `).join('');
+                        } else if (doc && doc.fileName) {
+                            return `
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-bottom: 1px solid #eee;">
+                                    <span><strong>${key.replace(/_/g, ' ').toUpperCase()}</strong> - ${doc.fileName}</span>
+                                    <span class="status-badge status-${doc.status || 'pending_review'}">${(doc.status || 'pending_review').toUpperCase()}</span>
+                                    ${doc.fileUrl ? `<a href="${doc.fileUrl}" target="_blank" class="btn btn-sm btn-primary" style="font-size: 0.6rem;"><i class="fas fa-eye"></i> View</a>` : ''}
+                                </div>
+                            `;
+                        }
+                        return '';
+                    }).filter(Boolean).join('');
+                } else {
+                    docsHtml = '<p style="color: #999;">No documents uploaded</p>';
+                }
+                
+                // Get payment info
+                let paymentHtml = '';
+                if (appData.payments && appData.payments.length > 0) {
+                    paymentHtml = appData.payments.map(p => `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #eee; font-size: 0.85rem;">
+                            <span>$${(p.amount || 0).toFixed(2)} - ${p.description || 'Payment'}</span>
+                            <span class="status-badge status-${p.status || 'pending'}">${p.status || 'Pending'}</span>
+                            ${p.receiptUrl ? `<a href="${p.receiptUrl}" target="_blank" class="btn btn-sm btn-primary" style="font-size: 0.6rem;"><i class="fas fa-receipt"></i></a>` : ''}
+                        </div>
+                    `).join('');
+                } else {
+                    paymentHtml = '<p style="color: #999; font-size: 0.85rem;">No payments recorded</p>';
+                }
+                
+                alert(`📋 Application Details\n\nApplicant: ${appData.applicantName || 'Unknown'}\nApplicant ID: ${appData.applicantId || 'N/A'}\nEmail: ${appData.email || 'N/A'}\nAgent: ${appData.agentName || 'Unknown'}\nAgent ID: ${appData.agentId || 'N/A'}\nService: ${appData.service || 'N/A'}\nStatus: ${appData.status || 'draft'}\nPayment: ${appData.paymentStatus || 'No Payment'}\nDocuments: ${docCount}\n\n--- Documents ---\n${docsHtml.replace(/<[^>]*>/g, '')}\n\n--- Payments ---\n${paymentHtml.replace(/<[^>]*>/g, '')}`);
+                
+            } catch (error) {
+                console.error('Error viewing application:', error);
+                showToast('Error loading application details: ' + error.message, 'error');
+            }
+        };
 
         // ============================================================
         // AGENT ACTION FUNCTIONS - COMPLETE
@@ -2696,7 +3717,7 @@ window.viewApplicantDocuments = async (applicantId) => {
         // Process a single commission directly from the table
         window.processSingleCommission = async (commissionId) => {
             try {
-                const result = await apiFetch(`agent-commissions`);
+                const result = await apiFetch('agent-commissions');
                 const commissions = result.commissions || [];
                 const selected = commissions.find(c => c._id === commissionId);
                 
@@ -2764,23 +3785,6 @@ window.viewApplicantDocuments = async (applicantId) => {
             document.getElementById('approvePasswordStrengthBar').style.width = '0%';
             document.getElementById('approvePasswordStrengthText').textContent = '';
             document.getElementById('approveAgentModal').classList.add('active');
-        };
-
-        // View Agent Applicant
-        window.viewAgentApplicant = async (applicantId) => {
-            try {
-                const result = await apiFetch(`agent-applicants/${applicantId}`);
-                const applicant = result.applicant;
-                alert(`👤 Applicant Details\n\nName: ${applicant.fullName}\nID: ${applicant.applicantId}\nEmail: ${applicant.email}\nStatus: ${applicant.status}\nAgent: ${applicant.agentId}\nPayment Status: ${applicant.paymentStatus}\nCommission Status: ${applicant.commissionStatus}`);
-            } catch (error) {
-                console.error('Error viewing applicant:', error);
-                showToast('Error loading applicant details', 'error');
-            }
-        };
-
-        // Edit Agent Applicant
-        window.editAgentApplicant = async (applicantId) => {
-            showToast('Edit applicant functionality coming soon', 'info');
         };
 
         // Reverse Commission
@@ -3527,92 +4531,6 @@ window.viewApplicantDocuments = async (applicantId) => {
         };
 
         // ============================================================
-        // LOAD APPLICATIONS
-        // ============================================================
-        async function loadApplications() {
-            const debugEl = document.getElementById('appDebugInfo');
-            const container = document.getElementById('applicationsList');
-            
-            try {
-                debugEl.innerHTML = '<span style="color: #ff0;">🔄 Fetching applications...</span>';
-                const result = await apiFetch('applications');
-                const apps = result.applications || [];
-                
-                debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${apps.length} applications</span><span style="color: #ff0; margin-left: 15px;">📋 With documents: ${apps.filter(a => a.documents && Object.keys(a.documents).length > 0).length}</span>`;
-                document.getElementById('appTotalLabel').textContent = `${apps.length} total`;
-
-                if (apps.length === 0) {
-                    container.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>No applications yet. Users need to submit applications first.</p></div>`;
-                    return;
-                }
-
-                container.innerHTML = `
-                    <div class="table-wrapper">
-                        <table class="admin-table">
-                            <thead><tr><th>Applicant</th><th>Email</th><th>Country</th><th>Status</th><th>Documents</th><th>Date</th><th>Actions</th></tr></thead>
-                            <tbody>
-                                ${apps.map(app => {
-                                    const status = app.status || 'draft';
-                                    const docCount = app.documents ? Object.keys(app.documents).length : 0;
-                                    return `
-                                        <tr>
-                                            <td><strong>${app.personalInfo?.name || app.name || 'Unknown'}</strong></td>
-                                            <td>${app.personalInfo?.email || app.email || 'N/A'}</td>
-                                            <td>${app.personalInfo?.countryOfInterest || app.countryOfInterest || 'N/A'}</td>
-                                            <td><span class="status-badge status-${status}">${status.toUpperCase()}</span></td>
-                                            <td><span style="color: #17a2b8; font-weight: 600;">${docCount}</span>${docCount > 0 ? `<span style="font-size: 0.6rem; color: rgba(255,255,255,0.3);"> docs</span>` : ''}</td>
-                                            <td>${app.createdAt ? new Date(app.createdAt).toLocaleDateString() : 'N/A'}</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-info" onclick="viewApplicationDetail('${app._id || app.id}')" title="View Full Details"><i class="fas fa-file-alt"></i></button>
-                                                <select onchange="updateApplicationStatus('${app._id || app.id}', this.value)" class="glass-input" style="width: auto; padding: 4px 8px; font-size: 0.7rem;">
-                                                    <option value="draft" ${status === 'draft' ? 'selected' : ''}>Draft</option>
-                                                    <option value="submitted" ${status === 'submitted' ? 'selected' : ''}>Submitted</option>
-                                                    <option value="pending_review" ${status === 'pending_review' ? 'selected' : ''}>Pending Review</option>
-                                                    <option value="under_review" ${status === 'under_review' ? 'selected' : ''}>Under Review</option>
-                                                    <option value="approved" ${status === 'approved' ? 'selected' : ''}>Approved</option>
-                                                    <option value="rejected" ${status === 'rejected' ? 'selected' : ''}>Rejected</option>
-                                                </select>
-                                            </td>
-                                        </tr>
-                                    `;
-                                }).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                `;
-
-            } catch (error) {
-                console.error('Error loading applications:', error);
-                debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
-                container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading applications: ${error.message}</p></div>`;
-                showToast('Error loading applications', 'error');
-            }
-        }
-
-        // ============================================================
-        // VIEW APPLICATION DETAIL
-        // ============================================================
-        window.viewApplicationDetail = async (appId) => {
-            try {
-                const result = await apiFetch(`applications/${appId}`);
-                const appData = result.application;
-                const docCount = Object.keys(appData?.documents || {}).length;
-                
-                let docsHtml = '';
-                if (docCount > 0) {
-                    docsHtml = Object.entries(appData.documents).map(([key, doc]) => `<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-bottom: 1px solid #eee;"><span><strong>${formatDocName(key)}</strong></span><span class="status-badge status-${doc.status || 'pending_review'}">${(doc.status || 'pending_review').toUpperCase()}</span>${doc.fileUrl ? `<a href="${doc.fileUrl}" target="_blank" class="btn btn-sm btn-primary" style="font-size: 0.6rem;"><i class="fas fa-eye"></i> View</a>` : ''}</div>`).join('');
-                } else {
-                    docsHtml = '<p style="color: #999;">No documents uploaded</p>';
-                }
-                
-                alert(`📋 Application Details\n\nApplicant: ${appData?.personalInfo?.name || 'Unknown'}\nEmail: ${appData?.personalInfo?.email || 'N/A'}\nCountry: ${appData?.personalInfo?.countryOfInterest || 'N/A'}\nStatus: ${appData?.status || 'draft'}\nDocuments: ${docCount}\n\n--- Documents ---\n${docsHtml.replace(/<[^>]*>/g, '')}`);
-            } catch (error) {
-                console.error('Error viewing application:', error);
-                showToast('Error loading application details: ' + error.message, 'error');
-            }
-        };
-
-        // ============================================================
         // UPDATE APPLICATION STATUS
         // ============================================================
         window.updateApplicationStatus = async (appId, status) => {
@@ -3991,7 +4909,7 @@ window.viewApplicantDocuments = async (applicantId) => {
         }
 
         // ============================================================
-        // OPPORTUNITIES - ADMIN FUNCTIONS (NEW)
+        // OPPORTUNITIES - ADMIN FUNCTIONS
         // ============================================================
         let allOpportunities = [];
         let editingOppId = null;
@@ -4210,7 +5128,7 @@ window.viewApplicantDocuments = async (applicantId) => {
         });
 
         // ============================================================
-        // SCHOLARSHIPS - ADMIN FUNCTIONS (NEW)
+        // SCHOLARSHIPS - ADMIN FUNCTIONS
         // ============================================================
         let allScholarships = [];
         let editingScholarshipId = null;
@@ -4379,7 +5297,7 @@ window.viewApplicantDocuments = async (applicantId) => {
         });
 
         // ============================================================
-        // UNIVERSITIES - ADMIN FUNCTIONS (NEW)
+        // UNIVERSITIES - ADMIN FUNCTIONS
         // ============================================================
         let allUniversities = [];
         let editingUniId = null;
@@ -4530,7 +5448,7 @@ window.viewApplicantDocuments = async (applicantId) => {
         });
 
         // ============================================================
-        // PROGRAMMES - ADMIN FUNCTIONS (NEW)
+        // PROGRAMMES - ADMIN FUNCTIONS
         // ============================================================
         let allProgrammes = [];
         let editingProgId = null;
@@ -4696,7 +5614,7 @@ window.viewApplicantDocuments = async (applicantId) => {
         });
 
         // ============================================================
-        // SERVICE REQUESTS - ADMIN FUNCTIONS (NEW)
+        // SERVICE REQUESTS - ADMIN FUNCTIONS
         // ============================================================
         let allServiceRequests = [];
 
@@ -4815,7 +5733,12 @@ window.viewApplicantDocuments = async (applicantId) => {
                     'scholarships-section': loadScholarships,
                     'universities-section': loadUniversities,
                     'programmes-section': loadProgrammes,
-                    'service-requests-section': loadServiceRequests
+                    'service-requests-section': loadServiceRequests,
+                    'agents-section': loadAgents,
+                    'agent-applicants-section': loadAgentApplicants,
+                    'agent-commissions-section': loadAgentCommissions,
+                    'agent-settlements-section': loadAgentSettlements,
+                    'agent-resources-section': loadAgentResources
                 };
                 if (loaders[id]) await loaders[id]();
             }
@@ -4870,6 +5793,10 @@ window.viewApplicantDocuments = async (applicantId) => {
                 closeProgrammeModal();
                 document.getElementById('userDetailModal').classList.remove('active');
                 document.getElementById('sidebar').classList.remove('open'); 
+                document.getElementById('viewDocumentsModal').classList.remove('active');
+                document.getElementById('editApplicantModal').classList.remove('active');
+                document.getElementById('resourceModal').classList.remove('active');
+                document.getElementById('viewResourceModal').classList.remove('active');
             }
         });
 
@@ -4924,6 +5851,7 @@ window.viewApplicantDocuments = async (applicantId) => {
         window.loadAgentApplicants = loadAgentApplicants;
         window.loadAgentCommissions = loadAgentCommissions;
         window.loadAgentSettlements = loadAgentSettlements;
+        window.loadAgentResources = loadAgentResources;
         window.viewAgent = viewAgent;
         window.editAgent = editAgent;
         window.openAgentRegistration = openAgentRegistration;
@@ -4937,6 +5865,13 @@ window.viewApplicantDocuments = async (applicantId) => {
         window.viewSettlement = viewSettlement;
         window.updateAgentStatus = updateAgentStatus;
         window.togglePasswordVisibility = togglePasswordVisibility;
+        window.viewApplicantDocuments = viewApplicantDocuments;
+        window.editAgentApplicant = editAgentApplicant;
+        window.viewAgentApplicant = viewAgentApplicant;
+        window.editResource = editResource;
+        window.deleteResource = deleteResource;
+        window.toggleResourceStatus = toggleResourceStatus;
+        window.removeResourceFile = removeResourceFile;
 
         // ============================================================
         // INITIALIZE
@@ -4950,9 +5885,10 @@ window.viewApplicantDocuments = async (applicantId) => {
         setTimeout(() => loadPayments(), 1000);
         setTimeout(() => loadOpportunities(), 1500);
         setTimeout(() => loadAgents(), 2000);
+        setTimeout(() => loadAgentResources(), 2500);
         
         console.log('✅ Admin Dashboard 2.0 ready');
-        console.log('💡 New Features: Agent Management, Password System, Commission Processing');
+        console.log('💡 New Features: Agent Management, Password System, Commission Processing, Resource Management, Edit Applicant');
     </script>
 </body>
 </html>
