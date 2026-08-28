@@ -1,6 +1,6 @@
 // server.js - GISC APPLICANT PORTAL 2.0 - COMPLETE FIXED VERSION
 const express = require('express'); 
-const multer = require('multer');
+const multer = require('multer'); 
 const cors = require('cors');
 const { MongoClient, GridFSBucket, ObjectId } = require('mongodb');
 const { v4: uuidv4 } = require('uuid');
