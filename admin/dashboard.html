@@ -2158,48 +2158,203 @@
             }
         }
 
-        // Load Agent Applicants
-        async function loadAgentApplicants() {
-            const debugEl = document.getElementById('agentApplicantDebugInfo');
-            const tbody = document.getElementById('agentApplicantsTableBody');
-            
+        // Load Agent Applicants with Documents
+async function loadAgentApplicants() {
+    const debugEl = document.getElementById('agentApplicantDebugInfo');
+    const tbody = document.getElementById('agentApplicantsTableBody');
+    
+    try {
+        debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading agent applicants...</span>';
+        const result = await apiFetch('agent-applicants');
+        const applicants = result.applicants || [];
+        
+        document.getElementById('agentApplicantTotal').textContent = `${applicants.length} total`;
+        document.getElementById('agentApplicantCount').textContent = applicants.length;
+        
+        // Fetch documents for each applicant
+        const enrichedApplicants = [];
+        for (const app of applicants) {
+            // Get documents from applications collection
             try {
-                debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading agent applicants...</span>';
-                const result = await apiFetch('agent-applicants');
-                const applicants = result.applicants || [];
+                const appDoc = await apiFetch(`applications/${app.applicantId}`);
+                const application = appDoc.application;
                 
-                document.getElementById('agentApplicantTotal').textContent = `${applicants.length} total`;
-                document.getElementById('agentApplicantCount').textContent = applicants.length;
+                // Count documents
+                let docCount = 0;
+                let docStatus = 'No Documents';
+                let docList = [];
                 
-                debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${applicants.length} agent applicants</span>`;
-                
-                if (applicants.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px;">No agent applicants found</td></tr>`;
-                    return;
+                if (application && application.documents) {
+                    const docs = application.documents;
+                    docCount = Object.keys(docs).length;
+                    
+                    // Get document types and statuses
+                    for (const [key, value] of Object.entries(docs)) {
+                        if (value && value.fileName) {
+                            docList.push({
+                                type: key,
+                                fileName: value.fileName,
+                                status: value.status || 'pending_review',
+                                url: value.fileUrl || null
+                            });
+                        } else if (Array.isArray(value)) {
+                            for (const item of value) {
+                                if (item && item.fileName) {
+                                    docList.push({
+                                        type: key,
+                                        fileName: item.fileName,
+                                        status: item.status || 'pending_review',
+                                        url: item.fileUrl || null
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Determine overall status
+                    const hasApproved = docList.some(d => d.status === 'approved');
+                    const hasRejected = docList.some(d => d.status === 'rejected');
+                    const hasPending = docList.some(d => d.status === 'pending_review' || d.status === 'submitted');
+                    
+                    if (docCount === 0) docStatus = 'No Documents';
+                    else if (hasRejected && !hasApproved) docStatus = 'Rejected';
+                    else if (hasApproved && !hasPending && !hasRejected) docStatus = 'All Approved';
+                    else if (hasApproved && hasPending) docStatus = 'Partial Approved';
+                    else if (hasPending) docStatus = 'Pending Review';
                 }
                 
-                tbody.innerHTML = applicants.map(app => `
-                    <tr>
-                        <td><strong>${app.applicantId || 'N/A'}</strong></td>
-                        <td>${app.fullName || 'Unknown'}</td>
-                        <td>${app.email || 'N/A'}</td>
-                        <td>${app.agentName || app.agentId || 'N/A'}</td>
-                        <td><span class="status-badge status-${app.status ? app.status.toLowerCase().replace(/ /g, '_') : 'registered'}">${app.status || 'Registered'}</span></td>
-                        <td><span class="payment-status-badge ${app.paymentStatus ? app.paymentStatus.toLowerCase() : 'due'}">${app.paymentStatus || 'No Payment'}</span></td>
-                        <td>${app.commissionStatus || 'No Commission'}</td>
-                        <td>
-                            <button class="btn btn-sm btn-info" onclick="viewAgentApplicant('${app.applicantId}')"><i class="fas fa-eye"></i></button>
-                            <button class="btn btn-sm btn-primary" onclick="editAgentApplicant('${app.applicantId}')"><i class="fas fa-edit"></i></button>
-                        </td>
-                    </tr>
-                `).join('');
-                
-            } catch (error) {
-                console.error('Error loading agent applicants:', error);
-                debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px;">Error loading applicants: ${error.message}</td></tr>`;
+                enrichedApplicants.push({
+                    ...app,
+                    docCount: docCount,
+                    docStatus: docStatus,
+                    docList: docList,
+                    application: application || null
+                });
+            } catch (e) {
+                // If no application found, still show applicant
+                enrichedApplicants.push({
+                    ...app,
+                    docCount: 0,
+                    docStatus: 'No Application',
+                    docList: [],
+                    application: null
+                });
             }
         }
+        
+        debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${enrichedApplicants.length} agent applicants with document info</span>`;
+        
+        if (enrichedApplicants.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 30px;">No agent applicants found</td></tr>`;
+            return;
+        }
+        
+        tbody.innerHTML = enrichedApplicants.map(app => `
+            <tr>
+                <td><strong>${app.applicantId || 'N/A'}</strong></td>
+                <td>${app.fullName || 'Unknown'}</td>
+                <td>${app.email || 'N/A'}</td>
+                <td>${app.agentName || app.agentId || 'N/A'}</td>
+                <td><span class="status-badge status-${app.status ? app.status.toLowerCase().replace(/ /g, '_') : 'registered'}">${app.status || 'Registered'}</span></td>
+                <td><span class="payment-status-badge ${app.paymentStatus ? app.paymentStatus.toLowerCase() : 'due'}">${app.paymentStatus || 'No Payment'}</span></td>
+                <td>
+                    <span style="color: #17a2b8; font-weight: 600;">${app.docCount}</span> 
+                    <span style="font-size: 0.6rem; color: rgba(255,255,255,0.3);">docs</span>
+                    ${app.docStatus !== 'No Documents' ? `<br><span class="status-badge status-${app.docStatus.toLowerCase().replace(/ /g, '_')}" style="font-size: 0.55rem;">${app.docStatus}</span>` : ''}
+                </td>
+                <td>${app.commissionStatus || 'No Commission'}</td>
+                <td>
+                    <button class="btn btn-sm btn-info" onclick="viewAgentApplicant('${app.applicantId}')"><i class="fas fa-eye"></i></button>
+                    <button class="btn btn-sm btn-primary" onclick="editAgentApplicant('${app.applicantId}')"><i class="fas fa-edit"></i></button>
+                    ${app.docCount > 0 ? `<button class="btn btn-sm btn-success" onclick="viewApplicantDocuments('${app.applicantId}')"><i class="fas fa-file-alt"></i></button>` : ''}
+                </td>
+            </tr>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Error loading agent applicants:', error);
+        debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 30px;">Error loading applicants: ${error.message}</td></tr>`;
+    }
+}
+
+// View Applicant Documents (Admin)
+window.viewApplicantDocuments = async (applicantId) => {
+    try {
+        const result = await apiFetch(`applications/${applicantId}`);
+        const application = result.application;
+        
+        if (!application || !application.documents || Object.keys(application.documents).length === 0) {
+            showToast('No documents found for this applicant', 'info');
+            return;
+        }
+        
+        const docs = application.documents;
+        let docHtml = '';
+        
+        for (const [key, value] of Object.entries(docs)) {
+            if (Array.isArray(value)) {
+                for (const item of value) {
+                    if (item && item.fileName) {
+                        docHtml += `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid #eee;">
+                                <div>
+                                    <strong>${key.replace('_', ' ').toUpperCase()}</strong>
+                                    <div style="font-size: 0.85rem;">${item.fileName}</div>
+                                </div>
+                                <div>
+                                    <span class="status-badge status-${item.status || 'pending_review'}">${item.status || 'Pending Review'}</span>
+                                    ${item.fileUrl ? `<a href="${item.fileUrl}" target="_blank" class="btn btn-sm btn-primary" style="margin-left: 8px;"><i class="fas fa-eye"></i></a>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+            } else if (value && value.fileName) {
+                docHtml += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid #eee;">
+                        <div>
+                            <strong>${key.replace('_', ' ').toUpperCase()}</strong>
+                            <div style="font-size: 0.85rem;">${value.fileName}</div>
+                        </div>
+                        <div>
+                            <span class="status-badge status-${value.status || 'pending_review'}">${value.status || 'Pending Review'}</span>
+                            ${value.fileUrl ? `<a href="${value.fileUrl}" target="_blank" class="btn btn-sm btn-primary" style="margin-left: 8px;"><i class="fas fa-eye"></i></a>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        // Create modal
+        const modal = document.createElement('div');
+        modal.className = 'glass-modal active';
+        modal.style.display = 'flex';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h2>Documents for ${application.applicantName || applicantId}</h2>
+                    <button class="modal-close" onclick="this.closest('.glass-modal').remove()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    ${docHtml || '<p style="color: #999;">No documents found</p>'}
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" onclick="this.closest('.glass-modal').remove()">Close</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) this.remove();
+        });
+        
+    } catch (error) {
+        console.error('Error viewing documents:', error);
+        showToast('Error loading documents: ' + error.message, 'error');
+    }
+};
 
         // Load Agent Commissions
         async function loadAgentCommissions() {
