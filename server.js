@@ -1,4 +1,4 @@
-// server.js - GISC APPLICANT PORTAL 2.0 - COMPLETE FIXED VERSION
+// server.js - GISC APPLICANT PORTAL 2.0 - COMPLETE FIXED VERSION1
 const express = require('express');  
 const multer = require('multer'); 
 const cors = require('cors');
