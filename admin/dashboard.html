@@ -2350,30 +2350,82 @@
             }
         };
 
-        window.confirmPayment = async (userId) => {
-            if (!confirm('Confirm payment for this user? This will update their application status and timeline.')) return;
-            try {
-                showToast('Confirming payment...', 'info');
-                const usersResult = await apiFetch('users');
-                const user = (usersResult.users || []).find(u => u._id === userId || u.id === userId);
-                if (!user) throw new Error('User not found');
-                
-                const response = await fetch(`${API_URL}/admin/payments/confirm`, {
-                    method: 'PUT',
-                    headers: { 'Authorization': `Bearer ${adminToken}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ uid: user.uid })
+       // ============================================================
+// CONFIRM PAYMENT - WITH AUTO COMMISSION GENERATION - FIXED
+// ============================================================
+window.confirmPayment = async (userId) => {
+    if (!confirm('Confirm payment for this user? This will generate commission for the agent.')) return;
+    try {
+        showToast('Confirming payment...', 'info');
+        const usersResult = await apiFetch('users');
+        const user = (usersResult.users || []).find(u => u._id === userId || u.id === userId);
+        if (!user) throw new Error('User not found');
+        
+        // Step 1: Confirm payment
+        const paymentResponse = await fetch(`${API_URL}/admin/payments/confirm`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${adminToken}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uid: user.uid })
+        });
+        if (!paymentResponse.ok) { const error = await paymentResponse.text(); throw new Error(error); }
+        const paymentResult = await paymentResponse.json();
+        
+        // Step 2: Auto-generate commission if payment was successful
+        if (paymentResult.success) {
+            showToast('Payment approved, generating commission...', 'info');
+            
+            // Get applicant info to find agent and package
+            const applicantResult = await fetch(`${API_URL}/admin/applicants?search=${encodeURIComponent(user.email)}`, {
+                headers: { 'Authorization': `Bearer ${adminToken}` }
+            });
+            const applicantData = await applicantResult.json();
+            const applicant = (applicantData.applicants || []).find(a => a.email === user.email);
+            
+            if (applicant && applicant.agentId) {
+                // Get the application to find package name
+                const appResult = await fetch(`${API_URL}/admin/applications?search=${encodeURIComponent(user.uid)}`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
                 });
-                if (!response.ok) { const error = await response.text(); throw new Error(error); }
-                showToast(`Payment APPROVED for ${user.name}!`, 'success');
-                await loadPayments();
-                await loadDashboardData();
-                await loadUsers();
-                await loadApplications();
-            } catch (error) {
-                console.error('Error confirming payment:', error);
-                showToast('Error confirming payment: ' + error.message, 'error');
+                const appData = await appResult.json();
+                const application = (appData.applications || []).find(a => a.uid === user.uid);
+                
+                const packageName = application?.packageName || application?.service || 'Standard';
+                const amount = paymentResult.amount || 0;
+                
+                // Call commission processing
+                const commissionResponse = await fetch(`${API_URL}/admin/commissions/process`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${adminToken}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        applicantId: applicant.applicantId,
+                        packageName: packageName,
+                        amountReceived: amount,
+                        paymentId: `PAY-${Date.now()}`
+                    })
+                });
+                
+                if (commissionResponse.ok) {
+                    showToast(`✅ Payment approved and commission generated for ${user.name}!`, 'success');
+                } else {
+                    showToast(`✅ Payment approved but commission generation failed. Please process manually.`, 'warning');
+                }
+            } else {
+                showToast(`✅ Payment approved! No agent commission generated (applicant not linked to agent)`, 'success');
             }
-        };
+        }
+        
+        await loadPayments();
+        await loadDashboardData();
+        await loadUsers();
+        await loadApplications();
+        if (document.querySelector('#agent-commissions-section.active')) {
+            await loadAgentCommissions();
+        }
+    } catch (error) {
+        console.error('Error confirming payment:', error);
+        showToast('Error confirming payment: ' + error.message, 'error');
+    }
+};
 
         window.rejectPayment = async (userId) => {
             const reason = prompt('Enter reason for rejecting this payment:');
@@ -3950,41 +4002,62 @@ async function loadApplications() {
         };
 
         // ============================================================
-        // PROCESS COMMISSION - FULL IMPLEMENTATION
-        // ============================================================
-        window.processCommissionModal = async () => {
-            try {
-                const result = await apiFetch('agent-commissions');
-                const commissions = result.commissions || [];
-                const eligible = commissions.filter(c => c.status === 'Eligible' || c.status === 'Pending');
-                
-                if (eligible.length === 0) {
-                    showToast('No eligible commissions found to process', 'warning');
-                    return;
-                }
-                
-                const commissionList = eligible.map((c, i) => 
-                    `${i + 1}. ${c.agentName || c.agentId} - ${c.applicantName || c.applicantId} - $${c.commissionAmount.toFixed(2)} (${c.packageName})`
-                ).join('\n');
-                
-                const selection = prompt(`Select a commission to process:\n\n${commissionList}\n\nEnter the number (1-${eligible.length}):`);
-                if (!selection) return;
-                
-                const index = parseInt(selection) - 1;
-                if (isNaN(index) || index < 0 || index >= eligible.length) {
-                    showToast('Invalid selection', 'error');
-                    return;
-                }
-                
-                const selected = eligible[index];
-                await openCommissionProcessing(selected);
-                
-            } catch (error) {
-                console.error('Error loading commissions for processing:', error);
-                showToast('Error loading commissions: ' + error.message, 'error');
-            }
-        };
+// PROCESS COMMISSION MODAL - FIXED
+// ============================================================
+window.processCommissionModal = async () => {
+    try {
+        const result = await apiFetch('agent-commissions');
+        const commissions = result.commissions || [];
+        const eligible = commissions.filter(c => {
+            // Check for commission eligibility
+            const status = c.status || '';
+            return status === 'Eligible' || status === 'Pending' || status === 'eligible' || status === 'pending';
+        });
+        
+        console.log('🔍 Eligible commissions found:', eligible.length);
+        console.log('All commissions:', commissions);
+        
+        if (eligible.length === 0) {
+            showToast('No eligible commissions found to process. Commission must be generated after payment confirmation.', 'warning');
+            // Show helpful message with instructions
+            alert(`📋 No Eligible Commissions Found
 
+To generate commissions:
+
+1. Go to the PAYMENTS section
+2. Find a pending payment from an agent's applicant
+3. Click "Approve" to confirm the payment
+4. The commission will be automatically generated
+5. Return here to process the commission
+
+OR
+
+If you have eligible commissions but they're not showing, please check the database.`);
+            return;
+        }
+        
+        // Show selection dialog
+        const commissionList = eligible.map((c, i) => 
+            `${i + 1}. ${c.agentName || c.agentId || 'Unknown Agent'} - ${c.applicantName || c.applicantId || 'Unknown Applicant'} - $${(c.commissionAmount || 0).toFixed(2)} (${c.packageName || 'N/A'})`
+        ).join('\n');
+        
+        const selection = prompt(`Select a commission to process:\n\n${commissionList}\n\nEnter the number (1-${eligible.length}):`);
+        if (!selection) return;
+        
+        const index = parseInt(selection) - 1;
+        if (isNaN(index) || index < 0 || index >= eligible.length) {
+            showToast('Invalid selection', 'error');
+            return;
+        }
+        
+        const selected = eligible[index];
+        await openCommissionProcessing(selected);
+        
+    } catch (error) {
+        console.error('Error loading commissions for processing:', error);
+        showToast('Error loading commissions: ' + error.message, 'error');
+    }
+};
         // Process a single commission directly from the table
         window.processSingleCommission = async (commissionId) => {
             try {
@@ -4077,13 +4150,83 @@ async function loadApplications() {
             }
         };
 
-        // Generate Settlement
-        window.generateSettlement = () => {
-            const agentId = prompt('Enter Agent ID to generate settlement for:');
-            if (!agentId) return;
+
+        // ============================================================
+// GENERATE SETTLEMENT - FIXED
+// ============================================================
+window.generateSettlement = async () => {
+    const agentId = prompt('Enter Agent ID to generate settlement for:');
+    if (!agentId || agentId.trim() === '') {
+        showToast('Agent ID is required', 'error');
+        return;
+    }
+    
+    const periodStart = prompt('Enter settlement period start (YYYY-MM-DD):', new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1).toISOString().split('T')[0]);
+    if (periodStart === null) return;
+    
+    const periodEnd = prompt('Enter settlement period end (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+    if (periodEnd === null) return;
+    
+    if (!confirm(`Generate settlement for agent ${agentId} from ${periodStart} to ${periodEnd}?`)) return;
+    
+    const btn = document.querySelector('.btn-success[onclick*="generateSettlement"]') || document.querySelector('#agent-commissions-section .btn-success');
+    const originalText = btn ? btn.innerHTML : 'Generate';
+    if (btn) {
+        btn.innerHTML = '<span class="spinner"></span> Generating...';
+        btn.disabled = true;
+    }
+    
+    try {
+        showToast('Generating settlement...', 'info');
+        
+        const response = await fetch(`${API_URL}/admin/commissions/settle`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${adminToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                agentId: agentId.trim(),
+                periodStart: periodStart,
+                periodEnd: periodEnd,
+                notes: `Settlement generated by admin on ${new Date().toLocaleDateString()}`
+            })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Settlement generation failed');
+        }
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast(`✅ Settlement generated successfully! Total: $${result.totalAmount.toFixed(2)} for ${result.commissionCount} commissions`, 'success');
             
-            showToast('Generating settlement...', 'info');
-        };
+            // Ask if user wants to view the settlement
+            if (confirm(`Settlement generated! Total amount: $${result.totalAmount.toFixed(2)}. Would you like to view it?`)) {
+                // Reload settlements
+                if (document.querySelector('#agent-settlements-section.active')) {
+                    await loadAgentSettlements();
+                } else {
+                    // Navigate to settlements
+                    document.querySelector('[data-section="agent-settlements"]')?.click();
+                }
+            }
+        } else {
+            throw new Error(result.message || 'Settlement generation failed');
+        }
+        
+    } catch (error) {
+        console.error('Error generating settlement:', error);
+        showToast('Error generating settlement: ' + error.message, 'error');
+    } finally {
+        if (btn) {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+};
 
         // Mark Settlement as Paid
         window.markSettlementPaid = async (settlementId) => {
