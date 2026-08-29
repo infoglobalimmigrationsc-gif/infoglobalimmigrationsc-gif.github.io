@@ -3425,7 +3425,9 @@
         // LOAD APPLICATIONS - FIXED TO SHOW APPLICANT/AGENT NAMES
         // ============================================================
        // ============================================================
-// LOAD APPLICATIONS - FIXED TO SHOW APPLICANT/AGENT NAMES
+
+        // ============================================================
+// LOAD APPLICATIONS - FIXED TO SHOW ALL APPLICANT/AGENT NAMES
 // ============================================================
 async function loadApplications() {
     const debugEl = document.getElementById('appDebugInfo');
@@ -3436,12 +3438,21 @@ async function loadApplications() {
         const result = await apiFetch('applications');
         const apps = result.applications || [];
         
-        // Log what we got for debugging
         console.log('📋 Applications from API:', apps);
         
-        // Fetch applicants and agents for enrichment
+        // Fetch users, applicants, and agents for enrichment
+        let users = [];
         let applicants = [];
         let agents = [];
+        
+        try {
+            const userResult = await apiFetch('users');
+            users = userResult.users || [];
+            console.log('👤 Users found:', users.length);
+        } catch (e) {
+            console.warn('Could not fetch users:', e);
+        }
+        
         try {
             const appResult = await apiFetch('agent-applicants');
             applicants = appResult.applicants || [];
@@ -3449,68 +3460,144 @@ async function loadApplications() {
         } catch (e) {
             console.warn('Could not fetch applicants:', e);
         }
+        
         try {
             const agentResult = await apiFetch('agents');
             agents = agentResult.agents || [];
             console.log('🤝 Agents found:', agents.length);
-            console.log('📋 Agent IDs:', agents.map(a => a.agentId));
         } catch (e) {
             console.warn('Could not fetch agents:', e);
         }
         
+        // Build lookup maps
+        const userMap = {};
+        users.forEach(u => {
+            if (u.uid) userMap[u.uid] = u;
+            if (u._id) userMap[u._id] = u;
+            if (u.email) userMap[u.email.toLowerCase()] = u;
+        });
+        
         const applicantMap = {};
         applicants.forEach(a => {
             applicantMap[a.applicantId] = a;
+            if (a.userId) applicantMap[a.userId] = a;
+            if (a.email) applicantMap[a.email.toLowerCase()] = a;
         });
         
         const agentMap = {};
         agents.forEach(a => {
             agentMap[a.agentId] = a;
+            if (a.email) agentMap[a.email.toLowerCase()] = a;
         });
         
-        // Enrich applications with applicant and agent info
+        // Enrich applications
         const enrichedApps = apps.map(app => {
-            const applicant = applicantMap[app.applicantId];
-            const agent = agentMap[app.agentId];
+            let applicantName = 'Unknown';
+            let applicantEmail = 'N/A';
+            let applicantPhone = 'N/A';
+            let applicantIdDisplay = 'N/A';
+            let agentName = 'Unknown';
+            let agentIdDisplay = 'N/A';
+            let paymentStatus = app.paymentStatus || 'No Payment';
             
-            // If agent not found by agentId, try by agentId field from applicant
-            let agentName = app.agentName || 'Unknown';
-            let agentIdDisplay = app.agentId || 'Unknown';
+            // STEP 1: Try to find applicant by applicantId (agent-submitted)
+            let applicant = null;
+            if (app.applicantId && applicantMap[app.applicantId]) {
+                applicant = applicantMap[app.applicantId];
+            }
             
-            if (agent) {
-                agentName = agent.fullName;
-                agentIdDisplay = agent.agentId;
-            } else if (applicant && applicant.agentId) {
-                // Try to find agent by the agentId from the applicant
-                const agentFromApplicant = agentMap[applicant.agentId];
-                if (agentFromApplicant) {
-                    agentName = agentFromApplicant.fullName;
-                    agentIdDisplay = agentFromApplicant.agentId;
-                } else {
-                    agentName = applicant.agentName || applicant.agentId || 'Unknown Agent';
-                    agentIdDisplay = applicant.agentId || 'Unknown';
+            // STEP 2: Try to find applicant by userId (regular user)
+            let user = null;
+            if (!applicant && app.userId && userMap[app.userId]) {
+                user = userMap[app.userId];
+            }
+            if (!applicant && app.uid && userMap[app.uid]) {
+                user = userMap[app.uid];
+            }
+            
+            // STEP 3: If we found a user but no applicant, use user data
+            if (user && !applicant) {
+                applicantName = user.name || 'Unknown';
+                applicantEmail = user.email || 'N/A';
+                applicantPhone = user.phone || 'N/A';
+                applicantIdDisplay = user.uid || 'N/A';
+                paymentStatus = app.paymentStatus || 'No Payment';
+            }
+            
+            // STEP 4: If we found an applicant, use applicant data
+            if (applicant) {
+                applicantName = applicant.fullName || applicant.name || 'Unknown';
+                applicantEmail = applicant.email || 'N/A';
+                applicantPhone = applicant.phone || 'N/A';
+                applicantIdDisplay = applicant.applicantId || 'N/A';
+                paymentStatus = app.paymentStatus || applicant.paymentStatus || 'No Payment';
+            }
+            
+            // STEP 5: If still no name, try using personalInfo
+            if (applicantName === 'Unknown' && app.personalInfo) {
+                applicantName = app.personalInfo.name || 'Unknown';
+                applicantEmail = app.personalInfo.email || 'N/A';
+                applicantPhone = app.personalInfo.phone || 'N/A';
+            }
+            
+            // STEP 6: If still no name, try using app fields directly
+            if (applicantName === 'Unknown') {
+                applicantName = app.applicantName || app.name || 'Unknown';
+                applicantEmail = app.email || 'N/A';
+                applicantPhone = app.phone || 'N/A';
+            }
+            
+            // STEP 7: Find agent
+            // Try by agentId from application
+            let agent = null;
+            if (app.agentId && agentMap[app.agentId]) {
+                agent = agentMap[app.agentId];
+            }
+            
+            // If no agent, try by agentId from applicant
+            if (!agent && applicant && applicant.agentId && agentMap[applicant.agentId]) {
+                agent = agentMap[applicant.agentId];
+            }
+            
+            // If no agent, try by email match
+            if (!agent && applicantEmail !== 'N/A') {
+                const emailKey = applicantEmail.toLowerCase();
+                if (agentMap[emailKey]) {
+                    agent = agentMap[emailKey];
                 }
             }
             
-            // If still no agent name, try to find in app.agentData
-            if (agentName === 'Unknown' && app.agentData) {
-                agentName = app.agentData.name || 'Unknown';
-                agentIdDisplay = app.agentData.agentId || 'Unknown';
+            if (agent) {
+                agentName = agent.fullName || agent.name || 'Unknown';
+                agentIdDisplay = agent.agentId || 'Unknown';
+            } else if (app.agentName) {
+                agentName = app.agentName;
+                agentIdDisplay = app.agentId || 'Unknown';
+            } else if (applicant && applicant.agentName) {
+                agentName = applicant.agentName;
+                agentIdDisplay = applicant.agentId || 'Unknown';
+            }
+            
+            // STEP 8: Get service
+            let service = app.service || app.serviceRequested || 'N/A';
+            if (service === 'N/A' && app.personalInfo) {
+                service = app.personalInfo.serviceType || 'N/A';
             }
             
             return {
                 ...app,
-                applicantName: applicant ? applicant.fullName : (app.applicantName || app.personalInfo?.name || 'Unknown'),
-                applicantEmail: applicant ? applicant.email : (app.email || app.personalInfo?.email || 'N/A'),
-                applicantPhone: applicant ? applicant.phone : (app.phone || app.personalInfo?.phone || 'N/A'),
+                applicantName: applicantName,
+                applicantEmail: applicantEmail,
+                applicantPhone: applicantPhone,
+                applicantIdDisplay: applicantIdDisplay,
                 agentName: agentName,
                 agentIdDisplay: agentIdDisplay,
-                applicantStatus: applicant ? applicant.status : 'Unknown',
-                paymentStatus: app.paymentStatus || applicant?.paymentStatus || 'No Payment'
+                service: service,
+                paymentStatus: paymentStatus
             };
         });
         
-        debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${enrichedApps.length} applications</span><span style="color: #ff0; margin-left: 15px;">📋 Enriched with applicant/agent data</span>`;
+        debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${enrichedApps.length} applications</span><span style="color: #ff0; margin-left: 15px;">📋 Enriched with user/applicant/agent data</span>`;
         document.getElementById('appTotalLabel').textContent = `${enrichedApps.length} total`;
 
         if (enrichedApps.length === 0) {
@@ -3541,10 +3628,10 @@ async function loadApplications() {
                                 <tr>
                                     <td><strong>${app.applicantName || 'Unknown'}</strong></td>
                                     <td>${app.applicantEmail || 'N/A'}</td>
-                                    <td><span style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">${app.applicantId || 'N/A'}</span></td>
+                                    <td><span style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">${app.applicantIdDisplay || 'N/A'}</span></td>
                                     <td><strong>${app.agentName || 'Unknown'}</strong></td>
                                     <td><span style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">${app.agentIdDisplay || 'N/A'}</span></td>
-                                    <td>${app.service || app.serviceRequested || 'N/A'}</td>
+                                    <td>${app.service || 'N/A'}</td>
                                     <td><span class="status-badge status-${status}">${status.toUpperCase()}</span></td>
                                     <td><span class="payment-status-badge ${paymentStatus.toLowerCase().replace(/ /g, '_')}">${paymentStatus}</span></td>
                                     <td>
@@ -3573,7 +3660,6 @@ async function loadApplications() {
         showToast('Error loading applications', 'error');
     }
 }
-
         // ============================================================
         // VIEW APPLICATION DETAIL - FIXED TO SHOW ENRICHED DATA
         // ============================================================
@@ -5751,34 +5837,33 @@ async function loadApplications() {
         // ============================================================
         // REFRESH DATA
         // ============================================================
-        async function refreshData() {
-            showToast('Refreshing data...', 'info');
-            await loadDashboardData();
-            const activeSection = document.querySelector('.admin-section.active');
-            if (activeSection) {
-                const id = activeSection.id;
-                const loaders = {
-                    'users-section': loadUsers,
-                    'applications-section': loadApplications,
-                    'contacts-section': loadContacts,
-                    'blog-section': loadBlogPosts,
-                    'notifications-section': loadNotifications,
-                    'payments-section': loadPayments,
-                    'opportunities-section': loadOpportunities,
-                    'scholarships-section': loadScholarships,
-                    'universities-section': loadUniversities,
-                    'programmes-section': loadProgrammes,
-                    'service-requests-section': loadServiceRequests,
-                    'agents-section': loadAgents,
-                    'agent-applicants-section': loadAgentApplicants,
-                    'agent-commissions-section': loadAgentCommissions,
-                    'agent-settlements-section': loadAgentSettlements,
-                    'agent-resources-section': loadAgentResources
-                };
-                if (loaders[id]) await loaders[id]();
-            }
-            showToast('Data refreshed!', 'success');
-        }
+       async function refreshData() {
+    showToast('Refreshing data...', 'info');
+    await loadDashboardData();
+    const activeSection = document.querySelector('.admin-section.active');
+    if (activeSection) {
+        const id = activeSection.id;
+        const loaders = {
+            'users-section': loadUsers,
+            'applications-section': loadApplications,
+            'contacts-section': loadContacts,
+            'blog-section': loadBlogPosts,
+            'notifications-section': loadNotifications,
+            'payments-section': loadPayments,
+            'opportunities-section': loadOpportunities,
+            'scholarships-section': loadScholarships,
+            'universities-section': loadUniversities,
+            'programmes-section': loadProgrammes,
+            'service-requests-section': loadServiceRequests,
+            'agents-section': loadAgents,
+            'agent-applicants-section': loadAgentApplicants,
+            'agent-commissions-section': loadAgentCommissions,
+            'agent-settlements-section': loadAgentSettlements
+        };
+        if (loaders[id]) await loaders[id]();
+    }
+    showToast('Data refreshed!', 'success');
+}
 
         // ============================================================
         // TOAST NOTIFICATIONS
