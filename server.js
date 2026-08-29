@@ -3529,6 +3529,118 @@ app.put('/api/users/:uid', async (req, res) => {
     }
 });
 
+
+// ============================================================
+// USER LOGIN - MONGODB (for agent-created applicants)
+// ============================================================
+app.post('/api/users/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Email and password are required' 
+            });
+        }
+
+        // Find user by email
+        const user = await db.collection('users').findOne({ email: email.toLowerCase() });
+        if (!user) {
+            return res.status(401).json({ 
+                success: false, 
+                message: 'Invalid credentials' 
+            });
+        }
+
+        // Check if password exists
+        if (!user.password) {
+            return res.status(401).json({ 
+                success: false, 
+                message: 'This account has no password set. Please use the password reset feature.' 
+            });
+        }
+
+        // Verify password using bcrypt
+        const isValid = await bcrypt.compare(password, user.password);
+        if (!isValid) {
+            return res.status(401).json({ 
+                success: false, 
+                message: 'Invalid credentials' 
+            });
+        }
+
+        // Generate JWT token for MongoDB user
+        const token = jwt.sign(
+            { 
+                id: user._id, 
+                email: user.email, 
+                uid: user.uid || user._id,
+                userType: user.userType || 'applicant' 
+            },
+            process.env.JWT_SECRET || 'your-secret-key',
+            { expiresIn: '24h' }
+        );
+
+        // Remove sensitive data before sending response
+        const userResponse = { ...user };
+        delete userResponse.password;
+        delete userResponse.resetToken;
+        delete userResponse.resetTokenExpiry;
+
+        // Check if user is linked to an applicant
+        let applicantInfo = null;
+        if (user.userType === 'applicant' || !user.userType) {
+            const applicant = await db.collection('applicants').findOne({ 
+                $or: [
+                    { userId: user.uid || user._id },
+                    { email: user.email.toLowerCase() }
+                ]
+            });
+            if (applicant) {
+                applicantInfo = {
+                    applicantId: applicant.applicantId,
+                    fullName: applicant.fullName,
+                    agentId: applicant.agentId,
+                    status: applicant.status,
+                    paymentStatus: applicant.paymentStatus
+                };
+            }
+        }
+
+        // Check if user is an agent
+        let agentInfo = null;
+        if (user.userType === 'agent') {
+            const agent = await db.collection('agents').findOne({ email: user.email.toLowerCase() });
+            if (agent) {
+                agentInfo = {
+                    agentId: agent.agentId,
+                    fullName: agent.fullName,
+                    status: agent.status,
+                    agentCategory: agent.agentCategory
+                };
+            }
+        }
+
+        res.json({
+            success: true,
+            token: token,
+            user: {
+                ...userResponse,
+                _id: user._id,
+                uid: user.uid || user._id,
+                applicantInfo: applicantInfo,
+                agentInfo: agentInfo
+            }
+        });
+    } catch (error) {
+        console.error('MongoDB login error:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+});
+
 // ============================================================
 // DOCUMENT ENDPOINTS
 // ============================================================
