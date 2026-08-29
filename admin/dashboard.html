@@ -4092,38 +4092,47 @@ async function loadApplications() {
             document.getElementById('registerAgentModal').classList.add('active');
         };
 
-        // ============================================================
+  // ============================================================
 // PROCESS COMMISSION MODAL - FIXED
 // ============================================================
 window.processCommissionModal = async () => {
     try {
         const result = await apiFetch('agent-commissions');
         const commissions = result.commissions || [];
+        
+        // Case-insensitive check for eligible commissions
         const eligible = commissions.filter(c => {
-            // Check for commission eligibility
-            const status = c.status || '';
-            return status === 'Eligible' || status === 'Pending' || status === 'eligible' || status === 'pending';
+            const status = (c.status || '').toLowerCase();
+            return status === 'eligible' || status === 'pending';
         });
         
+        console.log('🔍 All commissions found:', commissions.length);
         console.log('🔍 Eligible commissions found:', eligible.length);
-        console.log('All commissions:', commissions);
         
         if (eligible.length === 0) {
-            showToast('No eligible commissions found to process. Commission must be generated after payment confirmation.', 'warning');
-            // Show helpful message with instructions
-            alert(`📋 No Eligible Commissions Found
+            showToast('No eligible commissions found to process.', 'warning');
+            
+            // Show helpful diagnostic information
+            const statuses = commissions.map(c => c.status || 'unknown');
+            const uniqueStatuses = [...new Set(statuses)];
+            
+            alert(`📋 Commission Status Check
+
+Total Commissions: ${commissions.length}
+Eligible: 0
+
+Found Statuses in Database: ${uniqueStatuses.join(', ') || 'None'}
 
 To generate commissions:
 
-1. Go to the PAYMENTS section
-2. Find a pending payment from an agent's applicant
-3. Click "Approve" to confirm the payment
-4. The commission will be automatically generated
-5. Return here to process the commission
+1. Go to PAYMENTS section
+2. Find a pending payment
+3. Click "Approve" to confirm
+4. Commission will auto-generate with status "Eligible"
+5. Return here to process it
 
-OR
-
-If you have eligible commissions but they're not showing, please check the database.`);
+If you have paid applicants but no commissions,
+use the Debug button to check the database.`);
             return;
         }
         
@@ -4241,6 +4250,9 @@ If you have eligible commissions but they're not showing, please check the datab
             }
         };
 
+// ============================================================
+// GENERATE SETTLEMENT - FIXED
+// ============================================================
 window.generateSettlement = async () => {
     const agentId = prompt('Enter Agent ID to generate settlement for:');
     if (!agentId || agentId.trim() === '') {
