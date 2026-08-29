@@ -12,6 +12,7 @@
             --primary-white: #FFFFFF;
             --dark-gray: #333333;
             --medium-gray: #777777;
+            --success-green: #28a745;
         }
 
         * {
@@ -230,6 +231,39 @@
             animation: spin 0.6s linear infinite;
         }
 
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 380px;
+        }
+
+        .toast {
+            background: rgba(30, 30, 60, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 12px 18px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border-left: 4px solid var(--success-green);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideInRight 0.4s ease;
+            min-width: 250px;
+            color: white;
+        }
+        .toast.error { border-left-color: #dc3545; }
+        .toast.info { border-left-color: #17a2b8; }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -266,12 +300,12 @@
         <form id="loginForm">
             <div class="form-group">
                 <label><i class="fas fa-envelope"></i> Email Address</label>
-                <input type="email" id="email" class="glass-input" placeholder="you@example.com" required>
+                <input type="email" id="email" class="glass-input" placeholder="you@example.com" required autocomplete="email">
             </div>
             
             <div class="form-group">
                 <label><i class="fas fa-lock"></i> Password</label>
-                <input type="password" id="password" class="glass-input" placeholder="••••••••" required>
+                <input type="password" id="password" class="glass-input" placeholder="••••••••" required autocomplete="current-password">
             </div>
             
             <div class="form-options">
@@ -296,125 +330,44 @@
             </p>
         </div>
     </div>
-    
-        <!-- ============ ANTI-CONSOLE & SECURITY PROTECTION ============ -->
+
+    <!-- ============ ANTI-CONSOLE & SECURITY PROTECTION ============ -->
     <script>
         // ============================================================
-        // ANTI-CONSOLE PROTECTION - Prevents hackers from using DevTools
+        // ANTI-CONSOLE PROTECTION
         // ============================================================
-        
-        // 1. Disable right-click context menu
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            return false;
-        });
-
-        // 2. Disable common keyboard shortcuts for DevTools
+        document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
         document.addEventListener('keydown', function(e) {
-            // F12
-            if (e.key === 'F12') {
-                e.preventDefault();
-                return false;
-            }
-            // Ctrl+Shift+I (Inspect)
-            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) {
-                e.preventDefault();
-                return false;
-            }
-            // Ctrl+Shift+J (Console)
-            if (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j')) {
-                e.preventDefault();
-                return false;
-            }
-            // Ctrl+U (View Source)
-            if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) {
-                e.preventDefault();
-                return false;
-            }
-            // Ctrl+S (Save Page)
-            if (e.ctrlKey && (e.key === 'S' || e.key === 's')) {
-                e.preventDefault();
-                return false;
-            }
+            if (e.key === 'F12') { e.preventDefault(); return false; }
+            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) { e.preventDefault(); return false; }
+            if (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j')) { e.preventDefault(); return false; }
+            if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) { e.preventDefault(); return false; }
+            if (e.ctrlKey && (e.key === 'S' || e.key === 's')) { e.preventDefault(); return false; }
         });
-
-        // 3. Disable console.log, console.warn, console.error - but keep for debugging
-        // Only disable in production to prevent hackers from seeing sensitive info
         if (window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1')) {
-            // Store original console methods
-            const originalConsole = {
-                log: console.log,
-                warn: console.warn,
-                error: console.error,
-                info: console.info,
-                debug: console.debug
-            };
-            
-            // Override with empty functions
             console.log = function() {};
             console.warn = function() {};
             console.error = function() {};
             console.info = function() {};
             console.debug = function() {};
-            
-            // But allow errors to be reported silently
-            window.addEventListener('error', function(e) {
-                return true;
-            });
         }
+        console.clear = function() {};
 
-        // 4. Detect DevTools opening via debugger statement
+        // Detect DevTools
         setInterval(function() {
             (function() {
                 var start = Date.now();
-                // @ts-ignore
                 debugger;
                 var end = Date.now();
                 if (end - start > 100) {
-                    // DevTools is likely open
-                    // window.location.href = 'about:blank';
+                    // DevTools detected
                 }
             })();
         }, 2000);
 
-        // 5. Prevent iframe embedding (clickjacking protection)
         if (window.top !== window.self) {
             window.top.location = window.self.location;
         }
-
-        // 6. Override console.clear to prevent clearing console
-        console.clear = function() {};
-
-        // 7. Detect when console is opened using window.outerHeight/outerWidth trick
-        (function detectDevTools() {
-            var element = new Image();
-            Object.defineProperty(element, 'id', {
-                get: function() {
-                    return 'devtools-detected';
-                }
-            });
-            console.log('%c', element);
-        })();
-
-        // 8. Override eval to prevent code injection
-        const originalEval = window.eval;
-        window.eval = function(code) {
-            if (code && code.includes('console') && code.includes('log')) {
-                return null;
-            }
-            return originalEval.call(this, code);
-        };
-
-        // 9. Block common DevTools shortcuts on the body
-        document.body.addEventListener('keydown', function(e) {
-            // Ctrl+Shift+C (Inspect Element)
-            if (e.ctrlKey && e.shiftKey && (e.key === 'C' || e.key === 'c')) {
-                e.preventDefault();
-                return false;
-            }
-        });
-
-        console.log('🔒 Security protection enabled');
     </script>
 
     <!-- Firebase SDK -->
@@ -438,18 +391,91 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
-        
+
+        // ============================================================
+        // API CONFIGURATION
+        // ============================================================
+        const API_URL = 'https://gisc-app-production.up.railway.app/api';
+
+        // ============================================================
+        // TOAST NOTIFICATIONS
+        // ============================================================
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer') || (() => {
+                const c = document.createElement('div');
+                c.id = 'toastContainer';
+                c.className = 'toast-container';
+                document.body.appendChild(c);
+                return c;
+            })();
+
+            const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
+            const colors = { success: '#28a745', error: '#dc3545', info: '#17a2b8' };
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i class="fas ${icons[type] || 'fa-info-circle'}" style="color: ${colors[type] || '#28a745'};"></i><span>${message}</span><button class="toast-close">&times;</button>`;
+
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                toast.style.animation = 'slideOutRight 0.3s ease forwards';
+                setTimeout(() => toast.remove(), 300);
+            });
+
+            container.appendChild(toast);
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.style.animation = 'slideOutRight 0.3s ease forwards';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 4000);
+        }
+
+        // ============================================================
+        // MONGODB LOGIN FUNCTION
+        // ============================================================
+        async function loginWithMongoDB(email, password) {
+            try {
+                const response = await fetch(`${API_URL}/users/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'MongoDB login failed');
+                }
+
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('MongoDB login error:', error);
+                throw error;
+            }
+        }
+
         // ============================================================
         // CHECK IF ALREADY LOGGED IN
         // ============================================================
         auth.onAuthStateChanged((user) => {
             if (user) {
-                window.location.href = 'dashboard.html';
+                // Check if it's an admin
+                db.collection('users').doc(user.uid).get().then((doc) => {
+                    if (doc.exists && doc.data().userType === 'admin') {
+                        window.location.href = '../admin/dashboard.html';
+                    } else {
+                        window.location.href = 'dashboard.html';
+                    }
+                }).catch(() => {
+                    window.location.href = 'dashboard.html';
+                });
             }
         });
-        
+
         // ============================================================
-        // LOGIN FORM HANDLER
+        // LOGIN FORM HANDLER - SUPPORTS BOTH FIREBASE AND MONGODB
         // ============================================================
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -474,55 +500,126 @@
             submitBtn.disabled = true;
             
             try {
-                const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                const user = userCredential.user;
-                
-                // Set persistence if "Remember me" is checked
-                if (rememberMe) {
-                    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-                } else {
-                    await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+                let user = null;
+                let loginMethod = 'firebase';
+                let userData = null;
+
+                // STEP 1: Try Firebase authentication first (for existing users)
+                try {
+                    const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                    user = userCredential.user;
+                    
+                    // Set persistence
+                    await auth.setPersistence(
+                        rememberMe ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION
+                    );
+                    
+                    // Get user data from Firestore
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    if (userDoc.exists) {
+                        userData = userDoc.data();
+                    }
+                    
+                    loginMethod = 'firebase';
+                } catch (firebaseError) {
+                    // If Firebase fails, it might be a MongoDB user (agent-created applicant)
+                    if (firebaseError.code === 'auth/user-not-found' || 
+                        firebaseError.code === 'auth/wrong-password' ||
+                        firebaseError.code === 'auth/invalid-login-credentials') {
+                        
+                        console.log('Firebase login failed, trying MongoDB...');
+                        
+                        // STEP 2: Try MongoDB authentication
+                        try {
+                            const mongoResult = await loginWithMongoDB(email, password);
+                            
+                            if (mongoResult.success && mongoResult.user) {
+                                userData = mongoResult.user;
+                                loginMethod = 'mongodb';
+                                
+                                // Store MongoDB user info
+                                const userInfo = {
+                                    uid: userData.uid || userData._id,
+                                    name: userData.name || userData.fullName || 'User',
+                                    email: userData.email,
+                                    userType: userData.userType || 'applicant',
+                                    mongoUser: true,
+                                    token: mongoResult.token || null
+                                };
+                                
+                                localStorage.setItem('userData', JSON.stringify(userInfo));
+                                if (mongoResult.token) {
+                                    localStorage.setItem('userToken', mongoResult.token);
+                                }
+                                
+                                // Redirect based on user type
+                                if (userData.userType === 'admin') {
+                                    window.location.href = '../admin/dashboard.html';
+                                } else if (userData.userType === 'agent') {
+                                    window.location.href = 'agent-dashboard.html';
+                                } else {
+                                    window.location.href = 'dashboard.html';
+                                }
+                                return;
+                            } else {
+                                throw new Error(mongoResult.message || 'MongoDB login failed');
+                            }
+                        } catch (mongoError) {
+                            console.error('MongoDB login error:', mongoError);
+                            throw new Error('Invalid email or password. Please try again.');
+                        }
+                    } else {
+                        throw firebaseError;
+                    }
                 }
-                
-                // Check if user is admin (redirect to admin dashboard)
-                const userDoc = await db.collection('users').doc(user.uid).get();
-                if (userDoc.exists && userDoc.data().userType === 'admin') {
-                    window.location.href = '../admin/dashboard.html';
-                } else {
-                    window.location.href = 'dashboard.html';
+
+                // STEP 3: Handle Firebase login success
+                if (loginMethod === 'firebase' && user) {
+                    // If user is admin, redirect to admin dashboard
+                    if (userData && userData.userType === 'admin') {
+                        window.location.href = '../admin/dashboard.html';
+                    } else {
+                        window.location.href = 'dashboard.html';
+                    }
                 }
+
             } catch (error) {
                 console.error('Login error:', error);
                 
                 let message = 'Login failed. Please try again.';
-                switch (error.code) {
-                    case 'auth/user-not-found':
-                        message = 'No account found with this email address';
-                        break;
-                    case 'auth/wrong-password':
-                        message = 'Incorrect password. Please try again.';
-                        break;
-                    case 'auth/invalid-email':
-                        message = 'Please enter a valid email address.';
-                        break;
-                    case 'auth/user-disabled':
-                        message = 'This account has been disabled. Please contact support.';
-                        break;
-                    case 'auth/too-many-requests':
-                        message = 'Too many failed attempts. Please try again later.';
-                        break;
-                    default:
-                        message = error.message || 'Login failed. Please try again.';
+                if (error.message) {
+                    message = error.message;
+                } else {
+                    switch (error.code) {
+                        case 'auth/user-not-found':
+                            message = 'No account found with this email address';
+                            break;
+                        case 'auth/wrong-password':
+                            message = 'Incorrect password. Please try again.';
+                            break;
+                        case 'auth/invalid-email':
+                            message = 'Please enter a valid email address.';
+                            break;
+                        case 'auth/user-disabled':
+                            message = 'This account has been disabled. Please contact support.';
+                            break;
+                        case 'auth/too-many-requests':
+                            message = 'Too many failed attempts. Please try again later.';
+                            break;
+                        default:
+                            message = error.message || 'Login failed. Please try again.';
+                    }
                 }
                 
                 errorText.textContent = message;
                 errorDiv.style.display = 'block';
+                showToast(message, 'error');
             } finally {
                 submitBtn.innerHTML = originalText;
                 submitBtn.disabled = false;
             }
         });
-        
+
         // ============================================================
         // ENTER KEY SUPPORT
         // ============================================================
@@ -532,6 +629,54 @@
                 document.getElementById('loginForm').dispatchEvent(new Event('submit'));
             }
         });
+
+        // ============================================================
+        // ADD MONGODB LOGIN ROUTE TO SERVER IF NOT EXISTS
+        // ============================================================
+        // This route should be added to server.js:
+        /*
+        app.post('/api/users/login', async (req, res) => {
+            try {
+                const { email, password } = req.body;
+                if (!email || !password) {
+                    return res.status(400).json({ success: false, message: 'Email and password are required' });
+                }
+
+                const user = await db.collection('users').findOne({ email: email.toLowerCase() });
+                if (!user) {
+                    return res.status(401).json({ success: false, message: 'Invalid credentials' });
+                }
+
+                if (!user.password) {
+                    return res.status(401).json({ success: false, message: 'This account has no password set. Please use the password reset feature.' });
+                }
+
+                const isValid = await bcrypt.compare(password, user.password);
+                if (!isValid) {
+                    return res.status(401).json({ success: false, message: 'Invalid credentials' });
+                }
+
+                const token = jwt.sign(
+                    { id: user._id, email: user.email, uid: user.uid, userType: user.userType || 'applicant' },
+                    process.env.JWT_SECRET || 'your-secret-key',
+                    { expiresIn: '24h' }
+                );
+
+                delete user.password;
+                delete user.resetToken;
+                delete user.resetTokenExpiry;
+
+                res.json({
+                    success: true,
+                    token: token,
+                    user: user
+                });
+            } catch (error) {
+                console.error('MongoDB login error:', error);
+                res.status(500).json({ success: false, message: error.message });
+            }
+        });
+        */
     </script>
 </body>
 </html>
