@@ -4800,6 +4800,39 @@ app.get('/api/admin/applicants/:applicantId', authenticateToken, async (req, res
     }
 });
 
+// ============================================================
+// ADMIN SEARCH APPLICANTS BY EMAIL - ADD THIS
+// ============================================================
+app.get('/api/admin/applicants', authenticateToken, async (req, res) => {
+    try {
+        const { search, email } = req.query;
+        const query = {};
+        
+        if (search) {
+            query.$or = [
+                { fullName: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: 'i' } },
+                { applicantId: { $regex: search, $options: 'i' } }
+            ];
+        }
+        
+        if (email) {
+            query.email = email.toLowerCase();
+        }
+        
+        const applicants = await db.collection('applicants')
+            .find(query)
+            .limit(50)
+            .toArray();
+            
+        res.json({ success: true, applicants, count: applicants.length });
+    } catch (error) {
+        console.error('Error searching applicants:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+
 // Get documents for an applicant by applicantId
 app.get('/api/admin/applicants/:applicantId/documents', authenticateToken, async (req, res) => {
     try {
