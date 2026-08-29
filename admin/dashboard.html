@@ -1142,7 +1142,10 @@
                 <div class="section-header">
                     <h1><i class="fas fa-coins"></i> Agent Commissions</h1>
                     <span style="color: rgba(255,255,255,0.5);" id="commissionTotal">0 total</span>
-                </div>
+                    <button class="btn btn-outline btn-sm" onclick="debugCommissions()">
+                <i class="fas fa-bug"></i> Debug
+            </button>
+              </div>
                 <div class="stats-grid small">
                     <div class="stat-card"><h3>$<span id="totalCommissionEarned">0.00</span></h3><p>Total Earned</p></div>
                     <div class="stat-card"><h3>$<span id="totalCommissionPaid">0.00</span></h3><p>Paid</p></div>
@@ -2010,6 +2013,94 @@
                 throw error;
             }
         }
+
+
+        // ============================================================
+// MANUAL COMMISSION CALCULATION - HELPER
+// ============================================================
+window.manualGenerateCommission = async (applicantId, packageName, amount) => {
+    if (!applicantId || !packageName || !amount) {
+        showToast('All fields are required: applicantId, packageName, amount', 'error');
+        return;
+    }
+    
+    if (!confirm(`Generate commission for applicant ${applicantId}?\nPackage: ${packageName}\nAmount: $${amount}`)) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/admin/commissions/process`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${adminToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                applicantId: applicantId,
+                packageName: packageName,
+                amountReceived: parseFloat(amount),
+                paymentId: `MANUAL-${Date.now()}`
+            })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed');
+        }
+        
+        const result = await response.json();
+        showToast(`✅ Commission generated: $${result.commission.commissionAmount.toFixed(2)}`, 'success');
+        await loadAgentCommissions();
+        await loadDashboardData();
+        
+    } catch (error) {
+        console.error('Error generating commission manually:', error);
+        showToast('Error: ' + error.message, 'error');
+    }
+};
+
+         // ============================================================
+// DEBUG COMMISSIONS - HELPER
+// ============================================================
+window.debugCommissions = async () => {
+    try {
+        const result = await apiFetch('agent-commissions');
+        const commissions = result.commissions || [];
+        const summary = result.summary || {};
+        
+        console.log('📊 Commission Debug Info:');
+        console.log('Total commissions:', commissions.length);
+        console.log('Summary:', summary);
+        console.log('Status breakdown:');
+        
+        const statusMap = {};
+        commissions.forEach(c => {
+            const status = c.status || 'unknown';
+            statusMap[status] = (statusMap[status] || 0) + 1;
+        });
+        console.log('Statuses:', statusMap);
+        
+        // Show sample commission
+        if (commissions.length > 0) {
+            console.log('Sample commission:', commissions[0]);
+        }
+        
+        // Also check applicants for agent links
+        const agentResult = await apiFetch('agents');
+        const agents = agentResult.agents || [];
+        console.log('Total agents:', agents.length);
+        console.log('Approved agents:', agents.filter(a => a.status === 'Approved').length);
+        
+        const appResult = await apiFetch('agent-applicants');
+        const applicants = appResult.applicants || [];
+        console.log('Total applicants:', applicants.length);
+        console.log('Applicants with agent:', applicants.filter(a => a.agentId).length);
+        
+        alert(`📊 Commission Debug\n\nTotal Commissions: ${commissions.length}\nStatuses: ${JSON.stringify(statusMap)}\nTotal Agents: ${agents.length}\nTotal Applicants: ${applicants.length}`);
+        
+    } catch (error) {
+        console.error('Debug error:', error);
+        showToast('Debug error: ' + error.message, 'error');
+    }
+};         
 
         // ============================================================
         // LOGOUT
@@ -4150,10 +4241,6 @@ If you have eligible commissions but they're not showing, please check the datab
             }
         };
 
-
-        // ============================================================
-// GENERATE SETTLEMENT - FIXED
-// ============================================================
 window.generateSettlement = async () => {
     const agentId = prompt('Enter Agent ID to generate settlement for:');
     if (!agentId || agentId.trim() === '') {
@@ -4169,7 +4256,7 @@ window.generateSettlement = async () => {
     
     if (!confirm(`Generate settlement for agent ${agentId} from ${periodStart} to ${periodEnd}?`)) return;
     
-    const btn = document.querySelector('.btn-success[onclick*="generateSettlement"]') || document.querySelector('#agent-commissions-section .btn-success');
+    const btn = document.querySelector('#agent-commissions-section .btn-success') || document.querySelector('[onclick*="generateSettlement"]');
     const originalText = btn ? btn.innerHTML : 'Generate';
     if (btn) {
         btn.innerHTML = '<span class="spinner"></span> Generating...';
@@ -4203,15 +4290,9 @@ window.generateSettlement = async () => {
         if (result.success) {
             showToast(`✅ Settlement generated successfully! Total: $${result.totalAmount.toFixed(2)} for ${result.commissionCount} commissions`, 'success');
             
-            // Ask if user wants to view the settlement
             if (confirm(`Settlement generated! Total amount: $${result.totalAmount.toFixed(2)}. Would you like to view it?`)) {
-                // Reload settlements
-                if (document.querySelector('#agent-settlements-section.active')) {
-                    await loadAgentSettlements();
-                } else {
-                    // Navigate to settlements
-                    document.querySelector('[data-section="agent-settlements"]')?.click();
-                }
+                document.querySelector('[data-section="agent-settlements"]')?.click();
+                setTimeout(() => loadAgentSettlements(), 500);
             }
         } else {
             throw new Error(result.message || 'Settlement generation failed');
@@ -4227,6 +4308,9 @@ window.generateSettlement = async () => {
         }
     }
 };
+        // ============================================================
+// GENERATE SETTLEMENT - FIXED
+// ============================================================
 
         // Mark Settlement as Paid
         window.markSettlementPaid = async (settlementId) => {
@@ -6243,6 +6327,8 @@ window.generateSettlement = async () => {
         window.rejectPayment = rejectPayment;
         window.markAsPending = markAsPending;
         window.deletePayment = deletePayment;
+        window.manualGenerateCommission = manualGenerateCommission;
+        window.debugCommissions = debugCommissions;
         window.viewContactDetail = viewContactDetail;
         window.updateContactStatus = updateContactStatus;
         window.updateContactStatusFromModal = updateContactStatusFromModal;
