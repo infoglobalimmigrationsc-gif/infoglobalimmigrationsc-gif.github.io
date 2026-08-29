@@ -2104,6 +2104,327 @@ app.delete('/api/agent/documents/:documentId', authenticateAgent, async (req, re
 
 
 // ============================================================
+// AGENT APPLICANT PASSWORD MANAGEMENT
+// ============================================================
+
+// Generate a secure random password
+function generateSecurePassword() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+    let password = '';
+    for (let i = 0; i < 12; i++) {
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+}
+
+// Get applicant login credentials (agent can view/reset)
+app.get('/api/agent/applicants/:applicantId/credentials', authenticateAgent, async (req, res) => {
+    try {
+        const agentId = req.agent.agentId;
+        const { applicantId } = req.params;
+        
+        // Check ownership
+        const applicant = await db.collection('applicants').findOne({
+            applicantId: applicantId,
+            agentId: agentId
+        });
+        
+        if (!applicant) {
+            return res.status(404).json({ success: false, message: 'Applicant not found or does not belong to you' });
+        }
+        
+        // Find the user account
+        const user = await db.collection('users').findOne({ 
+            $or: [
+                { uid: applicant.userId },
+                { email: applicant.email }
+            ]
+        });
+        
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User account not found for this applicant' });
+        }
+        
+        // Check if user has a password set
+        const hasPassword = user.password && user.password !== null;
+        
+        res.json({
+            success: true,
+            credentials: {
+                email: user.email,
+                hasPassword: hasPassword,
+                applicantId: applicant.applicantId,
+                fullName: applicant.fullName,
+                userId: user.uid || user._id
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching applicant credentials:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Reset applicant password (agent-initiated)
+app.post('/api/agent/applicants/:applicantId/reset-password', authenticateAgent, async (req, res) => {
+    try {
+        const agentId = req.agent.agentId;
+        const { applicantId } = req.params;
+        
+        // Check ownership
+        const applicant = await db.collection('applicants').findOne({
+            applicantId: applicantId,
+            agentId: agentId
+        });
+        
+        if (!applicant) {
+            return res.status(404).json({ success: false, message: 'Applicant not found or does not belong to you' });
+        }
+        
+        // Find the user account
+        const user = await db.collection('users').findOne({ 
+            $or: [
+                { uid: applicant.userId },
+                { email: applicant.email }
+            ]
+        });
+        
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User account not found for this applicant' });
+        }
+        
+        // Generate new password
+        const newPassword = generateSecurePassword();
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        
+        // Update user password
+        await db.collection('users').updateOne(
+            { _id: user._id },
+            { 
+                $set: { 
+                    password: hashedPassword,
+                    updatedAt: new Date(),
+                    resetToken: null,
+                    resetTokenExpiry: null
+                }
+            }
+        );
+        
+        // Log the password reset
+        await db.collection('audit_logs').insertOne({
+            action: 'APPLICANT_PASSWORD_RESET_BY_AGENT',
+            agentId: agentId,
+            agentEmail: req.agent.email,
+            applicantId: applicantId,
+            applicantEmail: applicant.email,
+            timestamp: new Date()
+        });
+        
+        // Create notification for agent
+        await db.collection('agent_notifications').insertOne({
+            agentId: agentId,
+            title: 'Applicant Password Reset',
+            message: `Password for ${applicant.fullName} (${applicantId}) has been reset. New password: ${newPassword}`,
+            type: 'security',
+            read: false,
+            createdAt: new Date(),
+            link: `/applicants/${applicantId}`
+        });
+        
+        res.json({
+            success: true,
+            message: 'Password reset successfully',
+            temporaryPassword: newPassword,
+            email: user.email,
+            applicantId: applicant.applicantId
+        });
+    } catch (error) {
+        console.error('Error resetting applicant password:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Admin: Get applicant credentials
+app.get('/api/admin/applicants/:applicantId/credentials', authenticateToken, async (req, res) => {
+    try {
+        const { applicantId } = req.params;
+        
+        const applicant = await db.collection('applicants').findOne({ applicantId: applicantId });
+        if (!applicant) {
+            return res.status(404).json({ success: false, message: 'Applicant not found' });
+        }
+        
+        const user = await db.collection('users').findOne({ 
+            $or: [
+                { uid: applicant.userId },
+                { email: applicant.email }
+            ]
+        });
+        
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User account not found for this applicant' });
+        }
+        
+        const hasPassword = user.password && user.password !== null;
+        
+        const agent = await db.collection('agents').findOne({ agentId: applicant.agentId });
+        
+        res.json({
+            success: true,
+            credentials: {
+                email: user.email,
+                hasPassword: hasPassword,
+                applicantId: applicant.applicantId,
+                fullName: applicant.fullName,
+                userId: user.uid || user._id,
+                agentName: agent ? agent.fullName : 'Unknown Agent',
+                agentId: applicant.agentId
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching applicant credentials (admin):', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Admin: Reset applicant password
+app.post('/api/admin/applicants/:applicantId/reset-password', authenticateToken, async (req, res) => {
+    try {
+        const { applicantId } = req.params;
+        
+        const applicant = await db.collection('applicants').findOne({ applicantId: applicantId });
+        if (!applicant) {
+            return res.status(404).json({ success: false, message: 'Applicant not found' });
+        }
+        
+        const user = await db.collection('users').findOne({ 
+            $or: [
+                { uid: applicant.userId },
+                { email: applicant.email }
+            ]
+        });
+        
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User account not found for this applicant' });
+        }
+        
+        const newPassword = generateSecurePassword();
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        
+        await db.collection('users').updateOne(
+            { _id: user._id },
+            { 
+                $set: { 
+                    password: hashedPassword,
+                    updatedAt: new Date(),
+                    resetToken: null,
+                    resetTokenExpiry: null
+                }
+            }
+        );
+        
+        await db.collection('audit_logs').insertOne({
+            action: 'APPLICANT_PASSWORD_RESET_BY_ADMIN',
+            applicantId: applicantId,
+            applicantEmail: applicant.email,
+            adminEmail: req.user?.email || 'admin',
+            timestamp: new Date()
+        });
+        
+        // Notify the agent
+        if (applicant.agentId) {
+            await db.collection('agent_notifications').insertOne({
+                agentId: applicant.agentId,
+                title: 'Applicant Password Reset by Admin',
+                message: `Password for ${applicant.fullName} (${applicantId}) has been reset by admin. New password: ${newPassword}`,
+                type: 'security',
+                read: false,
+                createdAt: new Date(),
+                link: `/applicants/${applicantId}`
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Password reset successfully',
+            temporaryPassword: newPassword,
+            email: user.email,
+            applicantId: applicant.applicantId
+        });
+    } catch (error) {
+        console.error('Error resetting applicant password (admin):', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Applicant self-service: Request password reset
+app.post('/api/applicant/forgot-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
+        
+        const user = await db.collection('users').findOne({ email: email.toLowerCase() });
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'No account found with this email address.' });
+        }
+        
+        const crypto = require('crypto');
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const tokenExpiry = new Date();
+        tokenExpiry.setHours(tokenExpiry.getHours() + 2);
+        
+        await db.collection('users').updateOne(
+            { email: email.toLowerCase() },
+            { $set: { resetToken: resetToken, resetTokenExpiry: tokenExpiry } }
+        );
+        
+        const resetLink = `https://globalimmigrationsclr.com/portal/reset-password.html?token=${resetToken}`;
+        console.log(`🔗 APPLICANT RESET LINK FOR ${email}: ${resetLink}`);
+        
+        res.json({ 
+            success: true, 
+            message: 'Password reset link has been generated. Please check your email.', 
+            debugLink: resetLink 
+        });
+    } catch (error) {
+        console.error('Error in applicant forgot-password:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Applicant self-service: Reset password using token
+app.post('/api/applicant/reset-password', async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+        if (!token || !newPassword) {
+            return res.status(400).json({ success: false, message: 'Token and password are required' });
+        }
+        
+        const user = await db.collection('users').findOne({ 
+            resetToken: token, 
+            resetTokenExpiry: { $gt: new Date() } 
+        });
+        
+        if (!user) {
+            return res.status(400).json({ success: false, message: 'Invalid or expired reset token.' });
+        }
+        
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await db.collection('users').updateOne(
+            { _id: user._id },
+            { 
+                $set: { password: hashedPassword, updatedAt: new Date() }, 
+                $unset: { resetToken: "", resetTokenExpiry: "" } 
+            }
+        );
+        
+        res.json({ success: true, message: 'Password reset successfully. You can now login.' });
+    } catch (error) {
+        console.error('Error in applicant reset-password:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ============================================================
 // AGENT MESSAGING SYSTEM
 // ============================================================
 
