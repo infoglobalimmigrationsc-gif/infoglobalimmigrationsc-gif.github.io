@@ -4801,7 +4801,7 @@ app.get('/api/admin/applicants/:applicantId', authenticateToken, async (req, res
 });
 
 // ============================================================
-// ADMIN SEARCH APPLICANTS BY EMAIL - ADD THIS
+// ADMIN SEARCH APPLICANTS - UPDATED TO SUPPORT SEARCH
 // ============================================================
 app.get('/api/admin/applicants', authenticateToken, async (req, res) => {
     try {
@@ -4820,6 +4820,17 @@ app.get('/api/admin/applicants', authenticateToken, async (req, res) => {
             query.email = email.toLowerCase();
         }
         
+        // If no search or email, return all applicants (with limit)
+        if (!search && !email) {
+            // Return paginated results
+            const limit = parseInt(req.query.limit) || 50;
+            const applicants = await db.collection('applicants')
+                .find({})
+                .limit(limit)
+                .toArray();
+            return res.json({ success: true, applicants, count: applicants.length });
+        }
+        
         const applicants = await db.collection('applicants')
             .find(query)
             .limit(50)
@@ -4831,7 +4842,6 @@ app.get('/api/admin/applicants', authenticateToken, async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 });
-
 
 // Get documents for an applicant by applicantId
 app.get('/api/admin/applicants/:applicantId/documents', authenticateToken, async (req, res) => {
