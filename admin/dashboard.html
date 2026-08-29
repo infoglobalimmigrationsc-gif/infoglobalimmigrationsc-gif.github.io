@@ -2594,14 +2594,15 @@
                             ${app.docStatus !== 'No Documents' ? `<br><span class="status-badge status-${app.docStatus.toLowerCase().replace(/ /g, '_')}" style="font-size: 0.55rem;">${app.docStatus}</span>` : ''}
                         </td>
                         <td>${app.commissionStatus || 'No Commission'}</td>
-                        <td>
-                            <div style="display: flex; flex-wrap: wrap; gap: 3px;">
-                                <button class="btn btn-sm btn-info" onclick="viewAgentApplicant('${app.applicantId}')" title="View"><i class="fas fa-eye"></i></button>
-                                <button class="btn btn-sm btn-primary" onclick="editAgentApplicant('${app.applicantId}')" title="Edit"><i class="fas fa-edit"></i></button>
-                                ${hasDocuments ? `<button class="btn btn-sm btn-success" onclick="viewApplicantDocuments('${app.applicantId}')" title="View Documents"><i class="fas fa-file-alt"></i></button>` : ''}
-                                ${!hasDocuments ? `<button class="btn btn-sm btn-outline" onclick="viewApplicantDocuments('${app.applicantId}')" title="No Documents"><i class="fas fa-file-alt" style="opacity: 0.3;"></i></button>` : ''}
-                            </div>
-                        </td>
+                       <td>
+    <div style="display: flex; flex-wrap: wrap; gap: 3px;">
+        <button class="btn btn-sm btn-info" onclick="viewAgentApplicant('${app.applicantId}')" title="View"><i class="fas fa-eye"></i></button>
+        <button class="btn btn-sm btn-primary" onclick="editAgentApplicant('${app.applicantId}')" title="Edit"><i class="fas fa-edit"></i></button>
+        <button class="btn btn-sm btn-warning" onclick="manageApplicantCredentials('${app.applicantId}')" title="Manage Credentials"><i class="fas fa-key"></i></button>
+        ${hasDocuments ? `<button class="btn btn-sm btn-success" onclick="viewApplicantDocuments('${app.applicantId}')" title="View Documents"><i class="fas fa-file-alt"></i></button>` : ''}
+        ${!hasDocuments ? `<button class="btn btn-sm btn-outline" onclick="viewApplicantDocuments('${app.applicantId}')" title="No Documents"><i class="fas fa-file-alt" style="opacity: 0.3;"></i></button>` : ''}
+    </div>
+</td>
                     </tr>
                     `;
                 }).join('');
@@ -2964,6 +2965,133 @@
                 showToast('Error loading applicant: ' + error.message, 'error');
             }
         };
+
+
+        // ============================================================
+// MANAGE APPLICANT CREDENTIALS (Admin)
+// ============================================================
+window.manageApplicantCredentials = async (applicantId) => {
+    const modal = document.getElementById('manageCredentialsModal');
+    const body = document.getElementById('credentialsBody');
+    
+    modal.classList.add('active');
+    body.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner"></div><p style="margin-top: 10px; color: #666;">Loading credentials...</p></div>';
+    
+    try {
+        const result = await apiFetch(`applicants/${applicantId}/credentials`);
+        const data = result.credentials;
+        
+        body.innerHTML = `
+            <div style="margin-bottom: 15px;">
+                <div class="detail-row"><span class="detail-label">Applicant</span><span class="detail-value"><strong>${data.fullName}</strong></span></div>
+                <div class="detail-row"><span class="detail-label">Applicant ID</span><span class="detail-value">${data.applicantId}</span></div>
+                <div class="detail-row"><span class="detail-label">Email</span><span class="detail-value">${data.email}</span></div>
+                <div class="detail-row"><span class="detail-label">Agent</span><span class="detail-value">${data.agentName || data.agentId || 'N/A'}</span></div>
+                <div class="detail-row"><span class="detail-label">Password Status</span><span class="detail-value">
+                    <span class="status-badge ${data.hasPassword ? 'status-approved' : 'status-pending'}">
+                        ${data.hasPassword ? '✅ Password Set' : '❌ No Password Set'}
+                    </span>
+                </span></div>
+                <div class="detail-row"><span class="detail-label">Login URL</span><span class="detail-value">
+                    <a href="https://globalimmigrationsclr.com/portal/login.html" target="_blank" style="color: #17a2b8; text-decoration: underline;">
+                        https://globalimmigrationsclr.com/portal/login.html
+                    </a>
+                </span></div>
+            </div>
+            <div style="background: rgba(255,193,7,0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #ffc107;">
+                <p style="font-size: 0.85rem; color: #856404; margin: 0;">
+                    <i class="fas fa-info-circle"></i> 
+                    <strong>Temporary Password:</strong> Click "Reset Password" to generate a new temporary password. 
+                    Share this password with the applicant securely.
+                </p>
+            </div>
+            <div id="newPasswordDisplay" style="margin-top: 15px; display: none; background: #e8f5e9; padding: 15px; border-radius: 8px; text-align: center; border: 2px solid #28a745;">
+                <p style="margin: 0; font-size: 0.85rem; color: #2e7d32;">
+                    <i class="fas fa-check-circle" style="color: #28a745;"></i> 
+                    New password generated: 
+                    <strong style="font-size: 1.1rem; color: #1a237e; font-family: monospace; letter-spacing: 1px;" id="newPasswordText">********</strong>
+                </p>
+                <p style="margin: 5px 0 0 0; font-size: 0.7rem; color: #666;">
+                    Share this password with the applicant. They can login at the portal link above.
+                </p>
+                <button id="copyPasswordBtn" class="btn btn-sm btn-info" style="margin-top: 10px;"><i class="fas fa-copy"></i> Copy Password</button>
+            </div>
+        `;
+        
+        // Store applicant ID for reset function
+        document.getElementById('resetCredentialsPasswordBtn').dataset.applicantId = applicantId;
+        document.getElementById('newPasswordDisplay').style.display = 'none';
+        
+        // Copy password functionality
+        document.getElementById('copyPasswordBtn')?.addEventListener('click', function() {
+            const text = document.getElementById('newPasswordText');
+            if (text.textContent && text.textContent !== '********') {
+                navigator.clipboard.writeText(text.textContent).then(() => {
+                    showToast('Password copied to clipboard!', 'success');
+                }).catch(() => {
+                    const range = document.createRange();
+                    range.selectNode(text);
+                    window.getSelection().removeAllRanges();
+                    window.getSelection().addRange(range);
+                    document.execCommand('copy');
+                    showToast('Password copied!', 'success');
+                });
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error loading credentials:', error);
+        body.innerHTML = `<p style="color: #dc3545;">Error loading credentials: ${error.message}</p>`;
+    }
+};
+
+// Reset Applicant Password (Admin)
+document.getElementById('resetCredentialsPasswordBtn').addEventListener('click', async function() {
+    const applicantId = this.dataset.applicantId;
+    if (!applicantId) {
+        showToast('No applicant selected', 'error');
+        return;
+    }
+    
+    if (!confirm('Are you sure you want to reset the password for this applicant? A new temporary password will be generated.')) return;
+    
+    const btn = this;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner"></span> Resetting...';
+    btn.disabled = true;
+    
+    try {
+        const result = await apiFetch(`applicants/${applicantId}/reset-password`, {
+            method: 'POST'
+        });
+        
+        // Display the new password
+        const display = document.getElementById('newPasswordDisplay');
+        const text = document.getElementById('newPasswordText');
+        text.textContent = result.temporaryPassword;
+        display.style.display = 'block';
+        
+        showToast(`Password reset successfully! New password: ${result.temporaryPassword}`, 'success');
+        
+    } catch (error) {
+        console.error('Error resetting password:', error);
+        showToast('Error resetting password: ' + error.message, 'error');
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+});
+
+// Close Credentials Modal
+document.getElementById('closeCredentialsModal').addEventListener('click', () => {
+    document.getElementById('manageCredentialsModal').classList.remove('active');
+});
+document.getElementById('closeCredentialsBtn').addEventListener('click', () => {
+    document.getElementById('manageCredentialsModal').classList.remove('active');
+});
+document.getElementById('manageCredentialsModal').addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('active');
+});
 
         // ============================================================
         // EDIT APPLICANT MODAL EVENTS
