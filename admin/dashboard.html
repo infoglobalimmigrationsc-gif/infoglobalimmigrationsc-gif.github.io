@@ -1905,6 +1905,28 @@
         </main>
     </div>
 
+    <!-- ============================================================ -->
+<!-- MANAGE APPLICANT CREDENTIALS MODAL - ADMIN -->
+<!-- ============================================================ -->
+<div id="manageCredentialsModal" class="glass-modal">
+    <div class="modal-content" style="max-width: 550px;">
+        <div class="modal-header">
+            <h2><i class="fas fa-key"></i> Applicant Credentials</h2>
+            <button class="modal-close" id="closeCredentialsModal">&times;</button>
+        </div>
+        <div class="modal-body" id="credentialsBody">
+            <div style="text-align: center; padding: 20px;">
+                <div class="spinner"></div>
+                <p style="margin-top: 10px; color: #666;">Loading credentials...</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" id="closeCredentialsBtn">Close</button>
+            <button class="btn btn-warning" id="resetCredentialsPasswordBtn"><i class="fas fa-sync-alt"></i> Reset Password</button>
+        </div>
+    </div>
+</div>
+
     <!-- ============ ANTI-CONSOLE & SECURITY PROTECTION ============ -->
     <script>
         document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
