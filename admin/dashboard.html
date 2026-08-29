@@ -1139,13 +1139,19 @@
 
             <!-- Agent Commissions Section -->
             <section id="agent-commissions-section" class="admin-section">
-                <div class="section-header">
-                    <h1><i class="fas fa-coins"></i> Agent Commissions</h1>
-                    <span style="color: rgba(255,255,255,0.5);" id="commissionTotal">0 total</span>
-                    <button class="btn btn-outline btn-sm" onclick="debugCommissions()">
+    <div class="section-header">
+        <h1><i class="fas fa-coins"></i> Agent Commissions</h1>
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <span style="color: rgba(255,255,255,0.5);" id="commissionTotal">0 total</span>
+            <button class="btn btn-outline btn-sm" onclick="debugCommissions()">
                 <i class="fas fa-bug"></i> Debug
             </button>
-              </div>
+            <!-- ADD MANUAL COMMISSION BUTTON -->
+            <button class="btn btn-warning btn-sm" onclick="openManualCommission()">
+                <i class="fas fa-plus-circle"></i> Manual Commission
+            </button>
+        </div>
+    </div>
                 <div class="stats-grid small">
                     <div class="stat-card"><h3>$<span id="totalCommissionEarned">0.00</span></h3><p>Total Earned</p></div>
                     <div class="stat-card"><h3>$<span id="totalCommissionPaid">0.00</span></h3><p>Paid</p></div>
@@ -1686,6 +1692,69 @@
                 </div>
             </div>
 
+
+                <!-- ============================================================ -->
+<!-- MANUAL COMMISSION MODAL - NEW -->
+<!-- ============================================================ -->
+<div id="manualCommissionModal" class="glass-modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h2><i class="fas fa-hand-holding-usd"></i> Manual Commission</h2>
+            <button class="modal-close" id="closeManualCommissionModal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="manualCommissionForm">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label>Applicant ID <span class="required">*</span></label>
+                        <input type="text" id="manualApplicantId" class="glass-input" placeholder="e.g., GISC-APP-000001" required>
+                        <small style="color: #999; font-size: 0.7rem;">Find Applicant ID in the Agent Applicants section</small>
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label>Package Name <span class="required">*</span></label>
+                        <select id="manualPackageName" class="glass-input" required>
+                            <option value="">Select Package</option>
+                            <option value="Profile Review & Eligibility Assessment">Profile Review & Eligibility Assessment</option>
+                            <option value="Basic Support">Basic Support</option>
+                            <option value="Application Guidance">Application Guidance</option>
+                            <option value="Basic Processing">Basic Processing</option>
+                            <option value="Standard Processing">Standard Processing</option>
+                            <option value="Silver Premium">Silver Premium</option>
+                            <option value="Gold">Gold</option>
+                            <option value="Platinum">Platinum</option>
+                            <option value="Executive">Executive</option>
+                            <option value="Study Abroad">Study Abroad</option>
+                            <option value="Work Abroad">Work Abroad</option>
+                            <option value="Visit Visa">Visit Visa</option>
+                            <option value="Immigration">Immigration</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Amount Received <span class="required">*</span></label>
+                        <input type="number" id="manualAmount" class="glass-input" placeholder="e.g., 299" required min="1" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>Payment Reference</label>
+                        <input type="text" id="manualPaymentRef" class="glass-input" placeholder="e.g., MANUAL-001">
+                    </div>
+                </div>
+                <div style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 6px; font-size: 0.8rem; color: #856404;">
+                    <i class="fas fa-exclamation-triangle"></i> 
+                    Manual commission will be created with status "Eligible". 
+                    <strong>Commission Rate:</strong> 
+                    Profile Review (0%), Basic Support (10%), Application Guidance (10%), 
+                    Basic Processing (15%), Standard Processing (15%), 
+                    Silver (20%), Gold (20%), Platinum (20%), Executive (25%)
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" id="cancelManualCommissionBtn">Cancel</button>
+            <button class="btn btn-primary" id="saveManualCommissionBtn"><i class="fas fa-check"></i> Generate Commission</button>
+        </div>
+    </div>
+</div>
+
             <!-- ============================================================ -->
             <!-- AGENT RESOURCE MODALS - NEW -->
             <!-- ============================================================ -->
@@ -2057,7 +2126,7 @@ window.manualGenerateCommission = async (applicantId, packageName, amount) => {
     }
 };
 
-         // ============================================================
+ // ============================================================
 // DEBUG COMMISSIONS - HELPER
 // ============================================================
 window.debugCommissions = async () => {
@@ -2100,7 +2169,136 @@ window.debugCommissions = async () => {
         console.error('Debug error:', error);
         showToast('Debug error: ' + error.message, 'error');
     }
-};         
+};        
+
+        // ============================================================
+// OPEN MANUAL COMMISSION MODAL
+// ============================================================
+window.openManualCommission = () => {
+    document.getElementById('manualCommissionModal').classList.add('active');
+    document.getElementById('manualCommissionForm').reset();
+    // Set default payment reference
+    document.getElementById('manualPaymentRef').value = `MANUAL-${Date.now().toString().slice(-6)}`;
+};
+
+// ============================================================
+// CLOSE MANUAL COMMISSION MODAL
+// ============================================================
+document.getElementById('closeManualCommissionModal').addEventListener('click', () => {
+    document.getElementById('manualCommissionModal').classList.remove('active');
+});
+document.getElementById('cancelManualCommissionBtn').addEventListener('click', () => {
+    document.getElementById('manualCommissionModal').classList.remove('active');
+});
+document.getElementById('manualCommissionModal').addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('active');
+});
+
+// ============================================================
+// SAVE MANUAL COMMISSION
+// ============================================================
+document.getElementById('saveManualCommissionBtn').addEventListener('click', async () => {
+    const applicantId = document.getElementById('manualApplicantId').value.trim();
+    const packageName = document.getElementById('manualPackageName').value;
+    const amount = parseFloat(document.getElementById('manualAmount').value);
+    const paymentRef = document.getElementById('manualPaymentRef').value.trim() || `MANUAL-${Date.now()}`;
+    
+    if (!applicantId) {
+        showToast('Please enter Applicant ID', 'error');
+        return;
+    }
+    if (!packageName) {
+        showToast('Please select a Package', 'error');
+        return;
+    }
+    if (!amount || amount <= 0) {
+        showToast('Please enter a valid amount', 'error');
+        return;
+    }
+    
+    if (!confirm(`Generate commission for applicant ${applicantId}?\nPackage: ${packageName}\nAmount: $${amount.toFixed(2)}`)) return;
+    
+    const btn = document.getElementById('saveManualCommissionBtn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner"></span> Generating...';
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch(`${API_URL}/admin/commissions/process`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${adminToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                applicantId: applicantId,
+                packageName: packageName,
+                amountReceived: amount,
+                paymentId: `MANUAL-${Date.now()}`
+            })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to generate commission');
+        }
+        
+        const result = await response.json();
+        showToast(`✅ Commission generated: $${result.commission.commissionAmount.toFixed(2)}`, 'success');
+        document.getElementById('manualCommissionModal').classList.remove('active');
+        await loadAgentCommissions();
+        await loadDashboardData();
+        
+    } catch (error) {
+        console.error('Error generating manual commission:', error);
+        showToast('Error: ' + error.message, 'error');
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+});
+
+// ============================================================
+// MANUAL GENERATE COMMISSION - SHORTCUT (Console)
+// ============================================================
+window.manualGenerateCommission = async (applicantId, packageName, amount) => {
+    if (!applicantId || !packageName || !amount) {
+        showToast('All fields are required: applicantId, packageName, amount', 'error');
+        return;
+    }
+    
+    if (!confirm(`Generate commission for applicant ${applicantId}?\nPackage: ${packageName}\nAmount: $${amount}`)) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/admin/commissions/process`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${adminToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                applicantId: applicantId,
+                packageName: packageName,
+                amountReceived: parseFloat(amount),
+                paymentId: `MANUAL-${Date.now()}`
+            })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed');
+        }
+        
+        const result = await response.json();
+        showToast(`✅ Commission generated: $${result.commission.commissionAmount.toFixed(2)}`, 'success');
+        await loadAgentCommissions();
+        await loadDashboardData();
+        
+    } catch (error) {
+        console.error('Error generating commission manually:', error);
+        showToast('Error: ' + error.message, 'error');
+    }
+};
 
         // ============================================================
         // LOGOUT
@@ -2442,7 +2640,7 @@ window.debugCommissions = async () => {
         };
 
 
-        // ============================================================
+// ============================================================
 // CONFIRM PAYMENT - WITH AUTO COMMISSION GENERATION - FIXED
 // ============================================================
 window.confirmPayment = async (userId) => {
@@ -2469,8 +2667,8 @@ window.confirmPayment = async (userId) => {
         if (paymentResult.success) {
             showToast('Payment approved, generating commission...', 'info');
             
-            // Find applicant by email
-            const applicantResult = await fetch(`${API_URL}/admin/agent-applicants`, {
+            // Find applicant by email - using the corrected endpoint
+            const applicantResult = await fetch(`${API_URL}/admin/applicants?email=${encodeURIComponent(user.email)}`, {
                 headers: { 'Authorization': `Bearer ${adminToken}` }
             });
             const applicantData = await applicantResult.json();
@@ -2505,7 +2703,20 @@ window.confirmPayment = async (userId) => {
                     const commissionResult = await commissionResponse.json();
                     showToast(`✅ Payment approved and $${commissionResult.commission?.commissionAmount?.toFixed(2) || 'commission'} generated!`, 'success');
                 } else {
-                    showToast(`⚠️ Payment approved but commission generation failed. Please process manually.`, 'warning');
+                    // Try to get error details
+                    let errorMsg = 'Commission generation failed.';
+                    try {
+                        const errorData = await commissionResponse.json();
+                        errorMsg = errorData.message || errorMsg;
+                    } catch (e) {}
+                    
+                    showToast(`⚠️ Payment approved but commission generation failed: ${errorMsg}`, 'warning');
+                    
+                    // Log the error for debugging
+                    console.error('Commission generation failed:', errorMsg);
+                    console.log('Applicant found:', applicant);
+                    console.log('Package name:', packageName);
+                    console.log('Amount:', amount);
                 }
             } else {
                 showToast(`✅ Payment approved! No agent commission (applicant not linked to agent)`, 'success');
