@@ -2441,7 +2441,8 @@ window.debugCommissions = async () => {
             }
         };
 
-       // ============================================================
+
+        // ============================================================
 // CONFIRM PAYMENT - WITH AUTO COMMISSION GENERATION - FIXED
 // ============================================================
 window.confirmPayment = async (userId) => {
@@ -2458,27 +2459,32 @@ window.confirmPayment = async (userId) => {
             headers: { 'Authorization': `Bearer ${adminToken}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ uid: user.uid })
         });
-        if (!paymentResponse.ok) { const error = await paymentResponse.text(); throw new Error(error); }
+        if (!paymentResponse.ok) { 
+            const error = await paymentResponse.text(); 
+            throw new Error(error); 
+        }
         const paymentResult = await paymentResponse.json();
         
         // Step 2: Auto-generate commission if payment was successful
         if (paymentResult.success) {
             showToast('Payment approved, generating commission...', 'info');
             
-            // Get applicant info to find agent and package
-            const applicantResult = await fetch(`${API_URL}/admin/applicants?search=${encodeURIComponent(user.email)}`, {
+            // Find applicant by email
+            const applicantResult = await fetch(`${API_URL}/admin/agent-applicants`, {
                 headers: { 'Authorization': `Bearer ${adminToken}` }
             });
             const applicantData = await applicantResult.json();
-            const applicant = (applicantData.applicants || []).find(a => a.email === user.email);
+            const applicants = applicantData.applicants || [];
+            const applicant = applicants.find(a => a.email === user.email);
             
             if (applicant && applicant.agentId) {
                 // Get the application to find package name
-                const appResult = await fetch(`${API_URL}/admin/applications?search=${encodeURIComponent(user.uid)}`, {
+                const appResult = await fetch(`${API_URL}/admin/applications`, {
                     headers: { 'Authorization': `Bearer ${adminToken}` }
                 });
                 const appData = await appResult.json();
-                const application = (appData.applications || []).find(a => a.uid === user.uid);
+                const apps = appData.applications || [];
+                const application = apps.find(a => a.uid === user.uid || a.applicantId === applicant.applicantId);
                 
                 const packageName = application?.packageName || application?.service || 'Standard';
                 const amount = paymentResult.amount || 0;
@@ -2496,15 +2502,17 @@ window.confirmPayment = async (userId) => {
                 });
                 
                 if (commissionResponse.ok) {
-                    showToast(`✅ Payment approved and commission generated for ${user.name}!`, 'success');
+                    const commissionResult = await commissionResponse.json();
+                    showToast(`✅ Payment approved and $${commissionResult.commission?.commissionAmount?.toFixed(2) || 'commission'} generated!`, 'success');
                 } else {
-                    showToast(`✅ Payment approved but commission generation failed. Please process manually.`, 'warning');
+                    showToast(`⚠️ Payment approved but commission generation failed. Please process manually.`, 'warning');
                 }
             } else {
-                showToast(`✅ Payment approved! No agent commission generated (applicant not linked to agent)`, 'success');
+                showToast(`✅ Payment approved! No agent commission (applicant not linked to agent)`, 'success');
             }
         }
         
+        // Refresh all data
         await loadPayments();
         await loadDashboardData();
         await loadUsers();
@@ -2512,6 +2520,7 @@ window.confirmPayment = async (userId) => {
         if (document.querySelector('#agent-commissions-section.active')) {
             await loadAgentCommissions();
         }
+        
     } catch (error) {
         console.error('Error confirming payment:', error);
         showToast('Error confirming payment: ' + error.message, 'error');
