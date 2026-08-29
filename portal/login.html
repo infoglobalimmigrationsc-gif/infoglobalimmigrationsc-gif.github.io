@@ -268,16 +268,13 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Responsive */
         @media (max-width: 550px) {
             .login-container {
                 padding: 25px;
             }
-            
             .login-header h2 {
                 font-size: 1.3rem;
             }
-            
             .form-options {
                 flex-direction: column;
                 align-items: flex-start;
@@ -331,11 +328,8 @@
         </div>
     </div>
 
-    <!-- ============ ANTI-CONSOLE & SECURITY PROTECTION ============ -->
+    <!-- Security -->
     <script>
-        // ============================================================
-        // ANTI-CONSOLE PROTECTION
-        // ============================================================
         document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
         document.addEventListener('keydown', function(e) {
             if (e.key === 'F12') { e.preventDefault(); return false; }
@@ -352,22 +346,6 @@
             console.debug = function() {};
         }
         console.clear = function() {};
-
-        // Detect DevTools
-        setInterval(function() {
-            (function() {
-                var start = Date.now();
-                debugger;
-                var end = Date.now();
-                if (end - start > 100) {
-                    // DevTools detected
-                }
-            })();
-        }, 2000);
-
-        if (window.top !== window.self) {
-            window.top.location = window.self.location;
-        }
     </script>
 
     <!-- Firebase SDK -->
@@ -457,25 +435,52 @@
         }
 
         // ============================================================
-        // CHECK IF ALREADY LOGGED IN
+        // CHECK IF ALREADY LOGGED IN (BOTH Firebase AND MongoDB)
         // ============================================================
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                // Check if it's an admin
-                db.collection('users').doc(user.uid).get().then((doc) => {
-                    if (doc.exists && doc.data().userType === 'admin') {
+        function checkExistingLogin() {
+            // Check for MongoDB token
+            const mongoToken = localStorage.getItem('userToken');
+            const userData = localStorage.getItem('userData');
+            
+            if (mongoToken && userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    // Redirect based on user type
+                    if (user.userType === 'admin') {
                         window.location.href = '../admin/dashboard.html';
+                    } else if (user.userType === 'agent') {
+                        window.location.href = 'agent-dashboard.html';
                     } else {
                         window.location.href = 'dashboard.html';
                     }
-                }).catch(() => {
-                    window.location.href = 'dashboard.html';
-                });
+                    return true;
+                } catch (e) {
+                    console.error('Error checking existing login:', e);
+                }
             }
-        });
+            return false;
+        }
+
+        // Check for existing login first
+        if (!checkExistingLogin()) {
+            // Then check Firebase
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    db.collection('users').doc(user.uid).get().then((doc) => {
+                        if (doc.exists && doc.data().userType === 'admin') {
+                            window.location.href = '../admin/dashboard.html';
+                        } else {
+                            window.location.href = 'dashboard.html';
+                        }
+                    }).catch(() => {
+                        window.location.href = 'dashboard.html';
+                    });
+                }
+            });
+        }
 
         // ============================================================
-        // LOGIN FORM HANDLER - SUPPORTS BOTH FIREBASE AND MONGODB
+        // LOGIN FORM HANDLER
         // ============================================================
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -500,21 +505,18 @@
             submitBtn.disabled = true;
             
             try {
-                let user = null;
                 let loginMethod = 'firebase';
                 let userData = null;
 
-                // STEP 1: Try Firebase authentication first (for existing users)
+                // STEP 1: Try Firebase first
                 try {
                     const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                    user = userCredential.user;
+                    const user = userCredential.user;
                     
-                    // Set persistence
                     await auth.setPersistence(
                         rememberMe ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION
                     );
                     
-                    // Get user data from Firestore
                     const userDoc = await db.collection('users').doc(user.uid).get();
                     if (userDoc.exists) {
                         userData = userDoc.data();
@@ -522,61 +524,53 @@
                     
                     loginMethod = 'firebase';
                 } catch (firebaseError) {
-                    // If Firebase fails, it might be a MongoDB user (agent-created applicant)
+                    // If Firebase fails with user-not-found, try MongoDB
                     if (firebaseError.code === 'auth/user-not-found' || 
                         firebaseError.code === 'auth/wrong-password' ||
                         firebaseError.code === 'auth/invalid-login-credentials') {
                         
                         console.log('Firebase login failed, trying MongoDB...');
                         
-                        // STEP 2: Try MongoDB authentication
-                        try {
-                            const mongoResult = await loginWithMongoDB(email, password);
+                        const mongoResult = await loginWithMongoDB(email, password);
+                        
+                        if (mongoResult.success && mongoResult.user) {
+                            userData = mongoResult.user;
+                            loginMethod = 'mongodb';
                             
-                            if (mongoResult.success && mongoResult.user) {
-                                userData = mongoResult.user;
-                                loginMethod = 'mongodb';
-                                
-                                // Store MongoDB user info
-                                const userInfo = {
-                                    uid: userData.uid || userData._id,
-                                    name: userData.name || userData.fullName || 'User',
-                                    email: userData.email,
-                                    userType: userData.userType || 'applicant',
-                                    mongoUser: true,
-                                    token: mongoResult.token || null
-                                };
-                                
-                                localStorage.setItem('userData', JSON.stringify(userInfo));
-                                if (mongoResult.token) {
-                                    localStorage.setItem('userToken', mongoResult.token);
-                                }
-                                
-                                // Redirect based on user type
-                                if (userData.userType === 'admin') {
-                                    window.location.href = '../admin/dashboard.html';
-                                } else if (userData.userType === 'agent') {
-                                    window.location.href = 'agent-dashboard.html';
-                                } else {
-                                    window.location.href = 'dashboard.html';
-                                }
-                                return;
-                            } else {
-                                throw new Error(mongoResult.message || 'MongoDB login failed');
+                            // Store MongoDB credentials
+                            const userInfo = {
+                                uid: userData.uid || userData._id,
+                                name: userData.name || userData.fullName || 'User',
+                                email: userData.email,
+                                userType: userData.userType || 'applicant',
+                                mongoUser: true
+                            };
+                            
+                            localStorage.setItem('userData', JSON.stringify(userInfo));
+                            if (mongoResult.token) {
+                                localStorage.setItem('userToken', mongoResult.token);
                             }
-                        } catch (mongoError) {
-                            console.error('MongoDB login error:', mongoError);
-                            throw new Error('Invalid email or password. Please try again.');
+                            
+                            // Redirect based on user type
+                            if (userData.userType === 'admin') {
+                                window.location.href = '../admin/dashboard.html';
+                            } else if (userData.userType === 'agent') {
+                                window.location.href = 'agent-dashboard.html';
+                            } else {
+                                window.location.href = 'dashboard.html';
+                            }
+                            return;
+                        } else {
+                            throw new Error(mongoResult.message || 'MongoDB login failed');
                         }
                     } else {
                         throw firebaseError;
                     }
                 }
 
-                // STEP 3: Handle Firebase login success
-                if (loginMethod === 'firebase' && user) {
-                    // If user is admin, redirect to admin dashboard
-                    if (userData && userData.userType === 'admin') {
+                // STEP 2: Handle Firebase login success
+                if (loginMethod === 'firebase' && userData) {
+                    if (userData.userType === 'admin') {
                         window.location.href = '../admin/dashboard.html';
                     } else {
                         window.location.href = 'dashboard.html';
@@ -629,54 +623,6 @@
                 document.getElementById('loginForm').dispatchEvent(new Event('submit'));
             }
         });
-
-        // ============================================================
-        // ADD MONGODB LOGIN ROUTE TO SERVER IF NOT EXISTS
-        // ============================================================
-        // This route should be added to server.js:
-        /*
-        app.post('/api/users/login', async (req, res) => {
-            try {
-                const { email, password } = req.body;
-                if (!email || !password) {
-                    return res.status(400).json({ success: false, message: 'Email and password are required' });
-                }
-
-                const user = await db.collection('users').findOne({ email: email.toLowerCase() });
-                if (!user) {
-                    return res.status(401).json({ success: false, message: 'Invalid credentials' });
-                }
-
-                if (!user.password) {
-                    return res.status(401).json({ success: false, message: 'This account has no password set. Please use the password reset feature.' });
-                }
-
-                const isValid = await bcrypt.compare(password, user.password);
-                if (!isValid) {
-                    return res.status(401).json({ success: false, message: 'Invalid credentials' });
-                }
-
-                const token = jwt.sign(
-                    { id: user._id, email: user.email, uid: user.uid, userType: user.userType || 'applicant' },
-                    process.env.JWT_SECRET || 'your-secret-key',
-                    { expiresIn: '24h' }
-                );
-
-                delete user.password;
-                delete user.resetToken;
-                delete user.resetTokenExpiry;
-
-                res.json({
-                    success: true,
-                    token: token,
-                    user: user
-                });
-            } catch (error) {
-                console.error('MongoDB login error:', error);
-                res.status(500).json({ success: false, message: error.message });
-            }
-        });
-        */
     </script>
 </body>
 </html>
