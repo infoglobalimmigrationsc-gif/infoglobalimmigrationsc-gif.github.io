@@ -4801,13 +4801,24 @@ app.get('/api/admin/applicants/:applicantId', authenticateToken, async (req, res
 });
 
 // ============================================================
-// ADMIN SEARCH APPLICANTS - UPDATED TO SUPPORT SEARCH
+// ADMIN SEARCH APPLICANTS - FIXED
 // ============================================================
 app.get('/api/admin/applicants', authenticateToken, async (req, res) => {
     try {
-        const { search, email } = req.query;
+        const { search, email, applicantId } = req.query;
         const query = {};
         
+        // If searching by applicantId (string)
+        if (applicantId) {
+            query.applicantId = applicantId;
+        }
+        
+        // If searching by email
+        if (email) {
+            query.email = email.toLowerCase();
+        }
+        
+        // If searching by general search term
         if (search) {
             query.$or = [
                 { fullName: { $regex: search, $options: 'i' } },
@@ -4816,13 +4827,8 @@ app.get('/api/admin/applicants', authenticateToken, async (req, res) => {
             ];
         }
         
-        if (email) {
-            query.email = email.toLowerCase();
-        }
-        
         // If no search or email, return all applicants (with limit)
-        if (!search && !email) {
-            // Return paginated results
+        if (!search && !email && !applicantId) {
             const limit = parseInt(req.query.limit) || 50;
             const applicants = await db.collection('applicants')
                 .find({})
