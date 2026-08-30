@@ -5684,6 +5684,8 @@ use the Debug button to check the database.`);
 
         window.updateContactStatus = async (contactId, status) => {
     try {
+        console.log(`🔄 Updating contact ${contactId} status to: ${status}`);
+        
         const response = await fetch(`${API_URL}/admin/contacts/${contactId}/status`, {
             method: 'PATCH',
             headers: {
@@ -5698,13 +5700,16 @@ use the Debug button to check the database.`);
         if (!contentType || !contentType.includes('application/json')) {
             const text = await response.text();
             console.error('Non-JSON response:', text);
-            throw new Error('Server returned an error. Please try again.');
+            throw new Error(`Server returned: ${text.substring(0, 100)}`);
         }
         
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.message || 'Failed to update status');
         }
+        
+        const result = await response.json();
+        console.log('✅ Status update response:', result);
         
         showToast(`Contact status updated to: ${status.toUpperCase()}`, 'success');
         await loadContacts();
@@ -5737,10 +5742,20 @@ use the Debug button to check the database.`);
         return; 
     }
     
+    const btn = document.querySelector('#contactDetailModal .btn-success') || document.querySelector('[onclick*="replyToContact"]');
+    const originalText = btn ? btn.innerHTML : 'Reply';
+    if (btn) {
+        btn.innerHTML = '<span class="spinner"></span> Sending...';
+        btn.disabled = true;
+    }
+    
     try {
         showToast('Sending reply...', 'info');
         
-        // Use direct fetch instead of apiFetch for better error handling
+        console.log(`📨 Sending reply to contact: ${contactId}`);
+        console.log(`📨 User email: ${contact.email}`);
+        console.log(`📨 Reply message: ${replyMessage.trim().substring(0, 100)}...`);
+        
         const response = await fetch(`${API_URL}/admin/contacts/${contactId}/reply`, {
             method: 'POST',
             headers: {
@@ -5758,7 +5773,7 @@ use the Debug button to check the database.`);
         if (!contentType || !contentType.includes('application/json')) {
             const text = await response.text();
             console.error('Non-JSON response:', text);
-            throw new Error('Server returned an error. Please try again.');
+            throw new Error(`Server returned: ${text.substring(0, 100)}`);
         }
         
         if (!response.ok) {
@@ -5766,18 +5781,29 @@ use the Debug button to check the database.`);
             throw new Error(error.message || 'Failed to send reply');
         }
         
+        const result = await response.json();
+        console.log('✅ Reply response:', result);
+        
         showToast(`✅ Reply sent to ${contact.email}`, 'success');
         
-        // Update contact status to replied
+        // Update contact status to replied (this will also send notification)
         await updateContactStatus(contactId, 'replied');
         
         // Close modal if open
         const modal = document.getElementById('contactDetailModal');
         if (modal) modal.remove();
         
+        // Refresh contacts
+        await loadContacts();
+        
     } catch (error) {
         console.error('Error sending reply:', error);
         showToast('Error sending reply: ' + error.message, 'error');
+    } finally {
+        if (btn) {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
     }
 };
 
