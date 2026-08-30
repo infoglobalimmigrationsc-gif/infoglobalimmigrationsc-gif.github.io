@@ -3784,21 +3784,25 @@ If the applicant exists, use Manual Commission:
                 // ===== UPDATED: Use exact status values from backend =====
                 // Backend uses: 'Eligible', 'Paid', 'Settled', 'Pending', 'Reversed'
                 tbody.innerHTML = commissions.map(c => `
-                    <tr>
-                        <td>${c.agentName || c.agentId || 'N/A'}</td>
-                        <td>${c.applicantName || c.applicantId || 'N/A'}</td>
-                        <td>${c.packageName || 'N/A'}</td>
-                        <td>$${(c.amountReceived || 0).toFixed(2)}</td>
-                        <td><strong>$${(c.commissionAmount || 0).toFixed(2)}</strong></td>
-                        <td>${(c.rate || 0) * 100}%</td>
-                        <td><span class="status-badge status-${c.status ? c.status.toLowerCase() : 'pending'}">${c.status || 'Pending'}</span></td>
-                        <td>
-                            ${c.status === 'Eligible' ? `<button class="btn btn-sm btn-success" onclick="reverseCommission('${c._id}')"><i class="fas fa-undo"></i> Reverse</button>` : ''}
-                            ${c.status === 'Reversed' ? `<span style="color: #dc3545;">Reversed</span>` : ''}
-                            ${c.status === 'Eligible' || c.status === 'Pending' ? `<button class="btn btn-sm btn-primary" onclick="processSingleCommission('${c._id}')"><i class="fas fa-coins"></i> Pay</button>` : ''}
-                        </td>
-                    </tr>
-                `).join('');
+    <tr>
+        <td>${c.agentName || c.agentId || 'N/A'}</td>
+        <td>${c.applicantName || c.applicantId || 'N/A'}</td>
+        <td>${c.packageName || 'N/A'}</td>
+        <td>$${(c.amountReceived || 0).toFixed(2)}</td>
+        <td><strong>$${(c.commissionAmount || 0).toFixed(2)}</strong></td>
+        <td>${(c.rate || 0) * 100}%</td>
+        <td><span class="status-badge status-${c.status ? c.status.toLowerCase() : 'pending'}">${c.status || 'Pending'}</span></td>
+        <td>
+            <div style="display: flex; flex-wrap: wrap; gap: 3px;">
+                ${c.status === 'Eligible' ? `<button class="btn btn-sm btn-success" onclick="reverseCommission('${c._id}')"><i class="fas fa-undo"></i> Reverse</button>` : ''}
+                ${c.status === 'Reversed' ? `<span style="color: #dc3545;">Reversed</span>` : ''}
+                ${c.status === 'Eligible' || c.status === 'Pending' ? `<button class="btn btn-sm btn-primary" onclick="processSingleCommission('${c._id}')"><i class="fas fa-coins"></i> Pay</button>` : ''}
+                ${c.status !== 'Reversed' ? `<button class="btn btn-sm btn-danger" onclick="deleteCommission('${c._id}')" title="Delete Commission (Refund)"><i class="fas fa-trash"></i></button>` : ''}
+                ${c.status === 'Reversed' ? `<button class="btn btn-sm btn-outline" onclick="deleteCommission('${c._id}')" title="Delete Reversed Commission"><i class="fas fa-trash"></i></button>` : ''}
+            </div>
+        </td>
+    </tr>
+`).join('');
                 
             } catch (error) {
                 console.error('Error loading commissions:', error);
@@ -4682,6 +4686,112 @@ use the Debug button to check the database.`);
                 showToast('Error reversing commission', 'error');
             }
         };
+
+
+        // ============================================================
+// DELETE COMMISSION (Refund/Delete)
+// ============================================================
+window.deleteCommission = async (commissionId) => {
+    // First check the current status
+    try {
+        // Get the commission to check status
+        const result = await apiFetch(`agent-commissions`);
+        const commissions = result.commissions || [];
+        const commission = commissions.find(c => c._id === commissionId);
+        
+        if (!commission) {
+            showToast('Commission not found', 'error');
+            return;
+        }
+        
+        const status = commission.status || 'Pending';
+        const amount = commission.commissionAmount || 0;
+        const agentId = commission.agentId;
+        const applicantId = commission.applicantId;
+        const agentName = commission.agentName || agentId || 'Unknown Agent';
+        
+        // Build confirmation message
+        let confirmMsg = `⚠️ DELETE COMMISSION\n\n`;
+        confirmMsg += `Commission ID: ${commissionId}\n`;
+        confirmMsg += `Agent: ${agentName}\n`;
+        confirmMsg += `Applicant: ${commission.applicantName || applicantId || 'Unknown'}\n`;
+        confirmMsg += `Amount: $${amount.toFixed(2)}\n`;
+        confirmMsg += `Current Status: ${status}\n\n`;
+        
+        if (status === 'Paid' || status === 'Settled') {
+            confirmMsg += `⚠️ This commission has already been PAID!\n`;
+            confirmMsg += `Deleting it will require manual refund adjustment.\n\n`;
+        }
+        
+        confirmMsg += `This action will:\n`;
+        confirmMsg += `1. Permanently delete this commission record\n`;
+        confirmMsg += `2. Remove it from the agent's commission list\n`;
+        confirmMsg += `3. NOT automatically refund the agent\n\n`;
+        confirmMsg += `Are you sure you want to continue?`;
+        
+        if (!confirm(confirmMsg)) return;
+        
+        // If paid, get additional confirmation
+        if (status === 'Paid' || status === 'Settled') {
+            const secondConfirm = prompt(`⚠️ This commission has already been PAID ($${amount.toFixed(2)}).\n\nEnter "REFUND" to confirm deletion and manual refund processing:`);
+            if (secondConfirm !== 'REFUND') {
+                showToast('Deletion cancelled', 'info');
+                return;
+            }
+        }
+        
+        // Get reason for deletion
+        const reason = prompt('Enter reason for deleting this commission (for audit log):');
+        if (reason === null) return;
+        
+        const btn = document.querySelector(`[onclick*="deleteCommission('${commissionId}')"]`);
+        const originalText = btn ? btn.innerHTML : 'Delete';
+        if (btn) {
+            btn.innerHTML = '<span class="spinner"></span>';
+            btn.disabled = true;
+        }
+        
+        showToast('Deleting commission...', 'info');
+        
+        // ============================================================
+        // STEP 1: Delete the commission
+        // ============================================================
+        const deleteResponse = await fetch(`${API_URL}/admin/commissions/${commissionId}/delete`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${adminToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                reason: reason || 'Admin deletion',
+                status: status,
+                amount: amount,
+                agentId: agentId,
+                applicantId: applicantId
+            })
+        });
+        
+        if (!deleteResponse.ok) {
+            const error = await deleteResponse.json();
+            throw new Error(error.message || 'Failed to delete commission');
+        }
+        
+        const resultData = await deleteResponse.json();
+        
+        showToast(`✅ Commission deleted successfully!${status === 'Paid' || status === 'Settled' ? ' Manual refund required.' : ''}`, 'success');
+        
+        // Refresh data
+        await loadAgentCommissions();
+        await loadDashboardData();
+        await loadAgentApplicants();
+        
+        // If on agent portal, it will auto-refresh on next load
+        
+    } catch (error) {
+        console.error('Error deleting commission:', error);
+        showToast('Error deleting commission: ' + error.message, 'error');
+    }
+};
 
         // ============================================================
         // GENERATE SETTLEMENT - UPDATED WITH AGENT VERIFICATION
