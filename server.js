@@ -3783,6 +3783,76 @@ app.post('/api/users/login', async (req, res) => {
 });
 
 // ============================================================
+// USER SUPPORT TICKET REPLY
+// ============================================================
+app.post('/api/users/:uid/support-reply', async (req, res) => {
+    try {
+        const { uid } = req.params;
+        const { ticketId, message } = req.body;
+        
+        if (!ticketId || !message) {
+            return res.status(400).json({ success: false, message: 'Ticket ID and message are required' });
+        }
+        
+        const user = await db.collection('users').findOne({ uid: uid });
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        
+        const application = await db.collection('applications').findOne({ uid: uid });
+        if (!application) {
+            return res.status(404).json({ success: false, message: 'Application not found' });
+        }
+        
+        // Find the ticket
+        const tickets = application.supportTickets || [];
+        const ticketIndex = tickets.findIndex(t => t.id === ticketId);
+        
+        if (ticketIndex === -1) {
+            return res.status(404).json({ success: false, message: 'Ticket not found' });
+        }
+        
+        // Add user reply
+        const updatePath = `supportTickets.${ticketIndex}`;
+        
+        await db.collection('applications').updateOne(
+            { uid: uid },
+            {
+                $push: {
+                    [`${updatePath}.replies`]: {
+                        from: 'user',
+                        message: message,
+                        date: new Date().toISOString()
+                    }
+                },
+                $set: {
+                    [`${updatePath}.status`]: 'new',
+                    [`${updatePath}.updatedAt`]: new Date().toISOString(),
+                    updatedAt: new Date()
+                }
+            }
+        );
+        
+        // Create a notification for the admin
+        await db.collection('notifications').insertOne({
+            title: `New reply from ${user.name || 'User'}`,
+            message: `User replied to support ticket: ${message.substring(0, 100)}...`,
+            priority: 'normal',
+            read: false,
+            createdAt: new Date(),
+            type: 'support_reply',
+            userId: uid,
+            ticketId: ticketId
+        });
+        
+        res.json({ success: true, message: 'Reply sent successfully' });
+        
+    } catch (error) {
+        console.error('Error sending support reply:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+// ============================================================
 // DOCUMENT ENDPOINTS
 // ============================================================
 app.post('/api/users/documents', async (req, res) => {
