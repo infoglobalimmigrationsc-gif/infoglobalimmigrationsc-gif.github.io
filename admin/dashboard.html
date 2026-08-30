@@ -5686,14 +5686,34 @@ use the Debug button to check the database.`);
     try {
         console.log(`🔄 Updating contact ${contactId} status to: ${status}`);
         
-        const response = await fetch(`${API_URL}/admin/contacts/${contactId}/status`, {
-            method: 'PATCH',
-            headers: {
-                'Authorization': `Bearer ${adminToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ status })
-        });
+        // Use try-catch with retry
+        let response;
+        let retries = 3;
+        
+        while (retries > 0) {
+            try {
+                response = await fetch(`${API_URL}/admin/contacts/${contactId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status })
+                });
+                break; // Success, exit loop
+            } catch (fetchError) {
+                retries--;
+                console.warn(`⚠️ Fetch attempt failed (${retries} retries left):`, fetchError.message);
+                if (retries === 0) throw fetchError;
+                // Wait 1 second before retry
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+        
+        // Check if response exists
+        if (!response) {
+            throw new Error('No response received from server');
+        }
         
         // Check if response is JSON
         const contentType = response.headers.get('content-type');
@@ -5712,11 +5732,41 @@ use the Debug button to check the database.`);
         console.log('✅ Status update response:', result);
         
         showToast(`Contact status updated to: ${status.toUpperCase()}`, 'success');
+        
+        // Refresh data
         await loadContacts();
         await loadDashboardData();
+        
+        // If status is "replied", also refresh to show the reply
+        if (status === 'replied') {
+            console.log('📨 Status set to replied, refreshing contact list...');
+            await loadContacts();
+        }
+        
     } catch (error) {
         console.error('Error updating contact status:', error);
         showToast('Error updating contact status: ' + error.message, 'error');
+        
+        // Try a direct fetch without apiFetch
+        try {
+            console.log('🔄 Trying direct fetch fallback...');
+            const directResponse = await fetch(`${API_URL}/admin/contacts/${contactId}/status`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${adminToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status })
+            });
+            if (directResponse.ok) {
+                console.log('✅ Direct fetch succeeded!');
+                showToast('Status updated (retry succeeded)', 'success');
+                await loadContacts();
+                await loadDashboardData();
+            }
+        } catch (fallbackError) {
+            console.error('❌ Direct fetch also failed:', fallbackError);
+        }
     }
 };
 
