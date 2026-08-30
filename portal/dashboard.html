@@ -1655,6 +1655,7 @@
         await loadProgrammes();
         await loadRecommendations();
         await loadServiceRequests();
+        await loadSupportTickets();
         await updateProfileCompletion();
         startPolling();
       } catch (error) {
@@ -3626,6 +3627,8 @@ Contact GISC for assistance with this scholarship.`);
     window.requestApplication = requestApplication;
     window.calculateCost = calculateCost;
     window.playVideo = playVideo;
+    window.loadSupportTickets = loadSupportTickets;
+    window.replyToSupportTicket = replyToSupportTicket;
     
     // ============================================================
     // INITIALIZE
@@ -3634,7 +3637,137 @@ Contact GISC for assistance with this scholarship.`);
       // Start authentication
       initAuth();
     });
+
+    // ============================================================
+// LOAD SUPPORT TICKETS
+// ============================================================
+async function loadSupportTickets() {
+    const container = document.getElementById('supportTicketsList');
+    if (!container) return;
     
+    try {
+        let uid = currentUser?.uid;
+        if (isMongoUser && mongoUserInfo) {
+            uid = mongoUserInfo.uid || mongoUserInfo._id;
+        }
+        
+        if (!uid) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-ticket-alt"></i><p>Please log in to view support tickets</p></div>';
+            return;
+        }
+        
+        // Get the user's application
+        const response = await fetch(`${API_URL}/users/${uid}/full`);
+        if (!response.ok) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-ticket-alt"></i><p>No support tickets found</p></div>';
+            return;
+        }
+        
+        const result = await response.json();
+        const application = result.application || {};
+        const tickets = application.supportTickets || [];
+        
+        if (tickets.length === 0) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-ticket-alt"></i><p>No support tickets yet. Submit a support request above.</p></div>';
+            return;
+        }
+        
+        // Display tickets
+        container.innerHTML = tickets.map(ticket => {
+            const statusColors = {
+                'new': '#17a2b8',
+                'read': '#ffc107',
+                'replied': '#28a745',
+                'closed': '#6c757d'
+            };
+            const statusColor = statusColors[ticket.status] || '#6c757d';
+            
+            const replyCount = ticket.adminReplies ? ticket.adminReplies.length : 0;
+            const lastReply = ticket.adminReplies && ticket.adminReplies.length > 0 
+                ? ticket.adminReplies[ticket.adminReplies.length - 1] 
+                : null;
+            
+            return `
+                <div style="background: rgba(255,255,255,0.06); border-radius: 12px; padding: 15px 18px; margin-bottom: 12px; border-left: 4px solid ${statusColor};">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;">
+                        <div>
+                            <h5 style="color: white; font-size: 0.95rem; margin: 0;">${ticket.subject || 'Support Inquiry'}</h5>
+                            <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 5px; font-size: 0.75rem; color: rgba(255,255,255,0.4);">
+                                <span><i class="fas fa-calendar"></i> ${ticket.createdAt ? new Date(ticket.createdAt).toLocaleDateString() : 'N/A'}</span>
+                                <span><i class="fas fa-comment"></i> ${replyCount} reply${replyCount !== 1 ? 's' : ''}</span>
+                            </div>
+                        </div>
+                        <span style="display: inline-block; padding: 2px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: 600; background: ${statusColor}22; color: ${statusColor};">
+                            ${ticket.status ? ticket.status.toUpperCase() : 'NEW'}
+                        </span>
+                    </div>
+                    <div style="margin-top: 8px; color: rgba(255,255,255,0.6); font-size: 0.85rem; padding: 8px 12px; background: rgba(255,255,255,0.04); border-radius: 6px;">
+                        <i class="fas fa-quote-left" style="color: var(--primary-red); font-size: 0.6rem; opacity: 0.5;"></i>
+                        ${ticket.message ? ticket.message.substring(0, 150) + (ticket.message.length > 150 ? '...' : '') : 'No message'}
+                    </div>
+                    ${lastReply ? `
+                        <div style="margin-top: 8px; padding: 8px 12px; background: rgba(40, 167, 69, 0.08); border-radius: 6px; border-left: 2px solid #28a745;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; color: rgba(255,255,255,0.3);">
+                                <span><i class="fas fa-reply"></i> Admin reply</span>
+                                <span>${lastReply.date ? new Date(lastReply.date).toLocaleDateString() : ''}</span>
+                            </div>
+                            <p style="color: rgba(255,255,255,0.7); font-size: 0.85rem; margin: 4px 0 0 0;">${lastReply.message}</p>
+                        </div>
+                    ` : ''}
+                    ${ticket.status === 'replied' ? `
+                        <div style="margin-top: 8px;">
+                            <button class="btn btn-primary btn-sm" onclick="replyToSupportTicket('${ticket.id}')">
+                                <i class="fas fa-reply"></i> Reply
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }).join('');
+        
+    } catch (error) {
+        console.error('Error loading support tickets:', error);
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading support tickets</p></div>';
+    }
+}
+
+// ============================================================
+// REPLY TO SUPPORT TICKET
+// ============================================================
+async function replyToSupportTicket(ticketId) {
+    const message = prompt('Enter your reply message:');
+    if (!message || message.trim() === '') {
+        showToast('Reply message cannot be empty', 'error');
+        return;
+    }
+    
+    try {
+        let uid = currentUser?.uid;
+        if (isMongoUser && mongoUserInfo) {
+            uid = mongoUserInfo.uid || mongoUserInfo._id;
+        }
+        
+        const response = await fetch(`${API_URL}/users/${uid}/support-reply`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                ticketId: ticketId,
+                message: message.trim()
+            })
+        });
+        
+        if (!response.ok) throw new Error('Failed to send reply');
+        
+        showToast('Reply sent successfully!', 'success');
+        await loadSupportTickets();
+        
+    } catch (error) {
+        console.error('Error sending reply:', error);
+        showToast('Error sending reply: ' + error.message, 'error');
+    }
+}
     console.log('✅ GISC Applicant Portal 2.0 loaded successfully');
   </script>
 </body>
