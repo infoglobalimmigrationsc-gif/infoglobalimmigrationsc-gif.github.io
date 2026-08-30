@@ -2127,13 +2127,24 @@ window.manualGenerateCommission = async (applicantId, packageName, amount) => {
 };
 
  // ============================================================
-// DEBUG COMMISSIONS - HELPER
+// DEBUG COMMISSIONS - ENHANCED
 // ============================================================
 window.debugCommissions = async () => {
     try {
         const result = await apiFetch('agent-commissions');
         const commissions = result.commissions || [];
         const summary = result.summary || {};
+        
+        // Get all applicants
+        const appResult = await fetch(`${API_URL}/admin/applicants`, {
+            headers: { 'Authorization': `Bearer ${adminToken}` }
+        });
+        const appData = await appResult.json();
+        const applicants = appData.applicants || [];
+        
+        // Get all agents
+        const agentResult = await apiFetch('agents');
+        const agents = agentResult.agents || [];
         
         console.log('📊 Commission Debug Info:');
         console.log('Total commissions:', commissions.length);
@@ -2147,29 +2158,49 @@ window.debugCommissions = async () => {
         });
         console.log('Statuses:', statusMap);
         
+        console.log('👤 Applicants:', applicants.length);
+        console.log('🤝 Agents:', agents.length);
+        console.log('Applicants with agent:', applicants.filter(a => a.agentId).length);
+        
+        // Show applicants without agent
+        const noAgent = applicants.filter(a => !a.agentId);
+        if (noAgent.length > 0) {
+            console.log('⚠️ Applicants without agent:', noAgent.map(a => a.applicantId));
+        }
+        
         // Show sample commission
         if (commissions.length > 0) {
             console.log('Sample commission:', commissions[0]);
         }
         
-        // Also check applicants for agent links
-        const agentResult = await apiFetch('agents');
-        const agents = agentResult.agents || [];
-        console.log('Total agents:', agents.length);
-        console.log('Approved agents:', agents.filter(a => a.status === 'Approved').length);
+        // Show sample applicant
+        if (applicants.length > 0) {
+            console.log('Sample applicant:', {
+                applicantId: applicants[0].applicantId,
+                fullName: applicants[0].fullName,
+                email: applicants[0].email,
+                agentId: applicants[0].agentId,
+                status: applicants[0].status
+            });
+        }
         
-        const appResult = await apiFetch('agent-applicants');
-        const applicants = appResult.applicants || [];
-        console.log('Total applicants:', applicants.length);
-        console.log('Applicants with agent:', applicants.filter(a => a.agentId).length);
+        // Build alert message
+        let msg = `📊 Commission Debug\n\n`;
+        msg += `Total Commissions: ${commissions.length}\n`;
+        msg += `Statuses: ${JSON.stringify(statusMap)}\n\n`;
+        msg += `Total Applicants: ${applicants.length}\n`;
+        msg += `Applicants with Agent: ${applicants.filter(a => a.agentId).length}\n`;
+        msg += `Applicants WITHOUT Agent: ${applicants.filter(a => !a.agentId).length}\n\n`;
+        msg += `Total Agents: ${agents.length}\n`;
+        msg += `Approved Agents: ${agents.filter(a => a.status === 'Approved').length}`;
         
-        alert(`📊 Commission Debug\n\nTotal Commissions: ${commissions.length}\nStatuses: ${JSON.stringify(statusMap)}\nTotal Agents: ${agents.length}\nTotal Applicants: ${applicants.length}`);
+        alert(msg);
         
     } catch (error) {
         console.error('Debug error:', error);
         showToast('Debug error: ' + error.message, 'error');
     }
-};        
+};
 
         // ============================================================
 // OPEN MANUAL COMMISSION MODAL
@@ -2195,7 +2226,7 @@ document.getElementById('manualCommissionModal').addEventListener('click', funct
 });
 
 // ============================================================
-// SAVE MANUAL COMMISSION
+// SAVE MANUAL COMMISSION - IMPROVED
 // ============================================================
 document.getElementById('saveManualCommissionBtn').addEventListener('click', async () => {
     const applicantId = document.getElementById('manualApplicantId').value.trim();
@@ -2213,6 +2244,48 @@ document.getElementById('saveManualCommissionBtn').addEventListener('click', asy
     }
     if (!amount || amount <= 0) {
         showToast('Please enter a valid amount', 'error');
+        return;
+    }
+    
+    // First, verify the applicant exists
+    try {
+        showToast('Verifying applicant...', 'info');
+        const verifyResponse = await fetch(`${API_URL}/admin/applicants?applicantId=${encodeURIComponent(applicantId)}`, {
+            headers: { 'Authorization': `Bearer ${adminToken}` }
+        });
+        const verifyData = await verifyResponse.json();
+        const applicant = (verifyData.applicants || []).find(a => a.applicantId === applicantId);
+        
+        if (!applicant) {
+            showToast(`❌ Applicant ${applicantId} not found!`, 'error');
+            alert(`❌ Applicant Not Found
+
+Applicant ID "${applicantId}" was not found in the database.
+
+Please check:
+1. The Applicant ID is correct (e.g., GISC-APP-000001)
+2. The applicant exists in the Agent Applicants section
+
+Click "Debug" in the Agent Commissions section to see all applicants.`);
+            return;
+        }
+        
+        if (!applicant.agentId) {
+            showToast(`❌ Applicant ${applicantId} has no agent assigned!`, 'error');
+            alert(`⚠️ Applicant has no Agent ID
+
+Applicant: ${applicant.fullName} (${applicantId})
+Agent ID: ${applicant.agentId || 'Not assigned'}
+
+This applicant is not linked to any agent. Please assign an agent first.`);
+            return;
+        }
+        
+        showToast(`✅ Applicant verified: ${applicant.fullName}`, 'success');
+        
+    } catch (error) {
+        console.error('Error verifying applicant:', error);
+        showToast('Error verifying applicant: ' + error.message, 'error');
         return;
     }
     
@@ -2257,7 +2330,7 @@ document.getElementById('saveManualCommissionBtn').addEventListener('click', asy
         btn.disabled = false;
     }
 });
-
+        
 // ============================================================
 // MANUAL GENERATE COMMISSION - SHORTCUT (Console)
 // ============================================================
@@ -2665,17 +2738,42 @@ window.confirmPayment = async (userId) => {
         
         // Step 2: Auto-generate commission if payment was successful
         if (paymentResult.success) {
-            showToast('Payment approved, generating commission...', 'info');
+            showToast('Payment approved, finding applicant...', 'info');
             
-            // Find applicant by email - using the corrected endpoint
+            // Try multiple ways to find the applicant
+            let applicant = null;
+            
+            // Method 1: Find by email
             const applicantResult = await fetch(`${API_URL}/admin/applicants?email=${encodeURIComponent(user.email)}`, {
                 headers: { 'Authorization': `Bearer ${adminToken}` }
             });
             const applicantData = await applicantResult.json();
             const applicants = applicantData.applicants || [];
-            const applicant = applicants.find(a => a.email === user.email);
+            applicant = applicants.find(a => a.email === user.email);
+            
+            // Method 2: If not found by email, try by userId
+            if (!applicant) {
+                const applicantResult2 = await fetch(`${API_URL}/admin/applicants?search=${encodeURIComponent(user.uid)}`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                const applicantData2 = await applicantResult2.json();
+                const applicants2 = applicantData2.applicants || [];
+                applicant = applicants2.find(a => a.userId === user.uid || a.userId === user._id);
+            }
+            
+            // Method 3: If still not found, try by user name
+            if (!applicant && user.name) {
+                const applicantResult3 = await fetch(`${API_URL}/admin/applicants?search=${encodeURIComponent(user.name)}`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                const applicantData3 = await applicantResult3.json();
+                const applicants3 = applicantData3.applicants || [];
+                applicant = applicants3.find(a => a.fullName === user.name || a.fullName?.includes(user.name));
+            }
             
             if (applicant && applicant.agentId) {
+                showToast(`Found applicant: ${applicant.fullName} (${applicant.applicantId})`, 'info');
+                
                 // Get the application to find package name
                 const appResult = await fetch(`${API_URL}/admin/applications`, {
                     headers: { 'Authorization': `Bearer ${adminToken}` }
@@ -2686,6 +2784,8 @@ window.confirmPayment = async (userId) => {
                 
                 const packageName = application?.packageName || application?.service || 'Standard';
                 const amount = paymentResult.amount || 0;
+                
+                showToast(`Generating commission for ${packageName}...`, 'info');
                 
                 // Call commission processing
                 const commissionResponse = await fetch(`${API_URL}/admin/commissions/process`, {
@@ -2717,9 +2817,38 @@ window.confirmPayment = async (userId) => {
                     console.log('Applicant found:', applicant);
                     console.log('Package name:', packageName);
                     console.log('Amount:', amount);
+                    
+                    // Suggest manual commission
+                    alert(`⚠️ Commission generation failed: ${errorMsg}
+
+Please use the "Manual Commission" button in the Agent Commissions section.
+
+Applicant ID: ${applicant.applicantId}
+Package: ${packageName}
+Amount: $${amount}
+
+Click "Manual Commission" and enter these details.`);
                 }
             } else {
                 showToast(`✅ Payment approved! No agent commission (applicant not linked to agent)`, 'success');
+                
+                // Show debug info
+                console.log('Payment user:', user);
+                console.log('Applicant search result:', applicantData);
+                
+                // Suggest using debug endpoint
+                alert(`ℹ️ Payment approved but no applicant found.
+
+To debug:
+1. Go to Agent Commissions section
+2. Click "Debug" button
+3. Check if the applicant exists and has an agentId
+
+If the applicant exists, use Manual Commission:
+1. Click "Manual Commission"
+2. Enter the Applicant ID
+3. Select Package and Amount
+4. Click Generate Commission`);
             }
         }
         
