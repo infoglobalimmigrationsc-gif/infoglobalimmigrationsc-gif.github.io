@@ -769,11 +769,17 @@
                 <a href="#" data-section="agent-settlements">
                     <i class="fas fa-file-invoice"></i> Settlements
                 </a>
+
                 <!-- ===== NEW AGENT RESOURCES ===== -->
                 <a href="#" data-section="agent-resources">
                     <i class="fas fa-folder-open"></i> Agent Resources
                     <span class="badge" id="resourceCount">0</span>
                 </a>
+
+                <a href="#" data-section="agent-messages">
+            <i class="fas fa-comment-dots"></i> Agent Messages
+            <span class="badge" id="agentMessageCount">0</span>
+            </a>
             </nav>
 
             <div class="sidebar-footer">
@@ -1282,6 +1288,43 @@
                     <div id="resourcesList"><div class="empty-state"><i class="fas fa-folder-open"></i><p>No resources available. Upload your first resource!</p></div></div>
                 </div>
             </section>
+
+
+            <!-- ============================================================ -->
+<!-- AGENT MESSAGES SECTION - NEW -->
+<!-- ============================================================ -->
+<section id="agent-messages-section" class="admin-section">
+    <div class="section-header">
+        <h1><i class="fas fa-comment-dots"></i> Agent Messages</h1>
+        <div style="display: flex; gap: 10px;">
+            <span style="color: rgba(255,255,255,0.5);" id="agentMessageTotal">0 conversations</span>
+            <button class="btn btn-outline btn-sm" onclick="loadAgentConversations()">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+    </div>
+    <div class="stats-grid small">
+        <div class="stat-card"><h3 id="amTotalConv">0</h3><p>Total Conversations</p></div>
+        <div class="stat-card"><h3 id="amUnread">0</h3><p>Unread</p></div>
+        <div class="stat-card"><h3 id="amOpen">0</h3><p>Open</p></div>
+        <div class="stat-card"><h3 id="amClosed">0</h3><p>Closed</p></div>
+    </div>
+    <div class="glass-container">
+        <div class="debug-info" id="agentMessageDebugInfo"><span style="color: #ff0;">🔍 Loading agent conversations...</span></div>
+        <div class="search-bar">
+            <input type="text" id="searchAgentMessages" class="glass-input" placeholder="Search by agent name or subject...">
+            <select id="filterAgentMessageStatus" class="glass-input">
+                <option value="all">All Status</option>
+                <option value="open">Open</option>
+                <option value="closed">Closed</option>
+            </select>
+            <button class="btn btn-outline btn-sm" onclick="loadAgentConversations()"><i class="fas fa-search"></i></button>
+        </div>
+        <div id="agentConversationsList" style="max-height: 600px; overflow-y: auto;">
+            <div class="empty-state"><i class="fas fa-inbox"></i><p>No agent conversations</p></div>
+        </div>
+    </div>
+</section>
 
             <!-- ===== MODALS ===== -->
             
@@ -2500,6 +2543,7 @@
                     'agent-commissions': loadAgentCommissions,
                     'agent-settlements': loadAgentSettlements,
                     'agent-resources': loadAgentResources
+                    'agent-messages': loadAgentConversations
                 };
                 if (loaders[section]) loaders[section]();
 
@@ -5982,6 +6026,271 @@ window.deleteCommission = async (commissionId) => {
             }
         };
 
+        // ============================================================
+// LOAD AGENT CONVERSATIONS (Admin)
+// ============================================================
+let allAgentConversations = [];
+
+async function loadAgentConversations() {
+    const debugEl = document.getElementById('agentMessageDebugInfo');
+    const container = document.getElementById('agentConversationsList');
+    
+    try {
+        debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading agent conversations...</span>';
+        
+        const response = await fetch(`${API_URL}/admin/agent-messages/conversations`, {
+            headers: { 'Authorization': `Bearer ${adminToken}` }
+        });
+        
+        if (!response.ok) throw new Error('Failed to load conversations');
+        const result = await response.json();
+        allAgentConversations = result.conversations || [];
+        
+        // Apply filters
+        const searchTerm = document.getElementById('searchAgentMessages')?.value?.toLowerCase() || '';
+        const statusFilter = document.getElementById('filterAgentMessageStatus')?.value || 'all';
+        
+        let filtered = allAgentConversations;
+        
+        if (searchTerm) {
+            filtered = filtered.filter(c => 
+                (c.agentName || '').toLowerCase().includes(searchTerm) ||
+                (c.subject || '').toLowerCase().includes(searchTerm) ||
+                (c.agentEmail || '').toLowerCase().includes(searchTerm)
+            );
+        }
+        
+        if (statusFilter !== 'all') {
+            filtered = filtered.filter(c => c.status === statusFilter);
+        }
+        
+        // Update stats
+        const total = allAgentConversations.length;
+        const unread = allAgentConversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+        const open = allAgentConversations.filter(c => c.status === 'open').length;
+        const closed = allAgentConversations.filter(c => c.status === 'closed').length;
+        
+        document.getElementById('amTotalConv').textContent = total;
+        document.getElementById('amUnread').textContent = unread;
+        document.getElementById('amOpen').textContent = open;
+        document.getElementById('amClosed').textContent = closed;
+        document.getElementById('agentMessageTotal').textContent = `${total} conversations`;
+        document.getElementById('agentMessageCount').textContent = unread;
+        
+        debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${total} conversations (${unread} unread)</span>`;
+        
+        if (filtered.length === 0) {
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>No conversations match your filters</p></div>`;
+            return;
+        }
+        
+        container.innerHTML = filtered.map(conv => `
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 14px 18px; background: rgba(255,255,255,0.04); border-radius: 10px; margin-bottom: 10px; border-left: 3px solid ${conv.unreadCount > 0 ? 'var(--primary-red)' : conv.status === 'closed' ? '#6c757d' : '#17a2b8'};">
+                <div style="flex: 1; min-width: 200px;">
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <strong style="color: white; font-size: 1rem;">${conv.subject || 'Conversation'}</strong>
+                        ${conv.unreadCount > 0 ? `<span style="background: var(--primary-red); color: white; padding: 2px 10px; border-radius: 12px; font-size: 0.6rem; font-weight: 600;">${conv.unreadCount} new</span>` : ''}
+                        <span class="status-badge status-${conv.status || 'open'}">${(conv.status || 'open').toUpperCase()}</span>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 5px; font-size: 0.8rem; color: rgba(255,255,255,0.5);">
+                        <span><i class="fas fa-user"></i> ${conv.agentName || 'Unknown Agent'}</span>
+                        <span><i class="fas fa-envelope"></i> ${conv.agentEmail || 'N/A'}</span>
+                        <span><i class="fas fa-clock"></i> ${conv.updatedAt ? new Date(conv.updatedAt).toLocaleString() : 'N/A'}</span>
+                    </div>
+                    ${conv.lastMessage ? `
+                        <div style="margin-top: 6px; color: rgba(255,255,255,0.4); font-size: 0.8rem; padding: 6px 10px; background: rgba(255,255,255,0.03); border-radius: 4px;">
+                            <i class="fas fa-quote-left" style="font-size: 0.6rem; opacity: 0.3;"></i>
+                            ${conv.lastMessage.message ? conv.lastMessage.message.substring(0, 120) + (conv.lastMessage.message.length > 120 ? '...' : '') : 'No message'}
+                        </div>
+                    ` : ''}
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; flex-shrink: 0; margin-left: 10px;">
+                    <button class="btn btn-sm btn-info" onclick="viewAgentConversation('${conv._id}')" title="View Conversation"><i class="fas fa-eye"></i></button>
+                    ${conv.status === 'open' ? `<button class="btn btn-sm btn-warning" onclick="closeAgentConversation('${conv._id}')" title="Close Conversation"><i class="fas fa-times"></i></button>` : ''}
+                    ${conv.status === 'closed' ? `<button class="btn btn-sm btn-success" onclick="reopenAgentConversation('${conv._id}')" title="Reopen Conversation"><i class="fas fa-undo"></i></button>` : ''}
+                </div>
+            </div>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Error loading agent conversations:', error);
+        debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+        container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading conversations: ${error.message}</p></div>`;
+        showToast('Error loading agent conversations', 'error');
+    }
+}
+
+// ============================================================
+// VIEW AGENT CONVERSATION (Admin)
+// ============================================================
+window.viewAgentConversation = async (conversationId) => {
+    try {
+        const response = await fetch(`${API_URL}/admin/agent-messages/${conversationId}`, {
+            headers: { 'Authorization': `Bearer ${adminToken}` }
+        });
+        
+        if (!response.ok) throw new Error('Failed to load conversation');
+        const result = await response.json();
+        const messages = result.messages || [];
+        const conversation = result.conversation || {};
+        
+        // Build messages HTML
+        const messagesHtml = messages.map(m => `
+            <div style="display: flex; justify-content: ${m.sender === 'admin' ? 'flex-end' : 'flex-start'}; margin-bottom: 8px;">
+                <div style="max-width: 80%; background: ${m.sender === 'admin' ? 'rgba(227,6,19,0.15)' : 'rgba(255,255,255,0.06)'}; padding: 10px 16px; border-radius: 12px; border-bottom-right-radius: ${m.sender === 'admin' ? '4px' : '12px'}; border-bottom-left-radius: ${m.sender === 'admin' ? '12px' : '4px'};">
+                    <div style="font-size: 0.7rem; color: rgba(255,255,255,0.3);">
+                        ${m.sender === 'admin' ? 'You (Admin)' : m.senderName || 'Agent'}
+                        ${m.read ? ' ✓' : ''}
+                    </div>
+                    <div style="font-size: 0.9rem; color: white;">${m.message}</div>
+                    <div style="font-size: 0.6rem; color: rgba(255,255,255,0.2); text-align: right; margin-top: 4px;">
+                        ${m.createdAt ? new Date(m.createdAt).toLocaleString() : ''}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+        
+        // Create a modal for viewing conversation
+        const modal = document.createElement('div');
+        modal.className = 'glass-modal active';
+        modal.style.display = 'flex';
+        modal.id = 'agentConvModal';
+        
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 650px;">
+                <div class="modal-header">
+                    <h2><i class="fas fa-comment-dots"></i> ${conversation.subject || 'Conversation'}</h2>
+                    <button class="modal-close" onclick="document.getElementById('agentConvModal').remove()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div style="margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 10px; font-size: 0.8rem; color: rgba(255,255,255,0.4);">
+                        <span><i class="fas fa-user"></i> ${conversation.agentName || 'Unknown Agent'}</span>
+                        <span><i class="fas fa-envelope"></i> ${conversation.agentEmail || 'N/A'}</span>
+                        <span class="status-badge status-${conversation.status || 'open'}">${(conversation.status || 'open').toUpperCase()}</span>
+                    </div>
+                    <div id="convMessagesDisplay" style="max-height: 400px; overflow-y: auto; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; margin-bottom: 15px;">
+                        ${messagesHtml || '<p style="color: rgba(255,255,255,0.3); text-align: center;">No messages</p>'}
+                    </div>
+                    <form id="adminReplyForm">
+                        <div class="form-group">
+                            <label>Reply Message</label>
+                            <textarea id="adminReplyMessage" class="glass-input" rows="3" placeholder="Type your reply here..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Send Reply</button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" onclick="document.getElementById('agentConvModal').remove()">Close</button>
+                    ${conversation.status === 'open' ? `<button class="btn btn-warning" onclick="closeAgentConversationFromModal('${conversationId}')"><i class="fas fa-times"></i> Close</button>` : ''}
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Handle reply form
+        document.getElementById('adminReplyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = document.getElementById('adminReplyMessage').value.trim();
+            if (!message) {
+                showToast('Please enter a reply message', 'error');
+                return;
+            }
+            
+            const btn = document.querySelector('#adminReplyForm .btn-primary');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner"></span> Sending...';
+            btn.disabled = true;
+            
+            try {
+                const replyResponse = await fetch(`${API_URL}/admin/agent-messages/${conversationId}/reply`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message })
+                });
+                
+                if (!replyResponse.ok) throw new Error('Failed to send reply');
+                
+                showToast('Reply sent successfully!', 'success');
+                document.getElementById('adminReplyMessage').value = '';
+                // Refresh conversation view
+                document.getElementById('agentConvModal').remove();
+                await viewAgentConversation(conversationId);
+                await loadAgentConversations();
+                await loadDashboardData();
+            } catch (error) {
+                console.error('Error sending reply:', error);
+                showToast('Error sending reply: ' + error.message, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+        
+        // Close modal on backdrop click
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) this.remove();
+        });
+        
+    } catch (error) {
+        console.error('Error viewing conversation:', error);
+        showToast('Error loading conversation: ' + error.message, 'error');
+    }
+};
+
+// ============================================================
+// CLOSE AGENT CONVERSATION
+// ============================================================
+window.closeAgentConversation = async (conversationId) => {
+    if (!confirm('Close this conversation?')) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/admin/agent-messages/${conversationId}/close`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${adminToken}` }
+        });
+        
+        if (!response.ok) throw new Error('Failed to close conversation');
+        
+        showToast('Conversation closed', 'success');
+        await loadAgentConversations();
+        await loadDashboardData();
+    } catch (error) {
+        console.error('Error closing conversation:', error);
+        showToast('Error closing conversation: ' + error.message, 'error');
+    }
+};
+
+window.closeAgentConversationFromModal = async (conversationId) => {
+    await closeAgentConversation(conversationId);
+    const modal = document.getElementById('agentConvModal');
+    if (modal) modal.remove();
+};
+
+// ============================================================
+// REOPEN AGENT CONVERSATION
+// ============================================================
+window.reopenAgentConversation = async (conversationId) => {
+    try {
+        const response = await fetch(`${API_URL}/admin/agent-messages/${conversationId}/reopen`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${adminToken}` }
+        });
+        
+        if (!response.ok) throw new Error('Failed to reopen conversation');
+        
+        showToast('Conversation reopened', 'success');
+        await loadAgentConversations();
+        await loadDashboardData();
+    } catch (error) {
+        console.error('Error reopening conversation:', error);
+        showToast('Error reopening conversation: ' + error.message, 'error');
+    }
+};
+
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('searchContacts')?.addEventListener('input', applyContactFilters);
             document.getElementById('filterContactStatus')?.addEventListener('change', applyContactFilters);
@@ -7096,6 +7405,10 @@ window.deleteCommission = async (commissionId) => {
         window.deleteResource = deleteResource;
         window.toggleResourceStatus = toggleResourceStatus;
         window.removeResourceFile = removeResourceFile;
+        window.loadAgentConversations = loadAgentConversations;
+        window.viewAgentConversation = viewAgentConversation;
+        window.closeAgentConversation = closeAgentConversation;
+        window.reopenAgentConversation = reopenAgentConversation;
 
         // ============================================================
         // INITIALIZE
