@@ -1464,7 +1464,18 @@ const COMMISSION_STRUCTURE = {
     'Silver Premium': { fee: 999, rate: 0.20 },
     'Gold': { fee: 1500, rate: 0.20 },
     'Platinum': { fee: 2500, rate: 0.20 },
-    'Executive': { fee: 5000, rate: 0.25 }
+    'Executive': { fee: 5000, rate: 0.25 },
+    // ADDED: Service packages matching the dropdown options
+    'Study Abroad': { fee: 150, rate: 0.15 },
+    'Work Abroad': { fee: 200, rate: 0.15 },
+    'Visit Visa': { fee: 100, rate: 0.15 },    // <-- This fixes your error!
+    'Immigration': { fee: 250, rate: 0.20 },
+    'Student Loan': { fee: 100, rate: 0.10 },
+    'Accommodation Booking': { fee: 50, rate: 0.10 },
+    'Translation Services': { fee: 75, rate: 0.10 },
+    'Insurance': { fee: 50, rate: 0.10 },
+    'Exchange Program': { fee: 150, rate: 0.15 },
+    'Pre-departure Orientation': { fee: 50, rate: 0.10 }
 };
 
 // Calculate commission for a payment
