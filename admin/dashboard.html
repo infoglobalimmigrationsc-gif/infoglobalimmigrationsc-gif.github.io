@@ -1139,19 +1139,19 @@
 
             <!-- Agent Commissions Section -->
             <section id="agent-commissions-section" class="admin-section">
-    <div class="section-header">
-        <h1><i class="fas fa-coins"></i> Agent Commissions</h1>
-        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-            <span style="color: rgba(255,255,255,0.5);" id="commissionTotal">0 total</span>
-            <button class="btn btn-outline btn-sm" onclick="debugCommissions()">
-                <i class="fas fa-bug"></i> Debug
-            </button>
-            <!-- ADD MANUAL COMMISSION BUTTON -->
-            <button class="btn btn-warning btn-sm" onclick="openManualCommission()">
-                <i class="fas fa-plus-circle"></i> Manual Commission
-            </button>
-        </div>
-    </div>
+                <div class="section-header">
+                    <h1><i class="fas fa-coins"></i> Agent Commissions</h1>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <span style="color: rgba(255,255,255,0.5);" id="commissionTotal">0 total</span>
+                        <button class="btn btn-outline btn-sm" onclick="debugCommissions()">
+                            <i class="fas fa-bug"></i> Debug
+                        </button>
+                        <!-- ADD MANUAL COMMISSION BUTTON -->
+                        <button class="btn btn-warning btn-sm" onclick="openManualCommission()">
+                            <i class="fas fa-plus-circle"></i> Manual Commission
+                        </button>
+                    </div>
+                </div>
                 <div class="stats-grid small">
                     <div class="stat-card"><h3>$<span id="totalCommissionEarned">0.00</span></h3><p>Total Earned</p></div>
                     <div class="stat-card"><h3>$<span id="totalCommissionPaid">0.00</span></h3><p>Paid</p></div>
@@ -1203,6 +1203,21 @@
                 </div>
                 <div class="glass-container">
                     <div class="debug-info" id="settlementDebugInfo"><span style="color: #ff0;">🔍 Debug: Loading settlements...</span></div>
+                    <!-- ===== ADDED: Settlement Status Filter ===== -->
+                    <div class="search-bar">
+                        <select id="filterSettlementStatus" class="glass-input">
+                            <option value="all">All Status</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Paid">Paid</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
+                        <button class="btn btn-outline btn-sm" onclick="loadAgentSettlements()">
+                            <i class="fas fa-search"></i> Filter
+                        </button>
+                        <button class="btn btn-outline btn-sm" onclick="loadAgentSettlements()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
                     <div class="table-wrapper">
                         <table class="admin-table">
                             <thead>
@@ -1692,68 +1707,75 @@
                 </div>
             </div>
 
-
-                <!-- ============================================================ -->
-<!-- MANUAL COMMISSION MODAL - NEW -->
-<!-- ============================================================ -->
-<div id="manualCommissionModal" class="glass-modal">
-    <div class="modal-content" style="max-width: 600px;">
-        <div class="modal-header">
-            <h2><i class="fas fa-hand-holding-usd"></i> Manual Commission</h2>
-            <button class="modal-close" id="closeManualCommissionModal">&times;</button>
-        </div>
-        <div class="modal-body">
-            <form id="manualCommissionForm">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div class="form-group" style="grid-column: 1 / -1;">
-                        <label>Applicant ID <span class="required">*</span></label>
-                        <input type="text" id="manualApplicantId" class="glass-input" placeholder="e.g., GISC-APP-000001" required>
-                        <small style="color: #999; font-size: 0.7rem;">Find Applicant ID in the Agent Applicants section</small>
+            <!-- ============================================================ -->
+            <!-- MANUAL COMMISSION MODAL - UPDATED WITH PREVIEW -->
+            <!-- ============================================================ -->
+            <div id="manualCommissionModal" class="glass-modal">
+                <div class="modal-content" style="max-width: 600px;">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-hand-holding-usd"></i> Manual Commission</h2>
+                        <button class="modal-close" id="closeManualCommissionModal">&times;</button>
                     </div>
-                    <div class="form-group" style="grid-column: 1 / -1;">
-                        <label>Package Name <span class="required">*</span></label>
-                        <select id="manualPackageName" class="glass-input" required>
-                            <option value="">Select Package</option>
-                            <option value="Profile Review & Eligibility Assessment">Profile Review & Eligibility Assessment</option>
-                            <option value="Basic Support">Basic Support</option>
-                            <option value="Application Guidance">Application Guidance</option>
-                            <option value="Basic Processing">Basic Processing</option>
-                            <option value="Standard Processing">Standard Processing</option>
-                            <option value="Silver Premium">Silver Premium</option>
-                            <option value="Gold">Gold</option>
-                            <option value="Platinum">Platinum</option>
-                            <option value="Executive">Executive</option>
-                            <option value="Study Abroad">Study Abroad</option>
-                            <option value="Work Abroad">Work Abroad</option>
-                            <option value="Visit Visa">Visit Visa</option>
-                            <option value="Immigration">Immigration</option>
-                        </select>
+                    <div class="modal-body">
+                        <form id="manualCommissionForm">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div class="form-group" style="grid-column: 1 / -1;">
+                                    <label>Applicant ID <span class="required">*</span></label>
+                                    <input type="text" id="manualApplicantId" class="glass-input" placeholder="e.g., GISC-APP-000001" required>
+                                    <small style="color: #999; font-size: 0.7rem;">Find Applicant ID in the Agent Applicants section</small>
+                                </div>
+                                <div class="form-group" style="grid-column: 1 / -1;">
+                                    <label>Package Name <span class="required">*</span></label>
+                                    <select id="manualPackageName" class="glass-input" required>
+                                        <option value="">Select Package</option>
+                                        <option value="Profile Review & Eligibility Assessment">Profile Review & Eligibility Assessment</option>
+                                        <option value="Basic Support">Basic Support</option>
+                                        <option value="Application Guidance">Application Guidance</option>
+                                        <option value="Basic Processing">Basic Processing</option>
+                                        <option value="Standard Processing">Standard Processing</option>
+                                        <option value="Silver Premium">Silver Premium</option>
+                                        <option value="Gold">Gold</option>
+                                        <option value="Platinum">Platinum</option>
+                                        <option value="Executive">Executive</option>
+                                        <option value="Study Abroad">Study Abroad</option>
+                                        <option value="Work Abroad">Work Abroad</option>
+                                        <option value="Visit Visa">Visit Visa</option>
+                                        <option value="Immigration">Immigration</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Amount Received <span class="required">*</span></label>
+                                    <input type="number" id="manualAmount" class="glass-input" placeholder="e.g., 299" required min="1" step="0.01">
+                                </div>
+                                <div class="form-group">
+                                    <label>Payment Reference</label>
+                                    <input type="text" id="manualPaymentRef" class="glass-input" placeholder="e.g., MANUAL-001">
+                                </div>
+                            </div>
+                            <!-- ===== ADDED: Package Preview ===== -->
+                            <div id="manualCommissionPreview" style="display: none; margin-top: 12px; padding: 12px 16px; background: rgba(0,0,0,0.04); border-radius: 8px; border-left: 3px solid var(--primary-red);">
+                                <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                                    <div><span style="color: #666; font-size: 0.8rem;">Package Fee:</span> <strong id="previewPackageFee">$0</strong></div>
+                                    <div><span style="color: #666; font-size: 0.8rem;">Commission Rate:</span> <strong id="previewRate">0%</strong></div>
+                                    <div><span style="color: #666; font-size: 0.8rem;">Estimated Commission:</span> <strong id="previewCommission" style="color: var(--primary-red); font-size: 1.1rem;">$0.00</strong></div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 6px; font-size: 0.8rem; color: #856404;">
+                                <i class="fas fa-exclamation-triangle"></i> 
+                                Manual commission will be created with status "Eligible". 
+                                <strong>Commission Rate:</strong> 
+                                Profile Review (0%), Basic Support (10%), Application Guidance (10%), 
+                                Basic Processing (15%), Standard Processing (15%), 
+                                Silver (20%), Gold (20%), Platinum (20%), Executive (25%)
+                            </div>
+                        </form>
                     </div>
-                    <div class="form-group">
-                        <label>Amount Received <span class="required">*</span></label>
-                        <input type="number" id="manualAmount" class="glass-input" placeholder="e.g., 299" required min="1" step="0.01">
-                    </div>
-                    <div class="form-group">
-                        <label>Payment Reference</label>
-                        <input type="text" id="manualPaymentRef" class="glass-input" placeholder="e.g., MANUAL-001">
+                    <div class="modal-footer">
+                        <button class="btn btn-outline" id="cancelManualCommissionBtn">Cancel</button>
+                        <button class="btn btn-primary" id="saveManualCommissionBtn"><i class="fas fa-check"></i> Generate Commission</button>
                     </div>
                 </div>
-                <div style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 6px; font-size: 0.8rem; color: #856404;">
-                    <i class="fas fa-exclamation-triangle"></i> 
-                    Manual commission will be created with status "Eligible". 
-                    <strong>Commission Rate:</strong> 
-                    Profile Review (0%), Basic Support (10%), Application Guidance (10%), 
-                    Basic Processing (15%), Standard Processing (15%), 
-                    Silver (20%), Gold (20%), Platinum (20%), Executive (25%)
-                </div>
-            </form>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-outline" id="cancelManualCommissionBtn">Cancel</button>
-            <button class="btn btn-primary" id="saveManualCommissionBtn"><i class="fas fa-check"></i> Generate Commission</button>
-        </div>
-    </div>
-</div>
+            </div>
 
             <!-- ============================================================ -->
             <!-- AGENT RESOURCE MODALS - NEW -->
@@ -1978,26 +2000,26 @@
     </div>
 
     <!-- ============================================================ -->
-<!-- MANAGE APPLICANT CREDENTIALS MODAL - ADMIN -->
-<!-- ============================================================ -->
-<div id="manageCredentialsModal" class="glass-modal">
-    <div class="modal-content" style="max-width: 550px;">
-        <div class="modal-header">
-            <h2><i class="fas fa-key"></i> Applicant Credentials</h2>
-            <button class="modal-close" id="closeCredentialsModal">&times;</button>
-        </div>
-        <div class="modal-body" id="credentialsBody">
-            <div style="text-align: center; padding: 20px;">
-                <div class="spinner"></div>
-                <p style="margin-top: 10px; color: #666;">Loading credentials...</p>
+    <!-- MANAGE APPLICANT CREDENTIALS MODAL - ADMIN -->
+    <!-- ============================================================ -->
+    <div id="manageCredentialsModal" class="glass-modal">
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header">
+                <h2><i class="fas fa-key"></i> Applicant Credentials</h2>
+                <button class="modal-close" id="closeCredentialsModal">&times;</button>
+            </div>
+            <div class="modal-body" id="credentialsBody">
+                <div style="text-align: center; padding: 20px;">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 10px; color: #666;">Loading credentials...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="closeCredentialsBtn">Close</button>
+                <button class="btn btn-warning" id="resetCredentialsPasswordBtn"><i class="fas fa-sync-alt"></i> Reset Password</button>
             </div>
         </div>
-        <div class="modal-footer">
-            <button class="btn btn-outline" id="closeCredentialsBtn">Close</button>
-            <button class="btn btn-warning" id="resetCredentialsPasswordBtn"><i class="fas fa-sync-alt"></i> Reset Password</button>
-        </div>
     </div>
-</div>
 
     <!-- ============ ANTI-CONSOLE & SECURITY PROTECTION ============ -->
     <script>
@@ -2027,6 +2049,31 @@
         // CONFIGURATION
         // ============================================================
         const API_URL = 'https://gisc-app-production.up.railway.app/api';
+
+        // ============================================================
+        // COMMISSION STRUCTURE - Must match server.js
+        // ============================================================
+        const COMMISSION_STRUCTURE = {
+            'Profile Review & Eligibility Assessment': { fee: 25, rate: 0 },
+            'Basic Support': { fee: 50, rate: 0.10 },
+            'Application Guidance': { fee: 150, rate: 0.10 },
+            'Basic Processing': { fee: 299, rate: 0.15 },
+            'Standard Processing': { fee: 500, rate: 0.15 },
+            'Silver Premium': { fee: 999, rate: 0.20 },
+            'Gold': { fee: 1500, rate: 0.20 },
+            'Platinum': { fee: 2500, rate: 0.20 },
+            'Executive': { fee: 5000, rate: 0.25 },
+            'Study Abroad': { fee: 150, rate: 0.15 },
+            'Work Abroad': { fee: 200, rate: 0.15 },
+            'Visit Visa': { fee: 100, rate: 0.15 },
+            'Immigration': { fee: 250, rate: 0.20 },
+            'Student Loan': { fee: 100, rate: 0.10 },
+            'Accommodation Booking': { fee: 50, rate: 0.10 },
+            'Translation Services': { fee: 75, rate: 0.10 },
+            'Insurance': { fee: 50, rate: 0.10 },
+            'Exchange Program': { fee: 150, rate: 0.15 },
+            'Pre-departure Orientation': { fee: 50, rate: 0.10 }
+        };
 
         // ============================================================
         // ADMIN AUTHENTICATION - JWT ONLY
@@ -2083,295 +2130,332 @@
             }
         }
 
+        // ============================================================
+        // MANUAL COMMISSION CALCULATION - HELPER
+        // ============================================================
+        window.manualGenerateCommission = async (applicantId, packageName, amount) => {
+            if (!applicantId || !packageName || !amount) {
+                showToast('All fields are required: applicantId, packageName, amount', 'error');
+                return;
+            }
+            
+            if (!confirm(`Generate commission for applicant ${applicantId}?\nPackage: ${packageName}\nAmount: $${amount}`)) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/admin/commissions/process`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        applicantId: applicantId,
+                        packageName: packageName,
+                        amountReceived: parseFloat(amount),
+                        paymentId: `MANUAL-${Date.now()}`
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed');
+                }
+                
+                const result = await response.json();
+                showToast(`✅ Commission generated: $${result.commission.commissionAmount.toFixed(2)}`, 'success');
+                await loadAgentCommissions();
+                await loadDashboardData();
+                
+            } catch (error) {
+                console.error('Error generating commission manually:', error);
+                showToast('Error: ' + error.message, 'error');
+            }
+        };
 
         // ============================================================
-// MANUAL COMMISSION CALCULATION - HELPER
-// ============================================================
-window.manualGenerateCommission = async (applicantId, packageName, amount) => {
-    if (!applicantId || !packageName || !amount) {
-        showToast('All fields are required: applicantId, packageName, amount', 'error');
-        return;
-    }
-    
-    if (!confirm(`Generate commission for applicant ${applicantId}?\nPackage: ${packageName}\nAmount: $${amount}`)) return;
-    
-    try {
-        const response = await fetch(`${API_URL}/admin/commissions/process`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${adminToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                applicantId: applicantId,
-                packageName: packageName,
-                amountReceived: parseFloat(amount),
-                paymentId: `MANUAL-${Date.now()}`
-            })
-        });
-        
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Failed');
-        }
-        
-        const result = await response.json();
-        showToast(`✅ Commission generated: $${result.commission.commissionAmount.toFixed(2)}`, 'success');
-        await loadAgentCommissions();
-        await loadDashboardData();
-        
-    } catch (error) {
-        console.error('Error generating commission manually:', error);
-        showToast('Error: ' + error.message, 'error');
-    }
-};
-
- // ============================================================
-// DEBUG COMMISSIONS - ENHANCED
-// ============================================================
-window.debugCommissions = async () => {
-    try {
-        const result = await apiFetch('agent-commissions');
-        const commissions = result.commissions || [];
-        const summary = result.summary || {};
-        
-        // Get all applicants
-        const appResult = await fetch(`${API_URL}/admin/applicants`, {
-            headers: { 'Authorization': `Bearer ${adminToken}` }
-        });
-        const appData = await appResult.json();
-        const applicants = appData.applicants || [];
-        
-        // Get all agents
-        const agentResult = await apiFetch('agents');
-        const agents = agentResult.agents || [];
-        
-        console.log('📊 Commission Debug Info:');
-        console.log('Total commissions:', commissions.length);
-        console.log('Summary:', summary);
-        console.log('Status breakdown:');
-        
-        const statusMap = {};
-        commissions.forEach(c => {
-            const status = c.status || 'unknown';
-            statusMap[status] = (statusMap[status] || 0) + 1;
-        });
-        console.log('Statuses:', statusMap);
-        
-        console.log('👤 Applicants:', applicants.length);
-        console.log('🤝 Agents:', agents.length);
-        console.log('Applicants with agent:', applicants.filter(a => a.agentId).length);
-        
-        // Show applicants without agent
-        const noAgent = applicants.filter(a => !a.agentId);
-        if (noAgent.length > 0) {
-            console.log('⚠️ Applicants without agent:', noAgent.map(a => a.applicantId));
-        }
-        
-        // Show sample commission
-        if (commissions.length > 0) {
-            console.log('Sample commission:', commissions[0]);
-        }
-        
-        // Show sample applicant
-        if (applicants.length > 0) {
-            console.log('Sample applicant:', {
-                applicantId: applicants[0].applicantId,
-                fullName: applicants[0].fullName,
-                email: applicants[0].email,
-                agentId: applicants[0].agentId,
-                status: applicants[0].status
-            });
-        }
-        
-        // Build alert message
-        let msg = `📊 Commission Debug\n\n`;
-        msg += `Total Commissions: ${commissions.length}\n`;
-        msg += `Statuses: ${JSON.stringify(statusMap)}\n\n`;
-        msg += `Total Applicants: ${applicants.length}\n`;
-        msg += `Applicants with Agent: ${applicants.filter(a => a.agentId).length}\n`;
-        msg += `Applicants WITHOUT Agent: ${applicants.filter(a => !a.agentId).length}\n\n`;
-        msg += `Total Agents: ${agents.length}\n`;
-        msg += `Approved Agents: ${agents.filter(a => a.status === 'Approved').length}`;
-        
-        alert(msg);
-        
-    } catch (error) {
-        console.error('Debug error:', error);
-        showToast('Debug error: ' + error.message, 'error');
-    }
-};
+        // DEBUG COMMISSIONS - ENHANCED
+        // ============================================================
+        window.debugCommissions = async () => {
+            try {
+                const result = await apiFetch('agent-commissions');
+                const commissions = result.commissions || [];
+                const summary = result.summary || {};
+                
+                // Get all applicants
+                const appResult = await fetch(`${API_URL}/admin/applicants`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                const appData = await appResult.json();
+                const applicants = appData.applicants || [];
+                
+                // Get all agents
+                const agentResult = await apiFetch('agents');
+                const agents = agentResult.agents || [];
+                
+                console.log('📊 Commission Debug Info:');
+                console.log('Total commissions:', commissions.length);
+                console.log('Summary:', summary);
+                console.log('Status breakdown:');
+                
+                const statusMap = {};
+                commissions.forEach(c => {
+                    const status = c.status || 'unknown';
+                    statusMap[status] = (statusMap[status] || 0) + 1;
+                });
+                console.log('Statuses:', statusMap);
+                
+                console.log('👤 Applicants:', applicants.length);
+                console.log('🤝 Agents:', agents.length);
+                console.log('Applicants with agent:', applicants.filter(a => a.agentId).length);
+                
+                // Show applicants without agent
+                const noAgent = applicants.filter(a => !a.agentId);
+                if (noAgent.length > 0) {
+                    console.log('⚠️ Applicants without agent:', noAgent.map(a => a.applicantId));
+                }
+                
+                // Show sample commission
+                if (commissions.length > 0) {
+                    console.log('Sample commission:', commissions[0]);
+                }
+                
+                // Show sample applicant
+                if (applicants.length > 0) {
+                    console.log('Sample applicant:', {
+                        applicantId: applicants[0].applicantId,
+                        fullName: applicants[0].fullName,
+                        email: applicants[0].email,
+                        agentId: applicants[0].agentId,
+                        status: applicants[0].status
+                    });
+                }
+                
+                // Build alert message
+                let msg = `📊 Commission Debug\n\n`;
+                msg += `Total Commissions: ${commissions.length}\n`;
+                msg += `Statuses: ${JSON.stringify(statusMap)}\n\n`;
+                msg += `Total Applicants: ${applicants.length}\n`;
+                msg += `Applicants with Agent: ${applicants.filter(a => a.agentId).length}\n`;
+                msg += `Applicants WITHOUT Agent: ${applicants.filter(a => !a.agentId).length}\n\n`;
+                msg += `Total Agents: ${agents.length}\n`;
+                msg += `Approved Agents: ${agents.filter(a => a.status === 'Approved').length}`;
+                
+                alert(msg);
+                
+            } catch (error) {
+                console.error('Debug error:', error);
+                showToast('Debug error: ' + error.message, 'error');
+            }
+        };
 
         // ============================================================
-// OPEN MANUAL COMMISSION MODAL
-// ============================================================
-window.openManualCommission = () => {
-    document.getElementById('manualCommissionModal').classList.add('active');
-    document.getElementById('manualCommissionForm').reset();
-    // Set default payment reference
-    document.getElementById('manualPaymentRef').value = `MANUAL-${Date.now().toString().slice(-6)}`;
-};
+        // OPEN MANUAL COMMISSION MODAL
+        // ============================================================
+        window.openManualCommission = () => {
+            document.getElementById('manualCommissionModal').classList.add('active');
+            document.getElementById('manualCommissionForm').reset();
+            document.getElementById('manualPaymentRef').value = `MANUAL-${Date.now().toString().slice(-6)}`;
+            document.getElementById('manualCommissionPreview').style.display = 'none';
+            document.getElementById('previewPackageFee').textContent = '$0';
+            document.getElementById('previewRate').textContent = '0%';
+            document.getElementById('previewCommission').textContent = '$0.00';
+        };
 
-// ============================================================
-// CLOSE MANUAL COMMISSION MODAL
-// ============================================================
-document.getElementById('closeManualCommissionModal').addEventListener('click', () => {
-    document.getElementById('manualCommissionModal').classList.remove('active');
-});
-document.getElementById('cancelManualCommissionBtn').addEventListener('click', () => {
-    document.getElementById('manualCommissionModal').classList.remove('active');
-});
-document.getElementById('manualCommissionModal').addEventListener('click', function(e) {
-    if (e.target === this) this.classList.remove('active');
-});
-
-// ============================================================
-// SAVE MANUAL COMMISSION - IMPROVED
-// ============================================================
-document.getElementById('saveManualCommissionBtn').addEventListener('click', async () => {
-    const applicantId = document.getElementById('manualApplicantId').value.trim();
-    const packageName = document.getElementById('manualPackageName').value;
-    const amount = parseFloat(document.getElementById('manualAmount').value);
-    const paymentRef = document.getElementById('manualPaymentRef').value.trim() || `MANUAL-${Date.now()}`;
-    
-    if (!applicantId) {
-        showToast('Please enter Applicant ID', 'error');
-        return;
-    }
-    if (!packageName) {
-        showToast('Please select a Package', 'error');
-        return;
-    }
-    if (!amount || amount <= 0) {
-        showToast('Please enter a valid amount', 'error');
-        return;
-    }
-    
-    // First, verify the applicant exists
-    try {
-        showToast('Verifying applicant...', 'info');
-        const verifyResponse = await fetch(`${API_URL}/admin/applicants?applicantId=${encodeURIComponent(applicantId)}`, {
-            headers: { 'Authorization': `Bearer ${adminToken}` }
+        // ============================================================
+        // CLOSE MANUAL COMMISSION MODAL
+        // ============================================================
+        document.getElementById('closeManualCommissionModal').addEventListener('click', () => {
+            document.getElementById('manualCommissionModal').classList.remove('active');
         });
-        const verifyData = await verifyResponse.json();
-        const applicant = (verifyData.applicants || []).find(a => a.applicantId === applicantId);
-        
-        if (!applicant) {
-            showToast(`❌ Applicant ${applicantId} not found!`, 'error');
-            alert(`❌ Applicant Not Found
-
-Applicant ID "${applicantId}" was not found in the database.
-
-Please check:
-1. The Applicant ID is correct (e.g., GISC-APP-000001)
-2. The applicant exists in the Agent Applicants section
-
-Click "Debug" in the Agent Commissions section to see all applicants.`);
-            return;
-        }
-        
-        if (!applicant.agentId) {
-            showToast(`❌ Applicant ${applicantId} has no agent assigned!`, 'error');
-            alert(`⚠️ Applicant has no Agent ID
-
-Applicant: ${applicant.fullName} (${applicantId})
-Agent ID: ${applicant.agentId || 'Not assigned'}
-
-This applicant is not linked to any agent. Please assign an agent first.`);
-            return;
-        }
-        
-        showToast(`✅ Applicant verified: ${applicant.fullName}`, 'success');
-        
-    } catch (error) {
-        console.error('Error verifying applicant:', error);
-        showToast('Error verifying applicant: ' + error.message, 'error');
-        return;
-    }
-    
-    if (!confirm(`Generate commission for applicant ${applicantId}?\nPackage: ${packageName}\nAmount: $${amount.toFixed(2)}`)) return;
-    
-    const btn = document.getElementById('saveManualCommissionBtn');
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<span class="spinner"></span> Generating...';
-    btn.disabled = true;
-    
-    try {
-        const response = await fetch(`${API_URL}/admin/commissions/process`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${adminToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                applicantId: applicantId,
-                packageName: packageName,
-                amountReceived: amount,
-                paymentId: `MANUAL-${Date.now()}`
-            })
+        document.getElementById('cancelManualCommissionBtn').addEventListener('click', () => {
+            document.getElementById('manualCommissionModal').classList.remove('active');
         });
-        
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Failed to generate commission');
-        }
-        
-        const result = await response.json();
-        showToast(`✅ Commission generated: $${result.commission.commissionAmount.toFixed(2)}`, 'success');
-        document.getElementById('manualCommissionModal').classList.remove('active');
-        await loadAgentCommissions();
-        await loadDashboardData();
-        
-    } catch (error) {
-        console.error('Error generating manual commission:', error);
-        showToast('Error: ' + error.message, 'error');
-    } finally {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-    }
-});
-        
-// ============================================================
-// MANUAL GENERATE COMMISSION - SHORTCUT (Console)
-// ============================================================
-window.manualGenerateCommission = async (applicantId, packageName, amount) => {
-    if (!applicantId || !packageName || !amount) {
-        showToast('All fields are required: applicantId, packageName, amount', 'error');
-        return;
-    }
-    
-    if (!confirm(`Generate commission for applicant ${applicantId}?\nPackage: ${packageName}\nAmount: $${amount}`)) return;
-    
-    try {
-        const response = await fetch(`${API_URL}/admin/commissions/process`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${adminToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                applicantId: applicantId,
-                packageName: packageName,
-                amountReceived: parseFloat(amount),
-                paymentId: `MANUAL-${Date.now()}`
-            })
+        document.getElementById('manualCommissionModal').addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('active');
         });
-        
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Failed');
+
+        // ============================================================
+        // MANUAL COMMISSION - PACKAGE PREVIEW (UPDATED)
+        // ============================================================
+        // Update preview when package changes
+        function updateManualCommissionPreview() {
+            const packageName = document.getElementById('manualPackageName').value;
+            const previewEl = document.getElementById('manualCommissionPreview');
+            
+            if (packageName && COMMISSION_STRUCTURE[packageName]) {
+                const info = COMMISSION_STRUCTURE[packageName];
+                const amount = parseFloat(document.getElementById('manualAmount').value) || 0;
+                const commission = amount * info.rate;
+                
+                document.getElementById('previewPackageFee').textContent = `$${info.fee}`;
+                document.getElementById('previewRate').textContent = `${info.rate * 100}%`;
+                document.getElementById('previewCommission').textContent = `$${commission.toFixed(2)}`;
+                previewEl.style.display = 'block';
+            } else {
+                previewEl.style.display = 'none';
+            }
         }
-        
-        const result = await response.json();
-        showToast(`✅ Commission generated: $${result.commission.commissionAmount.toFixed(2)}`, 'success');
-        await loadAgentCommissions();
-        await loadDashboardData();
-        
-    } catch (error) {
-        console.error('Error generating commission manually:', error);
-        showToast('Error: ' + error.message, 'error');
-    }
-};
+
+        // Event listeners for manual commission preview
+        document.getElementById('manualPackageName').addEventListener('change', updateManualCommissionPreview);
+        document.getElementById('manualAmount').addEventListener('input', updateManualCommissionPreview);
+
+        // ============================================================
+        // SAVE MANUAL COMMISSION - WITH LOADING STATE (UPDATED)
+        // ============================================================
+        document.getElementById('saveManualCommissionBtn').addEventListener('click', async function() {
+            const btn = this;
+            
+            // ===== PREVENT DOUBLE CLICK =====
+            if (btn.disabled) return;
+            
+            const applicantId = document.getElementById('manualApplicantId').value.trim();
+            const packageName = document.getElementById('manualPackageName').value;
+            const amount = parseFloat(document.getElementById('manualAmount').value);
+            const paymentRef = document.getElementById('manualPaymentRef').value.trim() || `MANUAL-${Date.now()}`;
+            
+            // ===== VALIDATE INPUTS =====
+            if (!applicantId) {
+                showToast('Please enter Applicant ID', 'error');
+                return;
+            }
+            if (!packageName) {
+                showToast('Please select a Package', 'error');
+                return;
+            }
+            if (!amount || amount <= 0) {
+                showToast('Please enter a valid amount', 'error');
+                return;
+            }
+            
+            // ===== SET LOADING STATE =====
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner"></span> Verifying...';
+            btn.disabled = true;
+            
+            try {
+                // ===== VERIFY APPLICANT EXISTS =====
+                showToast('Verifying applicant...', 'info');
+                const verifyResponse = await fetch(`${API_URL}/admin/applicants?applicantId=${encodeURIComponent(applicantId)}`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                const verifyData = await verifyResponse.json();
+                const applicant = (verifyData.applicants || []).find(a => a.applicantId === applicantId);
+                
+                if (!applicant) {
+                    showToast(`❌ Applicant ${applicantId} not found!`, 'error');
+                    alert(`❌ Applicant Not Found\n\nApplicant ID "${applicantId}" was not found in the database.\n\nPlease check:\n1. The Applicant ID is correct (e.g., GISC-APP-000001)\n2. The applicant exists in the Agent Applicants section\n\nClick "Debug" in the Agent Commissions section to see all applicants.`);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    return;
+                }
+                
+                // ===== VERIFY APPLICANT HAS AGENT =====
+                if (!applicant.agentId) {
+                    showToast(`❌ Applicant ${applicantId} has no agent assigned!`, 'error');
+                    alert(`⚠️ Applicant has no Agent ID\n\nApplicant: ${applicant.fullName} (${applicantId})\nAgent ID: ${applicant.agentId || 'Not assigned'}\n\nThis applicant is not linked to any agent. Please assign an agent first.`);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    return;
+                }
+                
+                showToast(`✅ Applicant verified: ${applicant.fullName}`, 'success');
+                
+            } catch (error) {
+                console.error('Error verifying applicant:', error);
+                showToast('Error verifying applicant: ' + error.message, 'error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                return;
+            }
+            
+            // ===== CONFIRM GENERATION =====
+            if (!confirm(`Generate commission for applicant ${applicantId}?\nPackage: ${packageName}\nAmount: $${amount.toFixed(2)}`)) {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                return;
+            }
+            
+            // ===== UPDATE LOADING STATE =====
+            btn.innerHTML = '<span class="spinner"></span> Generating...';
+            
+            try {
+                const response = await fetch(`${API_URL}/admin/commissions/process`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        applicantId: applicantId,
+                        packageName: packageName,
+                        amountReceived: amount,
+                        paymentId: `MANUAL-${Date.now()}`
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to generate commission');
+                }
+                
+                const result = await response.json();
+                showToast(`✅ Commission generated: $${result.commission.commissionAmount.toFixed(2)}`, 'success');
+                document.getElementById('manualCommissionModal').classList.remove('active');
+                await loadAgentCommissions();
+                await loadDashboardData();
+                
+            } catch (error) {
+                console.error('Error generating manual commission:', error);
+                showToast('Error: ' + error.message, 'error');
+            } finally {
+                // ===== RESTORE BUTTON STATE =====
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        // ============================================================
+        // MANUAL GENERATE COMMISSION - SHORTCUT (Console)
+        // ============================================================
+        window.manualGenerateCommission = async (applicantId, packageName, amount) => {
+            if (!applicantId || !packageName || !amount) {
+                showToast('All fields are required: applicantId, packageName, amount', 'error');
+                return;
+            }
+            
+            if (!confirm(`Generate commission for applicant ${applicantId}?\nPackage: ${packageName}\nAmount: $${amount}`)) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/admin/commissions/process`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        applicantId: applicantId,
+                        packageName: packageName,
+                        amountReceived: parseFloat(amount),
+                        paymentId: `MANUAL-${Date.now()}`
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed');
+                }
+                
+                const result = await response.json();
+                showToast(`✅ Commission generated: $${result.commission.commissionAmount.toFixed(2)}`, 'success');
+                await loadAgentCommissions();
+                await loadDashboardData();
+                
+            } catch (error) {
+                console.error('Error generating commission manually:', error);
+                showToast('Error: ' + error.message, 'error');
+            }
+        };
 
         // ============================================================
         // LOGOUT
@@ -2712,114 +2796,113 @@ window.manualGenerateCommission = async (applicantId, packageName, amount) => {
             }
         };
 
-
-// ============================================================
-// CONFIRM PAYMENT - WITH AUTO COMMISSION GENERATION - FIXED
-// ============================================================
-window.confirmPayment = async (userId) => {
-    if (!confirm('Confirm payment for this user? This will generate commission for the agent.')) return;
-    try {
-        showToast('Confirming payment...', 'info');
-        const usersResult = await apiFetch('users');
-        const user = (usersResult.users || []).find(u => u._id === userId || u.id === userId);
-        if (!user) throw new Error('User not found');
-        
-        // Step 1: Confirm payment
-        const paymentResponse = await fetch(`${API_URL}/admin/payments/confirm`, {
-            method: 'PUT',
-            headers: { 'Authorization': `Bearer ${adminToken}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ uid: user.uid })
-        });
-        if (!paymentResponse.ok) { 
-            const error = await paymentResponse.text(); 
-            throw new Error(error); 
-        }
-        const paymentResult = await paymentResponse.json();
-        
-        // Step 2: Auto-generate commission if payment was successful
-        if (paymentResult.success) {
-            showToast('Payment approved, finding applicant...', 'info');
-            
-            // Try multiple ways to find the applicant
-            let applicant = null;
-            
-            // Method 1: Find by email
-            const applicantResult = await fetch(`${API_URL}/admin/applicants?email=${encodeURIComponent(user.email)}`, {
-                headers: { 'Authorization': `Bearer ${adminToken}` }
-            });
-            const applicantData = await applicantResult.json();
-            const applicants = applicantData.applicants || [];
-            applicant = applicants.find(a => a.email === user.email);
-            
-            // Method 2: If not found by email, try by userId
-            if (!applicant) {
-                const applicantResult2 = await fetch(`${API_URL}/admin/applicants?search=${encodeURIComponent(user.uid)}`, {
-                    headers: { 'Authorization': `Bearer ${adminToken}` }
-                });
-                const applicantData2 = await applicantResult2.json();
-                const applicants2 = applicantData2.applicants || [];
-                applicant = applicants2.find(a => a.userId === user.uid || a.userId === user._id);
-            }
-            
-            // Method 3: If still not found, try by user name
-            if (!applicant && user.name) {
-                const applicantResult3 = await fetch(`${API_URL}/admin/applicants?search=${encodeURIComponent(user.name)}`, {
-                    headers: { 'Authorization': `Bearer ${adminToken}` }
-                });
-                const applicantData3 = await applicantResult3.json();
-                const applicants3 = applicantData3.applicants || [];
-                applicant = applicants3.find(a => a.fullName === user.name || a.fullName?.includes(user.name));
-            }
-            
-            if (applicant && applicant.agentId) {
-                showToast(`Found applicant: ${applicant.fullName} (${applicant.applicantId})`, 'info');
+        // ============================================================
+        // CONFIRM PAYMENT - WITH AUTO COMMISSION GENERATION - FIXED
+        // ============================================================
+        window.confirmPayment = async (userId) => {
+            if (!confirm('Confirm payment for this user? This will generate commission for the agent.')) return;
+            try {
+                showToast('Confirming payment...', 'info');
+                const usersResult = await apiFetch('users');
+                const user = (usersResult.users || []).find(u => u._id === userId || u.id === userId);
+                if (!user) throw new Error('User not found');
                 
-                // Get the application to find package name
-                const appResult = await fetch(`${API_URL}/admin/applications`, {
-                    headers: { 'Authorization': `Bearer ${adminToken}` }
-                });
-                const appData = await appResult.json();
-                const apps = appData.applications || [];
-                const application = apps.find(a => a.uid === user.uid || a.applicantId === applicant.applicantId);
-                
-                const packageName = application?.packageName || application?.service || 'Standard';
-                const amount = paymentResult.amount || 0;
-                
-                showToast(`Generating commission for ${packageName}...`, 'info');
-                
-                // Call commission processing
-                const commissionResponse = await fetch(`${API_URL}/admin/commissions/process`, {
-                    method: 'POST',
+                // Step 1: Confirm payment
+                const paymentResponse = await fetch(`${API_URL}/admin/payments/confirm`, {
+                    method: 'PUT',
                     headers: { 'Authorization': `Bearer ${adminToken}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        applicantId: applicant.applicantId,
-                        packageName: packageName,
-                        amountReceived: amount,
-                        paymentId: `PAY-${Date.now()}`
-                    })
+                    body: JSON.stringify({ uid: user.uid })
                 });
+                if (!paymentResponse.ok) { 
+                    const error = await paymentResponse.text(); 
+                    throw new Error(error); 
+                }
+                const paymentResult = await paymentResponse.json();
                 
-                if (commissionResponse.ok) {
-                    const commissionResult = await commissionResponse.json();
-                    showToast(`✅ Payment approved and $${commissionResult.commission?.commissionAmount?.toFixed(2) || 'commission'} generated!`, 'success');
-                } else {
-                    // Try to get error details
-                    let errorMsg = 'Commission generation failed.';
-                    try {
-                        const errorData = await commissionResponse.json();
-                        errorMsg = errorData.message || errorMsg;
-                    } catch (e) {}
+                // Step 2: Auto-generate commission if payment was successful
+                if (paymentResult.success) {
+                    showToast('Payment approved, finding applicant...', 'info');
                     
-                    showToast(`⚠️ Payment approved but commission generation failed: ${errorMsg}`, 'warning');
+                    // Try multiple ways to find the applicant
+                    let applicant = null;
                     
-                    // Log the error for debugging
-                    console.error('Commission generation failed:', errorMsg);
-                    console.log('Applicant found:', applicant);
-                    console.log('Package name:', packageName);
-                    console.log('Amount:', amount);
+                    // Method 1: Find by email
+                    const applicantResult = await fetch(`${API_URL}/admin/applicants?email=${encodeURIComponent(user.email)}`, {
+                        headers: { 'Authorization': `Bearer ${adminToken}` }
+                    });
+                    const applicantData = await applicantResult.json();
+                    const applicants = applicantData.applicants || [];
+                    applicant = applicants.find(a => a.email === user.email);
                     
-                    // Suggest manual commission
-                    alert(`⚠️ Commission generation failed: ${errorMsg}
+                    // Method 2: If not found by email, try by userId
+                    if (!applicant) {
+                        const applicantResult2 = await fetch(`${API_URL}/admin/applicants?search=${encodeURIComponent(user.uid)}`, {
+                            headers: { 'Authorization': `Bearer ${adminToken}` }
+                        });
+                        const applicantData2 = await applicantResult2.json();
+                        const applicants2 = applicantData2.applicants || [];
+                        applicant = applicants2.find(a => a.userId === user.uid || a.userId === user._id);
+                    }
+                    
+                    // Method 3: If still not found, try by user name
+                    if (!applicant && user.name) {
+                        const applicantResult3 = await fetch(`${API_URL}/admin/applicants?search=${encodeURIComponent(user.name)}`, {
+                            headers: { 'Authorization': `Bearer ${adminToken}` }
+                        });
+                        const applicantData3 = await applicantResult3.json();
+                        const applicants3 = applicantData3.applicants || [];
+                        applicant = applicants3.find(a => a.fullName === user.name || a.fullName?.includes(user.name));
+                    }
+                    
+                    if (applicant && applicant.agentId) {
+                        showToast(`Found applicant: ${applicant.fullName} (${applicant.applicantId})`, 'info');
+                        
+                        // Get the application to find package name
+                        const appResult = await fetch(`${API_URL}/admin/applications`, {
+                            headers: { 'Authorization': `Bearer ${adminToken}` }
+                        });
+                        const appData = await appResult.json();
+                        const apps = appData.applications || [];
+                        const application = apps.find(a => a.uid === user.uid || a.applicantId === applicant.applicantId);
+                        
+                        const packageName = application?.packageName || application?.service || 'Standard';
+                        const amount = paymentResult.amount || 0;
+                        
+                        showToast(`Generating commission for ${packageName}...`, 'info');
+                        
+                        // Call commission processing
+                        const commissionResponse = await fetch(`${API_URL}/admin/commissions/process`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${adminToken}`, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                applicantId: applicant.applicantId,
+                                packageName: packageName,
+                                amountReceived: amount,
+                                paymentId: `PAY-${Date.now()}`
+                            })
+                        });
+                        
+                        if (commissionResponse.ok) {
+                            const commissionResult = await commissionResponse.json();
+                            showToast(`✅ Payment approved and $${commissionResult.commission?.commissionAmount?.toFixed(2) || 'commission'} generated!`, 'success');
+                        } else {
+                            // Try to get error details
+                            let errorMsg = 'Commission generation failed.';
+                            try {
+                                const errorData = await commissionResponse.json();
+                                errorMsg = errorData.message || errorMsg;
+                            } catch (e) {}
+                            
+                            showToast(`⚠️ Payment approved but commission generation failed: ${errorMsg}`, 'warning');
+                            
+                            // Log the error for debugging
+                            console.error('Commission generation failed:', errorMsg);
+                            console.log('Applicant found:', applicant);
+                            console.log('Package name:', packageName);
+                            console.log('Amount:', amount);
+                            
+                            // Suggest manual commission
+                            alert(`⚠️ Commission generation failed: ${errorMsg}
 
 Please use the "Manual Commission" button in the Agent Commissions section.
 
@@ -2828,16 +2911,16 @@ Package: ${packageName}
 Amount: $${amount}
 
 Click "Manual Commission" and enter these details.`);
-                }
-            } else {
-                showToast(`✅ Payment approved! No agent commission (applicant not linked to agent)`, 'success');
-                
-                // Show debug info
-                console.log('Payment user:', user);
-                console.log('Applicant search result:', applicantData);
-                
-                // Suggest using debug endpoint
-                alert(`ℹ️ Payment approved but no applicant found.
+                        }
+                    } else {
+                        showToast(`✅ Payment approved! No agent commission (applicant not linked to agent)`, 'success');
+                        
+                        // Show debug info
+                        console.log('Payment user:', user);
+                        console.log('Applicant search result:', applicantData);
+                        
+                        // Suggest using debug endpoint
+                        alert(`ℹ️ Payment approved but no applicant found.
 
 To debug:
 1. Go to Agent Commissions section
@@ -2849,23 +2932,23 @@ If the applicant exists, use Manual Commission:
 2. Enter the Applicant ID
 3. Select Package and Amount
 4. Click Generate Commission`);
+                    }
+                }
+                
+                // Refresh all data
+                await loadPayments();
+                await loadDashboardData();
+                await loadUsers();
+                await loadApplications();
+                if (document.querySelector('#agent-commissions-section.active')) {
+                    await loadAgentCommissions();
+                }
+                
+            } catch (error) {
+                console.error('Error confirming payment:', error);
+                showToast('Error confirming payment: ' + error.message, 'error');
             }
-        }
-        
-        // Refresh all data
-        await loadPayments();
-        await loadDashboardData();
-        await loadUsers();
-        await loadApplications();
-        if (document.querySelector('#agent-commissions-section.active')) {
-            await loadAgentCommissions();
-        }
-        
-    } catch (error) {
-        console.error('Error confirming payment:', error);
-        showToast('Error confirming payment: ' + error.message, 'error');
-    }
-};
+        };
 
         window.rejectPayment = async (userId) => {
             const reason = prompt('Enter reason for rejecting this payment:');
@@ -3458,132 +3541,131 @@ If the applicant exists, use Manual Commission:
             }
         };
 
-
         // ============================================================
-// MANAGE APPLICANT CREDENTIALS (Admin)
-// ============================================================
-window.manageApplicantCredentials = async (applicantId) => {
-    const modal = document.getElementById('manageCredentialsModal');
-    const body = document.getElementById('credentialsBody');
-    
-    modal.classList.add('active');
-    body.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner"></div><p style="margin-top: 10px; color: #666;">Loading credentials...</p></div>';
-    
-    try {
-        const result = await apiFetch(`applicants/${applicantId}/credentials`);
-        const data = result.credentials;
-        
-        body.innerHTML = `
-            <div style="margin-bottom: 15px;">
-                <div class="detail-row"><span class="detail-label">Applicant</span><span class="detail-value"><strong>${data.fullName}</strong></span></div>
-                <div class="detail-row"><span class="detail-label">Applicant ID</span><span class="detail-value">${data.applicantId}</span></div>
-                <div class="detail-row"><span class="detail-label">Email</span><span class="detail-value">${data.email}</span></div>
-                <div class="detail-row"><span class="detail-label">Agent</span><span class="detail-value">${data.agentName || data.agentId || 'N/A'}</span></div>
-                <div class="detail-row"><span class="detail-label">Password Status</span><span class="detail-value">
-                    <span class="status-badge ${data.hasPassword ? 'status-approved' : 'status-pending'}">
-                        ${data.hasPassword ? '✅ Password Set' : '❌ No Password Set'}
-                    </span>
-                </span></div>
-                <div class="detail-row"><span class="detail-label">Login URL</span><span class="detail-value">
-                    <a href="https://globalimmigrationsclr.com/portal/login.html" target="_blank" style="color: #17a2b8; text-decoration: underline;">
-                        https://globalimmigrationsclr.com/portal/login.html
-                    </a>
-                </span></div>
-            </div>
-            <div style="background: rgba(255,193,7,0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #ffc107;">
-                <p style="font-size: 0.85rem; color: #856404; margin: 0;">
-                    <i class="fas fa-info-circle"></i> 
-                    <strong>Temporary Password:</strong> Click "Reset Password" to generate a new temporary password. 
-                    Share this password with the applicant securely.
-                </p>
-            </div>
-            <div id="newPasswordDisplay" style="margin-top: 15px; display: none; background: #e8f5e9; padding: 15px; border-radius: 8px; text-align: center; border: 2px solid #28a745;">
-                <p style="margin: 0; font-size: 0.85rem; color: #2e7d32;">
-                    <i class="fas fa-check-circle" style="color: #28a745;"></i> 
-                    New password generated: 
-                    <strong style="font-size: 1.1rem; color: #1a237e; font-family: monospace; letter-spacing: 1px;" id="newPasswordText">********</strong>
-                </p>
-                <p style="margin: 5px 0 0 0; font-size: 0.7rem; color: #666;">
-                    Share this password with the applicant. They can login at the portal link above.
-                </p>
-                <button id="copyPasswordBtn" class="btn btn-sm btn-info" style="margin-top: 10px;"><i class="fas fa-copy"></i> Copy Password</button>
-            </div>
-        `;
-        
-        // Store applicant ID for reset function
-        document.getElementById('resetCredentialsPasswordBtn').dataset.applicantId = applicantId;
-        document.getElementById('newPasswordDisplay').style.display = 'none';
-        
-        // Copy password functionality
-        document.getElementById('copyPasswordBtn')?.addEventListener('click', function() {
-            const text = document.getElementById('newPasswordText');
-            if (text.textContent && text.textContent !== '********') {
-                navigator.clipboard.writeText(text.textContent).then(() => {
-                    showToast('Password copied to clipboard!', 'success');
-                }).catch(() => {
-                    const range = document.createRange();
-                    range.selectNode(text);
-                    window.getSelection().removeAllRanges();
-                    window.getSelection().addRange(range);
-                    document.execCommand('copy');
-                    showToast('Password copied!', 'success');
+        // MANAGE APPLICANT CREDENTIALS (Admin)
+        // ============================================================
+        window.manageApplicantCredentials = async (applicantId) => {
+            const modal = document.getElementById('manageCredentialsModal');
+            const body = document.getElementById('credentialsBody');
+            
+            modal.classList.add('active');
+            body.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner"></div><p style="margin-top: 10px; color: #666;">Loading credentials...</p></div>';
+            
+            try {
+                const result = await apiFetch(`applicants/${applicantId}/credentials`);
+                const data = result.credentials;
+                
+                body.innerHTML = `
+                    <div style="margin-bottom: 15px;">
+                        <div class="detail-row"><span class="detail-label">Applicant</span><span class="detail-value"><strong>${data.fullName}</strong></span></div>
+                        <div class="detail-row"><span class="detail-label">Applicant ID</span><span class="detail-value">${data.applicantId}</span></div>
+                        <div class="detail-row"><span class="detail-label">Email</span><span class="detail-value">${data.email}</span></div>
+                        <div class="detail-row"><span class="detail-label">Agent</span><span class="detail-value">${data.agentName || data.agentId || 'N/A'}</span></div>
+                        <div class="detail-row"><span class="detail-label">Password Status</span><span class="detail-value">
+                            <span class="status-badge ${data.hasPassword ? 'status-approved' : 'status-pending'}">
+                                ${data.hasPassword ? '✅ Password Set' : '❌ No Password Set'}
+                            </span>
+                        </span></div>
+                        <div class="detail-row"><span class="detail-label">Login URL</span><span class="detail-value">
+                            <a href="https://globalimmigrationsclr.com/portal/login.html" target="_blank" style="color: #17a2b8; text-decoration: underline;">
+                                https://globalimmigrationsclr.com/portal/login.html
+                            </a>
+                        </span></div>
+                    </div>
+                    <div style="background: rgba(255,193,7,0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #ffc107;">
+                        <p style="font-size: 0.85rem; color: #856404; margin: 0;">
+                            <i class="fas fa-info-circle"></i> 
+                            <strong>Temporary Password:</strong> Click "Reset Password" to generate a new temporary password. 
+                            Share this password with the applicant securely.
+                        </p>
+                    </div>
+                    <div id="newPasswordDisplay" style="margin-top: 15px; display: none; background: #e8f5e9; padding: 15px; border-radius: 8px; text-align: center; border: 2px solid #28a745;">
+                        <p style="margin: 0; font-size: 0.85rem; color: #2e7d32;">
+                            <i class="fas fa-check-circle" style="color: #28a745;"></i> 
+                            New password generated: 
+                            <strong style="font-size: 1.1rem; color: #1a237e; font-family: monospace; letter-spacing: 1px;" id="newPasswordText">********</strong>
+                        </p>
+                        <p style="margin: 5px 0 0 0; font-size: 0.7rem; color: #666;">
+                            Share this password with the applicant. They can login at the portal link above.
+                        </p>
+                        <button id="copyPasswordBtn" class="btn btn-sm btn-info" style="margin-top: 10px;"><i class="fas fa-copy"></i> Copy Password</button>
+                    </div>
+                `;
+                
+                // Store applicant ID for reset function
+                document.getElementById('resetCredentialsPasswordBtn').dataset.applicantId = applicantId;
+                document.getElementById('newPasswordDisplay').style.display = 'none';
+                
+                // Copy password functionality
+                document.getElementById('copyPasswordBtn')?.addEventListener('click', function() {
+                    const text = document.getElementById('newPasswordText');
+                    if (text.textContent && text.textContent !== '********') {
+                        navigator.clipboard.writeText(text.textContent).then(() => {
+                            showToast('Password copied to clipboard!', 'success');
+                        }).catch(() => {
+                            const range = document.createRange();
+                            range.selectNode(text);
+                            window.getSelection().removeAllRanges();
+                            window.getSelection().addRange(range);
+                            document.execCommand('copy');
+                            showToast('Password copied!', 'success');
+                        });
+                    }
                 });
+                
+            } catch (error) {
+                console.error('Error loading credentials:', error);
+                body.innerHTML = `<p style="color: #dc3545;">Error loading credentials: ${error.message}</p>`;
+            }
+        };
+
+        // Reset Applicant Password (Admin)
+        document.getElementById('resetCredentialsPasswordBtn').addEventListener('click', async function() {
+            const applicantId = this.dataset.applicantId;
+            if (!applicantId) {
+                showToast('No applicant selected', 'error');
+                return;
+            }
+            
+            if (!confirm('Are you sure you want to reset the password for this applicant? A new temporary password will be generated.')) return;
+            
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner"></span> Resetting...';
+            btn.disabled = true;
+            
+            try {
+                const result = await apiFetch(`applicants/${applicantId}/reset-password`, {
+                    method: 'POST'
+                });
+                
+                // Display the new password
+                const display = document.getElementById('newPasswordDisplay');
+                const text = document.getElementById('newPasswordText');
+                text.textContent = result.temporaryPassword;
+                display.style.display = 'block';
+                
+                showToast(`Password reset successfully! New password: ${result.temporaryPassword}`, 'success');
+                
+            } catch (error) {
+                console.error('Error resetting password:', error);
+                showToast('Error resetting password: ' + error.message, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
         });
-        
-    } catch (error) {
-        console.error('Error loading credentials:', error);
-        body.innerHTML = `<p style="color: #dc3545;">Error loading credentials: ${error.message}</p>`;
-    }
-};
 
-// Reset Applicant Password (Admin)
-document.getElementById('resetCredentialsPasswordBtn').addEventListener('click', async function() {
-    const applicantId = this.dataset.applicantId;
-    if (!applicantId) {
-        showToast('No applicant selected', 'error');
-        return;
-    }
-    
-    if (!confirm('Are you sure you want to reset the password for this applicant? A new temporary password will be generated.')) return;
-    
-    const btn = this;
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<span class="spinner"></span> Resetting...';
-    btn.disabled = true;
-    
-    try {
-        const result = await apiFetch(`applicants/${applicantId}/reset-password`, {
-            method: 'POST'
+        // Close Credentials Modal
+        document.getElementById('closeCredentialsModal').addEventListener('click', () => {
+            document.getElementById('manageCredentialsModal').classList.remove('active');
         });
-        
-        // Display the new password
-        const display = document.getElementById('newPasswordDisplay');
-        const text = document.getElementById('newPasswordText');
-        text.textContent = result.temporaryPassword;
-        display.style.display = 'block';
-        
-        showToast(`Password reset successfully! New password: ${result.temporaryPassword}`, 'success');
-        
-    } catch (error) {
-        console.error('Error resetting password:', error);
-        showToast('Error resetting password: ' + error.message, 'error');
-    } finally {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-    }
-});
-
-// Close Credentials Modal
-document.getElementById('closeCredentialsModal').addEventListener('click', () => {
-    document.getElementById('manageCredentialsModal').classList.remove('active');
-});
-document.getElementById('closeCredentialsBtn').addEventListener('click', () => {
-    document.getElementById('manageCredentialsModal').classList.remove('active');
-});
-document.getElementById('manageCredentialsModal').addEventListener('click', function(e) {
-    if (e.target === this) this.classList.remove('active');
-});
+        document.getElementById('closeCredentialsBtn').addEventListener('click', () => {
+            document.getElementById('manageCredentialsModal').classList.remove('active');
+        });
+        document.getElementById('manageCredentialsModal').addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('active');
+        });
 
         // ============================================================
         // EDIT APPLICANT MODAL EVENTS
@@ -3662,7 +3744,7 @@ document.getElementById('manageCredentialsModal').addEventListener('click', func
         });
 
         // ============================================================
-        // LOAD AGENT COMMISSIONS
+        // LOAD AGENT COMMISSIONS - UPDATED WITH EXACT CASE MATCHING
         // ============================================================
         async function loadAgentCommissions() {
             const debugEl = document.getElementById('commissionDebugInfo');
@@ -3699,6 +3781,8 @@ document.getElementById('manageCredentialsModal').addEventListener('click', func
                     return;
                 }
                 
+                // ===== UPDATED: Use exact status values from backend =====
+                // Backend uses: 'Eligible', 'Paid', 'Settled', 'Pending', 'Reversed'
                 tbody.innerHTML = commissions.map(c => `
                     <tr>
                         <td>${c.agentName || c.agentId || 'N/A'}</td>
@@ -3724,23 +3808,27 @@ document.getElementById('manageCredentialsModal').addEventListener('click', func
         }
 
         // ============================================================
-        // LOAD AGENT SETTLEMENTS
+        // LOAD AGENT SETTLEMENTS - UPDATED WITH STATUS FILTER
         // ============================================================
         async function loadAgentSettlements() {
             const debugEl = document.getElementById('settlementDebugInfo');
             const tbody = document.getElementById('settlementsTableBody');
             
+            // ===== GET STATUS FILTER =====
+            const statusFilter = document.getElementById('filterSettlementStatus')?.value || 'all';
+            
             try {
                 debugEl.innerHTML = '<span style="color: #ff0;">🔄 Loading settlements...</span>';
-                const result = await apiFetch('agent-settlements');
+                // ===== PASS STATUS FILTER TO API =====
+                const result = await apiFetch(`agent-settlements${statusFilter !== 'all' ? `?status=${statusFilter}` : ''}`);
                 const settlements = result.settlements || [];
                 
                 document.getElementById('settlementTotal').textContent = `${settlements.length} total`;
                 
-                debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${settlements.length} settlements</span>`;
+                debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${settlements.length} settlements${statusFilter !== 'all' ? ` (filtered: ${statusFilter})` : ''}</span>`;
                 
                 if (settlements.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 30px;">No settlements found</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 30px;">No settlements found${statusFilter !== 'all' ? ` with status: ${statusFilter}` : ''}</td></tr>`;
                     return;
                 }
                 
@@ -4066,242 +4154,238 @@ document.getElementById('manageCredentialsModal').addEventListener('click', func
         // ============================================================
         // LOAD APPLICATIONS - FIXED TO SHOW APPLICANT/AGENT NAMES
         // ============================================================
-       // ============================================================
-
-        // ============================================================
-// LOAD APPLICATIONS - FIXED TO SHOW ALL APPLICANT/AGENT NAMES
-// ============================================================
-async function loadApplications() {
-    const debugEl = document.getElementById('appDebugInfo');
-    const container = document.getElementById('applicationsList');
-    
-    try {
-        debugEl.innerHTML = '<span style="color: #ff0;">🔄 Fetching applications...</span>';
-        const result = await apiFetch('applications');
-        const apps = result.applications || [];
-        
-        console.log('📋 Applications from API:', apps);
-        
-        // Fetch users, applicants, and agents for enrichment
-        let users = [];
-        let applicants = [];
-        let agents = [];
-        
-        try {
-            const userResult = await apiFetch('users');
-            users = userResult.users || [];
-            console.log('👤 Users found:', users.length);
-        } catch (e) {
-            console.warn('Could not fetch users:', e);
-        }
-        
-        try {
-            const appResult = await apiFetch('agent-applicants');
-            applicants = appResult.applicants || [];
-            console.log('👤 Applicants found:', applicants.length);
-        } catch (e) {
-            console.warn('Could not fetch applicants:', e);
-        }
-        
-        try {
-            const agentResult = await apiFetch('agents');
-            agents = agentResult.agents || [];
-            console.log('🤝 Agents found:', agents.length);
-        } catch (e) {
-            console.warn('Could not fetch agents:', e);
-        }
-        
-        // Build lookup maps
-        const userMap = {};
-        users.forEach(u => {
-            if (u.uid) userMap[u.uid] = u;
-            if (u._id) userMap[u._id] = u;
-            if (u.email) userMap[u.email.toLowerCase()] = u;
-        });
-        
-        const applicantMap = {};
-        applicants.forEach(a => {
-            applicantMap[a.applicantId] = a;
-            if (a.userId) applicantMap[a.userId] = a;
-            if (a.email) applicantMap[a.email.toLowerCase()] = a;
-        });
-        
-        const agentMap = {};
-        agents.forEach(a => {
-            agentMap[a.agentId] = a;
-            if (a.email) agentMap[a.email.toLowerCase()] = a;
-        });
-        
-        // Enrich applications
-        const enrichedApps = apps.map(app => {
-            let applicantName = 'Unknown';
-            let applicantEmail = 'N/A';
-            let applicantPhone = 'N/A';
-            let applicantIdDisplay = 'N/A';
-            let agentName = 'Unknown';
-            let agentIdDisplay = 'N/A';
-            let paymentStatus = app.paymentStatus || 'No Payment';
+        async function loadApplications() {
+            const debugEl = document.getElementById('appDebugInfo');
+            const container = document.getElementById('applicationsList');
             
-            // STEP 1: Try to find applicant by applicantId (agent-submitted)
-            let applicant = null;
-            if (app.applicantId && applicantMap[app.applicantId]) {
-                applicant = applicantMap[app.applicantId];
-            }
-            
-            // STEP 2: Try to find applicant by userId (regular user)
-            let user = null;
-            if (!applicant && app.userId && userMap[app.userId]) {
-                user = userMap[app.userId];
-            }
-            if (!applicant && app.uid && userMap[app.uid]) {
-                user = userMap[app.uid];
-            }
-            
-            // STEP 3: If we found a user but no applicant, use user data
-            if (user && !applicant) {
-                applicantName = user.name || 'Unknown';
-                applicantEmail = user.email || 'N/A';
-                applicantPhone = user.phone || 'N/A';
-                applicantIdDisplay = user.uid || 'N/A';
-                paymentStatus = app.paymentStatus || 'No Payment';
-            }
-            
-            // STEP 4: If we found an applicant, use applicant data
-            if (applicant) {
-                applicantName = applicant.fullName || applicant.name || 'Unknown';
-                applicantEmail = applicant.email || 'N/A';
-                applicantPhone = applicant.phone || 'N/A';
-                applicantIdDisplay = applicant.applicantId || 'N/A';
-                paymentStatus = app.paymentStatus || applicant.paymentStatus || 'No Payment';
-            }
-            
-            // STEP 5: If still no name, try using personalInfo
-            if (applicantName === 'Unknown' && app.personalInfo) {
-                applicantName = app.personalInfo.name || 'Unknown';
-                applicantEmail = app.personalInfo.email || 'N/A';
-                applicantPhone = app.personalInfo.phone || 'N/A';
-            }
-            
-            // STEP 6: If still no name, try using app fields directly
-            if (applicantName === 'Unknown') {
-                applicantName = app.applicantName || app.name || 'Unknown';
-                applicantEmail = app.email || 'N/A';
-                applicantPhone = app.phone || 'N/A';
-            }
-            
-            // STEP 7: Find agent
-            // Try by agentId from application
-            let agent = null;
-            if (app.agentId && agentMap[app.agentId]) {
-                agent = agentMap[app.agentId];
-            }
-            
-            // If no agent, try by agentId from applicant
-            if (!agent && applicant && applicant.agentId && agentMap[applicant.agentId]) {
-                agent = agentMap[applicant.agentId];
-            }
-            
-            // If no agent, try by email match
-            if (!agent && applicantEmail !== 'N/A') {
-                const emailKey = applicantEmail.toLowerCase();
-                if (agentMap[emailKey]) {
-                    agent = agentMap[emailKey];
+            try {
+                debugEl.innerHTML = '<span style="color: #ff0;">🔄 Fetching applications...</span>';
+                const result = await apiFetch('applications');
+                const apps = result.applications || [];
+                
+                console.log('📋 Applications from API:', apps);
+                
+                // Fetch users, applicants, and agents for enrichment
+                let users = [];
+                let applicants = [];
+                let agents = [];
+                
+                try {
+                    const userResult = await apiFetch('users');
+                    users = userResult.users || [];
+                    console.log('👤 Users found:', users.length);
+                } catch (e) {
+                    console.warn('Could not fetch users:', e);
                 }
-            }
-            
-            if (agent) {
-                agentName = agent.fullName || agent.name || 'Unknown';
-                agentIdDisplay = agent.agentId || 'Unknown';
-            } else if (app.agentName) {
-                agentName = app.agentName;
-                agentIdDisplay = app.agentId || 'Unknown';
-            } else if (applicant && applicant.agentName) {
-                agentName = applicant.agentName;
-                agentIdDisplay = applicant.agentId || 'Unknown';
-            }
-            
-            // STEP 8: Get service
-            let service = app.service || app.serviceRequested || 'N/A';
-            if (service === 'N/A' && app.personalInfo) {
-                service = app.personalInfo.serviceType || 'N/A';
-            }
-            
-            return {
-                ...app,
-                applicantName: applicantName,
-                applicantEmail: applicantEmail,
-                applicantPhone: applicantPhone,
-                applicantIdDisplay: applicantIdDisplay,
-                agentName: agentName,
-                agentIdDisplay: agentIdDisplay,
-                service: service,
-                paymentStatus: paymentStatus
-            };
-        });
-        
-        debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${enrichedApps.length} applications</span><span style="color: #ff0; margin-left: 15px;">📋 Enriched with user/applicant/agent data</span>`;
-        document.getElementById('appTotalLabel').textContent = `${enrichedApps.length} total`;
+                
+                try {
+                    const appResult = await apiFetch('agent-applicants');
+                    applicants = appResult.applicants || [];
+                    console.log('👤 Applicants found:', applicants.length);
+                } catch (e) {
+                    console.warn('Could not fetch applicants:', e);
+                }
+                
+                try {
+                    const agentResult = await apiFetch('agents');
+                    agents = agentResult.agents || [];
+                    console.log('🤝 Agents found:', agents.length);
+                } catch (e) {
+                    console.warn('Could not fetch agents:', e);
+                }
+                
+                // Build lookup maps
+                const userMap = {};
+                users.forEach(u => {
+                    if (u.uid) userMap[u.uid] = u;
+                    if (u._id) userMap[u._id] = u;
+                    if (u.email) userMap[u.email.toLowerCase()] = u;
+                });
+                
+                const applicantMap = {};
+                applicants.forEach(a => {
+                    applicantMap[a.applicantId] = a;
+                    if (a.userId) applicantMap[a.userId] = a;
+                    if (a.email) applicantMap[a.email.toLowerCase()] = a;
+                });
+                
+                const agentMap = {};
+                agents.forEach(a => {
+                    agentMap[a.agentId] = a;
+                    if (a.email) agentMap[a.email.toLowerCase()] = a;
+                });
+                
+                // Enrich applications
+                const enrichedApps = apps.map(app => {
+                    let applicantName = 'Unknown';
+                    let applicantEmail = 'N/A';
+                    let applicantPhone = 'N/A';
+                    let applicantIdDisplay = 'N/A';
+                    let agentName = 'Unknown';
+                    let agentIdDisplay = 'N/A';
+                    let paymentStatus = app.paymentStatus || 'No Payment';
+                    
+                    // STEP 1: Try to find applicant by applicantId (agent-submitted)
+                    let applicant = null;
+                    if (app.applicantId && applicantMap[app.applicantId]) {
+                        applicant = applicantMap[app.applicantId];
+                    }
+                    
+                    // STEP 2: Try to find applicant by userId (regular user)
+                    let user = null;
+                    if (!applicant && app.userId && userMap[app.userId]) {
+                        user = userMap[app.userId];
+                    }
+                    if (!applicant && app.uid && userMap[app.uid]) {
+                        user = userMap[app.uid];
+                    }
+                    
+                    // STEP 3: If we found a user but no applicant, use user data
+                    if (user && !applicant) {
+                        applicantName = user.name || 'Unknown';
+                        applicantEmail = user.email || 'N/A';
+                        applicantPhone = user.phone || 'N/A';
+                        applicantIdDisplay = user.uid || 'N/A';
+                        paymentStatus = app.paymentStatus || 'No Payment';
+                    }
+                    
+                    // STEP 4: If we found an applicant, use applicant data
+                    if (applicant) {
+                        applicantName = applicant.fullName || applicant.name || 'Unknown';
+                        applicantEmail = applicant.email || 'N/A';
+                        applicantPhone = applicant.phone || 'N/A';
+                        applicantIdDisplay = applicant.applicantId || 'N/A';
+                        paymentStatus = app.paymentStatus || applicant.paymentStatus || 'No Payment';
+                    }
+                    
+                    // STEP 5: If still no name, try using personalInfo
+                    if (applicantName === 'Unknown' && app.personalInfo) {
+                        applicantName = app.personalInfo.name || 'Unknown';
+                        applicantEmail = app.personalInfo.email || 'N/A';
+                        applicantPhone = app.personalInfo.phone || 'N/A';
+                    }
+                    
+                    // STEP 6: If still no name, try using app fields directly
+                    if (applicantName === 'Unknown') {
+                        applicantName = app.applicantName || app.name || 'Unknown';
+                        applicantEmail = app.email || 'N/A';
+                        applicantPhone = app.phone || 'N/A';
+                    }
+                    
+                    // STEP 7: Find agent
+                    // Try by agentId from application
+                    let agent = null;
+                    if (app.agentId && agentMap[app.agentId]) {
+                        agent = agentMap[app.agentId];
+                    }
+                    
+                    // If no agent, try by agentId from applicant
+                    if (!agent && applicant && applicant.agentId && agentMap[applicant.agentId]) {
+                        agent = agentMap[applicant.agentId];
+                    }
+                    
+                    // If no agent, try by email match
+                    if (!agent && applicantEmail !== 'N/A') {
+                        const emailKey = applicantEmail.toLowerCase();
+                        if (agentMap[emailKey]) {
+                            agent = agentMap[emailKey];
+                        }
+                    }
+                    
+                    if (agent) {
+                        agentName = agent.fullName || agent.name || 'Unknown';
+                        agentIdDisplay = agent.agentId || 'Unknown';
+                    } else if (app.agentName) {
+                        agentName = app.agentName;
+                        agentIdDisplay = app.agentId || 'Unknown';
+                    } else if (applicant && applicant.agentName) {
+                        agentName = applicant.agentName;
+                        agentIdDisplay = applicant.agentId || 'Unknown';
+                    }
+                    
+                    // STEP 8: Get service
+                    let service = app.service || app.serviceRequested || 'N/A';
+                    if (service === 'N/A' && app.personalInfo) {
+                        service = app.personalInfo.serviceType || 'N/A';
+                    }
+                    
+                    return {
+                        ...app,
+                        applicantName: applicantName,
+                        applicantEmail: applicantEmail,
+                        applicantPhone: applicantPhone,
+                        applicantIdDisplay: applicantIdDisplay,
+                        agentName: agentName,
+                        agentIdDisplay: agentIdDisplay,
+                        service: service,
+                        paymentStatus: paymentStatus
+                    };
+                });
+                
+                debugEl.innerHTML = `<span style="color: #0f0;">✅ Found ${enrichedApps.length} applications</span><span style="color: #ff0; margin-left: 15px;">📋 Enriched with user/applicant/agent data</span>`;
+                document.getElementById('appTotalLabel').textContent = `${enrichedApps.length} total`;
 
-        if (enrichedApps.length === 0) {
-            container.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>No applications yet. Users need to submit applications first.</p></div>`;
-            return;
+                if (enrichedApps.length === 0) {
+                    container.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>No applications yet. Users need to submit applications first.</p></div>`;
+                    return;
+                }
+
+                container.innerHTML = `
+                    <div class="table-wrapper">
+                        <table class="admin-table">
+                            <thead><tr>
+                                <th>Applicant</th>
+                                <th>Email</th>
+                                <th>Applicant ID</th>
+                                <th>Agent</th>
+                                <th>Agent ID</th>
+                                <th>Service</th>
+                                <th>Status</th>
+                                <th>Payment</th>
+                                <th>Actions</th>
+                            </tr></thead>
+                            <tbody>
+                                ${enrichedApps.map(app => {
+                                    const status = app.status || 'draft';
+                                    const docCount = app.documents ? Object.keys(app.documents).length : 0;
+                                    const paymentStatus = app.paymentStatus || 'No Payment';
+                                    return `
+                                        <tr>
+                                            <td><strong>${app.applicantName || 'Unknown'}</strong></td>
+                                            <td>${app.applicantEmail || 'N/A'}</td>
+                                            <td><span style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">${app.applicantIdDisplay || 'N/A'}</span></td>
+                                            <td><strong>${app.agentName || 'Unknown'}</strong></td>
+                                            <td><span style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">${app.agentIdDisplay || 'N/A'}</span></td>
+                                            <td>${app.service || 'N/A'}</td>
+                                            <td><span class="status-badge status-${status}">${status.toUpperCase()}</span></td>
+                                            <td><span class="payment-status-badge ${paymentStatus.toLowerCase().replace(/ /g, '_')}">${paymentStatus}</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-info" onclick="viewApplicationDetail('${app._id || app.id}')" title="View Full Details"><i class="fas fa-file-alt"></i></button>
+                                                <select onchange="updateApplicationStatus('${app._id || app.id}', this.value)" class="glass-input" style="width: auto; padding: 4px 8px; font-size: 0.7rem;">
+                                                    <option value="draft" ${status === 'draft' ? 'selected' : ''}>Draft</option>
+                                                    <option value="submitted" ${status === 'submitted' ? 'selected' : ''}>Submitted</option>
+                                                    <option value="pending_review" ${status === 'pending_review' ? 'selected' : ''}>Pending Review</option>
+                                                    <option value="under_review" ${status === 'under_review' ? 'selected' : ''}>Under Review</option>
+                                                    <option value="approved" ${status === 'approved' ? 'selected' : ''}>Approved</option>
+                                                    <option value="rejected" ${status === 'rejected' ? 'selected' : ''}>Rejected</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error('Error loading applications:', error);
+                debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading applications: ${error.message}</p></div>`;
+                showToast('Error loading applications', 'error');
+            }
         }
 
-        container.innerHTML = `
-            <div class="table-wrapper">
-                <table class="admin-table">
-                    <thead><tr>
-                        <th>Applicant</th>
-                        <th>Email</th>
-                        <th>Applicant ID</th>
-                        <th>Agent</th>
-                        <th>Agent ID</th>
-                        <th>Service</th>
-                        <th>Status</th>
-                        <th>Payment</th>
-                        <th>Actions</th>
-                    </tr></thead>
-                    <tbody>
-                        ${enrichedApps.map(app => {
-                            const status = app.status || 'draft';
-                            const docCount = app.documents ? Object.keys(app.documents).length : 0;
-                            const paymentStatus = app.paymentStatus || 'No Payment';
-                            return `
-                                <tr>
-                                    <td><strong>${app.applicantName || 'Unknown'}</strong></td>
-                                    <td>${app.applicantEmail || 'N/A'}</td>
-                                    <td><span style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">${app.applicantIdDisplay || 'N/A'}</span></td>
-                                    <td><strong>${app.agentName || 'Unknown'}</strong></td>
-                                    <td><span style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">${app.agentIdDisplay || 'N/A'}</span></td>
-                                    <td>${app.service || 'N/A'}</td>
-                                    <td><span class="status-badge status-${status}">${status.toUpperCase()}</span></td>
-                                    <td><span class="payment-status-badge ${paymentStatus.toLowerCase().replace(/ /g, '_')}">${paymentStatus}</span></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-info" onclick="viewApplicationDetail('${app._id || app.id}')" title="View Full Details"><i class="fas fa-file-alt"></i></button>
-                                        <select onchange="updateApplicationStatus('${app._id || app.id}', this.value)" class="glass-input" style="width: auto; padding: 4px 8px; font-size: 0.7rem;">
-                                            <option value="draft" ${status === 'draft' ? 'selected' : ''}>Draft</option>
-                                            <option value="submitted" ${status === 'submitted' ? 'selected' : ''}>Submitted</option>
-                                            <option value="pending_review" ${status === 'pending_review' ? 'selected' : ''}>Pending Review</option>
-                                            <option value="under_review" ${status === 'under_review' ? 'selected' : ''}>Under Review</option>
-                                            <option value="approved" ${status === 'approved' ? 'selected' : ''}>Approved</option>
-                                            <option value="rejected" ${status === 'rejected' ? 'selected' : ''}>Rejected</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                            `;
-                        }).join('')}
-                    </tbody>
-                </table>
-            </div>
-        `;
-
-    } catch (error) {
-        console.error('Error loading applications:', error);
-        debugEl.innerHTML = `<span style="color: #f00;">❌ Error: ${error.message}</span>`;
-        container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading applications: ${error.message}</p></div>`;
-        showToast('Error loading applications', 'error');
-    }
-}
         // ============================================================
         // VIEW APPLICATION DETAIL - FIXED TO SHOW ENRICHED DATA
         // ============================================================
@@ -4441,31 +4525,29 @@ async function loadApplications() {
             document.getElementById('registerAgentModal').classList.add('active');
         };
 
-  // ============================================================
-// PROCESS COMMISSION MODAL - FIXED
-// ============================================================
-window.processCommissionModal = async () => {
-    try {
-        const result = await apiFetch('agent-commissions');
-        const commissions = result.commissions || [];
-        
-        // Case-insensitive check for eligible commissions
-        const eligible = commissions.filter(c => {
-            const status = (c.status || '').toLowerCase();
-            return status === 'eligible' || status === 'pending';
-        });
-        
-        console.log('🔍 All commissions found:', commissions.length);
-        console.log('🔍 Eligible commissions found:', eligible.length);
-        
-        if (eligible.length === 0) {
-            showToast('No eligible commissions found to process.', 'warning');
-            
-            // Show helpful diagnostic information
-            const statuses = commissions.map(c => c.status || 'unknown');
-            const uniqueStatuses = [...new Set(statuses)];
-            
-            alert(`📋 Commission Status Check
+        // ============================================================
+        // PROCESS COMMISSION MODAL - UPDATED WITH EXACT CASE MATCHING
+        // ============================================================
+        window.processCommissionModal = async () => {
+            try {
+                const result = await apiFetch('agent-commissions');
+                const commissions = result.commissions || [];
+                
+                // ===== UPDATED: Use exact status values from backend =====
+                // Backend uses: 'Eligible' (capital E)
+                const eligible = commissions.filter(c => c.status === 'Eligible');
+                
+                console.log('🔍 All commissions found:', commissions.length);
+                console.log('🔍 Eligible commissions found:', eligible.length);
+                
+                if (eligible.length === 0) {
+                    showToast('No eligible commissions found to process.', 'warning');
+                    
+                    // Show helpful diagnostic information
+                    const statuses = commissions.map(c => c.status || 'unknown');
+                    const uniqueStatuses = [...new Set(statuses)];
+                    
+                    alert(`📋 Commission Status Check
 
 Total Commissions: ${commissions.length}
 Eligible: 0
@@ -4482,31 +4564,32 @@ To generate commissions:
 
 If you have paid applicants but no commissions,
 use the Debug button to check the database.`);
-            return;
-        }
-        
-        // Show selection dialog
-        const commissionList = eligible.map((c, i) => 
-            `${i + 1}. ${c.agentName || c.agentId || 'Unknown Agent'} - ${c.applicantName || c.applicantId || 'Unknown Applicant'} - $${(c.commissionAmount || 0).toFixed(2)} (${c.packageName || 'N/A'})`
-        ).join('\n');
-        
-        const selection = prompt(`Select a commission to process:\n\n${commissionList}\n\nEnter the number (1-${eligible.length}):`);
-        if (!selection) return;
-        
-        const index = parseInt(selection) - 1;
-        if (isNaN(index) || index < 0 || index >= eligible.length) {
-            showToast('Invalid selection', 'error');
-            return;
-        }
-        
-        const selected = eligible[index];
-        await openCommissionProcessing(selected);
-        
-    } catch (error) {
-        console.error('Error loading commissions for processing:', error);
-        showToast('Error loading commissions: ' + error.message, 'error');
-    }
-};
+                    return;
+                }
+                
+                // Show selection dialog
+                const commissionList = eligible.map((c, i) => 
+                    `${i + 1}. ${c.agentName || c.agentId || 'Unknown Agent'} - ${c.applicantName || c.applicantId || 'Unknown Applicant'} - $${(c.commissionAmount || 0).toFixed(2)} (${c.packageName || 'N/A'})`
+                ).join('\n');
+                
+                const selection = prompt(`Select a commission to process:\n\n${commissionList}\n\nEnter the number (1-${eligible.length}):`);
+                if (!selection) return;
+                
+                const index = parseInt(selection) - 1;
+                if (isNaN(index) || index < 0 || index >= eligible.length) {
+                    showToast('Invalid selection', 'error');
+                    return;
+                }
+                
+                const selected = eligible[index];
+                await openCommissionProcessing(selected);
+                
+            } catch (error) {
+                console.error('Error loading commissions for processing:', error);
+                showToast('Error loading commissions: ' + error.message, 'error');
+            }
+        };
+
         // Process a single commission directly from the table
         window.processSingleCommission = async (commissionId) => {
             try {
@@ -4519,6 +4602,7 @@ use the Debug button to check the database.`);
                     return;
                 }
                 
+                // ===== UPDATED: Use exact status values from backend =====
                 if (selected.status !== 'Eligible' && selected.status !== 'Pending') {
                     showToast('This commission is not eligible for processing', 'warning');
                     return;
@@ -4599,79 +4683,90 @@ use the Debug button to check the database.`);
             }
         };
 
-// ============================================================
-// GENERATE SETTLEMENT - FIXED
-// ============================================================
-window.generateSettlement = async () => {
-    const agentId = prompt('Enter Agent ID to generate settlement for:');
-    if (!agentId || agentId.trim() === '') {
-        showToast('Agent ID is required', 'error');
-        return;
-    }
-    
-    const periodStart = prompt('Enter settlement period start (YYYY-MM-DD):', new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1).toISOString().split('T')[0]);
-    if (periodStart === null) return;
-    
-    const periodEnd = prompt('Enter settlement period end (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
-    if (periodEnd === null) return;
-    
-    if (!confirm(`Generate settlement for agent ${agentId} from ${periodStart} to ${periodEnd}?`)) return;
-    
-    const btn = document.querySelector('#agent-commissions-section .btn-success') || document.querySelector('[onclick*="generateSettlement"]');
-    const originalText = btn ? btn.innerHTML : 'Generate';
-    if (btn) {
-        btn.innerHTML = '<span class="spinner"></span> Generating...';
-        btn.disabled = true;
-    }
-    
-    try {
-        showToast('Generating settlement...', 'info');
-        
-        const response = await fetch(`${API_URL}/admin/commissions/settle`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${adminToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                agentId: agentId.trim(),
-                periodStart: periodStart,
-                periodEnd: periodEnd,
-                notes: `Settlement generated by admin on ${new Date().toLocaleDateString()}`
-            })
-        });
-        
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Settlement generation failed');
-        }
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            showToast(`✅ Settlement generated successfully! Total: $${result.totalAmount.toFixed(2)} for ${result.commissionCount} commissions`, 'success');
-            
-            if (confirm(`Settlement generated! Total amount: $${result.totalAmount.toFixed(2)}. Would you like to view it?`)) {
-                document.querySelector('[data-section="agent-settlements"]')?.click();
-                setTimeout(() => loadAgentSettlements(), 500);
-            }
-        } else {
-            throw new Error(result.message || 'Settlement generation failed');
-        }
-        
-    } catch (error) {
-        console.error('Error generating settlement:', error);
-        showToast('Error generating settlement: ' + error.message, 'error');
-    } finally {
-        if (btn) {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        }
-    }
-};
         // ============================================================
-// GENERATE SETTLEMENT - FIXED
-// ============================================================
+        // GENERATE SETTLEMENT - UPDATED WITH AGENT VERIFICATION
+        // ============================================================
+        window.generateSettlement = async () => {
+            const agentId = prompt('Enter Agent ID to generate settlement for:');
+            if (!agentId || agentId.trim() === '') {
+                showToast('Agent ID is required', 'error');
+                return;
+            }
+            
+            // ===== ADDED: Verify agent exists =====
+            try {
+                showToast('Verifying agent...', 'info');
+                const agentResult = await apiFetch(`agents/${agentId.trim()}`);
+                if (!agentResult.agent) {
+                    showToast('Agent not found! Please check the Agent ID.', 'error');
+                    return;
+                }
+                showToast(`✅ Agent found: ${agentResult.agent.fullName}`, 'success');
+            } catch (e) {
+                showToast('Agent not found! Please check the Agent ID.', 'error');
+                return;
+            }
+            
+            const periodStart = prompt('Enter settlement period start (YYYY-MM-DD):', new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1).toISOString().split('T')[0]);
+            if (periodStart === null) return;
+            
+            const periodEnd = prompt('Enter settlement period end (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+            if (periodEnd === null) return;
+            
+            if (!confirm(`Generate settlement for agent ${agentId} from ${periodStart} to ${periodEnd}?`)) return;
+            
+            const btn = document.querySelector('#agent-commissions-section .btn-success') || document.querySelector('[onclick*="generateSettlement"]');
+            const originalText = btn ? btn.innerHTML : 'Generate';
+            if (btn) {
+                btn.innerHTML = '<span class="spinner"></span> Generating...';
+                btn.disabled = true;
+            }
+            
+            try {
+                showToast('Generating settlement...', 'info');
+                
+                const response = await fetch(`${API_URL}/admin/commissions/settle`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        agentId: agentId.trim(),
+                        periodStart: periodStart,
+                        periodEnd: periodEnd,
+                        notes: `Settlement generated by admin on ${new Date().toLocaleDateString()}`
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Settlement generation failed');
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast(`✅ Settlement generated successfully! Total: $${result.totalAmount.toFixed(2)} for ${result.commissionCount} commissions`, 'success');
+                    
+                    if (confirm(`Settlement generated! Total amount: $${result.totalAmount.toFixed(2)}. Would you like to view it?`)) {
+                        document.querySelector('[data-section="agent-settlements"]')?.click();
+                        setTimeout(() => loadAgentSettlements(), 500);
+                    }
+                } else {
+                    throw new Error(result.message || 'Settlement generation failed');
+                }
+                
+            } catch (error) {
+                console.error('Error generating settlement:', error);
+                showToast('Error generating settlement: ' + error.message, 'error');
+            } finally {
+                if (btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            }
+        };
 
         // Mark Settlement as Paid
         window.markSettlementPaid = async (settlementId) => {
