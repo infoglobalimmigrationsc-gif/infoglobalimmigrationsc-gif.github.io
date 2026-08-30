@@ -3321,6 +3321,7 @@ app.get('/api/admin/contacts', authenticateToken, async (req, res) => {
     }
 });
 
+// server.js - Contact Status Update (FIXED)
 app.patch('/api/admin/contacts/:id/status', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
@@ -3330,11 +3331,43 @@ app.patch('/api/admin/contacts/:id/status', authenticateToken, async (req, res) 
         const validStatuses = ['new', 'read', 'replied', 'archived'];
         if (!validStatuses.includes(status)) return res.status(400).json({ success: false, message: 'Invalid status' });
         
-        const result = await db.collection('contacts').updateOne(
+        const contact = await db.collection('contacts').findOne({ _id: new ObjectId(id) });
+        if (!contact) return res.status(404).json({ success: false, message: 'Contact not found' });
+        
+        await db.collection('contacts').updateOne(
             { _id: new ObjectId(id) },
             { $set: { status: status, updatedAt: new Date() } }
         );
-        if (result.matchedCount === 0) return res.status(404).json({ success: false, message: 'Contact not found' });
+        
+        // If status changed to "replied", send notification to user
+        if (status === 'replied' && contact.replyMessage) {
+            const userEmail = contact.email;
+            const user = await db.collection('users').findOne({ email: userEmail });
+            
+            if (user) {
+                const notification = {
+                    id: `contact_reply_status_${Date.now()}`,
+                    title: `Reply to your inquiry: ${contact.interest || 'Support'}`,
+                    message: contact.replyMessage,
+                    icon: 'fa-reply',
+                    read: false,
+                    createdAt: new Date().toISOString(),
+                    sender: contact.repliedBy || 'admin',
+                    type: 'support_reply',
+                    contactId: id
+                };
+                
+                await db.collection('applications').updateOne(
+                    { uid: user.uid },
+                    { 
+                        $push: { notifications: notification },
+                        $set: { updatedAt: new Date() }
+                    }
+                );
+                console.log(`✅ Support reply notification sent to user via status update: ${userEmail}`);
+            }
+        }
+        
         res.json({ success: true, message: 'Status updated successfully' });
     } catch (error) {
         console.error('Error updating contact status:', error);
@@ -3342,6 +3375,7 @@ app.patch('/api/admin/contacts/:id/status', authenticateToken, async (req, res) 
     }
 });
 
+// server.js - Contact Reply Endpoint (FIXED)
 app.post('/api/admin/contacts/:id/reply', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
@@ -3351,6 +3385,9 @@ app.post('/api/admin/contacts/:id/reply', authenticateToken, async (req, res) =>
         const contact = await db.collection('contacts').findOne({ _id: new ObjectId(id) });
         if (!contact) return res.status(404).json({ success: false, message: 'Contact not found' });
         
+        // ============================================================
+        // STEP 1: Update the contact record
+        // ============================================================
         await db.collection('contacts').updateOne(
             { _id: new ObjectId(id) },
             {
@@ -3364,6 +3401,65 @@ app.post('/api/admin/contacts/:id/reply', authenticateToken, async (req, res) =>
                 }
             }
         );
+        
+        // ============================================================
+        // STEP 2: Find the user by email and create a notification
+        // ============================================================
+        const userEmail = contact.email;
+        const user = await db.collection('users').findOne({ email: userEmail });
+        
+        if (user) {
+            // Create a notification in the user's application
+            const notification = {
+                id: `contact_reply_${Date.now()}`,
+                title: `Reply to your inquiry: ${contact.interest || 'Support'}`,
+                message: message,
+                icon: 'fa-reply',
+                read: false,
+                createdAt: new Date().toISOString(),
+                sender: req.user?.email || 'admin',
+                type: 'support_reply',
+                contactId: id
+            };
+            
+            // Check if application exists
+            let application = await db.collection('applications').findOne({ uid: user.uid });
+            if (!application) {
+                // Create minimal application if it doesn't exist
+                const newApp = {
+                    uid: user.uid,
+                    userId: user.uid,
+                    status: 'draft',
+                    progress: 0,
+                    personalInfo: { 
+                        name: user.name || 'Unknown', 
+                        email: user.email || '',
+                        phone: user.phone || ''
+                    },
+                    documents: {},
+                    payments: [],
+                    notifications: [notification],
+                    uploadHistory: [],
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                };
+                await db.collection('applications').insertOne(newApp);
+            } else {
+                // Push notification to existing application
+                await db.collection('applications').updateOne(
+                    { uid: user.uid },
+                    { 
+                        $push: { notifications: notification },
+                        $set: { updatedAt: new Date() }
+                    }
+                );
+            }
+            
+            console.log(`✅ Support reply notification sent to user: ${userEmail}`);
+        } else {
+            console.log(`⚠️ User not found for email: ${userEmail}, reply saved but notification not sent`);
+        }
+        
         res.json({ success: true, message: 'Reply sent successfully' });
     } catch (error) {
         console.error('Error sending reply:', error);
