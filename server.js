@@ -2881,6 +2881,44 @@ app.put('/api/admin/agent-messages/:conversationId/close', authenticateToken, as
     }
 });
 
+
+// ============================================================
+// ADMIN - REOPEN AGENT CONVERSATION
+// ============================================================
+app.put('/api/admin/agent-messages/:conversationId/reopen', authenticateToken, async (req, res) => {
+    try {
+        const { conversationId } = req.params;
+        
+        const result = await db.collection('agent_conversations').updateOne(
+            { _id: new ObjectId(conversationId) },
+            { $set: { status: 'open', updatedAt: new Date() } }
+        );
+        
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Conversation not found' });
+        }
+        
+        // Notify agent
+        const conversation = await db.collection('agent_conversations').findOne({ _id: new ObjectId(conversationId) });
+        if (conversation && conversation.agentId) {
+            await db.collection('agent_notifications').insertOne({
+                agentId: conversation.agentId,
+                title: 'Conversation Reopened',
+                message: `Your conversation "${conversation.subject || 'Conversation'}" has been reopened by admin.`,
+                type: 'message',
+                read: false,
+                createdAt: new Date(),
+                link: `/messages?conversation=${conversationId}`
+            });
+        }
+        
+        res.json({ success: true, message: 'Conversation reopened' });
+    } catch (error) {
+        console.error('Error reopening conversation:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // ============================================================
 // AGENT NOTIFICATIONS
 // ============================================================
