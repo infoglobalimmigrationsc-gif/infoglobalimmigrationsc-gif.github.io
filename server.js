@@ -1811,6 +1811,135 @@ app.put('/api/admin/commissions/:commissionId/reverse', authenticateToken, async
     }
 });
 
+
+// ============================================================
+// ADMIN - DELETE COMMISSION (Refund/Delete)
+// ============================================================
+app.delete('/api/admin/commissions/:commissionId/delete', authenticateToken, async (req, res) => {
+    try {
+        const { commissionId } = req.params;
+        const { reason, status, amount, agentId, applicantId } = req.body;
+        
+        // Find the commission
+        const commission = await db.collection('commissions').findOne({ 
+            _id: new ObjectId(commissionId) 
+        });
+        
+        if (!commission) {
+            return res.status(404).json({ success: false, message: 'Commission not found' });
+        }
+        
+        // Get commission details before deletion
+        const commissionAmount = commission.commissionAmount || 0;
+        const commissionAgentId = commission.agentId;
+        const commissionApplicantId = commission.applicantId;
+        const commissionStatus = commission.status || 'Pending';
+        
+        // ============================================================
+        // STEP 1: Update agent stats if commission was Paid/Settled
+        // ============================================================
+        if (commissionStatus === 'Paid' || commissionStatus === 'Settled') {
+            // Reduce total commission paid
+            await db.collection('agents').updateOne(
+                { agentId: commissionAgentId },
+                { 
+                    $inc: { 
+                        totalCommissionPaid: -commissionAmount,
+                        // If we want to track adjustments
+                        // totalCommissionAdjusted: commissionAmount
+                    },
+                    $set: { updatedAt: new Date() }
+                }
+            );
+            
+            // Log the adjustment
+            await db.collection('audit_logs').insertOne({
+                action: 'COMMISSION_DELETED_PAID',
+                commissionId: commissionId,
+                agentId: commissionAgentId,
+                applicantId: commissionApplicantId,
+                amount: commissionAmount,
+                reason: reason || 'Admin deletion of paid commission',
+                deletedBy: req.user?.email || 'admin',
+                timestamp: new Date()
+            });
+            
+            // Create notification for agent about the deletion
+            await db.collection('agent_notifications').insertOne({
+                agentId: commissionAgentId,
+                title: '⚠️ Commission Deleted (Refund Processed)',
+                message: `A commission of $${commissionAmount.toFixed(2)} for applicant ${commissionApplicantId || 'Unknown'} has been deleted.${reason ? ` Reason: ${reason}` : ''} Please contact GISC Admin if you have questions.`,
+                type: 'commission',
+                read: false,
+                createdAt: new Date(),
+                link: `/commissions`
+            });
+        } else {
+            // For non-paid commissions, just log
+            await db.collection('audit_logs').insertOne({
+                action: 'COMMISSION_DELETED',
+                commissionId: commissionId,
+                agentId: commissionAgentId,
+                applicantId: commissionApplicantId,
+                amount: commissionAmount,
+                status: commissionStatus,
+                reason: reason || 'Admin deletion',
+                deletedBy: req.user?.email || 'admin',
+                timestamp: new Date()
+            });
+            
+            // Create notification for agent
+            await db.collection('agent_notifications').insertOne({
+                agentId: commissionAgentId,
+                title: 'Commission Deleted',
+                message: `A commission of $${commissionAmount.toFixed(2)} for applicant ${commissionApplicantId || 'Unknown'} has been deleted by admin.${reason ? ` Reason: ${reason}` : ''}`,
+                type: 'commission',
+                read: false,
+                createdAt: new Date(),
+                link: `/commissions`
+            });
+        }
+        
+        // ============================================================
+        // STEP 2: Remove commission from application
+        // ============================================================
+        await db.collection('applications').updateOne(
+            { applicantId: commissionApplicantId },
+            {
+                $pull: { 
+                    commissions: { 
+                        commissionId: commissionId 
+                    } 
+                },
+                $set: { updatedAt: new Date() }
+            }
+        );
+        
+        // ============================================================
+        // STEP 3: Delete the commission
+        // ============================================================
+        const result = await db.collection('commissions').deleteOne({ 
+            _id: new ObjectId(commissionId) 
+        });
+        
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Commission not found' });
+        }
+        
+        res.json({ 
+            success: true, 
+            message: 'Commission deleted successfully',
+            wasPaid: commissionStatus === 'Paid' || commissionStatus === 'Settled',
+            amount: commissionAmount,
+            agentId: commissionAgentId
+        });
+        
+    } catch (error) {
+        console.error('Error deleting commission:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // Commission settlement - admin generates monthly statement
 app.post('/api/admin/commissions/settle', authenticateToken, async (req, res) => {
     try {
