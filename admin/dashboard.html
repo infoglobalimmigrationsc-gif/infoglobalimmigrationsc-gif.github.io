@@ -5608,69 +5608,112 @@ use the Debug button to check the database.`);
         // CONTACT FUNCTIONS
         // ============================================================
         window.viewContactDetail = async (contactId) => {
-            try {
-                const contact = allContacts.find(c => c._id === contactId || c.id === contactId);
-                if (!contact) { showToast('Contact not found', 'error'); return; }
-                
-                const modal = document.createElement('div');
-                modal.className = 'glass-modal active';
-                modal.style.display = 'flex';
-                modal.id = 'contactDetailModal';
-                
-                modal.innerHTML = `
-                    <div class="modal-content" style="max-width: 700px;">
-                        <div class="modal-header"><h2>Contact Details</h2><button class="modal-close" onclick="document.getElementById('contactDetailModal').remove()">&times;</button></div>
-                        <div class="modal-body">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                                <div>
-                                    <div class="detail-row"><span class="detail-label">Name</span><span class="detail-value">${contact.name || 'Unknown'}</span></div>
-                                    <div class="detail-row"><span class="detail-label">Email</span><span class="detail-value">${contact.email || 'N/A'}</span></div>
-                                    <div class="detail-row"><span class="detail-label">Phone</span><span class="detail-value">${contact.phone || 'N/A'}</span></div>
-                                </div>
-                                <div>
-                                    <div class="detail-row"><span class="detail-label">Country</span><span class="detail-value">${contact.country || 'N/A'}</span></div>
-                                    <div class="detail-row"><span class="detail-label">Interest</span><span class="detail-value"><span class="status-badge status-${contact.interest || 'general'}">${contact.interest || 'General'}</span></span></div>
-                                    <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value"><span class="status-badge status-${contact.status || 'new'}">${(contact.status || 'new').toUpperCase()}</span></span></div>
-                                    <div class="detail-row"><span class="detail-label">Submitted</span><span class="detail-value">${contact.createdAt ? new Date(contact.createdAt).toLocaleString() : 'N/A'}</span></div>
-                                </div>
-                            </div>
-                            <div style="margin-top: 15px;"><div class="detail-row"><span class="detail-label">Message</span></div><div style="padding: 15px; background: #f5f5f5; border-radius: 8px; color: #333; line-height: 1.6; white-space: pre-wrap; margin-top: 5px;">${contact.message || 'No message provided'}</div></div>
-                            <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-                                <select id="contactStatusUpdate" class="glass-input" style="width: auto; min-width: 150px;">
-                                    <option value="new" ${contact.status === 'new' ? 'selected' : ''}>New</option>
-                                    <option value="read" ${contact.status === 'read' ? 'selected' : ''}>Read</option>
-                                    <option value="replied" ${contact.status === 'replied' ? 'selected' : ''}>Replied</option>
-                                    <option value="archived" ${contact.status === 'archived' ? 'selected' : ''}>Archived</option>
-                                </select>
-                                <button class="btn btn-primary btn-sm" onclick="updateContactStatusFromModal('${contact._id || contact.id}')">Update Status</button>
-                                <button class="btn btn-success btn-sm" onclick="replyToContact('${contact._id || contact.id}')"><i class="fas fa-reply"></i> Reply</button>
-                                <button class="btn btn-danger btn-sm" onclick="deleteContact('${contact._id || contact.id}')"><i class="fas fa-trash"></i> Delete</button>
-                            </div>
+    try {
+        const contact = allContacts.find(c => c._id === contactId || c.id === contactId);
+        if (!contact) { 
+            showToast('Contact not found', 'error'); 
+            return; 
+        }
+        
+        const modal = document.createElement('div');
+        modal.className = 'glass-modal active';
+        modal.style.display = 'flex';
+        modal.id = 'contactDetailModal';
+        
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 700px;">
+                <div class="modal-header">
+                    <h2>Contact Details</h2>
+                    <button class="modal-close" onclick="document.getElementById('contactDetailModal').remove()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <div class="detail-row"><span class="detail-label">Name</span><span class="detail-value">${contact.name || 'Unknown'}</span></div>
+                            <div class="detail-row"><span class="detail-label">Email</span><span class="detail-value">${contact.email || 'N/A'}</span></div>
+                            <div class="detail-row"><span class="detail-label">Phone</span><span class="detail-value">${contact.phone || 'N/A'}</span></div>
                         </div>
-                        <div class="modal-footer"><button class="btn btn-outline" onclick="document.getElementById('contactDetailModal').remove()">Close</button></div>
+                        <div>
+                            <div class="detail-row"><span class="detail-label">Country</span><span class="detail-value">${contact.country || 'N/A'}</span></div>
+                            <div class="detail-row"><span class="detail-label">Interest</span><span class="detail-value"><span class="status-badge status-${contact.interest || 'general'}">${contact.interest || 'General'}</span></span></div>
+                            <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value"><span class="status-badge status-${contact.status || 'new'}">${(contact.status || 'new').toUpperCase()}</span></span></div>
+                            <div class="detail-row"><span class="detail-label">Submitted</span><span class="detail-value">${contact.createdAt ? new Date(contact.createdAt).toLocaleString() : 'N/A'}</span></div>
+                        </div>
                     </div>
-                `;
-                
-                document.body.appendChild(modal);
-                modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
-                
-            } catch (error) {
-                console.error('Error viewing contact detail:', error);
-                showToast('Error loading contact details', 'error');
-            }
-        };
+                    <div style="margin-top: 15px;">
+                        <div class="detail-row"><span class="detail-label">Message</span></div>
+                        <div style="padding: 15px; background: #f5f5f5; border-radius: 8px; color: #333; line-height: 1.6; white-space: pre-wrap; margin-top: 5px;">
+                            ${contact.message || 'No message provided'}
+                        </div>
+                    </div>
+                    ${contact.replyMessage ? `
+                        <div style="margin-top: 15px; background: #e8f5e9; padding: 15px; border-radius: 8px; border-left: 3px solid #28a745;">
+                            <div style="font-weight: 600; color: #2e7d32; margin-bottom: 5px;">📨 Reply Sent:</div>
+                            <div style="color: #333; line-height: 1.6; white-space: pre-wrap;">${contact.replyMessage}</div>
+                            <div style="font-size: 0.7rem; color: #666; margin-top: 5px;">Replied by: ${contact.repliedBy || 'Admin'} on ${contact.repliedAt ? new Date(contact.repliedAt).toLocaleString() : ''}</div>
+                        </div>
+                    ` : ''}
+                    <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                        <select id="contactStatusUpdate" class="glass-input" style="width: auto; min-width: 150px;">
+                            <option value="new" ${contact.status === 'new' ? 'selected' : ''}>New</option>
+                            <option value="read" ${contact.status === 'read' ? 'selected' : ''}>Read</option>
+                            <option value="replied" ${contact.status === 'replied' ? 'selected' : ''}>Replied</option>
+                            <option value="archived" ${contact.status === 'archived' ? 'selected' : ''}>Archived</option>
+                        </select>
+                        <button class="btn btn-primary btn-sm" onclick="updateContactStatusFromModal('${contact._id || contact.id}')">Update Status</button>
+                        <button class="btn btn-success btn-sm" onclick="replyToContact('${contact._id || contact.id}')"><i class="fas fa-reply"></i> Reply</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteContact('${contact._id || contact.id}')"><i class="fas fa-trash"></i> Delete</button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" onclick="document.getElementById('contactDetailModal').remove()">Close</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        modal.addEventListener('click', function(e) { 
+            if (e.target === modal) modal.remove(); 
+        });
+        
+    } catch (error) {
+        console.error('Error viewing contact detail:', error);
+        showToast('Error loading contact details', 'error');
+    }
+};
 
         window.updateContactStatus = async (contactId, status) => {
-            try {
-                await apiFetch(`contacts/${contactId}/status`, { method: 'PATCH', body: JSON.stringify({ status }) });
-                showToast(`Contact status updated to: ${status.toUpperCase()}`, 'success');
-                await loadContacts();
-                await loadDashboardData();
-            } catch (error) {
-                console.error('Error updating contact status:', error);
-                showToast('Error updating contact status: ' + error.message, 'error');
-            }
-        };
+    try {
+        const response = await fetch(`${API_URL}/admin/contacts/${contactId}/status`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${adminToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status })
+        });
+        
+        // Check if response is JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            console.error('Non-JSON response:', text);
+            throw new Error('Server returned an error. Please try again.');
+        }
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to update status');
+        }
+        
+        showToast(`Contact status updated to: ${status.toUpperCase()}`, 'success');
+        await loadContacts();
+        await loadDashboardData();
+    } catch (error) {
+        console.error('Error updating contact status:', error);
+        showToast('Error updating contact status: ' + error.message, 'error');
+    }
+};
 
         window.updateContactStatusFromModal = async (contactId) => {
             const select = document.getElementById('contactStatusUpdate');
@@ -5681,22 +5724,62 @@ use the Debug button to check the database.`);
         };
 
         window.replyToContact = async (contactId) => {
-            const contact = allContacts.find(c => c._id === contactId || c.id === contactId);
-            if (!contact) { showToast('Contact not found', 'error'); return; }
-            
-            const replyMessage = prompt(`Reply to ${contact.name} (${contact.email}):\n\nEnter your reply message:`, 'Thank you for reaching out to Global Immigration SC. We will get back to you shortly.');
-            if (replyMessage === null) return;
-            if (!replyMessage.trim()) { showToast('Reply message cannot be empty', 'error'); return; }
-            
-            try {
-                await apiFetch(`contacts/${contactId}/reply`, { method: 'POST', body: JSON.stringify({ message: replyMessage.trim(), subject: `Re: Your inquiry to Global Immigration SC` }) });
-                showToast(`Reply sent to ${contact.email}`, 'success');
-                await updateContactStatus(contactId, 'replied');
-            } catch (error) {
-                console.error('Error sending reply:', error);
-                showToast('Error sending reply: ' + error.message, 'error');
-            }
-        };
+    const contact = allContacts.find(c => c._id === contactId || c.id === contactId);
+    if (!contact) { 
+        showToast('Contact not found', 'error'); 
+        return; 
+    }
+    
+    const replyMessage = prompt(`Reply to ${contact.name} (${contact.email}):\n\nEnter your reply message:`, 'Thank you for reaching out to Global Immigration SC. We will get back to you shortly.');
+    if (replyMessage === null) return;
+    if (!replyMessage.trim()) { 
+        showToast('Reply message cannot be empty', 'error'); 
+        return; 
+    }
+    
+    try {
+        showToast('Sending reply...', 'info');
+        
+        // Use direct fetch instead of apiFetch for better error handling
+        const response = await fetch(`${API_URL}/admin/contacts/${contactId}/reply`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${adminToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                message: replyMessage.trim(), 
+                subject: `Re: Your inquiry to Global Immigration SC` 
+            })
+        });
+        
+        // Check if response is JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            console.error('Non-JSON response:', text);
+            throw new Error('Server returned an error. Please try again.');
+        }
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to send reply');
+        }
+        
+        showToast(`✅ Reply sent to ${contact.email}`, 'success');
+        
+        // Update contact status to replied
+        await updateContactStatus(contactId, 'replied');
+        
+        // Close modal if open
+        const modal = document.getElementById('contactDetailModal');
+        if (modal) modal.remove();
+        
+    } catch (error) {
+        console.error('Error sending reply:', error);
+        showToast('Error sending reply: ' + error.message, 'error');
+    }
+};
 
         window.deleteContact = async (contactId) => {
             if (!confirm('Are you sure you want to delete this contact submission? This action cannot be undone.')) return;
