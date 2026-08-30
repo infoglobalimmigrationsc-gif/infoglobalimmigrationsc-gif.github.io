@@ -3375,7 +3375,6 @@ app.patch('/api/admin/contacts/:id/status', authenticateToken, async (req, res) 
     }
 });
 
-// server.js - Contact Reply Endpoint (FIXED)
 app.post('/api/admin/contacts/:id/reply', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
@@ -3403,13 +3402,12 @@ app.post('/api/admin/contacts/:id/reply', authenticateToken, async (req, res) =>
         );
         
         // ============================================================
-        // STEP 2: Find the user by email and create a notification
+        // STEP 2: Find the user by email
         // ============================================================
         const userEmail = contact.email;
         const user = await db.collection('users').findOne({ email: userEmail });
         
         if (user) {
-            // Create a notification in the user's application
             const notification = {
                 id: `contact_reply_${Date.now()}`,
                 title: `Reply to your inquiry: ${contact.interest || 'Support'}`,
@@ -3422,10 +3420,42 @@ app.post('/api/admin/contacts/:id/reply', authenticateToken, async (req, res) =>
                 contactId: id
             };
             
+            // ============================================================
+            // STEP 3: Create a SUPPORT TICKET in the user's application
+            // ============================================================
+            const supportTicket = {
+                id: `ticket_${Date.now()}`,
+                subject: contact.interest || 'Support Inquiry',
+                message: contact.message || 'No initial message',
+                status: 'replied',
+                createdAt: contact.createdAt || new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                replies: [
+                    {
+                        from: 'user',
+                        message: contact.message || 'No initial message',
+                        date: contact.createdAt || new Date().toISOString()
+                    },
+                    {
+                        from: 'admin',
+                        message: message,
+                        date: new Date().toISOString(),
+                        admin: req.user?.email || 'admin'
+                    }
+                ],
+                adminReplies: [
+                    {
+                        message: message,
+                        date: new Date().toISOString(),
+                        admin: req.user?.email || 'admin'
+                    }
+                ]
+            };
+            
             // Check if application exists
             let application = await db.collection('applications').findOne({ uid: user.uid });
             if (!application) {
-                // Create minimal application if it doesn't exist
+                // Create minimal application
                 const newApp = {
                     uid: user.uid,
                     userId: user.uid,
@@ -3439,25 +3469,29 @@ app.post('/api/admin/contacts/:id/reply', authenticateToken, async (req, res) =>
                     documents: {},
                     payments: [],
                     notifications: [notification],
+                    supportTickets: [supportTicket],  // <-- ADD SUPPORT TICKET
                     uploadHistory: [],
                     createdAt: new Date(),
                     updatedAt: new Date()
                 };
                 await db.collection('applications').insertOne(newApp);
             } else {
-                // Push notification to existing application
+                // Push notification AND support ticket to existing application
                 await db.collection('applications').updateOne(
                     { uid: user.uid },
                     { 
-                        $push: { notifications: notification },
+                        $push: { 
+                            notifications: notification,
+                            supportTickets: supportTicket   // <-- ADD SUPPORT TICKET
+                        },
                         $set: { updatedAt: new Date() }
                     }
                 );
             }
             
-            console.log(`✅ Support reply notification sent to user: ${userEmail}`);
+            console.log(`✅ Support reply notification and ticket sent to user: ${userEmail}`);
         } else {
-            console.log(`⚠️ User not found for email: ${userEmail}, reply saved but notification not sent`);
+            console.log(`⚠️ User not found for email: ${userEmail}`);
         }
         
         res.json({ success: true, message: 'Reply sent successfully' });
