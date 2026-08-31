@@ -1706,7 +1706,8 @@ document.getElementById('agentCredentialsModal').addEventListener('click', funct
                         <td><span class="status-badge status-${app.paymentStatus ? app.paymentStatus.toLowerCase().replace(/ /g, '_') : 'unpaid'}">${app.paymentStatus || 'No Payment'}</span></td>
                         <td style="font-size: 0.75rem; color: rgba(255,255,255,0.4);">${app.updatedAt ? new Date(app.updatedAt).toLocaleDateString() : 'N/A'}</td>
                         <td>
-                            <button class="btn btn-sm btn-info" onclick="viewApplication('${app.applicantId}')"><i class="fas fa-eye"></i></button>
+                        <button class="btn btn-sm btn-info" onclick="viewApplication('${app.applicantId}')"><i class="fas fa-eye"></i></button>
+                        ${app.status !== 'Completed' ? `<button class="btn btn-sm btn-success" onclick="markApplicationCompleted('${app.applicantId}')" title="Mark as Completed"><i class="fas fa-check"></i></button>` : `<span style="color: #28a745; font-size: 0.6rem;">✓ Done</span>`}
                         </td>
                     </tr>
                 `).join('');
@@ -1740,6 +1741,46 @@ document.getElementById('agentCredentialsModal').addEventListener('click', funct
                 showToast('Error loading application', 'error');
             }
         };
+
+
+        // ============================================================
+// MARK APPLICATION AS COMPLETED
+// ============================================================
+window.markApplicationCompleted = async (applicantId) => {
+    if (!confirm(`Mark this application as Completed?\n\nThis will count toward your performance level.`)) return;
+    
+    try {
+        const btn = document.querySelector(`[onclick*="markApplicationCompleted('${applicantId}')"]`);
+        const originalText = btn ? btn.innerHTML : 'Mark';
+        if (btn) {
+            btn.innerHTML = '<span class="spinner"></span>';
+            btn.disabled = true;
+        }
+        
+        const response = await fetch(`${API_URL}/agent/applications/${applicantId}/complete`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${agentToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status: 'Completed' })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to mark as completed');
+        }
+        
+        showToast('✅ Application marked as Completed!', 'success');
+        await loadApplications();
+        await loadDashboard();
+        await loadPerformance();
+        
+    } catch (error) {
+        console.error('Error marking application completed:', error);
+        showToast('Error: ' + error.message, 'error');
+    }
+};
 
         // ============================================================
         // LOAD COMMISSIONS
@@ -2583,6 +2624,7 @@ document.getElementById('agentCredentialsModal').addEventListener('click', funct
         window.openConversation = openConversation;
         window.markNotificationRead = markNotificationRead;
         window.markAllNotificationsRead = markAllNotificationsRead;
+        window.markApplicationCompleted = markApplicationCompleted;
         window.saveProfile = saveProfile;
 
         // ============================================================
