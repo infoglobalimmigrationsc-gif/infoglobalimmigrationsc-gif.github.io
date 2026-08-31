@@ -1285,6 +1285,83 @@ app.get('/api/agent/applications/:applicantId', authenticateAgent, async (req, r
     }
 });
 
+
+// ============================================================
+// AGENT - MARK APPLICATION AS COMPLETED
+// ============================================================
+app.put('/api/agent/applications/:applicantId/complete', authenticateAgent, async (req, res) => {
+    try {
+        const agentId = req.agent.agentId;
+        const { applicantId } = req.params;
+        const { status } = req.body;
+        
+        // Check ownership
+        const applicant = await db.collection('applicants').findOne({
+            applicantId: applicantId,
+            agentId: agentId
+        });
+        
+        if (!applicant) {
+            return res.status(404).json({ success: false, message: 'Applicant not found' });
+        }
+        
+        // Update application status
+        const result = await db.collection('applications').updateOne(
+            { applicantId: applicantId, agentId: agentId },
+            { 
+                $set: { 
+                    status: status || 'Completed',
+                    stage: status || 'Completed',
+                    updatedAt: new Date() 
+                },
+                $push: {
+                    milestones: {
+                        milestone: 'Application Completed',
+                        status: 'Completed',
+                        date: new Date().toISOString(),
+                        notes: 'Application marked as completed by agent'
+                    },
+                    timeline: {
+                        event: 'Application Completed',
+                        description: 'Application marked as completed',
+                        date: new Date().toISOString(),
+                        actor: 'Agent'
+                    }
+                }
+            }
+        );
+        
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Application not found' });
+        }
+        
+        // Update applicant status
+        await db.collection('applicants').updateOne(
+            { applicantId: applicantId, agentId: agentId },
+            { 
+                $set: { 
+                    status: 'Completed',
+                    updatedAt: new Date() 
+                }
+            }
+        );
+        
+        // Update agent stats (increment successful applications)
+        await db.collection('agents').updateOne(
+            { agentId: agentId },
+            { 
+                $inc: { successfulApplications: 1 },
+                $set: { updatedAt: new Date() }
+            }
+        );
+        
+        res.json({ success: true, message: 'Application marked as completed' });
+    } catch (error) {
+        console.error('Error completing application:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // ============================================================
 // AGENT PAYMENT TRACKING
 // ============================================================
